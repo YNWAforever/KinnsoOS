@@ -1,0 +1,44 @@
+{
+  "hongKong": {
+    "imageId": "1765705410261-b8c7867470c0",
+    "localPath": "public/photos/hongKong.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1765705410261-b8c7867470c0?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  },
+  "lisbon": {
+    "imageId": "1617827553154-d0c5d5dfdd68",
+    "localPath": "public/photos/lisbon.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1617827553154-d0c5d5dfdd68?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  },
+  "seoul": {
+    "imageId": "1650229382504-b0eb3f9e8386",
+    "localPath": "public/photos/seoul.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1650229382504-b0eb3f9e8386?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  },
+  "singapore": {
+    "imageId": "1525625293386-3f8f99389edd",
+    "localPath": "public/photos/singapore.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  },
+  "kyoto": {
+    "imageId": "1603333201151-7886185ea34e",
+    "page": "https://unsplash.com/photos/people-walking-on-pathway-between-trees-during-daytime-6Q4-jOZxhM4",
+    "photographer": "Nakaharu Line",
+    "location": "Tetsugaku No Michi, Jōdoji Ishibashichō, Sakyo Ward, Kyoto, Japan",
+    "localPath": "public/photos/kyoto.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1603333201151-7886185ea34e?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  },
+  "tokyo": {
+    "imageId": "1760737129992-40f90f47bbcf",
+    "page": "https://unsplash.com/photos/busy-shibuya-crossing-with-traffic-and-pedestrians-from-above-svA_eJnNi2c",
+    "photographer": "Vinh Nguyen",
+    "location": "Shibuya Sky, 2 Chome-24-12 Shibuya, Tokyo, Japan",
+    "localPath": "public/photos/tokyo.jpg",
+    "imageUrl": "https://images.unsplash.com/photo-1760737129992-40f90f47bbcf?auto=format&fit=crop&fm=jpg&q=82&w=1800",
+    "adaptation": "KinnsoOS: resized to fit 1200×1000; JPEG quality 82, progressive; 2026-10-01"
+  }
+}
