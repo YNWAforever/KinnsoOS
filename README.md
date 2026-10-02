@@ -21,6 +21,10 @@ Node >=22.13.0. `npm ci` then `npm run dev`. Open `http://localhost:3000/zh-HK` 
 | Account login and trip sync | Independent login on each host against the same approved identity; no automatic SSO |
 | Booking / payment | Disabled until a real supported capability is available |
 
+One unresolved edit is retained per trip on the device. Retry or review it before
+saving another operation. Logout and account changes clear mounted private views
+and account caches; offline maps and photos are unavailable.
+
 ## Catalog configuration
 
 Copy `.env.example` to `.env.local`. Configure `KINNSO_SUPABASE_URL` and `KINNSO_SUPABASE_PUBLISHABLE_KEY` for an approved Supabase target. The adapter rejects secret/service-role keys, uses only anonymous published-guide reads, selects explicit columns, caps page size at 12 with one lookahead record, and distinguishes unavailable, empty and unconfigured responses. Never paste credentials into source files. Existing RLS/grants must allow anonymous reads of **published** guide rows.

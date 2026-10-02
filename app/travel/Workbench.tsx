@@ -580,7 +580,7 @@ export function Workbench({
   )
     content = <CreatorShell path={path}>{content}</CreatorShell>;
   if(mode !== 'demo') {
-    if(!path) content=<ConnectedHome signedIn={!!actor}/>;
+    if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;

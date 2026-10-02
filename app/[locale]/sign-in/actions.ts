@@ -18,6 +18,7 @@ export async function signIn(form: FormData) {
 }
 export async function signOut() {
   const client = await serverClient();
-  await client?.auth.signOut({ scope: 'local' });
-  redirect('/en/sign-in');
+  if(!client)return {ok:false as const};
+  const result=await client.auth.signOut({ scope: 'local' });
+  return {ok:!result.error};
 }

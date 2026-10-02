@@ -5,17 +5,18 @@ import { safeReturnPath } from '../../../lib/auth/return-path';
 import { backendTarget } from '../../../lib/contracts/capabilities';
 export const metadata = { title: 'Sign in', robots: { index: false, follow: false } };
 export default async function SignInPage({ params, searchParams }: {
-  params: Promise<{ locale: string }>; searchParams: Promise<{ next?: string; error?: string }>;
+  params: Promise<{ locale: string }>; searchParams: Promise<{ next?: string; error?: string;notice?:string }>;
 }) {
   const { locale } = await params;
   if (!['en', 'zh-HK'].includes(locale)) notFound();
-  const { next, error } = await searchParams;
+  const { next, error,notice } = await searchParams;
   const target = backendTarget(process.env);
   const t = (en: string, zh: string) => locale === 'en' ? en : zh;
   return <main className="k-page" style={{ maxWidth: 560, margin: 'auto' }}>
     <Link className="k-logo" href={`/${locale}`}>kinnso<span>✳</span></Link>
     <h1>{t('Sign in to Kinnso', '登入 Kinnso')}</h1>
     <p>{t('Use your existing Kinnso account. Each site keeps its own login cookie.', '使用現有 Kinnso 帳戶。兩個網站分別保存登入 cookie。')}</p>
+    {notice==='cleanup-failed'&&<p role="alert">{t('Signed out, but device copies could not be cleared. Clear this site’s data on a shared device.','已登出，但未能清除裝置副本。如使用共用裝置，請清除此網站資料。')}</p>}
     {!target ? <p role="alert">{t('Account service is unavailable.', '帳戶服務暫未接通。')}</p> :
       <form action={signIn} className="k-form">
         <input type="hidden" name="locale" value={locale} />

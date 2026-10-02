@@ -4,11 +4,11 @@ export type SourceCredit = {
 };
 export type TripStop = {
   id: string; placeId: string | null; title: string; position: number;
-  travellerNote: string; startMinuteOfDay: number | null; durationMinutes: number | null;
+  travellerNote: string; sourceDescription?:string; startMinuteOfDay: number | null; durationMinutes: number | null;
   source: SourceCredit | null;
 };
 export type TripDay = { id: string; offset: number; title: string; stops: TripStop[] };
-export type MediaRef = { id: string; ownerId: string; visibility: 'private'; state: 'pending' | 'ready' | 'failed' };
+export type MediaRef = { id: string; ownerId: string; visibility: 'private'; state: 'pending' | 'ready' | 'failed';stopId?:string|null };
 export type TripSnapshot = {
   id: string; title: string; destinationId: string | null; timezone: string;
   startDate: string | null; status: 'planning' | 'active' | 'archived'; revision: number;
