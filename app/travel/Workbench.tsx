@@ -6,6 +6,12 @@ import dynamic from "next/dynamic";
 import * as m from "./model";
 import { AppContext, Chip, Empty, Icon, Modal } from "./ui";
 import { HomePage, ExplorePage, AdventurePage, TripsPage } from "./explore";
+import { ConnectedHome } from './ConnectedHome';
+import { TripWorkspace } from './TripWorkspace';
+import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
+import { AccountSignOut } from './AccountSignOut';
+import type { Actor } from '../../lib/auth/actor';
+import type { CapabilityMode } from '../../lib/contracts/capabilities';
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
@@ -195,9 +201,15 @@ const WorkspacePanel = dynamic(() =>
 export function Workbench({
   locale,
   path,
+  mode = 'demo',
+  actor = null,
+  features={media:false,sharing:false},
 }: {
   locale: m.Locale;
   path: string;
+  mode?:CapabilityMode;
+  actor?:Actor|null;
+  features?:{media:boolean;sharing:boolean};
 }) {
   const router = useRouter(),
     query = useSearchParams(),
@@ -211,7 +223,7 @@ export function Workbench({
     ),
     [storageError, setStorageError] = useState(false);
   const t = (en: string, zh: string) => (locale === "en" ? en : zh),
-    href = (p: string) => `/${locale}${p ? "/" + p.replace(/^\//, "") : ""}`;
+    href = (p: string) => `/${locale}${mode === 'demo' ? '/demo' : ''}${p ? "/" + p.replace(/^\//, "") : ""}`;
   const refresh = () => {
     try {
       setStore(m.read());
@@ -222,7 +234,7 @@ export function Workbench({
     setReady(true);
   };
   useEffect(() => {
-    document.documentElement.lang = locale;
+    if (mode !== 'demo') { setReady(true); return; }
     refresh();
     window.addEventListener("kinnso-change", refresh);
     window.addEventListener("storage", refresh);
@@ -230,7 +242,7 @@ export function Workbench({
       window.removeEventListener("kinnso-change", refresh);
       window.removeEventListener("storage", refresh);
     };
-  }, [locale]);
+  }, [locale,mode]);
   useEffect(() => {
     if (!notice || notice.error) return;
     const timer = setTimeout(() => setNotice(null), 5000);
@@ -378,6 +390,7 @@ export function Workbench({
   const open = (title: string, body: ReactNode) => setModal({ title, body }),
     close = () => setModal(null);
   const auth = (then?: () => void) => {
+    if(mode !== 'demo') { router.push(`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`); return; }
     try {
       if (m.read().session) {
         then?.();
@@ -412,6 +425,7 @@ export function Workbench({
     );
   };
   useEffect(() => {
+    if(mode !== 'demo') return;
     const ctx = (
       document as Document & {
         modelContext?: {
@@ -456,7 +470,7 @@ export function Workbench({
       ),
     ).catch(() => {});
     return () => ac.abort();
-  }, [locale]);
+  }, [locale,mode]);
   let content: ReactNode;
   if (path === "library") content = <CatalogPanel />;
   else if (path === "workspace" || path === "admin")
@@ -565,6 +579,15 @@ export function Workbench({
     path !== "studio/copilot"
   )
     content = <CreatorShell path={path}>{content}</CreatorShell>;
+  if(mode !== 'demo') {
+    if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
+    else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
+    else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null}/>;
+    else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
+    else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
+    else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
+    else content=<WorkspacePanel/>;
+  }
   return (
     <AppContext.Provider
       value={{
@@ -626,7 +649,7 @@ export function Workbench({
               <Icon name="globe" size={18} />
               {locale === "en" ? "繁中" : "EN"}
             </Link>
-            {store.session ? (
+            {mode !== 'demo' && actor ? <Link className="k-avatar" href={href('me')} aria-label={t('My account','我的帳戶')}><Icon name="user"/></Link> : store.session ? (
               <Link
                 className="k-avatar"
                 href={href("me")}
@@ -643,15 +666,15 @@ export function Workbench({
         </header>
         <div className="k-mode">
           <span>
-            {["library", "workspace", "admin"].includes(path)
+            {mode !== 'demo' ? (mode==='connected'?t('Kinnso · account connected','Kinnso · 已接通帳戶'):t('Account services unavailable','帳戶服務尚未接通')) : ["library", "workspace", "admin"].includes(path)
               ? t("KinnsoOS · connection workspace", "KinnsoOS · 接駁工作區")
               : t(
                   "Demo — sample data, saved on this device",
                   "示範 — 樣本資料，儲存於此裝置",
                 )}
           </span>
-          <Link href={href("me")}>
-            {t("About this demo", "示範說明")}
+          <Link href={`/${locale}/demo`}>
+            {t("Open explicit demo", "開啟明示示範")}
             <Icon name="chevron" size={13} />
           </Link>
         </div>
@@ -663,10 +686,10 @@ export function Workbench({
             {t("Existing workspaces", "現有工作區")}
           </Link>
           <span>
-            {t(
+            {mode === 'demo' ? t(
               "Travel editing remains device-local in this first version.",
               "首期行程編輯仍儲存於此裝置。",
-            )}
+            ) : t('Booking and payments are currently unavailable.','訂位及付款目前尚未提供。')}
           </span>
         </div>
         {storageError && (

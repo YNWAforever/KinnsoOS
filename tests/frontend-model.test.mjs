@@ -9,9 +9,9 @@ import {createRequire} from 'node:module';
 import {mkdtemp, readFile, rm, writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join, resolve} from 'node:path';
-import {pathToFileURL} from 'node:url';
+import {fileURLToPath, pathToFileURL} from 'node:url';
 
-const sourcePath = resolve(process.env.KINNSO_MODEL_PATH || new URL('../app/travel/model.ts', import.meta.url).pathname);
+const sourcePath = resolve(process.env.KINNSO_MODEL_PATH || fileURLToPath(new URL('../app/travel/model.ts', import.meta.url)));
 const require = createRequire(import.meta.url);
 let ts;
 try { ts = require('typescript'); }

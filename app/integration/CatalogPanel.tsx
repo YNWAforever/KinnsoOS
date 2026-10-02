@@ -53,12 +53,12 @@ export function CatalogPanel() {
       <h1>{t("Real guides. A clear source.", "真實攻略，清楚來源。")}</h1>
       <p className="os-intro">
         {t(
-          "Browse published creator guides. Full articles open on the existing Kinnso site.",
-          "瀏覽創作者已發布的攻略。完整內容會於現有 Kinnso 網站開啟。",
+              "Browse published creator guides. Structured versions can become your own trip.",
+              "瀏覽創作者已發布的攻略。結構化版本可套用成你的行程。",
         )}
       </p>
       <div className="os-tabs">
-        <Link href={href("explore")}>
+        <Link href={`/${locale}/demo/explore`}>
           {t("Sample itineraries", "示範行程")}
         </Link>
         <span aria-current="page">{t("Published guides", "已發布攻略")}</span>
@@ -118,7 +118,7 @@ export function CatalogPanel() {
           >
             {t("Open existing Kinnso ↗", "前往現有 Kinnso ↗")}
           </a>
-          <Link className="k-btn" href={href("explore")}>
+          <Link className="k-btn" href={`/${locale}/demo/explore`}>
             {t("Explore sample routes", "探索示範路線")}
           </Link>
         </div>
@@ -162,12 +162,10 @@ export function CatalogPanel() {
                     <h2>
                       <a
                         href={
-                          sourceRoot +
-                          "/g/" +
-                          encodeURIComponent(item.slug)
+                          href('g/'+encodeURIComponent(item.id))
                         }
                       >
-                        {item.title} ↗
+                        {item.title}
                       </a>
                     </h2>
                     <p>{item.summary}</p>
@@ -178,8 +176,8 @@ export function CatalogPanel() {
                     </span>
                     <small>
                       {t(
-                        "Published guide · itinerary stops not supplied",
-                        "已發布攻略・未提供結構化行程站點",
+                        "Open to check the published format and source",
+                        "開啟以核對已發布格式及來源",
                       )}
                     </small>
                   </div>

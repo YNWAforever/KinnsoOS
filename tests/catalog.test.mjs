@@ -4,7 +4,10 @@ import { queryCatalog, parseCatalogQuery, safeCover } from "../lib/catalog.ts";
 const env = {
   KINNSO_SUPABASE_URL: "https://example.supabase.co",
   KINNSO_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
+  KINNSO_APPROVED_SUPABASE_ORIGIN: "https://example.supabase.co",
+  KINNSO_LEGACY_AUTH_ORIGIN: "https://example.supabase.co",
 };
+test('a URL/key without explicit shared identity approval never enables catalog reads',async()=>{let called=false;const result=await queryCatalog({},{KINNSO_SUPABASE_URL:env.KINNSO_SUPABASE_URL,KINNSO_SUPABASE_PUBLISHABLE_KEY:env.KINNSO_SUPABASE_PUBLISHABLE_KEY},async()=>{called=true;return Response.json([])});assert.equal(result.status,'unconfigured');assert.equal(called,false)});
 const row = {
   id: "guide-1",
   slug: "quiet-kyoto",

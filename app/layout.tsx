@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import "./globals.css";
 import "./travel/workbench.css";
 import "./integration/integration.css";
@@ -11,9 +12,10 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.svg" },
   robots: { index: false, follow: false },
 };
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const locale = (await headers()).get('x-kinnso-locale') === 'en' ? 'en' : 'zh-HK';
   return (
-    <html lang="zh-HK">
+    <html lang={locale}>
       <body>{children}</body>
     </html>
   );

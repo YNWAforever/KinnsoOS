@@ -38,3 +38,12 @@ Actual callsite checks now import `stopsToGeoJson` from the real `TripMap.tsx`, 
 After the original locked dependencies became available, the supervised Site runtime and full build succeeded. In the actual Site browser at a 1440×900 CSS viewport, Hong Kong search results persisted after reload, external OSM tiles rendered, and clicking the converted map pin selected the matching route. Evidence: `docs/verification-v3/1440-map.jpg`. This verifies a real runtime call path; it does not establish a live itinerary backend or road-routing service.
 
 No dependency manifest/lockfile change was made. Corresponding source is regenerated for this source update and is included with the downloadable review. No deployment occurred.
+# Source distribution boundary
+
+`scripts/source-manifest.json` is the reviewed file allowlist. Add necessary public
+modules and tests explicitly when changing the application. Unlisted workspace
+files are never included. Packaging rejects traversal, symlinks, credentials,
+private workspace directories and recursive source archives. Each ZIP carries
+its source revision, dirty state and per-file SHA-256 in `SOURCE_METADATA.json`.
+CI tests the boundary and rebuilds the extracted corresponding source.
+
