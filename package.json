@@ -12,7 +12,7 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "source:pack": "python3 scripts/package-source.py"
+    "source:pack": "python scripts/package-source.py"
   },
   "dependencies": {
     "next": "16.2.9",
