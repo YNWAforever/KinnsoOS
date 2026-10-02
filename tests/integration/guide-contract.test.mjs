@@ -1,0 +1,7 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {fixture,anonymous} from './local-fixtures.mjs';
+test('summary and published itinerary DTO remain separate; server credit survives traveller edits',async()=>{
+ const f=await fixture();try{const author=await f.actor(true),a=await f.actor(),id=await f.guide(author);const summary=await anonymous.rpc('kinnso_guide',{p_guide_id:id});assert.equal(summary.error,null);assert.equal(summary.data.kind,'summary');assert.equal(summary.data.days,undefined);
+ const published=await author.client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Day one',stops:[{title:'Synthetic authored place',description:'Public description',placeId:null,startMinuteOfDay:600,durationMinutes:60}]}]}});assert.equal(published.error,null);assert.equal(published.data.kind,'itinerary');assert.equal(published.data.version,1);
+ const created=await a.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Contract trip',timezone:'Asia/Tokyo',startDate:null}});assert.equal(created.error,null);const adopted=await a.client.rpc('adopt_guide_to_trip',{p_guide_id:id,p_version:1,p_trip_id:created.data.id,p_expected_revision:1,p_request_id:randomUUID()});assert.equal(adopted.error,null);assert.equal(adopted.data.days[0].stops[0].source.creatorId,author.id);assert.equal(adopted.data.days[0].stops[0].travellerNote,'');assert.equal(adopted.data.revision,2);
+ }finally{await f.cleanup()}
+});

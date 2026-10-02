@@ -143,6 +143,7 @@ body:has(.k-app) {
 }
 .k-header nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 30px;
   height: 100%;
@@ -172,6 +173,8 @@ body:has(.k-app) {
 }
 .k-header-end {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   gap: 22px;
   align-items: center;
 }
@@ -2524,6 +2527,16 @@ body:has(.k-app) {
   }
 }
 @media (max-width: 1150px) {
+  .k-header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 88px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .k-header nav a {
+    min-height: 44px;
+  }
   .k-header nav {
     gap: 22px;
   }
@@ -2735,8 +2748,9 @@ body:has(.k-app) {
 }
 @media (max-width: 650px) {
   .k-header {
-    height: 70px;
-    padding: 0 20px;
+    height: auto;
+    min-height: 70px;
+    padding: 12px 20px;
     gap: 15px;
   }
   .k-header nav {
@@ -4334,3 +4348,8 @@ body:has(.k-app) {
 .cj-metric > strong {
   white-space: nowrap;
 }
+.os-trips label,.os-stop label {display:flex;flex-direction:column;gap:6px;margin-block:12px}
+.os-trips input,.os-trips textarea,.os-trips select,.k-page select {font:inherit;max-width:100%;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--white)}
+.os-trips form {max-width:680px}
+.os-stop {padding:20px;margin-block:16px;max-width:680px}
+.os-stop input[type=checkbox]{width:20px;height:20px;padding:0}

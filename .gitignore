@@ -5,3 +5,7 @@ node_modules/
 *.tsbuildinfo
 public/source/*.zip
 evidence/
+__pycache__/
+.local-private/
+.superpowers/
+*.pyc
