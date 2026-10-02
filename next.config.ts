@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 const config: NextConfig = {
+  turbopack:{root:process.cwd()},
+  allowedDevOrigins:['127.0.0.1','localhost'],
+  logging:{incomingRequests:{ignore:[/^\/share\//,/^\/api\/shared-media\//]},browserToTerminal:false},
   poweredByHeader: false,
   images: {
     remotePatterns: [

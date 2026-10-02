@@ -1,0 +1,18 @@
+'use client';
+import Link from 'next/link';
+import {useEffect,useState} from 'react';
+import {useApp,Icon} from './ui';
+import {trips} from '../../lib/trips/repository';
+import type {CatalogResult} from '../../lib/catalog';
+export function ConnectedHome({signedIn}:{signedIn:boolean}) {
+ const {t,href}=useApp(),[catalog,setCatalog]=useState<CatalogResult|null>(null),[latest,setLatest]=useState<{id:string;title:string}|null>(null);
+ useEffect(()=>{let active=true;fetch('/api/catalog',{cache:'no-store'}).then(r=>r.json()).then(r=>{if(active)setCatalog(r)}).catch(()=>{if(active)setCatalog({status:'error',code:'UNAVAILABLE'})});
+ if(signedIn)void trips.list().then(r=>{if(active&&r.ok)setLatest(r.data.items[0]??null)});return()=>{active=false}},[signedIn]);
+ return <div className="k-home"><div className="k-home-heading"><div><p className="k-eyebrow">{t('TRAVEL THROUGH PEOPLE WHO KNOW THE PLACE.','透過熟悉這裏的人，認識每個地方。')}</p><h1>{t('Find your kind of place.','找到屬於你的地方。')}<em>{t('Make the trip your own.','走出自己的旅程。')}</em></h1><p>{t('Find a route you love. Make the journey yours.','找到喜歡的路線，走出自己的旅程。')}</p></div><Link className="k-subtle-link" href={href('saved')}><Icon name="bookmark"/>{t('Your saved routes','我的收藏')}</Link></div>
+ {latest&&<Link className="k-continue" href={href('trips/'+latest.id)}><div className="k-continue-icon"><Icon name="trip"/></div><div><span>{t('PICK UP WHERE YOU LEFT OFF','繼續上次的旅程')}</span><h3>{latest.title}</h3></div><span className="k-btn dark">{t('Continue trip','繼續行程')}</span></Link>}
+ <form action={href('explore')} className="os-search"><label>{t('Destination or interest','目的地或興趣')}<input name="q" maxLength={120} placeholder={t('Kyoto, coffee, a quieter weekend…','京都、咖啡、慢活週末…')}/></label><button className="k-btn primary">{t('Find guides','找攻略')}</button></form>
+ <div className="k-quick-destinations"><span>{t('A good place to start','由這裏開始')}</span>{['Kyoto','Hong Kong','Lisbon','Tokyo'].map(name=><Link key={name} href={href('explore')+'?q='+encodeURIComponent(name)}>{name}<Icon name="arrow" size={14}/></Link>)}</div>
+ <div className="k-section-title"><div><h2>{t('Good routes. Great days.','好路線，走出好時光。')}</h2><p>{t('Published by people who know the place','由熟悉地方的人發布')}</p></div><Link className="k-text-btn" href={href('explore')}>{t('Explore all routes','探索全部路線')}<Icon name="arrow"/></Link></div>
+ {!catalog?<p role="status">{t('Loading published guides…','正在載入已發布攻略…')}</p>:catalog.status==='ready'?<div className="k-card-grid home">{catalog.items.slice(0,4).map(g=><article className="os-guide" key={g.id}><div className="os-image-fallback">{g.city}</div><div className="os-guide-body"><h2><Link href={href('g/'+g.id)}>{g.title}</Link></h2><p>{g.summary}</p><span>{g.creator}</span></div></article>)}{!catalog.items.length&&<p>{t('No published guides yet.','暫未有已發布攻略。')}</p>}</div>:<p role="status">{catalog.status==='unconfigured'?t('Published content is not connected yet.','正式內容尚未接通。'):t('Published content could not be loaded. Please retry.','未能載入正式內容，請重試。')}</p>}
+ <section className="k-record-banner"><div className="k-banner-icon"><Icon name="camera" size={36}/></div><div><p className="k-eyebrow">KEEP THE LITTLE THINGS.</p><h2>{t('A photo. A note. A place worth remembering.','一張照片、一句筆記，記住值得的地方。')}</h2><p>{t('Start with a small moment. Put your journey together later.','隨手記下一刻，再慢慢整理成旅程。')}</p></div><Link className="k-btn light" href={href('record')}>{t('Record a moment','記錄這一刻')}<Icon name="plus"/></Link></section></div>
+}

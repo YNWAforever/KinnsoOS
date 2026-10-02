@@ -1,4 +1,6 @@
 /** Server-side catalog boundary. Public/published records only; never an identity adapter. */
+import { backendTarget } from './contracts/capabilities.ts';
+import { destinationAlias } from './catalog/destinations.ts';
 export type CatalogItem = {
   id: string;
   slug: string;
@@ -28,6 +30,7 @@ export type CatalogResult =
 type Environment = {
   KINNSO_SUPABASE_URL?: string;
   KINNSO_SUPABASE_PUBLISHABLE_KEY?: string;
+  [key:string]:string|undefined;
 };
 const clean = (value: unknown, max: number) =>
   typeof value === "string"
@@ -63,35 +66,9 @@ export function safeCover(value: unknown): string | null {
     return null;
   }
 }
-function publicKey(key: string): boolean {
-  if (key.startsWith("sb_publishable_")) return true;
-  try {
-    const parts = key.split(".");
-    return (
-      parts.length === 3 &&
-      JSON.parse(Buffer.from(parts[1], "base64url").toString()).role === "anon"
-    );
-  } catch {
-    return false;
-  }
-}
 function endpoint(env: Environment): { url: URL; key: string } | null {
-  try {
-    const url = new URL(env.KINNSO_SUPABASE_URL ?? "");
-    const key = env.KINNSO_SUPABASE_PUBLISHABLE_KEY ?? "";
-    if (
-      url.protocol !== "https:" ||
-      url.username ||
-      url.password ||
-      url.port ||
-      !url.hostname.endsWith(".supabase.co") ||
-      !publicKey(key)
-    )
-      return null;
-    return { url: new URL("/rest/v1/guides", url), key };
-  } catch {
-    return null;
-  }
+  const approved = backendTarget(env);
+  return approved ? {url:new URL('/rest/v1/guides',approved.origin),key:approved.key} : null;
 }
 function mapRow(value: unknown): CatalogItem {
   if (!value || typeof value !== "object") throw new Error("schema");
@@ -142,8 +119,10 @@ export async function queryCatalog(
   url.searchParams.set("order", "published_at.desc.nullslast,id.asc");
   url.searchParams.set("limit", String(query.pageSize + 1));
   url.searchParams.set("offset", String((query.page - 1) * query.pageSize));
+  const destination=query.city ? null : destinationAlias(query.q);
   if (query.city) url.searchParams.set("city", "eq." + query.city);
-  if (query.q)
+  else if (destination) url.searchParams.set('city', destination==='Kyoto' ? 'in.(Kyoto,京都)' : 'in.("Hong Kong",香港)');
+  if (query.q && !destination)
     url.searchParams.set(
       "or",
       `(title.ilike.*${query.q}*,city.ilike.*${query.q}*,summary.ilike.*${query.q}*)`,
