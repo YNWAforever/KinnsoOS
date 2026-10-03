@@ -46,7 +46,7 @@ export function generate(env = process.env) {
     throw new Error('BLOCKED: container identity mismatch');
   }
   const cli = fileURLToPath(new URL('../node_modules/supabase/dist/supabase.js', import.meta.url));
-  const output = execFileSync(process.execPath, [cli, 'gen', 'types', 'typescript', '--local', '--workdir', target.workdir],
+  const output = execFileSync(process.execPath, [cli, 'gen', 'types', '--local', '--lang', 'typescript', '--profile', 'kinnsoos-local-schema', '--workdir', target.workdir],
     { cwd: root, encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
   if (!output.includes('export type Database =')) throw new Error('Invalid type generation result');
   const definitions = JSON.parse(execFileSync('docker', ['exec', target.container, 'psql', '-U', 'postgres', '-d', 'postgres', '-Atc',
