@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: nightly-readonly-funnel-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
   production-funnel:
     runs-on: ubuntu-latest

@@ -31,7 +31,7 @@ export function backendTarget(env: Environment) {
 export function capabilities(env: Environment): Record<string, Capability> {
   const configured = backendTarget(env) !== null;
   const ready = new Set((env.KINNSO_ENABLED_CAPABILITIES ?? '').split(','));
-  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'sharing', 'booking', 'payment']
+  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'sharing', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
     .map((name) => [name, {
       mode: configured && (name === 'auth' || name === 'catalog' ||
         (ready.has(name) && !['booking', 'payment'].includes(name))) ? 'connected' : 'unavailable',

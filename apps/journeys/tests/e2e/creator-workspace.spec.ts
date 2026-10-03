@@ -1,0 +1,52 @@
+import { test, expect } from '@playwright/test';
+import { loadEnvFile } from 'node:process';
+import { randomUUID } from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
+import { verifyTestTarget } from '../../scripts/verify-test-target.mjs';
+loadEnvFile('.env.test'); verifyTestTarget();
+const admin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+let userId: string, email: string, password: string;
+test.beforeAll(async () => { email = `synthetic-new-studio-${randomUUID()}@example.test`; password = `Author!${randomUUID()}`; const result = await admin.auth.admin.createUser({ email, password, email_confirm: true }); expect(result.error).toBeNull(); userId = result.data.user!.id; });
+test.afterAll(async () => { if (userId) expect((await admin.auth.admin.deleteUser(userId)).error).toBeNull(); });
+test('creator completes manual onboarding and authors, recovers, publishes and withdraws on Journeys itself', async ({ page }) => {
+ test.setTimeout(120000);
+ await page.goto('/en/sign-in?next=' + encodeURIComponent('/en/studio')); await page.getByLabel('Email', { exact: true }).fill(email); await page.getByLabel('Password', { exact: true }).fill(password); await page.getByRole('button', { name: 'Sign in', exact: true }).click(); await page.waitForURL('**/en/studio');
+ await expect(page.getByRole('heading', { name: 'Tell travellers about your work.' })).toBeVisible();
+ await page.getByLabel('Bio', { exact: true }).fill('An explicitly synthetic local author profile'); await expect(page.getByRole('button', { name: 'Confirm creator profile', exact: true })).toBeDisabled();
+ await page.getByLabel('I have reviewed this profile and confirm publication.', { exact: true }).check(); await page.getByRole('button', { name: 'Confirm creator profile', exact: true }).click();
+ await page.getByRole('link', { name: 'Create guide', exact: true }).click(); await expect(page.getByTestId('creator-editor')).toBeVisible();
+ await page.getByLabel('Guide title', { exact: true }).fill('New site creator route'); await page.getByLabel('Destination', { exact: true }).fill('Kyoto'); await page.getByLabel('Summary', { exact: true }).fill('Structured route authored on the new site'); await page.getByLabel('Day title', { exact: true }).fill('New site authored day'); await page.getByLabel('Stop title', { exact: true }).fill('New site authored square'); await page.getByLabel('Public description', { exact: true }).fill('Public description of the authored stop');
+ await page.waitForURL(/\/en\/studio\/guides\/[0-9a-f-]{36}\/edit/); await expect(page.getByRole('button', { name: 'Publish structured version', exact: true })).toBeEnabled();
+ const guideId = page.url().split('/').at(-2)!; await page.reload(); await expect(page.getByLabel('Stop title', { exact: true })).toHaveValue('New site authored square');
+ const endpoint = '**/api/creator/guides/' + guideId + '/publish'; let requestId: string | undefined;
+ await page.route(endpoint, async route => { requestId = route.request().postDataJSON().requestId; await route.fetch(); await route.abort('failed'); });
+ await page.getByRole('button', { name: 'Publish structured version', exact: true }).click(); await expect(page.getByRole('button', { name: 'Retry same action', exact: true })).toBeVisible(); await expect(page.getByLabel('Stop title', { exact: true })).toHaveValue('New site authored square');
+ await page.unroute(endpoint); const retry = page.waitForRequest(r => r.url().endsWith('/publish') && r.method() === 'POST'); await page.getByRole('button', { name: 'Retry same action', exact: true }).click(); expect((await retry).postDataJSON().requestId).toBe(requestId);
+ await expect(page.getByText('Version published. Existing traveller copies stay unchanged.', { exact: true })).toBeVisible();
+ const versions = await admin.from('guide_versions').select('version').eq('guide_id', guideId); expect(versions.data?.map(v => v.version)).toEqual([1]);
+ await page.getByRole('link', { name: 'View published guide', exact: true }).click(); await expect(page.getByRole('heading', { name: 'New site authored square', exact: true })).toBeVisible();
+ await page.goto('/en/studio/guides/' + guideId + '/edit'); await page.getByRole('button', { name: 'Withdraw adoption', exact: true }).click(); await expect(page.getByText('New adoptions withdrawn; traveller notes retained.', { exact: true })).toBeVisible();
+ const withdrawn = await admin.from('guide_versions').select('withdrawn_at').eq('guide_id', guideId).single(); expect(withdrawn.data?.withdrawn_at).toBeTruthy();
+});
+
+test('onboarding resumes actual job states and late AI suggestions never publish or replace manual edits', async ({ page }) => {
+ test.setTimeout(90000);
+ const ownEmail = `synthetic-resume-${randomUUID()}@example.test`, ownPassword = `Resume!${randomUUID()}`;
+ const actor = await admin.auth.admin.createUser({ email: ownEmail, password: ownPassword, email_confirm: true }); expect(actor.error).toBeNull(); const actorId = actor.data.user!.id;
+ try {
+  const job = await admin.from('creator_scan_jobs').insert({ creator_id: actorId, status: 'queued' }).select('id').single(); expect(job.error).toBeNull();
+  await page.goto('/en/sign-in?next=' + encodeURIComponent('/en/studio')); await page.getByLabel('Email', { exact: true }).fill(ownEmail); await page.getByLabel('Password', { exact: true }).fill(ownPassword); await page.getByRole('button', { name: 'Sign in', exact: true }).click(); await page.waitForURL('**/en/studio');
+  for (const status of ['queued', 'fetching', 'analyzing'] as const) {
+   expect((await admin.from('creator_scan_jobs').update({ status }).eq('id', job.data!.id)).error).toBeNull(); await page.reload(); await expect(page.getByText(`Analysis status: ${status}.`, { exact: true })).toBeVisible();
+   const result = await page.request.get('/api/creator/profile'); expect((await result.json()).data.step).toBe('progress');
+  }
+  await page.getByLabel('Bio', { exact: true }).fill('My manually edited profile');
+  expect((await admin.from('creator_dna').insert({ creator_id: actorId, status: 'draft', ai_draft: { bio: 'Late suggested profile', niches: [], content_pillars: [], tone: [], languages: [], platforms: [], audience: {} }, scan_job_id: job.data!.id })).error).toBeNull();
+  expect((await admin.from('creator_scan_jobs').update({ status: 'ready' }).eq('id', job.data!.id)).error).toBeNull(); await expect(page.getByText('Analysis status: ready.', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Bio', { exact: true })).toHaveValue('My manually edited profile');
+  await page.reload(); await expect(page.getByLabel('Bio', { exact: true })).toHaveValue('Late suggested profile'); await expect(page.getByRole('button', { name: 'Confirm creator profile', exact: true })).toBeDisabled();
+  const state = await admin.from('creators').select('status').eq('id', actorId).single(); expect(state.data?.status).toBe('onboarding');
+  expect((await admin.from('creator_scan_jobs').update({ status: 'failed' }).eq('id', job.data!.id)).error).toBeNull(); await page.reload(); await expect(page.getByText('Analysis status: failed.', { exact: true })).toBeVisible();
+  const failed = await page.request.get('/api/creator/profile'); const dto = (await failed.json()).data; expect(dto.step).toBe('retry'); expect(dto.retryable).toBe(true); expect(dto.scanAvailable).toBe(false);
+ } finally { expect((await admin.auth.admin.deleteUser(actorId)).error).toBeNull(); }
+});

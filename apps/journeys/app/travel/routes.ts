@@ -86,6 +86,7 @@ export function isKnownRoute(path: string) {
     return true;
   if (/^creators\/(mika|chloe|ines|you)$/.test(path)) return true;
   if (pages.has(path) || retained.has(path)) return true;
+  if (path === 'studio/guides/new' || /^studio\/guides\/[0-9a-f-]{36}\/edit$/.test(path)) return true;
   if (path.startsWith("legacy/")) return true;
   if (
     /^destinations\/(kyoto|hong-kong|lisbon|tokyo|seoul|singapore)$/.test(path)

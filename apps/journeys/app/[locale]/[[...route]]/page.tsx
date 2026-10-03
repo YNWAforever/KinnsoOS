@@ -40,7 +40,7 @@ export default async function Page({ params }: Props) {
         path={path}
         mode={demo?'demo':capabilities(process.env).trips.mode}
         actor={actor}
-        features={{media:capabilities(process.env).media.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected'}}
+        features={{media:capabilities(process.env).media.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',creator:capabilities(process.env).creator.mode==='connected'}}
       />
     </Suspense>
   );

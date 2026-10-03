@@ -10,6 +10,7 @@ import { ConnectedHome } from './ConnectedHome';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
+import { CreatorWorkspace } from './CreatorWorkspace';
 import type { Actor } from '../../lib/auth/actor';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 const TripEditor = dynamic(
@@ -209,7 +210,7 @@ export function Workbench({
   path: string;
   mode?:CapabilityMode;
   actor?:Actor|null;
-  features?:{media:boolean;sharing:boolean};
+  features?:{media:boolean;sharing:boolean;creator?:boolean};
 }) {
   const router = useRouter(),
     query = useSearchParams(),
@@ -585,6 +586,7 @@ export function Workbench({
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
+    else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={actor?.id??null} enabled={features.creator===true}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
   }
