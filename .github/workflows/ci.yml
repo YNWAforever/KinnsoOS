@@ -1,0 +1,385 @@
+name: CI
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches:
+      - main
+      - 'codex/**'
+  # On-demand runs. Without this, CI is reachable only through a pull request or a
+  # push to main, so work on a branch — including a change to CI itself — cannot be
+  # exercised before it is proposed. Note GitHub only offers the Run workflow button
+  # once this file is on the default branch; until then a pull request is the only
+  # way to run these jobs.
+  workflow_dispatch:
+
+# Every job here only reads the repository; the Stripe test-mode secrets below are the
+# sole privilege this workflow needs. Without an explicit block the jobs inherit the
+# repository default, which can be read/write for the whole GITHUB_TOKEN scope.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.event_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    env:
+      KINNSO_TEST_TARGET: local
+      KINNSO_TEST_PROJECT: kinnso-v3
+      KINNSO_APPROVED_SUPABASE_ORIGIN: http://127.0.0.1:54421
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Reads the pinned packageManager (pnpm@x) from package.json
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+
+      # Local Supabase stack (Docker is available on GitHub-hosted runners).
+      # `supabase start` applies supabase/migrations and seeds supabase/seed.sql.
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.106.0
+      - run: pnpm supabase start
+
+      - name: Remove e2e-only fixtures from quality database
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          db_container="$(
+            docker ps \
+              --filter 'label=com.supabase.cli.project=kinnso-v3' \
+              --format '{{.ID}}\t{{.Names}}' \
+              | awk '$2 ~ /^supabase_db_/ { print $1; exit }'
+          )"
+
+          if [[ -z "$db_container" ]]; then
+            echo 'Unable to locate the local Supabase database container.' >&2
+            docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Labels}}'
+            exit 1
+          fi
+
+          # Carried to the env-file step below: the RLS and R7.3 live suites reach the
+          # database through `docker exec` on this container, not only through PostgREST.
+          echo "SUPABASE_DB_CONTAINER=$db_container" >> "$GITHUB_ENV"
+
+          docker exec -i "$db_container" \
+            psql -U postgres -d postgres -v ON_ERROR_STOP=1 <<'SQL'
+          delete from auth.users
+          where id in (
+            '00000000-0000-0000-0000-000000000701'::uuid,
+            '00000000-0000-0000-0000-000000000702'::uuid
+          );
+          SQL
+
+      - name: Export local Supabase env for tests
+        # tee writes the same creds to web (anon-backed render tests),
+        # packages/sync (service_role sync integration test), and
+        # apps/scan (service_role + anon scan integration test).
+        run: |
+          pnpm -s supabase status -o env \
+            --override-name api.url=SUPABASE_URL \
+            --override-name auth.anon_key=SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            | tee apps/web/.env.test packages/sync/.env.test apps/scan/.env.test > /dev/null
+
+      - name: Arm the local-stack-only suites
+        # Must append AFTER the tee above, which truncates the file it writes.
+        # Credentials alone are not enough for these suites: without the container name and
+        # the R7.3 opt-in they resolve no local stack and describe.skip themselves, so the
+        # RLS policies and the production-honesty contract report green while untested.
+        run: |
+          set -euo pipefail
+          {
+            echo "SUPABASE_DB_CONTAINER=${SUPABASE_DB_CONTAINER}"
+            echo 'RUN_R7_3_LOCAL_LIVE_TESTS=1'
+            echo 'KINNSO_TEST_TARGET=local'
+            echo 'KINNSO_TEST_PROJECT=kinnso-v3'
+            echo 'KINNSO_APPROVED_SUPABASE_ORIGIN=http://127.0.0.1:54421'
+          } >> apps/web/.env.test
+
+      - run: pnpm db:types
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm honesty:lint
+
+      - name: Export local Supabase env for web build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          tmp_env="$(mktemp)"
+          awk -F= '
+                index($0, "=") == 0 { exit 1 }
+                $1 == "SUPABASE_URL" {
+                  if (substr($0, index($0, "=") + 1) !~ /[^[:space:]]/) exit 1
+                  print "NEXT_PUBLIC_SUPABASE_URL=" substr($0, index($0, "=") + 1)
+                  seen_url = 1
+                  next
+                }
+                $1 == "SUPABASE_ANON_KEY" {
+                  if (substr($0, index($0, "=") + 1) !~ /[^[:space:]]/) exit 1
+                  print "NEXT_PUBLIC_SUPABASE_ANON_KEY=" substr($0, index($0, "=") + 1)
+                  seen_anon = 1
+                  next
+                }
+                $1 == "SUPABASE_SERVICE_ROLE_KEY" { next }
+                { next }
+                END { if (!seen_url || !seen_anon) exit 1 }
+              ' apps/web/.env.test > "$tmp_env"
+
+          test "$(wc -l < "$tmp_env")" -eq 2
+          grep -q '^NEXT_PUBLIC_SUPABASE_URL=' "$tmp_env"
+          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=' "$tmp_env"
+          mv "$tmp_env" apps/web/.env.local
+
+      - name: Check web build environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s apps/web/.env.local
+          grep -q '^NEXT_PUBLIC_SUPABASE_URL=' apps/web/.env.local
+          grep -q '^NEXT_PUBLIC_SUPABASE_ANON_KEY=' apps/web/.env.local
+
+      - name: Build web with safe product flags
+        env:
+          AGENT_LIVE: 'false'
+          BOOKING_LIVE: 'false'
+        run: pnpm --filter web build
+
+      - run: pnpm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kinnso/e2e e2e:install
+
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
+        with:
+          version: 2.106.0
+      - run: pnpm supabase start
+
+      - name: Export local Supabase env for apps/web and apps/scan
+        run: |
+          pnpm -s supabase status -o env \
+            --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
+            --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            | tee apps/web/.env.local > /dev/null
+          echo "NEXT_PUBLIC_SCAN_URL=http://localhost:8788" >> apps/web/.env.local
+          pnpm -s supabase status -o env \
+            --override-name api.url=SUPABASE_URL \
+            --override-name auth.anon_key=SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            | tee apps/scan/.env.local > /dev/null
+
+      - name: Generate ignored database types from this CI local stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          db_container="$(docker ps --filter 'label=com.supabase.cli.project=kinnso-v3' --format '{{.ID}} {{.Names}}' | awk '$2 ~ /^supabase_db_/ {print $1; exit}')"
+          test -n "$db_container"
+          pnpm -s supabase status -o env --override-name api.url=SUPABASE_URL --override-name auth.anon_key=SUPABASE_ANON_KEY --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY > apps/web/.env.test
+          {
+            echo 'KINNSO_TEST_TARGET=local'
+            echo 'KINNSO_TEST_PROJECT=kinnso-v3'
+            echo "SUPABASE_DB_CONTAINER=$db_container"
+          } >> apps/web/.env.test
+          pnpm db:types
+
+      - name: Production build
+        # `turbo run build` resolves to exactly one real task (web#build -> next build).
+        # Nothing else in the pipeline runs it, so before this step a change that broke
+        # static generation cleared every required check and only failed later in Vercel.
+        # This job is the one place with the stack already up: generateStaticParams reaches
+        # the local database through the NEXT_PUBLIC_* vars written above.
+        #
+        # next.config.ts calls validateBuildEnv() while it loads, which needs the public
+        # Supabase vars plus AI_GATEWAY_API_KEY or VERCEL=1 for the agent surface. The
+        # escape hatch travels in .env.local rather than the step env because Next loads
+        # the env files before evaluating next.config.ts, while turbo runs tasks in strict
+        # env mode and would filter out an undeclared VERCEL. The dedicated Playwright
+        # configs already set VERCEL=1 for their own dev servers, so this matches.
+        run: |
+          set -euo pipefail
+          echo 'VERCEL=1' >> apps/web/.env.local
+          pnpm build
+
+      - name: Start scan worker (fixture mode)
+        run: |
+          # tsx src/server.ts reads process.env directly (no dotenv), unlike
+          # `next dev` which auto-loads .env.local — so export the worker's env here.
+          set -a
+          . ./apps/scan/.env.local
+          set +a
+          SCAN_FIXTURE_MODE=1 pnpm --filter @kinnso/scan-app start &
+          npx --yes wait-on --timeout 120000 http://localhost:8788/health
+
+      - name: R7.10 accessibility - Booking OFF
+        env:
+          AGENT_LIVE: 'true'
+          BOOKING_LIVE: 'false'
+          R7_10_BOOKING_STATE: 'off'
+        run: pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts
+
+      - name: Export service-role env for the profile enquiries journey
+        # playwright.profile-enquiries.config.ts reads apps/web/.env.test, which only the
+        # quality job writes; this job has its own stack and needs its own copy.
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          db_container="$(
+            docker ps \
+              --filter 'label=com.supabase.cli.project=kinnso-v3' \
+              --format '{{.ID}}\t{{.Names}}' \
+              | awk '$2 ~ /^supabase_db_/ { print $1; exit }'
+          )"
+
+          if [[ -z "$db_container" ]]; then
+            echo 'Unable to locate the local Supabase database container.' >&2
+            docker ps --format 'table {{.ID}}\t{{.Names}}\t{{.Labels}}'
+            exit 1
+          fi
+
+          echo "SUPABASE_DB_CONTAINER=$db_container" >> "$GITHUB_ENV"
+
+          pnpm -s supabase status -o env \
+            --override-name api.url=SUPABASE_URL \
+            --override-name auth.anon_key=SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
+            > apps/web/.env.test
+
+      - name: Profile enquiries journey (local stack)
+        # The opt-in is what makes this suite run at all: the spec skips itself without it,
+        # so leaving it unset meant the enquiry-to-ops-queue journey was never exercised.
+        # Its own config owns the dev server (port 3000) and refuses any non-loopback target.
+        env:
+          E2E_PROFILE_ENQUIRIES_LOCAL: '1'
+          E2E_BASE_URL: http://127.0.0.1:3000
+        run: pnpm --filter @kinnso/e2e e2e --config playwright.profile-enquiries.config.ts
+      # Deliberately last of the test steps: it is the only one that depends on a
+      # repository secret, and its config refuses to load without STRIPE_SECRET_KEY.
+      # Ahead of the others it would abort the job before they ran, hiding their
+      # result behind a configuration problem rather than a code one.
+      #
+      # The condition is not a softening of that rule, it is the one case the rule
+      # cannot describe: GitHub gives a Dependabot-triggered run no access to
+      # repository secrets at all (those runs see only the separate Dependabot secrets
+      # store), so this step could never pass there — and it never did, on every
+      # Dependabot pull request since the step landed, which is why #101-#105 were each
+      # merged with a red e2e. A failing check that can never be made green teaches
+      # reviewers to ignore the check.
+      #
+      # `github.actor`, NOT `github.event.pull_request.user.login`: the restriction is
+      # keyed to the run, not to who opened the pull request. A maintainer who pushes a
+      # fixup onto a dependabot/** branch triggers a run whose actor is the maintainer,
+      # which therefore DOES carry the secret and must still be checked; matching on the
+      # pull request author would skip it forever, because the author never changes.
+      # `github.actor` also stays 'dependabot[bot]' when a human re-runs a Dependabot
+      # run, which is equally correct: a re-run executes with the original actor's
+      # privileges and still has no secret.
+      #
+      # Everywhere else — push to main, workflow_dispatch, and every human pull request
+      # — the step stays unconditional, so a deleted, renamed or rotated-out secret
+      # still fails the job loudly with `STRIPE_SECRET_KEY is required for Booking ON`.
+      # On push and workflow_dispatch `github.actor` is a real login, never the bot, so
+      # the guard is a no-op there.
+      #
+      # Deliberately NOT covered: a pull request from a fork also receives no secrets
+      # and would still fail here. This repository is private and is not a fork, so that
+      # cannot arise today; if it ever does it fails loudly rather than skipping
+      # silently, which is the behaviour this file prefers.
+      #
+      # `hasCiProductStateContract` (apps/web/tests/ci.product-state.test.ts) still
+      # enforces that this runs after Booking OFF; it compares line positions, so
+      # intervening steps are allowed. That contract reads only this step's env mapping
+      # and run line, so on its own it would accept `if: false` just as happily. The
+      # exact condition below is therefore pinned by its own test, together with the
+      # absence of `continue-on-error` on both this step and the enclosing job.
+      - name: R7.10 accessibility - Booking ON
+        if: github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        env:
+          R7_10_BOOKING_STATE: 'on'
+          STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+          STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+        run: pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: e2e-artifacts
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+
+  scan-image:
+    name: Scan worker image
+    # apps/scan ships as a container to Railway, and nothing else in CI builds it —
+    # so a broken Dockerfile used to surface only as a failed deploy. This builds the
+    # real image and boots it, which is also the only way to catch a regression in the
+    # non-root setup: the runner drops to `node`, and pnpm/corepack must still resolve
+    # for that user.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Build image
+        run: docker build -f apps/scan/Dockerfile -t kinnso-scan:ci .
+
+      - name: Boot and probe /health
+        run: |
+          # Dummy values only. Nothing here is called: /health touches neither Supabase
+          # nor any paid API. They are present because server.ts builds the real client,
+          # fetcher and LLM objects at module scope, and each constructor rejects an empty
+          # key — so this boots the same code path Railway does, rather than the
+          # SCAN_FIXTURE_MODE path the e2e job uses, which would swap those objects out
+          # and stop this from noticing a new module-scope requirement.
+          docker run -d --name scan-ci -p 8788:8788 \
+            -e NODE_ENV=production \
+            -e SUPABASE_URL=http://127.0.0.1:54321 \
+            -e SUPABASE_ANON_KEY=ci-dummy-anon-key \
+            -e SUPABASE_SERVICE_ROLE_KEY=ci-dummy-service-role-key \
+            -e RAPIDAPI_KEY=ci-dummy-rapidapi-key \
+            -e YOUTUBE_API_KEY=ci-dummy-youtube-key \
+            -e LLM_API_KEY=ci-dummy-llm-key \
+            -e WEB_ORIGIN=https://ci.invalid \
+            kinnso-scan:ci
+
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8788/health; then
+              echo; echo "health OK after ${attempt} attempt(s)"; break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              echo "scan worker never became healthy"; docker logs scan-ci; exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Assert the container does not run as root
+        run: |
+          uid=$(docker exec scan-ci id -u)
+          echo "container uid: ${uid}"
+          if [ "$uid" = "0" ]; then
+            echo "scan worker is running as root; the USER directive regressed"; exit 1
+          fi
+
+      - name: Container logs
+        if: always()
+        run: docker logs scan-ci || true

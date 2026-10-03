@@ -1,42 +1,44 @@
 # KinnsoOS
 
-The Kinnso Journeys layout with an approved-backend traveller workspace, a bounded published-guide catalog and explicit handoffs to the existing Kinnso operations application. Connected features fail closed until their environment and capabilities are configured.
+One pnpm/Turborepo workspace contains the Journeys traveller frontend, the mature Kinnso site, shared services, workers, database migrations and their tests.
 
-## Run
+| Workspace | Purpose |
+| --- | --- |
+| `apps/journeys` | Journeys layout, traveller auth, catalog, bookmarks, trips, guide adoption, media and shares |
+| `apps/web` | Existing Kinnso site, creator publishing, merchant/operations flows, service boundaries and media verification |
+| `apps/scan`, `apps/sync` | Existing worker entry points |
+| `apps/e2e` | Existing Kinnso browser regression suites |
+| `packages/*` | Database types, scan, sync, honesty and parity modules |
+| `supabase` | Single ordered migration history and synthetic local fixtures |
 
-Node >=22.13.0. `npm ci` then `npm run dev`. Open `http://localhost:3000/zh-HK` or `/en`.
+## Install and run
 
-`npm test` runs boundary, feasibility, import and retained demo model tests. `npm run typecheck` checks the application. `npm run build` creates the production Next.js build and corresponding source download. `npm start` serves that build. `npm run test:integration` and `npm run test:e2e` require the separately guarded synthetic local backend; they fail when its URL or project does not match. Browser evidence is local and ignored by Git.
+Use Node >=22.13.0 and the pinned `pnpm@11.6.0` (`corepack enable`). Run `pnpm install --frozen-lockfile`. The root lockfile is authoritative for this workspace. The npm lockfile in `apps/journeys` supports that application's standalone corresponding-source archive.
 
-## Feature states
+`pnpm dev` starts Journeys on port 3000; `pnpm dev:web` starts the original site on port 3001. Configure each app's ignored `.env.local` using its `.env.example`. Point both applications at the same explicitly approved Supabase identity/data for the environment. Separate hosts authenticate independently. Consolidating source does not create cross-origin SSO.
 
-| Surface | Status |
-|---|---|
-| Catalog, guide versions, bookmarks, private trips and imports | Connected to the approved backend; actual writes, revisions and retry checks |
-| Private photos, finite offline drafts, revocable read-only shares | Capability controlled; separate private media service required |
-| `/en/demo`, `/zh-HK/demo` | Explicit browser-local **demo** inherited from Journeys |
-| Creator/merchant commercial journeys | Local **demo**; no payments, notifications or production writes |
-| `/en/library`, `/zh-HK/library` | New published-guide integration; configuration required |
-| `/en/workspace`, `/zh-HK/workspace`, `/en/admin` | Explicit handoff directory; **not** a new authenticated admin panel |
-| Account login and trip sync | Independent login on each host against the same approved identity; no automatic SSO |
-| Booking / payment | Disabled until a real supported capability is available |
+Database types are a generated, ignored build input. Before checking or building the whole workspace, configure `apps/web/.env.test` for the approved isolated local stack and set `KINNSO_LOCAL_STACK_DIR` to its verified Supabase work directory. Run `pnpm db:types`. The generator checks the local URL, project, Docker label and work-directory identity; it never resets or migrates a database. CI generates these types from its own migration-built local stack. Do not use production credentials or a cloud URL for this command.
 
-One unresolved edit is retained per trip on the device. Retry or review it before
-saving another operation. Logout and account changes clear mounted private views
-and account caches; offline maps and photos are unavailable.
+The pre-existing isolated development target is `kinnsoos-b1-20261002`, API `http://127.0.0.1:58421`, container `supabase_db_kinnsoos-b1-20261002`. CI uses its disposable `kinnso-v3` stack at port 54421 and requires `CI=true`. Starting/resetting any existing target remains a separate explicit operation; installing dependencies does not start or modify a database.
 
-## Catalog configuration
+## Verify
 
-Copy `.env.example` to `.env.local`. Configure `KINNSO_SUPABASE_URL` and `KINNSO_SUPABASE_PUBLISHABLE_KEY` for an approved Supabase target. The adapter rejects secret/service-role keys, uses only anonymous published-guide reads, selects explicit columns, caps page size at 12 with one lookahead record, and distinguishes unavailable, empty and unconfigured responses. Never paste credentials into source files. Existing RLS/grants must allow anonymous reads of **published** guide rows.
+- `pnpm test` / `npm test`: tooling tests and all workspace test scripts. Live integration suites require their guarded local environment.
+- `pnpm typecheck` / `npm run typecheck`: every workspace's TypeScript checks.
+- `pnpm build` / `npm run build`: both Next.js production builds; safe flags and approved per-app environments are required.
+- `pnpm lint`: existing service and original-site lint checks.
+- `pnpm test:integration`, `pnpm test:e2e`: guarded Journeys integration and browser suites.
+- `pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts`: original-site browser regression suite.
+- `pnpm source:pack`: the allowlisted Journeys corresponding-source archive.
 
-No production environment values were obtained or applied. Do not infer cloud staging or production success from local tests. Backend schema, publishing, privileged media verification and business services remain in the private application and must be reviewed and installed on an explicitly approved target before enabling connected features.
+## Deployment roots
 
-The existing app uses Next.js Server Actions and its own cookie session. Its TypeScript functions are not cross-origin REST endpoints. Workspace links preserve that app's authentication boundary. A local demo persona grants no production permissions.
+Configure two distinct projects from this repository: `apps/journeys` and `apps/web`. Each project needs its own approved environment and auth callbacks; both use the shared workspace lockfile. The web project additionally needs generated database types supplied as a build input from a verified migration-matched local/CI build. A hosted builder without that input cannot typecheck/build it; do not bypass that check. The scan image retains `apps/scan/Dockerfile` with this repository root as its build context; `railway.json` preserves its entry point.
 
-## Source and licensing
+No production project, DNS, database or payment capability is switched by this source consolidation. The existing deployed site stays on its current deployment until a separately approved cutover. Booking/payment capability gates remain enforced. Cloud staging acceptance and migration rehearsals must be completed against an explicitly approved target before cutover.
 
-Adapted from the publicly distributed Kinnso Journeys revision `9f7eaba1d3b2f69aae9d99a01aebf2c48bdd649d`. GPL-3.0 applies to the covered application; retain `LICENSE`, AdventureLog attribution and corresponding source access. `npm run source:pack` regenerates the source ZIP, also done before production build. Public photographs retain their original attribution/provenance.
+## Source boundaries
 
-The private Remix-Kinnso repository was reviewed but its implementation files and Git history were **not copied into this public repository**. The catalog adapter is newly authored against the observed data contract. Reusing private backend implementation code requires an explicit publication/licensing decision first.
+The source was consolidated from the current Journeys implementation and the public `YNWAforever/Remix-Kinnso` service implementation. Their executable code, tests, configuration and migrations are here. Credentials, original implementation packs, private reports/audit evidence, generated full database type dumps, dependency folders and build output are excluded. Local evidence remains ignored.
 
-This project has no original Sites project ID, production credentials, database dumps, private audit attachments or inherited deployment configuration. Neither reference site is modified. Deploy as a separate Next.js project only after the remaining staging and authenticated acceptance gates in `docs/IMPLEMENTATION_PLAN.md` pass.
+Journeys retains its GPL-3.0 license and AdventureLog/source attribution in `apps/journeys/LICENSE` and `apps/journeys/docs/SOURCE_PROVENANCE.md`. Keep the existing corresponding-source download and per-file notices. Repository consolidation does not resolve the outstanding third-party content-rights gate.

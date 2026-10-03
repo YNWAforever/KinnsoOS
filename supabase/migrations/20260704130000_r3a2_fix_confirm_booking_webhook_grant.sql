@@ -1,0 +1,12 @@
+-- Fixes a live grant bug introduced by 20260704120000_r3a2_stripe_webhook_
+-- confirmation_and_rate_limit.sql: this Supabase project has a default ACL
+-- (pg_default_acl) that auto-grants EXECUTE on newly created functions to
+-- anon and authenticated. `revoke all on function ... from public` does NOT
+-- undo a grant a default ACL made directly to those named roles — only an
+-- explicit `revoke ... from anon, authenticated` by name does.
+-- confirm_booking_from_webhook must be service_role-only (design spec §4.5,
+-- the one documented service-role exception) — this was NOT actually
+-- enforced live until this migration, closing a real payment-integrity hole
+-- (an unauthenticated caller could otherwise confirm an arbitrary pending
+-- booking with no payment, given only its Stripe Checkout Session id).
+revoke execute on function public.confirm_booking_from_webhook(text, text) from anon, authenticated;

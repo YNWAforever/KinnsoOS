@@ -1,0 +1,23 @@
+grant select, insert, update on public.merchant_profiles to authenticated;
+grant select on public.kinnso_ops_members to authenticated;
+grant select, insert, update on public.affiliate_network_programs to authenticated;
+grant select, insert, update on public.missions to authenticated;
+grant select, insert, update on public.mission_participants to authenticated;
+grant select, insert, update on public.mission_milestones to authenticated;
+grant select, insert, update on public.mission_milestone_submissions to authenticated;
+grant select on public.mission_social_snapshots to authenticated;
+grant select, insert on public.affiliate_partner_links to authenticated;
+grant select, insert, update on public.affiliate_network_events to authenticated;
+grant select, insert, update on public.mission_settlements to authenticated;
+
+revoke all on public.merchant_profiles from anon;
+revoke all on public.kinnso_ops_members from anon;
+revoke all on public.affiliate_network_programs from anon;
+revoke all on public.missions from anon;
+revoke all on public.mission_participants from anon;
+revoke all on public.mission_milestones from anon;
+revoke all on public.mission_milestone_submissions from anon;
+revoke all on public.mission_social_snapshots from anon;
+revoke all on public.affiliate_partner_links from anon;
+revoke all on public.affiliate_network_events from anon;
+revoke all on public.mission_settlements from anon;

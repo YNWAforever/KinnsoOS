@@ -1,0 +1,50 @@
+name: Nightly funnel synthetic
+on:
+  schedule:
+    - cron: '15 21 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  production-funnel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @kinnso/e2e exec playwright install --with-deps chromium
+      - name: Production guide-to-experience smoke
+        # Remote specs are read-only navigation; the fixture spec uses intercepted HTML.
+        # BOOKING_LIVE stays false so the
+        # funnel stops short of Stripe. That is what earns this the remote-target opt-in
+        # the shared Playwright config otherwise refuses.
+        env:
+          E2E_BASE_URL: https://remix-kinnso-web.vercel.app
+          E2E_ALLOW_REMOTE_TARGET: '1'
+          BOOKING_LIVE: 'false'
+        run: pnpm --filter @kinnso/e2e e2e funnel-smoke funnel-fixture notfound
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: failure()
+        with:
+          name: nightly-funnel-artifacts
+          path: |
+            apps/e2e/test-results/
+            apps/e2e/playwright-report/
+  production-sitemap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Crawl every sitemap URL independently of funnel
+        env:
+          BASE_URL: https://remix-kinnso-web.vercel.app
+        run: node --experimental-strip-types scripts/crawl-sitemap.ts
