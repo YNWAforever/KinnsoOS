@@ -48,6 +48,13 @@ jobs:
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
         with:
           version: 2.107.0
+      # CLI 2.107.0 type generation ignores the GHCR registry override and uses
+      # this exact pg-meta tag, which differs from the stack's service tag.
+      # https://github.com/supabase/cli/issues/5785
+      - name: Cache the pinned type-generation image through GHCR
+        run: |
+          docker pull ghcr.io/supabase/postgres-meta:v0.96.1
+          docker tag ghcr.io/supabase/postgres-meta:v0.96.1 public.ecr.aws/supabase/postgres-meta:v0.96.1
       - run: pnpm supabase start
 
       - name: Remove e2e-only fixtures from quality database
@@ -174,6 +181,13 @@ jobs:
       - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520 # v3.0.0
         with:
           version: 2.107.0
+      # CLI 2.107.0 type generation ignores the GHCR registry override and uses
+      # this exact pg-meta tag, which differs from the stack's service tag.
+      # https://github.com/supabase/cli/issues/5785
+      - name: Cache the pinned type-generation image through GHCR
+        run: |
+          docker pull ghcr.io/supabase/postgres-meta:v0.96.1
+          docker tag ghcr.io/supabase/postgres-meta:v0.96.1 public.ecr.aws/supabase/postgres-meta:v0.96.1
       - run: pnpm supabase start
 
       - name: Export local Supabase env for apps/web and apps/scan
