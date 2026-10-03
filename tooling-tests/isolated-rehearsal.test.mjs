@@ -6,6 +6,19 @@ import { pathToFileURL } from 'node:url';
 
 const runnerPath = path.resolve('scripts/isolated-rehearsal.mjs');
 
+test('historical rehearsal selects only a migration checkpoint in this checkout', async () => {
+  const { resolveRehearsalBaseline } = await import(pathToFileURL(runnerPath));
+  const migrations = ['20260718093422_cleanup.sql', '20260823090000_brief.sql', '20261002154501_return_visit.sql'];
+  assert.equal(resolveRehearsalBaseline([], migrations), '20260823090000');
+  assert.equal(resolveRehearsalBaseline(['--baseline', '20260718093422'], migrations), '20260718093422');
+  for (const args of [
+    ['--baseline', '20261003000000'], ['--baseline', '20260718'], ['--baseline'],
+    ['--baseline', '20260718093422', '--linked'], ['--db-url', 'postgres://remote'],
+    ['--workdir', '../another-stack'], ['--project-ref', 'production'], ['--local'],
+  ]) assert.throws(() => resolveRehearsalBaseline(args, migrations), /BLOCKED/);
+  assert.throws(() => resolveRehearsalBaseline([], ['20260718093422_cleanup.sql']), /BLOCKED/);
+});
+
 test('isolated rehearsal validates its owned workdir, config and Docker identity before resetting', async () => {
   assert.ok(existsSync(runnerPath), 'an isolated runner must exist without reusing the preview database');
   const { authorizeRehearsalTarget } = await import(pathToFileURL(runnerPath));

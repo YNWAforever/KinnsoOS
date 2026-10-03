@@ -31,7 +31,7 @@ The pre-existing isolated development target is `kinnsoos-b1-20261002`, API `htt
 - `pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts`: original-site browser regression suite.
 - `pnpm source:pack`: the allowlisted Journeys corresponding-source archive.
 
-`node scripts/isolated-rehearsal.mjs` creates a fresh local database under an ignored `.local-private/rehearsals` directory. It checks that ports 59420–59422 are free, uses a unique project identity, then verifies the mature schema baseline upgrade and a clean rebuild of all current migrations. An existing synthetic identity must survive the upgrade. The runner rejects linked projects, mismatched Docker identities and other work directories before resetting. It stops only its own database and retains its volume and private evidence for inspection; the development and preview stacks continue running. This local exercise does not satisfy cloud backup/rollback acceptance.
+`node scripts/isolated-rehearsal.mjs` creates a fresh local database under an ignored `.local-private/rehearsals` directory. Add `--baseline <migration version>` to rehearse from a historical checkpoint present in the current source; omitting it uses `20260823090000`. It checks that ports 59420–59422 are free, uses a unique project identity, then verifies the source baseline upgrade and a clean rebuild of all current migrations. An existing synthetic identity must survive the upgrade. The runner rejects linked projects, mismatched Docker identities and other work directories before resetting. It stops only its own database and retains its volume and private evidence for inspection; the development and preview stacks continue running. Replaying source migrations does not establish equality with a live schema or satisfy live backup/rollback acceptance.
 
 ## Deployment roots
 
@@ -39,7 +39,7 @@ Configure two distinct projects from this repository: `apps/journeys` and `apps/
 
 For the Journeys Vercel project, set Root Directory to `apps/journeys` and include source files outside that directory for the workspace lockfile. Its `vercel.json` explicitly installs the pinned pnpm version with a frozen lockfile, since an older automatically selected pnpm cannot consume this lockfile. Keep capability configuration absent until the deployment has an approved Supabase environment. A preview with unavailable capabilities is a layout/build check, not persisted-flow staging acceptance. A rollback to the earlier single-app repository layout must also restore the Vercel Root Directory to the repository root.
 
-No production project, DNS, database or payment capability is switched by this source consolidation. The existing deployed site stays on its current deployment until a separately approved cutover. Booking/payment capability gates remain enforced. Cloud staging acceptance and migration rehearsals must be completed against an explicitly approved target before cutover.
+No production project, DNS, database or payment capability is switched by this source consolidation. The existing deployed site stays on its current deployment until a separately approved cutover. Booking/payment capability gates remain enforced. Live acceptance and migration rehearsals must be completed against an explicitly approved target before cutover.
 
 ## Source boundaries
 

@@ -8,8 +8,22 @@ import { fileURLToPath, URL } from 'node:url';
 import { createServer } from 'node:net';
 
 const repository = fileURLToPath(new URL('../', import.meta.url));
-const baseline = '20260823090000';
+const defaultBaseline = '20260823090000';
 const ports = [59420, 59421, 59422];
+
+export function resolveRehearsalBaseline(args, migrations) {
+  let baseline = defaultBaseline;
+  if (args.length) {
+    if (args.length !== 2 || args[0] !== '--baseline' || !/^\d{14}$/.test(args[1])) {
+      throw new Error('BLOCKED: only --baseline <source migration version> is supported; no target overrides');
+    }
+    baseline = args[1];
+  }
+  if (!migrations.some(name => name.startsWith(`${baseline}_`) && name.endsWith('.sql'))) {
+    throw new Error('BLOCKED: rehearsal baseline must be a migration in the current checkout');
+  }
+  return baseline;
+}
 
 export function authorizeRehearsalTarget({ root, workdir, marker, config, inspection, linked }) {
   const project = marker.project;
@@ -36,13 +50,13 @@ async function requireFreePorts() {
 }
 
 export async function rehearse() {
-  if (process.argv.slice(2).length) throw new Error('No target overrides are supported by this isolated runner');
+  const source = path.join(repository, 'supabase', 'migrations');
+  const names = readdirSync(source).filter(name => /^\d+_.*\.sql$/.test(name)).sort();
+  const baseline = resolveRehearsalBaseline(process.argv.slice(2), names);
   await requireFreePorts();
   const project = `kinnsoos-rehearsal-${randomUUID().replaceAll('-', '').slice(0, 12)}`;
   const workdir = path.join(repository, '.local-private', 'rehearsals', project);
   const supabase = path.join(workdir, 'supabase');
-  const source = path.join(repository, 'supabase', 'migrations');
-  const names = readdirSync(source).filter(name => /^\d+_.*\.sql$/.test(name)).sort();
   const expected = names.at(-1).split('_')[0];
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repository, encoding: 'utf8' }).trim();
   const manifest = names.map(name => ({ name, sha256: createHash('sha256').update(readFileSync(path.join(source, name))).digest('hex') }));
@@ -60,6 +74,7 @@ export async function rehearse() {
   const cli = path.join(repository, 'node_modules/supabase/dist/supabase.js');
   const evidencePath = path.join(workdir, 'REHEARSAL.json');
   const evidence = { head, project, environment: 'disposable local database', baseline, migrationHead: expected,
+    baselineMethod: 'Canonical source replay; does not establish equality with a live production schema',
     migrations: manifest, upgrade: 'NOT_RUN', cleanRebuild: 'NOT_RUN', cloudStaging: 'BLOCKED', production: 'NOT_RUN' };
   const save = () => writeFileSync(evidencePath, JSON.stringify({ ...evidence, observedAt: new Date().toISOString() }, null, 2) + '\n');
   const authorize = () => authorizeRehearsalTarget({ root: repository, workdir,
