@@ -1,0 +1,12 @@
+version: 2
+
+# The workflows pin every `uses:` to a full commit SHA, which is what stops a moved tag
+# from silently changing the code that runs in a job carrying the Stripe test-mode secrets.
+# A pinned SHA never picks up an upstream security fix on its own, so this raises the PR
+# that moves the pin and rewrites the trailing version comment.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5

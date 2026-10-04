@@ -1,0 +1,41 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import{randomUUID,createHash}from'node:crypto';
+import{fixture,admin}from'./local-fixtures.mjs';
+const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
+test('merchant branches enforce fresh roles, current offer state and exactly one real redemption across concurrent requests',async()=>{
+ const f=await fixture();let merchantId;const offers=[];
+ try{const owner=await f.actor(),clerk=await f.actor(),marketing=await f.actor(),finance=await f.actor(),visitor=await f.actor(),creator=await f.actor(true);
+  merchantId=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic branches',contact_email:'synthetic@example.test'}).select('id').single())).id;
+  const memberships=await ok(owner.client.rpc('get_kinnso_merchant_memberships'));assert.equal(memberships[0].role,'owner');
+  const branchId=randomUUID(),otherBranch=randomUUID();const command=async(actor,payload,requestId=randomUUID())=>ok(actor.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:merchantId,p_request_id:requestId,p_command:payload}));
+  await command(owner,{type:'createBranch',id:branchId,name:'Main branch'});await command(owner,{type:'createBranch',id:otherBranch,name:'Other branch'});
+  for(const[actor,role]of[[clerk,'clerk'],[marketing,'marketing'],[finance,'finance']])await command(owner,{type:'setMember',userId:actor.id,role,branchIds:[branchId],active:true});
+  assert.equal((await visitor.client.rpc('get_kinnso_merchant_workspace',{p_merchant_id:merchantId})).error?.message,'forbidden');
+  for(const table of ['merchant_branches','merchant_members','merchant_audit','workspace_requests'])assert.ok((await clerk.client.schema('kinnso_internal').from(table).select('*')).error);
+  const brief={type:'createBrief',id:randomUUID(),title:'A real published promotion',summary:'Authored merchant content',couponCode:'PROMO',couponUrl:'https://example.test/offer',affiliateRate:0,kinnsoRate:0,creatorRate:0,publish:true,requirements:[],deliverables:[]};
+  assert.equal((await marketing.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:merchantId,p_request_id:randomUUID(),p_command:{...brief,couponUrl:null}})).error?.message,'invalid_brief');
+  const briefRequest=randomUUID(),published=await command(marketing,brief,briefRequest);assert.equal(published.status,'published');assert.deepEqual(await command(marketing,brief,briefRequest),published);
+  const participant=(await ok(admin.from('mission_participants').insert({mission_id:brief.id,creator_id:creator.id,status:'applied',source:'open_join',application_note:'Authored application'}).select('id').single())).id;
+  const approval={type:'reviewApplication',id:participant,expectedStatus:'applied',action:'approve',note:'Reviewed authored application',reason:'Synthetic local verification'};
+  await command(marketing,approval);assert.equal((await ok(admin.from('mission_participants').select('status').eq('id',participant).single())).status,'active');
+  assert.equal((await marketing.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:merchantId,p_request_id:randomUUID(),p_command:approval})).error?.message,'revision_conflict');
+  assert.equal((await ok(clerk.client.rpc('get_kinnso_merchant_memberships')))[0].role,'clerk');
+  assert.equal((await clerk.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:merchantId,p_request_id:randomUUID(),p_command:{type:'createBranch',id:randomUUID(),name:'Forbidden'}})).error?.message,'forbidden');
+  async function claim(status='live',expires=Date.now()+3600000){const offer=(await ok(admin.from('merchant_offers').insert({merchant_profile_id:merchantId,title:'Synthetic offer',terms:'Explicit synthetic local verification',discount_kind:'item',discount_value:1,commission_kind:'flat',commission_value:1,valid_from:new Date(Date.now()-3600000).toISOString(),valid_to:new Date(Date.now()+86400000).toISOString(),status}).select('id').single())).id;offers.push(offer);const raw=randomUUID();await ok(admin.from('offer_claims').insert({offer_id:offer,creator_id:creator.id,visitor_user_id:visitor.id,claim_token_hash:createHash('sha256').update(raw).digest('hex'),source_surface:'profile',expires_at:new Date(expires).toISOString(),status:'active'}));return{offer,raw};}
+  const good=await claim();const requestId=randomUUID(),args={p_raw_token:good.raw,p_branch_id:branchId,p_request_id:requestId,p_amount_spent:null};
+  assert.equal((await finance.client.rpc('redeem_kinnso_offer',args)).error?.message,'forbidden');assert.equal((await marketing.client.rpc('redeem_kinnso_offer',args)).error?.message,'forbidden');
+  assert.equal((await clerk.client.rpc('redeem_kinnso_offer',{...args,p_branch_id:otherBranch})).error?.message,'forbidden');
+  const results=await Promise.all([clerk.client.rpc('redeem_kinnso_offer',args),clerk.client.rpc('redeem_kinnso_offer',{...args,p_request_id:randomUUID()})]);assert.ok(results.every(x=>!x.error));assert.equal(new Set(results.map(x=>x.data.redemption_id)).size,1);
+  const replay=await ok(clerk.client.rpc('redeem_kinnso_offer',args));assert.deepEqual(replay,results[0].data);assert.equal((await ok(admin.from('merchant_offers').select('redeemed_count').eq('id',good.offer).single())).redeemed_count,1);
+  const other=await claim();await ok(owner.client.rpc('redeem_kinnso_offer',{...args,p_raw_token:other.raw,p_branch_id:otherBranch,p_request_id:randomUUID()}));
+  const scoped=await ok(finance.client.rpc('get_kinnso_merchant_workspace',{p_merchant_id:merchantId}));assert.equal(scoped.outcomes.length,1);assert.equal(scoped.outcomes[0].branchId,branchId);assert.equal(scoped.missions.length,0);
+  const all=await ok(owner.client.rpc('get_kinnso_merchant_workspace',{p_merchant_id:merchantId}));assert.equal(all.outcomes.length,2);assert.equal(all.missions[0].id,brief.id);
+  // Different claims do not share the claim row lock. The offer must be write-locked before its counter is changed.
+  const distinctRaw=randomUUID();await ok(admin.from('offer_claims').insert({offer_id:good.offer,creator_id:creator.id,visitor_user_id:visitor.id,claim_token_hash:createHash('sha256').update(distinctRaw).digest('hex'),source_surface:'profile',expires_at:new Date(Date.now()+3600000).toISOString(),status:'active'}));
+  const anotherRaw=randomUUID();await ok(admin.from('offer_claims').insert({offer_id:good.offer,creator_id:creator.id,visitor_user_id:visitor.id,claim_token_hash:createHash('sha256').update(anotherRaw).digest('hex'),source_surface:'profile',expires_at:new Date(Date.now()+3600000).toISOString(),status:'active'}));
+  const distinctResults=await Promise.all([distinctRaw,anotherRaw].map(raw=>clerk.client.rpc('redeem_kinnso_offer',{...args,p_raw_token:raw,p_request_id:randomUUID()})));assert.ok(distinctResults.every(x=>!x.error),JSON.stringify(distinctResults.map(x=>x.error)));assert.equal(new Set(distinctResults.map(x=>x.data.redemption_id)).size,2);assert.equal((await ok(admin.from('merchant_offers').select('redeemed_count').eq('id',good.offer).single())).redeemed_count,3);
+  const paused=await claim('paused');assert.equal((await clerk.client.rpc('redeem_kinnso_offer',{...args,p_raw_token:paused.raw,p_request_id:randomUUID()})).error?.message,'invalid_offer_unavailable');
+  const expired=await claim('live',Date.now()-1000);assert.equal((await ok(clerk.client.rpc('redeem_kinnso_offer',{...args,p_raw_token:expired.raw,p_request_id:randomUUID()}))).expired,true);
+  await command(owner,{type:'setMember',userId:clerk.id,role:'clerk',branchIds:[branchId],active:false});assert.equal((await clerk.client.rpc('redeem_kinnso_offer',args)).error?.message,'forbidden');
+  await ok(admin.from('merchant_profiles').update({status:'paused'}).eq('id',merchantId));assert.equal((await owner.client.rpc('redeem_offer_claim',{p_raw_token:good.raw,p_amount_spent:null})).error?.message,'forbidden');
+ }finally{if(merchantId){await ok(admin.from('offer_redemptions').delete().eq('merchant_profile_id',merchantId));if(offers.length)await ok(admin.from('offer_claims').delete().in('offer_id',offers));await ok(admin.from('merchant_profiles').delete().eq('id',merchantId));}await f.cleanup();}
+});

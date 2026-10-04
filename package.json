@@ -1,29 +1,34 @@
 {
   "name": "kinnso-os",
-  "version": "0.1.0",
   "private": true,
-  "type": "module",
-  "engines": {
-    "node": ">=22.13.0"
-  },
+  "packageManager": "pnpm@11.6.0",
   "scripts": {
-    "dev": "next dev --hostname 0.0.0.0",
-    "build": "npm run source:pack && next build",
-    "start": "next start --hostname 0.0.0.0",
-    "typecheck": "tsc --noEmit",
-    "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "source:pack": "python3 scripts/package-source.py"
-  },
-  "dependencies": {
-    "next": "16.2.9",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "dev": "pnpm --filter @kinnso/journeys dev",
+    "build": "node scripts/ensure-db-types.mjs && turbo run build",
+    "lint": "eslint . && turbo run lint",
+    "honesty:lint": "tsx scripts/honesty-lint.ts",
+    "typecheck": "node scripts/ensure-db-types.mjs && turbo run typecheck",
+    "test": "node --test tooling-tests/*.test.mjs && turbo run test",
+    "dev:web": "pnpm --filter web dev --port 3001",
+    "test:journeys": "pnpm --filter @kinnso/journeys test",
+    "test:integration": "pnpm --filter @kinnso/journeys test:integration",
+    "test:e2e": "pnpm --filter @kinnso/journeys test:e2e",
+    "db:types": "node --env-file=apps/web/.env.test scripts/gen-kinnso-local-types.mjs",
+    "source:pack": "pnpm --filter @kinnso/journeys source:pack",
+    "start": "pnpm --filter @kinnso/journeys start",
+    "start:web": "pnpm --filter web start --port 3001"
   },
   "devDependencies": {
-    "@types/node": "22.19.19",
-    "@types/react": "19.2.14",
-    "@types/react-dom": "19.2.3",
-    "typescript": "5.9.3",
-    "esbuild": "0.25.12"
+    "@eslint/js": "^9.39.4",
+    "@kinnso/honesty": "workspace:*",
+    "eslint": "^9.39.4",
+    "supabase": "2.107.0",
+    "turbo": "^2.1.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.61.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
   }
 }

@@ -1,0 +1,43 @@
+# Measurement and service limits
+
+Business measurement accepts only `guide_viewed`, `bookmark_saved`, `trip_created`, `trip_imported`, `return_visit`, `record_saved`, `guide_published`, and `verified_outcome`. The event schema rejects unknown properties. Do not send titles, notes, receipts, email addresses, credentials, share tokens, URLs, or provider responses. Request identifiers are UUIDs, not user text. Optional actor pseudonyms are server-generated 64-character hashes. Public reports contain counts and numeric samples, never actor identities or request identifiers.
+
+Reuse the web analytics client's versioned `kinnso.analytics.*.v1` storage. Browser measurement needs accepted consent and a valid unexpired anonymous session. Withdrawal stops transport immediately; queued data must not be sent after withdrawal. Demo, admin, and synthetic events are excluded from the business funnel. The server must derive mode and actor context from its own environment and fresh authority. Emit success events after the durable mutation succeeds. Client assertions cannot prove published guides or verified outcomes.
+
+`recordEvent` validates before service-only ingestion. Receipts deduplicate identical requests for seven days and reject conflicting replays. Aggregate event rows retain 90 days. This is event-volume measurement; counts are not unique users, retention rates, or causal attribution. Existing operational traveller command events are separate and must not be copied into the consent-based funnel. A `verified_outcome` is a consented observation of a persisted allowed outcome event less than seven days old, deduplicated by that event UUID; it is not a complete count of all financial outcomes.
+
+## Performance
+
+`measure` captures request/query duration even when the operation fails. Its sink receives only a metric name and bounded numeric duration. Operational timings have no personal dimensions. Browser LCP, INP and CLS must use measured field values, for example Next.js `useReportWebVitals`; an unmeasured metric remains unknown. Transport browser samples only after checking current consent. Give each final metric sample a fresh request UUID and avoid counting field samples as new business events.
+
+`recordPerformance` persists standalone samples without incrementing funnel counts. Samples retain 30 days. Reports use nearest-rank p75 with at least 20 samples; smaller sets show `insufficient` with a null p75, absent sets show `unknown`. Zero is a valid measured value. Laboratory runs are not evidence of field Core Web Vitals acceptance.
+
+## Cost limits
+
+Owner: `platform_operations`. The owner/admin responsible for an environment must approve numeric limits and cost-unit conversion before configuring budgets. No limit rows are seeded. Budgeted AI, maps, storage and job adapters deny reservations for every UTC date without an approved row. There is no automatic budget rollover. Paid AI generation and scan dispatch remain unconfigured. Existing media operations have separate capability, ownership and cleanup controls; storage pricing, actual-charge reconciliation and its budget transport still require environment-specific wiring before production media activation. The generic reservation API alone does not prove enforcement on an unwired provider.
+
+Limits use exact integer units, declared per service/date as `microcurrency`, `requests`, `bytes`, or `jobs`. Currency and provider pricing must be agreed separately. The same unit must be used for estimate and actual usage, and changing the unit of an existing period is rejected. Stopping or degrading a service must be a visible product state; it cannot report successful provider output. A configured limit does not authorize a paid provider call.
+
+The service-only reserve RPC checks the server-validated actor and live session, then locks the service/date budget row. Browser callers cannot reserve shared capacity. `budgetStore` binds settlement to actor, request and reservation identity. Only the trusted server can reserve, settle or release. Derive a conservative maximum from an approved operation before calling an independently authorized transport. A duplicate request returns `in_flight` or `already_finished` and cannot authorize a second call. Conflicting request parameters are rejected.
+
+`runBudgeted` returns successful output only after durable settlement. Settlement debits the actual cost, including charged failed workflows and overruns. The report includes successful-flow count and total charged cost divided by successful flows; this denominator does not imply failed attempts cost nothing. Zero successful flows produce null cost-per-success. Missing configured budgets show null usage. Overruns exhaust subsequent reservations.
+
+On provider timeout, settlement failure, or uncertain charge, retain the reservation and return `reconciliation_required`. Reconcile against trusted provider evidence under the original request identity before settling. Release only after proving no cost was incurred; a settled reservation cannot be released and a released one cannot later be charged. Never automatically expire reservations: doing so can authorize spending while an earlier provider call is still chargeable. Deleting an account removes its identity reference while preserving cost history.
+
+An exhausted/overrun report contains this owner/runbook. Stop new work, inspect outstanding reservations through an authorized private operator procedure, reconcile actual charges, and agree any revised limit. Do not clear reservations or raise a limit merely to silence an alert. Fail closed when accounting is unavailable.
+
+## Scheduled jobs
+
+Owner: `platform_operations`. Supported run identities are `media_cleanup`, `telemetry_retention`, and `notifications`. The media-cleanup and telemetry-retention handlers record their actual execution through `trackScheduled`; this does not install a provider schedule. Notification delivery needs an approved provider worker and explicit run-outcome wiring. A failed attempt preserves the previous last-success timestamp. Reports distinguish unknown, failed, stale and healthy states. `scheduledHealth` derives failed/stale alerts; failed and stale records include owner and this runbook. Alert delivery and cron/provider configuration require explicit environment wiring.
+
+For a failed/stale job, inspect sanitized operational error categories and provider status, pause repeated harmful work, fix the dependency, rerun only an authorized job, and verify that durable success advances. A job with no recorded success is unknown. Never fabricate a success timestamp. Run `prune_kinnso_telemetry` through the telemetry-retention job under service authority; record its real outcome.
+
+The monitoring report requires current active ops membership. Internal tables have RLS and no direct public, anonymous, authenticated or service-role table privileges. Access occurs through narrow functions with an empty search path. No public dashboard endpoint should expose this report without the same fresh ops checks.
+
+## Combined monthly USD ceiling
+
+The monthly USD cost store is separate from the retained daily unit quotas. It aggregates AI, scan, maps, Storage and jobs against one UTC calendar month, using USD micros (1 USD = 1,000,000 units). The database refuses a configured combined limit above US$5. No configuration or rates are seeded; missing month/service/rate-version configuration denies work. A new month does not silently renew an approval.
+
+Only a trusted service transport can reserve or settle, after checking the actor's live session. Owner/admin authorization is required to configure a month and its verified provider rate versions. All services lock the same monthly balance, so cross-service races cannot each spend the whole ceiling. Provider transport must convert a conservative estimate and the actual invoice usage with the reviewed USD rate version. AI and scan reject the retained daily/unit transport. Production provider routes still have no paid transport configured.
+
+An uncertain outcome retains its reservation. A charged failure or invoice overrun is recorded in full, including after account removal, and stops new reservations; releasing a charged reservation is refused. The current-active Ops projection exposes only month/service totals and successful-flow counts, preserving unknown versus zero without actor or request identifiers. Recurring Storage rental, provider conversion, invoice reconciliation and scheduler activation remain environment-specific activation prerequisites. A per-upload measurement cannot claim to cover recurring storage charges.

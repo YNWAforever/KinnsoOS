@@ -1,0 +1,7 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {fixture,anonymous} from './local-fixtures.mjs';import {queryCatalog} from '../../lib/catalog.ts';import {resolveDestination} from '../../lib/catalog/destinations.ts';
+test('real published catalog distinguishes drafts, aliases and tied pagination beyond twelve',async()=>{
+ const f=await fixture();try{const author=await f.actor(true),prefix='B1-'+randomUUID();for(let i=0;i<17;i++)await f.guide(author,{title:prefix+' '+i});const draft=await f.guide(author,{title:prefix+' hidden',status:'draft'});
+ const one=await queryCatalog({q:prefix,page:1},process.env),two=await queryCatalog({q:prefix,page:2},process.env);assert.equal(one.status,'ready');assert.equal(two.status,'ready');assert.equal(one.items.length,12);assert.equal(one.hasMore,true);assert.equal(two.items.length,5);assert.equal(new Set([...one.items,...two.items].map(row=>row.id)).size,17);assert.ok(one.items.every(row=>row.cover===null));assert.deepEqual((await anonymous.from('guides').select('id').eq('id',draft)).data,[]);
+ await f.destination('Kyoto',['京都','Kyoto']);await f.destination('Hong Kong',['香港','Hong Kong']);assert.equal((await resolveDestination('京都')).id,(await resolveDestination('Kyoto')).id);assert.equal((await resolveDestination('香港')).id,(await resolveDestination('Hong Kong')).id);
+ }finally{await f.cleanup()}
+});

@@ -1,0 +1,10 @@
+{
+  "name": "kinnso-local-performance-lab",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.19.0" },
+  "dependencies": {
+    "lighthouse": "13.5.0",
+    "puppeteer-core": "25.9.0"
+  }
+}

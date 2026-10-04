@@ -1,0 +1,10 @@
+{
+  "name": "@kinnso/db",
+  "version": "0.0.0",
+  "private": true,
+  "main": "types.ts",
+  "types": "types.ts",
+  "scripts": {
+    "gen": "node --env-file=../../apps/web/.env.test ../../scripts/gen-kinnso-local-types.mjs"
+  }
+}

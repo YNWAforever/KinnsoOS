@@ -1,0 +1,11 @@
+node_modules/
+.next/
+.env*
+!.env.example
+*.tsbuildinfo
+public/source/*.zip
+evidence/
+__pycache__/
+.local-private/
+.superpowers/
+*.pyc

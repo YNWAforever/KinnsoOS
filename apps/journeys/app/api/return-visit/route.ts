@@ -1,0 +1,3 @@
+import {apiContext,backendFailure,reply} from '../../../lib/api/server';
+import {createHash} from 'node:crypto';import {successEvent} from '../../../lib/telemetry/server';
+export async function POST(request:Request){const ctx=await apiContext(request,'trips',true);if(ctx.response)return ctx.response;const result=await ctx.client.rpc('record_kinnso_return_visit');if(!result.error&&result.data?.accepted){const h=createHash('sha256').update(ctx.actor.id+':return_visit:'+new Date().toISOString().slice(0,10)).digest('hex');const id=h.slice(0,8)+'-'+h.slice(8,12)+'-4'+h.slice(13,16)+'-8'+h.slice(17,20)+'-'+h.slice(20,32);await successEvent(ctx.actor,'return_visit',id);}return result.error?backendFailure(result.error):reply({ok:true,data:result.data})}

@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+:root {
+  /* KINNSO ships a single light, cream/orange brand theme. Pin the UA color-scheme
+     to light so native controls, scrollbars, and form fields don't auto-darken when
+     the OS appearance switches to Dark (e.g. macOS "Auto" at sunset). */
+  color-scheme: light;
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* KINNSO brand design tokens (Tailwind v4 @theme) */
+@theme {
+  --color-orange: #B94000;
+  --color-orange-dark: #A13E0B;
+  --color-amber: #F4BD50;
+  --color-cream: #F8F1E6;
+  --color-cream-2: #EFE3D2;
+  --color-ink: #211B16;
+  --color-muted: #6D6257;
+  --color-success: #2F8F5C;
+  --color-danger: #D24A3B;
+  --color-info: #2E6FB8;
+
+  --radius-card: 8px;
+  --radius-ticket: 18px;
+  --radius-chip: 8px;
+  --radius-pill: 999px;
+
+  --font-display: var(--font-fraunces), 'Noto Serif TC', 'Songti TC', 'Noto Serif SC', 'Songti SC', 'Hiragino Mincho ProN', 'Yu Mincho', 'Nanum Myeongjo', 'AppleMyungjo', serif;
+  --font-sans: var(--font-inter), 'PingFang TC', 'PingFang SC', 'Hiragino Sans', 'Noto Sans TC', 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans Thai', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+  /* kinnso-* utility aliases (ported components use the `kinnso-` namespace) */
+  --color-kinnso-orange: #B94000;
+  --color-kinnso-orangeDark: #A13E0B;
+  --color-kinnso-amber: #F4BD50;
+  --color-kinnso-cream: #F8F1E6;
+  --color-kinnso-cream2: #EFE3D2;
+  --color-kinnso-ink: #211B16;
+  --color-kinnso-muted: #6D6257;
+  --color-kinnso-green: #2F8F5C;
+  --color-kinnso-red: #D24A3B;
+  --color-kinnso-blue: #2E6FB8;
+  --color-kinnso-edge: #DED5C7;
+
+  /* shadcn primitive tokens, aliased onto the canonical kinnso palette.
+     components/ui/* is generated shadcn source and styles itself through these
+     names (bg-primary, border-input, ring-ring...). They were never defined, so
+     under Tailwind v4 those utilities produced no class at all and the FIVE
+     primitives actually in use rendered unstyled -- most visibly the enquiry
+     dialog, whose <Button> has no className override and therefore had no
+     background colour at all.
+     These are aliases, not a second palette: every value below is an existing
+     kinnso token, so the R1C contract (kinnso-* is the canonical colour system)
+     still holds and there is nothing new to keep in sync. */
+  --color-primary: #B94000;              /* kinnso-orange */
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: #EFE3D2;            /* kinnso-cream2 */
+  --color-secondary-foreground: #211B16;
+  /* NO `--color-muted` here, deliberately. `--color-muted` already existed above as
+     a TEXT colour (#6D6257, and lib/seo/og/card.tsx mirrors it), whereas shadcn's
+     `muted` means a BACKGROUND. Defining it twice did not merge the two meanings, it
+     silently replaced one: the later value won, every `text-muted` became
+     cream-on-cream, and the article route produced 373 axe colour-contrast
+     violations. One name cannot carry both meanings, so each now uses its own
+     canonical token -- muted text is `text-kinnso-muted`, a muted surface is
+     `bg-kinnso-cream2`. `source-contracts.test.ts` fails on any duplicated token. */
+  --color-muted-foreground: #6D6257;     /* kinnso-muted */
+  --color-accent: #EFE3D2;
+  --color-accent-foreground: #211B16;
+  --color-destructive: #D24A3B;          /* kinnso-red */
+  --color-destructive-foreground: #FFFFFF;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #211B16;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #211B16;
+  --color-border: #DED5C7;               /* kinnso-edge */
+  --color-input: #DED5C7;
+  --color-ring: #B94000;
+
+  /* keyframe registrations (Tailwind v4 reads --animate-* from @theme) */
+  --animate-marquee: marquee 40s linear infinite;
+  --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+  --animate-fade-in: fadeIn 0.3s ease-out;
+}
+
+/* Raw HSL channels for components that build colors inline via hsl(var(--k-*)). */
+:root {
+  --k-orange:      20.7568 100% 36.2745%;
+  --k-orange-dark: 20.4 87.2093% 33.7255%;
+  --k-amber:       35 90% 56%;
+  --k-cream:       33 100% 96%;
+  --k-cream2:      35 100% 92%;
+  --k-ink:         33 21% 10%;
+  --k-muted:       36 8% 45%;
+  --k-green:       147 50% 37%;
+  --k-red:         6 64% 53%;
+  --k-blue:        211 60% 45%;
+}
+
+/* R1C: the ORIGINAL kinnso-* palette is the canonical design system again    */
+/* (user decision 2026-07-02). k2-* utilities below are the editorial         */
+/* component layer on top of it; k-* ticket utilities remain for studio/admin */
+/* only and are retired when those surfaces are redesigned.                   */
+
+/* `shadow-kinnso` utility (redesign used a custom boxShadow). */
+@utility shadow-kinnso {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+@layer components {
+  .k-container     { @apply mx-auto px-4 sm:px-6 max-w-[1320px]; }
+  .k-card          { @apply bg-white rounded-card shadow-kinnso; }
+  .k-chip          { @apply inline-flex items-center rounded-chip bg-kinnso-cream2 px-2.5 py-1 text-xs font-medium text-kinnso-ink; }
+  .k-pill          { @apply inline-flex items-center rounded-pill px-3 py-1 text-xs font-semibold; }
+  .k-btn-primary   { @apply inline-flex items-center justify-center rounded-pill bg-kinnso-orange px-5 py-2.5 text-sm font-bold text-white shadow-kinnso transition hover:bg-kinnso-orangeDark; }
+  .k-btn-ghost     { @apply inline-flex items-center justify-center rounded-pill px-5 py-2.5 text-sm font-bold text-kinnso-ink transition hover:bg-kinnso-cream2; }
+  .k-section-title { @apply text-2xl md:text-3xl font-black tracking-tight text-kinnso-ink; }
+  .k-mono          { font-family: var(--font-mono); }
+  .k-input         { @apply w-full rounded-pill bg-white border border-kinnso-cream2 px-5 py-2.5 text-sm outline-none focus:border-kinnso-orange transition min-h-[44px]; }
+  textarea.k-input { @apply rounded-card; }
+
+  .k-input:focus-visible,
+  .k-btn-primary:focus-visible,
+  .k-btn-ghost:focus-visible {
+    outline: 2px solid var(--color-kinnso-orange);
+    outline-offset: 2px;
+  }
+  a:focus-visible,
+  button:focus-visible {
+    outline: 2px solid var(--color-kinnso-orange);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .k-display      { font-family: var(--font-display); letter-spacing: -0.02em; }
+  .k-page-band    { @apply bg-kinnso-cream text-kinnso-ink; }
+  .k-auth-card    { @apply mx-auto w-full max-w-sm; }
+  .k-ticket       { @apply rounded-ticket border border-kinnso-edge bg-white shadow-kinnso; }
+  .k-ticket-soft  { @apply rounded-ticket border border-kinnso-edge bg-kinnso-cream shadow-kinnso; }
+  .k-route-stamp  { @apply inline-flex w-fit items-center rounded-pill border border-kinnso-ink bg-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.14em] text-kinnso-ink; }
+  .k-ticket-divider {
+    height: 1px;
+    background: repeating-linear-gradient(90deg, var(--color-kinnso-edge) 0 8px, transparent 8px 14px);
+  }
+  .k-receipt-row  { @apply flex items-center justify-between gap-4 border-t border-dashed border-kinnso-edge py-3; }
+  .k-route-markers { @apply grid gap-2 text-xs font-bold uppercase tracking-wider text-kinnso-muted; }
+  .k-route-markers__rail { @apply flex items-center justify-between gap-3; }
+  .k-route-markers__dot { @apply h-2.5 w-2.5 rounded-full bg-kinnso-orange; }
+  .k-route-markers__dot:nth-child(2) { background: var(--color-kinnso-green); }
+  .k-route-markers__dot:nth-child(3) { background: var(--color-kinnso-amber); }
+  .k-route-markers__labels { @apply flex items-center justify-between gap-3; }
+
+  /* Editorial primitives (k2-*) — used by components/kinnso/editorial/*
+     and the rebuilt chrome. Same utility-class-in-globals.css pattern as k-*. */
+  .k2-container   { @apply mx-auto w-full max-w-[1200px] px-5 sm:px-8; }
+  .k2-display     { font-family: var(--font-display); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+  .k2-eyebrow     { @apply inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-kinnso-orangeDark; } /* 4.79:1 on white, 4.26:1 on cream (fails AA-normal by 0.24 — accepted brand deviation ②, see R1C plan D-R1C-2). Never swap to kinnso-orange (2.73:1). */
+  .k2-card        { @apply overflow-hidden rounded-[4px] border border-kinnso-edge bg-white; }
+  .k2-hairline    { @apply border-t border-kinnso-edge; }
+  .k2-btn-primary { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[3px] bg-kinnso-orange px-6 py-2.5 text-sm font-bold tracking-wide text-white transition hover:bg-kinnso-orangeDark; }
+  .k2-btn-ghost   { @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-[3px] border border-kinnso-ink/25 px-6 py-2.5 text-sm font-semibold tracking-wide text-kinnso-ink transition hover:border-kinnso-ink hover:bg-kinnso-cream2/40; }
+  .k2-input       { @apply w-full min-h-[44px] rounded-[3px] border border-kinnso-edge bg-white px-4 py-2.5 text-sm outline-none transition focus:border-kinnso-orange; }
+
+  .k2-btn-primary:focus-visible,
+  .k2-btn-ghost:focus-visible,
+  .k2-input:focus-visible {
+    outline: 2px solid var(--color-kinnso-orange);
+    outline-offset: 2px;
+  }
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Unlike viewport media queries, em in a container query follows the container's
+   computed font size. Keep the usual desktop layout at 100%, and reuse the
+   existing accessible trays when text enlargement needs more space. */
+.k2-navbar-layout {
+  container: kinnso-navbar / inline-size;
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+}
+.k2-navbar-desktop, .k2-navbar-merchant { display: none; }
+@media (min-width: 80rem) {
+  /* Both the viewport and the capped content column must have room. A wide
+     monitor cannot make the 1200px column fit twice-sized desktop navigation. */
+  @container kinnso-navbar (min-width: 75em) {
+    .k2-navbar-desktop { display: flex; }
+    .k2-navbar-merchant { display: block; }
+    .k2-navbar-toggle { display: none; }
+  }
+}
+
+.k2-explore-controls { container: kinnso-explore / inline-size; }
+.k2-explore-sort, .k2-explore-sidebar { display: none; }
+@container kinnso-explore (min-width: 36em) {
+  .k2-explore-search { grid-template-columns: minmax(0, 1fr) auto; }
+}
+@container kinnso-explore (min-width: 60em) {
+  .k2-explore-with-sidebar { grid-template-columns: 14rem minmax(0, 1fr); }
+  .k2-explore-sort, .k2-explore-sidebar { display: block; }
+  .k2-explore-filter-trigger { display: none; }
+}
+.k2-explore-results { container: kinnso-explore-results / inline-size; }
+@container kinnso-explore-results (min-width: 32em) {
+  .k2-explore-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container kinnso-explore-results (min-width: 44em) {
+  .k2-explore-guide-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.k2-creator-directory { container: kinnso-creators / inline-size; }
+@container kinnso-creators (min-width: 40em) {
+  .k2-creator-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container kinnso-creators (min-width: 64em) {
+  .k2-creator-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+}
