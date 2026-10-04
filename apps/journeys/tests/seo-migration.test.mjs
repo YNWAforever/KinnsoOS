@@ -10,6 +10,20 @@ test('mapping validation disallows loops, chains and invented retention targets'
  assert.throws(()=>validateMappings([{oldUrl:a,newUrl:b,disposition:'retain',reason:'x'}]));
  assert.throws(()=>validateMappings([{oldUrl:a,newUrl:b,disposition:'redirect',reason:'x'},{oldUrl:b,newUrl:c,disposition:'redirect',reason:'x'}]));
 });
+test('mapping validation accepts actual legacy public pages while excluding private trees',()=>{
+ const origin='https://remix-kinnso-web.vercel.app';
+ const urls=['/en','/en/about','/zh-hk/legal/creator-terms','/en/g/authored','/ja/articles/travel/authored'];
+ validateMappings(urls.map(path=>({oldUrl:origin+path,newUrl:origin+path,disposition:'retain',reason:'Original public route'})));
+ for(const path of ['/en/studio','/en/sign-in','/en/merchants/dashboard','/en/creator','/en/trips/x','/en/share/x','/en/about/extra']) {
+  assert.throws(()=>validateMappings([{oldUrl:origin+path,newUrl:origin+path,disposition:'retain',reason:'Private'}]));
+ }
+});
+test('content canonical can retain the verified original content origin without accepting marketing pages',()=>{
+ const canonical='https://remix-kinnso-web.vercel.app/en/g/authored';
+ const meta=policy.contentMetadata({id:'authored',kind:'guide',title:'Authored',description:'Real',canonicalUrl:canonical,locales:{en:canonical}});
+ assert.equal(meta.alternates.canonical,canonical);
+ assert.throws(()=>policy.contentMetadata({id:'home',kind:'guide',title:'Home',description:'Not content',canonicalUrl:'https://remix-kinnso-web.vercel.app/en',locales:{en:'https://remix-kinnso-web.vercel.app/en'}}));
+});
 test('SSR guide schema rejects malformed itinerary and projects only public DTO',()=>{
  assert.equal(typeof server.publicGuide,'function');
  assert.throws(()=>server.publicGuide({kind:'itinerary',id:'x',title:'Title',days:[]}));

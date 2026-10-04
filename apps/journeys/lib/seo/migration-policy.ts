@@ -3,14 +3,26 @@ import type { Metadata } from 'next';
 // K25 launch approval must change code deliberately; deployment/env cannot enable indexing.
 export const migrationRobots = () => ({ index: false, follow: false } as const);
 export const PUBLIC_ORIGIN = 'https://www.kinnso.ai';
+const publicOrigins = new Set([PUBLIC_ORIGIN,'https://remix-kinnso-web.vercel.app']);
 const locales = ['en','zh-hk','zh-tw','zh-cn','ja','ko','th'];
-export function publicUrl(value: string): string {
+function checkedPublicUrl(value: string) {
   const url = new URL(value);
   const parts = url.pathname.split('/').filter(Boolean);
-  if (url.origin !== PUBLIC_ORIGIN || url.username || url.password || url.search || url.hash ||
-      !locales.includes(parts[0]) || !['g','c','articles','m','experiences','sessions','destinations'].includes(parts[1]) ||
-      parts.length < 3 || parts.some(part=> /[\\\x00-\x20<>"']/.test(decodeURIComponent(part)))) throw new Error('Invalid public content URL');
+  if (!publicOrigins.has(url.origin) || url.username || url.password || url.search || url.hash ||
+      !locales.includes(parts[0]) || parts.some(part=> /[\\/\x00-\x20<>"']/.test(decodeURIComponent(part)))) throw new Error('Invalid public content URL');
+  return {url,parts};
+}
+export function publicUrl(value: string): string {
+  const {url,parts} = checkedPublicUrl(value);
+  if (!['g','c','articles','m','experiences','sessions','destinations'].includes(parts[1]) || parts.length < 3) throw new Error('Invalid public content URL');
   return url.href;
+}
+const publicPages = new Set(['explore','creators','agent','about','contact','merchants','legal/creator-terms','for-creators','for-merchants','sessions','destinations','articles']);
+/** Mapping includes verified public hubs; content metadata still requires a content route. */
+export function publicMappingUrl(value: string): string {
+  const {url,parts} = checkedPublicUrl(value);
+  if (parts.length === 1 || publicPages.has(parts.slice(1).join('/'))) return url.href;
+  return publicUrl(value);
 }
 export type PublicContentMetadata = {
   id: string; kind: 'guide'|'creator'|'article'; title: string; description: string;

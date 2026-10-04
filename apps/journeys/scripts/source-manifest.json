@@ -233,6 +233,7 @@
     "tests/integration/trips.test.mjs",
     "tests/notifications.delivery.test.mjs",
     "tests/seo-migration.test.mjs",
+    "tests/sitemap-discovery.test.mjs",
     "tests/source_package_test.py",
     "tests/telemetry.privacy.test.mjs",
     "tests/test-target.test.mjs",
