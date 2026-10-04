@@ -89,6 +89,8 @@ function hasCiProductStateContract(source: string): boolean {
   const jobs = uniqueSourceBlock(source, 'jobs:', 0)
   const e2eJob = jobs && uniqueSourceBlock(jobs.source, 'e2e:', 2)
   if (!e2eJob) return false
+  const environments = e2eJob.source.split('\n').filter((line) => line.startsWith('    environment:'))
+  if (environments.length !== 1 || environments[0] !== '    environment: Preview') return false
 
   const offHeader = '- name: R7.10 accessibility - Booking OFF'
   const onHeader = '- name: R7.10 accessibility - Booking ON'
@@ -194,6 +196,18 @@ describe('CI product-state startup contract', () => {
 
   it('runs Booking OFF before Booking ON with the exact dedicated configuration', () => {
     expect(hasCiProductStateContract(workflow)).toBe(true)
+  })
+
+  it.each([
+    ['missing environment', ''],
+    ['production environment', '    environment: Production'],
+    ['environment on another job', ''],
+  ])('rejects Booking ON secret access with %s', (name, replacement) => {
+    let mutated = replaceOnce(workflow, '    environment: Preview', replacement)
+    if (name === 'environment on another job') {
+      mutated = replaceOnce(mutated, '  quality:', '  quality:\n    environment: Preview')
+    }
+    expect(hasCiProductStateContract(mutated)).toBe(false)
   })
 
   // The Booking ON step carries a condition, so "nothing here is skipped or softened"
