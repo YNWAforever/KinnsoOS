@@ -203,3 +203,7 @@ input:focus-visible {
     font-size: 2rem;
   }
 }
+.os-trips[data-trip-editor="true"] {
+  /* Keep the footer below the initial viewport while the private snapshot loads. */
+  min-block-size: 100svh;
+}

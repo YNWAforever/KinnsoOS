@@ -214,6 +214,7 @@ export function Workbench({
   mode = 'demo',
   actor = null,
   publicGuide = null,
+  tripHeading = null,
   features={media:false,sharing:false},
 }: {
   locale: m.Locale;
@@ -221,6 +222,7 @@ export function Workbench({
   mode?:CapabilityMode;
   actor?:Actor|null;
   publicGuide?:PublicGuide|null;
+  tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const router = useRouter(),
@@ -596,7 +598,7 @@ export function Workbench({
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null} initialGuide={publicGuide}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
-    else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
+    else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={actor?.id??null} enabled={features.creator===true}/>;
     else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={actor?.id??null} roles={actor?.roles??[]} enabled={features.agent===true}/>;
     else if(path==='inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
