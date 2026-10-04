@@ -42,7 +42,15 @@ test('in-app event opens an owned case with visible operator response, customer 
   await expect(opCard).toContainText('waiting_customer');await expect(opCard).toContainText(visibleResponse);
   await page.getByRole('button',{name:'Refresh cases',exact:true}).click();await expect(caseCard).toContainText('waiting_customer');await expect(caseCard).toContainText(visibleResponse);await expect(page.getByText(internalReason,{exact:true})).toHaveCount(0);
   const customerReply='Synthetic requested activity date: 2030-01-01.';await caseCard.getByLabel('Reply to this case',{exact:true}).fill(customerReply);
-  await caseCard.getByRole('button',{name:'Send case reply',exact:true}).click();await expect(caseCard).toContainText(customerReply);
+  // The textarea already contains this text before saving; DOM text alone does not
+  // prove completion. Wait for the actual command response before navigating away.
+  const reply=page.waitForResponse(r=>r.url().endsWith('/api/support')&&r.request().method()==='POST');
+  await caseCard.getByRole('button',{name:'Send case reply',exact:true}).click();
+  const replied=await reply;expect(replied.status()).toBe(200);const savedReply=await replied.json();
+  expect(savedReply.ok).toBe(true);expect(savedReply.data.revision).toBe(3);
+  const persistedReply=(await ok(customer.client.rpc('get_kinnso_support'))).items.find((c:any)=>c.id===caseId);
+  expect(persistedReply.revision).toBe(3);expect(persistedReply.messages.map((m:any)=>m.message)).toContain(customerReply);
+  await expect(caseCard).toContainText(customerReply);
   await page.reload();await expect(caseCard).toContainText(firstMessage);await expect(caseCard).toContainText(visibleResponse);await expect(caseCard).toContainText(customerReply);
   const history=(await ok(customer.client.rpc('get_kinnso_support'))).items.find((c:any)=>c.id===caseId);expect(history.revision).toBe(3);expect(history.messages.map((m:any)=>m.message)).toEqual([firstMessage,visibleResponse,customerReply]);expect(JSON.stringify(history)).not.toContain(internalReason);
   const otherContext=await browser.newContext({baseURL});contexts.push(otherContext);otherContext.setDefaultTimeout(10000);otherContext.setDefaultNavigationTimeout(15000);const otherPage=await otherContext.newPage();await signIn(otherPage,other.email,other.password,'/en/support');await expect(otherPage.getByRole('heading',{name:subject,exact:true})).toHaveCount(0);
