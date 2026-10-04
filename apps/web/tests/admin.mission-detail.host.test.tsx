@@ -35,7 +35,20 @@ describe('/[locale]/admin/missions/[missionId] host', () => {
     const ui = await MissionDetailPage({ params: Promise.resolve({ locale: 'en', missionId: 'mission-1' }) })
     render(ui)
     expect(screen.getByText('Summer Coupon Push')).toBeTruthy()
-    expect(detailMock).toHaveBeenCalledWith(expect.anything(), 'mission-1')
+    expect(detailMock).toHaveBeenCalledWith(expect.anything(), 'mission-1', null)
+  })
+
+  it('passes the mission cursor and renders a continuation for the bounded queue', async () => {
+    const cursor = { bucket: 2, deadline: '2026-10-04T00:00:00Z', id: 'submission-50', scope: 'mission-filter' }
+    detailMock.mockResolvedValueOnce({
+      mission: { id: 'mission-1', title: 'Summer Coupon Push', missionSource: 'travelpayouts', missionType: 'coupon_affiliate', status: 'published', merchantProfileId: null, autoApprovePolicy: 'off' },
+      participants: [], milestones: [], submissions: [], submissionsNextCursor: cursor,
+    })
+    const ui = await MissionDetailPage({ params: Promise.resolve({ locale: 'en', missionId: 'mission-1' }), searchParams: Promise.resolve({ cursor: JSON.stringify(cursor) }) })
+    render(ui)
+    expect(detailMock).toHaveBeenCalledWith(expect.anything(), 'mission-1', cursor)
+    const continuation = screen.getByRole('link', { name: /next/i })
+    expect(continuation.getAttribute('href')).toBe(`/en/admin/missions/mission-1?cursor=${encodeURIComponent(JSON.stringify(cursor))}`)
   })
 
   it('notFounds when the mission does not exist', async () => {

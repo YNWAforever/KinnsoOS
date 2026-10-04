@@ -25,7 +25,7 @@ vi.mock('@/lib/auth/authorization-context', () => ({
     return { user: user ? { id: user.id } : null, role: await roleMock(), merchantId: null }
   },
 }))
-vi.mock('@/lib/admin/mission-review-queries', () => ({ getReviewQueue: queueMock }))
+vi.mock('@/lib/admin/mission-review-queries', () => ({ getReviewQueuePage: async () => ({items:await queueMock(),nextCursor:null}) }))
 vi.mock('@/lib/supabase/server', () => ({ createSupabaseServerClient: async () => ({ auth: { getUser: getUserMock } }) }))
 
 import MissionReviewQueuePage from '@/app/[locale]/admin/missions/review/page'

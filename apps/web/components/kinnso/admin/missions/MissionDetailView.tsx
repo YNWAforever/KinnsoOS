@@ -6,6 +6,7 @@ import type { MissionDetail } from '@/lib/admin/mission-review-queries'
 import type { ActionResult } from '@/lib/admin/result'
 import type { SubmissionReviewAction } from '@/lib/missions/types'
 import { SubmissionQueueRow } from '@/components/kinnso/admin/missions/SubmissionQueueRow'
+import Link from 'next/link'
 
 type T = Messages['missionsOps']
 type ReviewActionFn = (
@@ -112,6 +113,7 @@ export function MissionDetailView({
           </tbody>
         </table>
       )}
+      {detail.submissionsNextCursor && <Link href={`/${locale}/admin/missions/${detail.mission.id}?cursor=${encodeURIComponent(JSON.stringify(detail.submissionsNextCursor))}`} className="mt-4 inline-block underline">{locale === 'zh-hk' || locale === 'zh-tw' ? '下一頁' : 'Next page'}</Link>}
     </div>
   )
 }

@@ -45,94 +45,29 @@ export interface MissionDetail {
   participants: MissionDetailParticipant[]
   milestones: MissionDetailMilestone[]
   submissions: ReviewQueueRow[]
+  submissionsNextCursor?: ReviewQueueCursor | null
 }
 
-// Nested-select syntax (bare `table(cols)`, no `!inner`, no aliasing) is modeled on
-// `creatorMissionDetailSelect` in apps/web/lib/missions/queries.ts, which embeds
-// mission_verification_jobs(id,status,confidence_status,created_at) three levels deep
-// under missions -> mission_participants -> mission_milestone_submissions. This select
-// walks the same submission -> mission_participants -> missions chain, just rooted at
-// mission_milestone_submissions instead of missions.
-const reviewQueueSelect = `
-  id,status,submitted_at,review_deadline,
-  mission_participants(id,creator_id,mission_id,missions(id,title,mission_type)),
-  mission_verification_jobs(confidence_status,created_at)
-`
-
-type OneOrMany<T> = T | T[] | null | undefined
-
-type ReviewQueueJoinRow = {
-  id: string
-  status: string
-  submitted_at: string | null
-  review_deadline: string | null
-  mission_participants: OneOrMany<{
-    id: string
-    creator_id: string | null
-    mission_id: string
-    missions: OneOrMany<{ id: string; title: string; mission_type: string | null }>
-  }>
-  mission_verification_jobs: Array<{ confidence_status: string | null; created_at: string }> | null
-}
-
-const oneJoin = <T>(v: OneOrMany<T>): T | null => (Array.isArray(v) ? (v[0] ?? null) : (v ?? null))
-
-const latestConfidenceStatus = (
-  jobs: Array<{ confidence_status: string | null; created_at: string }> | null,
-): string | null => {
-  if (!jobs || jobs.length === 0) return null
-  const latest = [...jobs].sort((a, b) => (a.created_at < b.created_at ? 1 : a.created_at > b.created_at ? -1 : 0))[0]
-  return latest?.confidence_status ?? null
-}
-
-const confidenceBucketRanks: Record<string, number> = { verified_signal: 0, needs_review: 1 }
-const confidenceBucketRank = (status: string | null): number => confidenceBucketRanks[status ?? ''] ?? 2
-
-const toReviewQueueRow = (r: ReviewQueueJoinRow): ReviewQueueRow => {
-  const participant = oneJoin(r.mission_participants)
-  const mission = oneJoin(participant?.missions)
-  return {
-    submissionId: r.id,
-    missionId: mission?.id ?? '',
-    missionTitle: mission?.title ?? 'Untitled mission',
-    missionType: mission?.mission_type ?? null,
-    creatorId: participant?.creator_id ?? '',
-    status: r.status,
-    submittedAt: r.submitted_at,
-    reviewDeadline: r.review_deadline,
-    confidenceStatus: latestConfidenceStatus(r.mission_verification_jobs),
-  }
-}
-
-/**
- * Every submission awaiting an ops decision (status in submitted/revision_requested),
- * sorted by confidence bucket first (verified_signal, then needs_review, then
- * unavailable/null), with review deadline as the tiebreak within a bucket.
- * `confidenceStatus` comes from the most recent mission_verification_jobs row for that
- * submission (by created_at), or null when no verification job has run yet. Errors
- * propagate — no silent empty queue.
- */
-export async function getReviewQueue(supabase: Client): Promise<ReviewQueueRow[]> {
-  const { data, error } = await supabase
-    .from('mission_milestone_submissions')
-    .select(reviewQueueSelect)
-    .in('status', ['submitted', 'revision_requested'])
-    .order('review_deadline', { ascending: true })
+export type ReviewQueueCursor = { bucket: number; deadline: string; id: string; scope: string }
+export type ReviewQueueFilter = { missionId?: string; status?: 'submitted' | 'revision_requested' }
+export type ReviewQueuePage = { items: ReviewQueueRow[]; nextCursor: ReviewQueueCursor | null }
+/** Filtering, latest confidence, ordering and keyset pagination happen in the DB. */
+export async function getReviewQueuePage(supabase: Client, filter: ReviewQueueFilter = {}, cursor: ReviewQueueCursor | null = null): Promise<ReviewQueuePage> {
+  const { data, error } = await supabase.rpc('get_kinnso_review_queue', { p_filter: filter, p_cursor: cursor, p_limit: 50 })
   if (error) throw error
-  const rows = ((data ?? []) as unknown as ReviewQueueJoinRow[]).map(toReviewQueueRow)
-  // Stable sort: rows already arrive deadline-ascending from the query above, so this only
-  // reorders BETWEEN buckets and never disturbs the deadline order WITHIN one. Array.prototype.sort
-  // has been a stable sort per the JS spec since ES2019 -- no additional deadline comparator needed.
-  return rows.sort((a, b) => confidenceBucketRank(a.confidenceStatus) - confidenceBucketRank(b.confidenceStatus))
+  return data as unknown as ReviewQueuePage
+}
+export async function getReviewQueue(supabase: Client, filter: ReviewQueueFilter = {}): Promise<ReviewQueueRow[]> {
+  return (await getReviewQueuePage(supabase, filter)).items
 }
 
 /**
  * One mission's ops-detail view: the mission itself, its participants and milestones,
- * and the subset of the review queue belonging to this mission. Returns null when the
+ * and its first page of mission-scoped review submissions. Returns null when the
  * mission does not exist (never throws for a plain not-found). Reuses getReviewQueue
  * rather than re-deriving the confidence-status join.
  */
-export async function getMissionDetail(supabase: Client, missionId: string): Promise<MissionDetail | null> {
+export async function getMissionDetail(supabase: Client, missionId: string, cursor: ReviewQueueCursor | null = null): Promise<MissionDetail | null> {
   const { data: mission, error: missionError } = await supabase
     .from('missions')
     .select('id,title,status,mission_type,mission_source,merchant_profile_id,auto_approve_policy')
@@ -154,7 +89,7 @@ export async function getMissionDetail(supabase: Client, missionId: string): Pro
     .order('sort_order', { ascending: true })
   if (milestonesError) throw milestonesError
 
-  const queue = await getReviewQueue(supabase)
+  const queue = await getReviewQueuePage(supabase, { missionId }, cursor)
 
   return {
     mission: {
@@ -181,6 +116,7 @@ export async function getMissionDetail(supabase: Client, missionId: string): Pro
       dueAt: m.due_at,
       sortOrder: m.sort_order,
     })),
-    submissions: queue.filter((row) => row.missionId === missionId),
+    submissions: queue.items,
+    submissionsNextCursor: queue.nextCursor,
   }
 }

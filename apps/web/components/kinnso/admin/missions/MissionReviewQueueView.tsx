@@ -4,6 +4,7 @@ import type { ReviewQueueRow } from '@/lib/admin/mission-review-queries'
 import type { ActionResult } from '@/lib/admin/result'
 import type { SubmissionReviewAction } from '@/lib/missions/types'
 import { SubmissionQueueRow } from '@/components/kinnso/admin/missions/SubmissionQueueRow'
+import Link from 'next/link'
 
 type T = Messages['missionsOps']
 type ReviewActionFn = (
@@ -21,12 +22,13 @@ type ReviewActionFn = (
  * `row.missionId` for the review action, so this table never needs a page-level mission id.
  */
 export function MissionReviewQueueView({
-  t, locale, rows, reviewAction,
+  t, locale, rows, reviewAction, nextPageHref,
 }: {
   t: T
   locale: Locale
   rows: ReviewQueueRow[]
   reviewAction: ReviewActionFn
+  nextPageHref?: string | null
 }) {
   return (
     <div>
@@ -52,6 +54,7 @@ export function MissionReviewQueueView({
           </tbody>
         </table>
       )}
+      {nextPageHref && <Link href={nextPageHref} className="mt-4 inline-block underline">{locale === 'zh-hk' || locale === 'zh-tw' ? '下一頁' : 'Next page'}</Link>}
     </div>
   )
 }
