@@ -10,7 +10,7 @@ import os from 'node:os';
 import {createClient} from '@supabase/supabase-js';
 import {createServerClient} from '@supabase/ssr';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessLatency, localOrigin, pages} from './report.mjs';
+import {assessLatency, validateLatencyBudget, localOrigin, pages} from './report.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const origin = localOrigin('http://127.0.0.1:3523');
@@ -41,6 +41,7 @@ if (budget) {
   if (createHash('sha256').update(baseline).digest('hex') !== budget.baselineSha256) throw Error('Baseline hash mismatch');
   const before = JSON.parse(baseline.toString());
   if (before.sourceSha !== sourceSha || before.assessment?.status !== 'MEASURED_BUDGET_NOT_SET') throw Error('A complete same-source unbudgeted baseline is required');
+  validateLatencyBudget(budget,before,sourceSha,target.projectRef);
   baselineReport = before;
 }
 await new Promise((resolve,reject) => {
@@ -181,10 +182,11 @@ try {
     } catch(error) {errors.push(error.message);}
   }
   report.cleanup=errors.length?{status:'FAIL',errors}:'PASS_OWNED_SYNTHETIC_ACTORS_REMOVED';
-  report.assessment=assessLatency(report,budget?.limits);
-  if(report.assessment.status==='FAIL'||report.assessment.status==='INCOMPLETE')process.exitCode=1;
+  // Stop the owned process before assessment/persistence can throw.
   if(server.exitCode===null){const stopped=new Promise(resolve=>server.once('exit',resolve));server.kill();await stopped;}
   log.end();
+  report.assessment=assessLatency(report,budget?.limits);
+  if(report.assessment.status==='FAIL'||report.assessment.status==='INCOMPLETE')process.exitCode=1;
   await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2)+'\n');
   console.log(JSON.stringify({report:path.join(out,'report.json'),status:report.assessment.status,samples:report.samples.length,cleanup:report.cleanup,error:report.error}));
 }

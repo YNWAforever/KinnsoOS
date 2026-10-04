@@ -47,6 +47,23 @@ test('scale evidence and every numeric layer budget are required', () => {
   assert.equal(typeof lab.assessLatency, 'function');
   for (const dataset of [{guides: 1999, observedRowCap: 1000}, {guides: 2401, observedRowCap: 0}])
     assert.equal(lab.assessLatency({...complete(), dataset}, budgets).status, 'INCOMPLETE');
-  for (const budget of [{api: 500}, {...budgets, postgres: NaN}, {...budgets, api: -1}])
+  for (const budget of [null, 5, [], 'budgets', {api: 500}, {...budgets, postgres: NaN}, {...budgets, api: -1}])
     assert.equal(lab.assessLatency(complete(), budget).status, 'INCOMPLETE');
+});
+test('budget validation refuses malformed limits before any app or fixture starts', () => {
+  assert.equal(typeof lab.validateLatencyBudget, 'function');
+  const baseline = {...complete(), sourceSha: 'same-head', environment: 'owned isolated local', project: 'owned-project'};
+  const budget = {environment: 'owned isolated local', project: 'owned-project', sourceSha: 'same-head', limits: budgets};
+  assert.doesNotThrow(() => lab.validateLatencyBudget(budget, baseline, 'same-head', 'owned-project'));
+  for (const limits of [null, [], 'invalid', {api: 500}, {...budgets, postgres: 0}])
+    assert.throws(() => lab.validateLatencyBudget({...budget, limits}, baseline, 'same-head', 'owned-project'), /budget/i);
+});
+test('baseline validation recomputes samples instead of trusting a supplied PASS label', () => {
+  assert.equal(typeof lab.validateLatencyBudget, 'function');
+  const baseline = {...complete(), sourceSha: 'same-head', environment: 'owned isolated local', project: 'owned-project', assessment: {status: 'MEASURED_BUDGET_NOT_SET'}};
+  const budget = {environment: 'owned isolated local', project: 'owned-project', sourceSha: 'same-head', limits: budgets};
+  baseline.samples.pop();
+  assert.throws(() => lab.validateLatencyBudget(budget, baseline, 'same-head', 'owned-project'), /baseline/i);
+  assert.throws(() => lab.validateLatencyBudget(budget, {...complete(), sourceSha: 'same-head', environment: 'production', project: 'owned-project'}, 'same-head', 'owned-project'), /baseline/i);
+  assert.equal(lab.assessLatency({...complete(), samples: [null, ...complete().samples.slice(1)]}, budgets).status, 'INCOMPLETE');
 });

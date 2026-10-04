@@ -68,17 +68,19 @@ export function assessLatency(report, budgets) {
       dataset.tripDays === 1 && dataset.tripStops === 1)) missing.push('Verified scale dataset');
   if (report.error) missing.push('Collection failed');
   if (report.cleanup !== 'PASS_OWNED_SYNTHETIC_ACTORS_REMOVED') missing.push('Owned cleanup');
-  if (budgets !== undefined && layers.some(layer => !(typeof budgets[layer] === 'number' &&
-      Number.isFinite(budgets[layer]) && budgets[layer] > 0))) missing.push('Finite positive budgets for all layers');
+  const validBudgets = budgets && typeof budgets === 'object' && !Array.isArray(budgets) &&
+    layers.every(layer => typeof budgets[layer] === 'number' && Number.isFinite(budgets[layer]) && budgets[layer] > 0);
+  if (budgets !== undefined && !validBudgets) missing.push('Finite positive budgets for all layers');
+  const samples = Array.isArray(report.samples) ? report.samples.filter(s => s && typeof s === 'object') : [];
   const groups = layers.flatMap(layer => pages.map(operation => {
-    const selected = (report.samples ?? []).filter(s => s.layer === layer && s.operation === operation);
+    const selected = samples.filter(s => s.layer === layer && s.operation === operation);
     const valid = selected.length >= 40 && new Set(selected.map(s => s.run)).size === selected.length &&
       selected.every(s => Number.isInteger(s.run) && s.run > 0 && s.status === 'PASS' && s.verified === true &&
         typeof s.durationMs === 'number' && Number.isFinite(s.durationMs) && s.durationMs >= 0);
     if (!valid) {missing.push(layer+'/'+operation+' measurements'); return {layer, operation, samples: selected.length, status: 'INCOMPLETE'};}
     const values = selected.map(s => s.durationMs).sort((a,b) => a-b);
     const p95Ms = values[Math.ceil(values.length * 0.95)-1];
-    const budgetMs = budgets?.[layer];
+    const budgetMs = validBudgets ? budgets[layer] : undefined;
     return {layer, operation, samples: selected.length, medianMs: median(values), p95Ms,
       maxMs: values.at(-1), budgetMs: budgetMs ?? null,
       status: budgetMs === undefined ? 'MEASURED_BUDGET_NOT_SET' : p95Ms <= budgetMs ? 'PASS' : 'FAIL'};
@@ -87,4 +89,16 @@ export function assessLatency(report, budgets) {
     groups.some(g => g.status === 'FAIL') ? 'FAIL' : 'PASS', groups, missing,
     percentile: 'nearest-rank ceil(0.95*N), minimum 40 verified samples per operation/layer',
     scope: 'Owned local warm reads only; not production, concurrent load, cold database or field latency'};
+}
+
+export function validateLatencyBudget(budget, baseline, sourceSha, project) {
+  if (!budget || typeof budget !== 'object' || budget.environment !== 'owned isolated local' ||
+      budget.project !== project || budget.sourceSha !== sourceSha || !budget.limits ||
+      typeof budget.limits !== 'object' || Array.isArray(budget.limits) ||
+      ['api','postgrest','postgres'].some(layer => typeof budget.limits[layer] !== 'number' ||
+        !Number.isFinite(budget.limits[layer]) || budget.limits[layer] <= 0))
+    throw Error('Invalid source-bound local latency budget');
+  if (!baseline || baseline.environment !== 'owned isolated local' || baseline.project !== project ||
+      baseline.sourceSha !== sourceSha || assessLatency(baseline).status !== 'MEASURED_BUDGET_NOT_SET')
+    throw Error('A complete same-source owned local baseline is required');
 }
