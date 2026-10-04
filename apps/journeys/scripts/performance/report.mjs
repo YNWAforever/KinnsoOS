@@ -1,4 +1,5 @@
 export const pages = ['home', 'explore', 'guide', 'trip'];
+export const foundationRevision = 'f181cff22d28a480120c2abaa2dde91c573582bf';
 const metrics = ['lcpMs', 'cls', 'tbtMs', 'jsTransferBytes', 'imageTransferBytes'];
 const median = values => { const sorted = [...values].sort((a,b) => a-b); const m = sorted.length >> 1; return sorted.length % 2 ? sorted[m] : (sorted[m-1]+sorted[m])/2; };
 export function localOrigin(value) {
@@ -21,15 +22,39 @@ export function assessLab(samples) {
     targets: {medianLcpMs: 2500, medianCls: 0.1}, groups};
 }
 export function compareLab(current, baseline) {
+  if (baseline.kind !== 'foundation' || baseline.sourceSha !== foundationRevision || current === baseline)
+    return {status:'NOT_COMPARABLE',reason:'Baseline is not the frozen foundation source'};
   if (JSON.stringify(current.conditions) !== JSON.stringify(baseline.conditions))
     return {status: 'NOT_COMPARABLE', reason: 'Measured browser, device and network conditions differ'};
   const a = assessLab(current.samples), b = assessLab(baseline.samples);
   const groups = a.groups.map((group, i) => {
     const before = b.groups[i];
-    if (baseline.notComparable?.includes(group.page) || group.status === 'INCOMPLETE' || before.status === 'INCOMPLETE')
+    if (['guide','trip'].includes(group.page) || baseline.notComparable?.includes(group.page) || group.status === 'INCOMPLETE' || before.status === 'INCOMPLETE')
       return {page: group.page, cache: group.cache, status: 'NOT_COMPARABLE', reason: 'Different functionality/data or incomplete measurement'};
     return {page: group.page, cache: group.cache, status: 'COMPARABLE',
       delta: Object.fromEntries(metrics.map(key => [key, group[key]-before[key]]))};
   });
   return {status: groups.some(g => g.status === 'NOT_COMPARABLE') ? 'PARTIAL' : 'COMPARED', groups};
+}
+export function assessRun(report) {
+  const navigation=assessLab(report.samples), missing=[];
+  if(report.error)missing.push('Run failed: '+report.error);
+  if(report.cleanup!=='PASS_OWNED_SYNTHETIC_ACTORS_REMOVED')missing.push('Owned cleanup not confirmed');
+  if(report.kind!=='foundation'){
+    for(const page of pages){
+      if(!report.interactions?.some(i=>i.page===page&&i.status==='PASS'&&typeof i.traceFile==='string'&&i.traceFile))missing.push(page+' interaction');
+      const queries=report.queryLatency?.samples?.filter(q=>q.page===page)??[];
+      if(report.queryLatency?.status!=='MEASURED_LOCAL_BACKEND_ROUNDTRIPS'||queries.length<3||new Set(queries.map(q=>q.run)).size!==queries.length||
+        queries.some(q=>q.status!=='PASS'||typeof q.durationMs!=='number'||!Number.isFinite(q.durationMs)||q.durationMs<0))missing.push(page+' backend read timings');
+    }
+  }
+  return {status:missing.length||navigation.status==='INCOMPLETE'?'INCOMPLETE':navigation.status,
+    scope:report.kind==='foundation'?'Foundation navigation lab only':'Local navigation, interaction and equivalent backend reads; not production acceptance',
+    navigation,missing};
+}
+/** Persist the returned evidence before any assertion can reject this navigation. */
+export async function retainNavigation(result,persist,ready){
+  await persist(result);
+  if(result.lhr.runtimeError)throw Error(result.lhr.runtimeError.code+': '+result.lhr.runtimeError.message);
+  await ready();
 }

@@ -11,10 +11,10 @@ import {chromium} from '@playwright/test';
 import {createClient} from '@supabase/supabase-js';
 import {transform} from 'esbuild';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessLab, compareLab, localOrigin} from './report.mjs';
+import {assessRun, compareLab, localOrigin, retainNavigation, foundationRevision} from './report.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const foundationSha = 'f181cff22d28a480120c2abaa2dde91c573582bf';
+const foundationSha = foundationRevision;
 const foundation = process.argv.includes('--foundation');
 const probeTrip = process.argv.includes('--probe-trip');
 const origin = localOrigin(foundation ? 'http://127.0.0.1:3522' : 'http://127.0.0.1:3521');
@@ -44,7 +44,7 @@ const server = spawn(process.execPath, [path.join(buildApp, 'node_modules/next/d
 server.stdout.pipe(serverLog); server.stderr.pipe(serverLog);
 let browser, admin, actor, fixture;
 const ownedActors = [], samples = [], interactions = [], blockedOrigins = new Set();
-const report = {schemaVersion: 1, environment: 'owned isolated local production build',
+const report = {schemaVersion: 1,kind:foundation?'foundation':'current', environment: 'owned isolated local production build',
   sourceSha: foundation ? foundationSha : execFileSync('git', ['rev-parse', 'HEAD'], {cwd: app, encoding: 'utf8'}).trim(),
   sourceDiff: execFileSync('git', ['diff', '--name-only'], {cwd: app, encoding: 'utf8'}).trim().split('\n').filter(Boolean),
   conditions: null, samples, interactions, notComparable: foundation ? ['guide', 'trip'] : [],
@@ -124,23 +124,27 @@ function traceWithoutArguments(trace) {
 async function navigation(page, kind, route, cache, run) {
   const result = await lighthouse(origin+route, flags, undefined, page);
   const lhr = result.lhr;
-  if (lhr.runtimeError) throw Error(lhr.runtimeError.code+': '+lhr.runtimeError.message);
-  await ready(page, kind);
   const requests = lhr.audits['network-requests']?.details?.items ?? [];
   const bytes = type => requests.filter(r => r.resourceType === type).reduce((sum,r) => sum+(r.transferSize ?? 0),0);
   const metrics = key => lhr.audits[key]?.numericValue ?? null;
-  const finalPath = new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl).pathname;
+  const finalPath = new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl ?? origin).pathname;
   const main = requests.find(r => r.resourceType === 'Document' && new URL(r.url).pathname === route);
   const sample = {page: kind, route, cache, run, status: main?.statusCode ?? null,
-    verified: finalPath === route, lcpMs: metrics('largest-contentful-paint'), cls: metrics('cumulative-layout-shift'),
+    verified: false, lcpMs: metrics('largest-contentful-paint'), cls: metrics('cumulative-layout-shift'),
     tbtMs: metrics('total-blocking-time'), jsTransferBytes: bytes('Script'), imageTransferBytes: bytes('Image'),
     api: requests.filter(r => new URL(r.url).pathname.startsWith('/api/')).map(r => ({path: new URL(r.url).pathname,
       durationMs: r.networkEndTime-r.networkRequestTime, status: r.statusCode})),
     auditErrors: Object.entries(lhr.audits).filter(([,audit]) => audit.errorMessage).map(([audit,value]) => ({audit,error:value.errorMessage})),
     reportFile: `${kind}-${run}-${cache}.lhr.json`, traceFile: `${kind}-${run}-${cache}.trace.json`};
-  await writeFile(path.join(out, sample.reportFile), JSON.stringify(lhr));
-  await writeFile(path.join(out, sample.traceFile), JSON.stringify(traceWithoutArguments(result.artifacts.Trace)));
-  samples.push(sample); await writeFile(path.join(out, 'report.json'), JSON.stringify(report,null,2));
+  samples.push(sample);
+  try {
+    await retainNavigation(result,async value=>{
+      await writeFile(path.join(out,sample.reportFile),JSON.stringify(value.lhr));
+      if(value.artifacts?.Trace)await writeFile(path.join(out,sample.traceFile),JSON.stringify(traceWithoutArguments(value.artifacts.Trace)));
+      else throw Error('Navigation trace missing');
+    },async()=>{await ready(page,kind);sample.verified=finalPath===route;});
+  }catch(error){sample.failure=error.message;throw error;}
+  finally{await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
   console.log(`${kind} ${run} ${cache}: LCP=${sample.lcpMs?.toFixed(0)}ms CLS=${sample.cls} TBT=${sample.tbtMs?.toFixed(0)}ms`);
 }
 async function interaction(page, kind) {
@@ -242,7 +246,6 @@ try {
     report.queryLatency = {status:'MEASURED_LOCAL_BACKEND_ROUNDTRIPS',samples:querySamples,
       scope:'Separate equivalent backend reads, three per core page; includes local HTTP/PostgREST overhead, not isolated PostgreSQL execution time or cloud p95'};
   }
-  report.assessment = assessLab(samples);
   if (!foundation) {
     const baselinePath = process.env.KINNSO_LAB_BASELINE;
     if (baselinePath) {
@@ -252,7 +255,7 @@ try {
     } else report.comparison = {status:'NOT_RUN',reason:'Run the frozen foundation and supply its report path'};
   }
   report.blockedOrigins = [...blockedOrigins];
-} catch (error) {report.error = error.message; report.assessment = assessLab(samples); process.exitCode = 1;}
+} catch (error) {report.error = error.message; process.exitCode = 1;}
 finally {
   const cleanupErrors = [];
   try {await browser?.close();} catch (error) {cleanupErrors.push('Browser: '+error.message);}
@@ -262,6 +265,8 @@ finally {
   if (cleanupErrors.length) process.exitCode = 1;
   if (server.exitCode === null) {const stopped = new Promise(resolve => server.once('exit',resolve)); server.kill(); await stopped;}
   serverLog.end();
+  report.assessment=assessRun(report);
+  if(report.assessment.status==='INCOMPLETE')process.exitCode=1;
   await writeFile(path.join(out, 'report.json'), JSON.stringify(report,null,2));
   console.log(JSON.stringify({report:path.join(out,'report.json'), assessment:report.assessment?.status, error:report.error, cleanup:report.cleanup}));
 }
