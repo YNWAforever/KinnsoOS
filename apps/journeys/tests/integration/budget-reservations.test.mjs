@@ -80,7 +80,11 @@ test('durable consent-filtered aggregates and latency samples preserve unknown, 
  const f=await fixture();let opsId;
  assert.equal(sql('select count(*) from kinnso_internal.funnel_daily;').trim(),'0','fresh isolated telemetry fixture required');
  assert.equal(sql('select count(*) from kinnso_internal.performance_samples;').trim(),'0');
- assert.equal(sql('select count(*) from kinnso_internal.scheduled_health;').trim(),'0');
+ // Cleanup tests leave durable health records. Own one unused job and preserve all others.
+ const fixtureJob='telemetry_retention';
+ assert.equal(sql("select count(*) from kinnso_internal.scheduled_health where job='telemetry_retention';").trim(),'0','unoccupied scheduled-health fixture required');
+ const otherHealth="select coalesce(jsonb_agg(to_jsonb(h) order by job),'[]'::jsonb) from kinnso_internal.scheduled_health h where job<>'telemetry_retention';";
+ const previousHealth=sql(otherHealth);
  try{
   const owner=await f.actor(),a=await f.actor();opsId=owner.id;
   await ok(admin.from('kinnso_ops_members').insert({user_id:owner.id,display_name:'Synthetic measurement operator',role:'owner'}));
@@ -105,13 +109,14 @@ test('durable consent-filtered aggregates and latency samples preserve unknown, 
   for(let i=1;i<20;i++)await ok(admin.rpc('record_kinnso_performance',{...sampleArgs,p_request_id:randomUUID(),p_consent:'accepted',p_sample:{metric:'LCP',value:i}}));
   report=await ok(owner.client.rpc('get_kinnso_monitoring'));assert.equal(report.performance.find(x=>x.metric==='LCP').p75,14);
   assert.equal(JSON.stringify(report).includes(a.id),false);assert.equal(JSON.stringify(report).includes(event.requestId),false);
-  await ok(admin.rpc('record_kinnso_scheduled_run',{p_job:'media_cleanup',p_successful:true,p_started_at:'2026-01-01T00:00:00Z'}));
-  const success=(await ok(owner.client.rpc('get_kinnso_monitoring'))).scheduledRuns.find(x=>x.job==='media_cleanup').lastSuccessAt;
-  await ok(admin.rpc('record_kinnso_scheduled_run',{p_job:'media_cleanup',p_successful:false,p_started_at:'2026-01-02T00:00:00Z'}));
-  const failed=(await ok(owner.client.rpc('get_kinnso_monitoring'))).scheduledRuns.find(x=>x.job==='media_cleanup');assert.equal(failed.lastStatus,'failed');assert.equal(failed.lastSuccessAt,success);
+  await ok(admin.rpc('record_kinnso_scheduled_run',{p_job:fixtureJob,p_successful:true,p_started_at:'2026-01-01T00:00:00Z'}));
+  const success=(await ok(owner.client.rpc('get_kinnso_monitoring'))).scheduledRuns.find(x=>x.job===fixtureJob).lastSuccessAt;
+  await ok(admin.rpc('record_kinnso_scheduled_run',{p_job:fixtureJob,p_successful:false,p_started_at:'2026-01-02T00:00:00Z'}));
+  const failed=(await ok(owner.client.rpc('get_kinnso_monitoring'))).scheduledRuns.find(x=>x.job===fixtureJob);assert.equal(failed.lastStatus,'failed');assert.equal(failed.lastSuccessAt,success);
   const alert=scheduledHealth(failed);assert.equal(alert.state,'failed');assert.equal(alert.alert,true);assert.equal(alert.owner,'platform_operations');assert.equal(alert.runbook,'/docs/implementation/METRICS_AND_ALERTS.md#scheduled-jobs');
  }finally{
-  sql('delete from kinnso_internal.telemetry_receipts;delete from kinnso_internal.funnel_daily;delete from kinnso_internal.performance_samples;delete from kinnso_internal.scheduled_health;');
+  sql("delete from kinnso_internal.telemetry_receipts;delete from kinnso_internal.funnel_daily;delete from kinnso_internal.performance_samples;delete from kinnso_internal.scheduled_health where job='telemetry_retention';");
+  assert.equal(sql(otherHealth),previousHealth,'preexisting job-health records must be preserved');
   if(opsId)await ok(admin.from('kinnso_ops_members').delete().eq('user_id',opsId));await f.cleanup();
  }
 });
