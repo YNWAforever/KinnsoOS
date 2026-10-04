@@ -17,6 +17,7 @@ const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const foundationSha = foundationRevision;
 const foundation = process.argv.includes('--foundation');
 const probeTrip = process.argv.includes('--probe-trip');
+const tripOnly = process.argv.includes('--trip-only');
 const origin = localOrigin(foundation ? 'http://127.0.0.1:3522' : 'http://127.0.0.1:3521');
 const buildApp = foundation ? path.join(app, 'evidence/performance/foundation') : app;
 const out = path.join(app, 'evidence/performance', `${foundation ? 'foundation' : 'current'}-${new Date().toISOString().replace(/[:.]/g, '-')}`);
@@ -109,8 +110,9 @@ async function guardPage(page) {
 }
 async function ready(page, kind) {
   if (foundation) {
-    await page.waitForSelector('h1');
-    if (kind==='trip') await page.waitForFunction(()=>document.querySelector('h1')?.textContent==='Synthetic foundation demo trip');
+    // The frozen editor renders its title as an input, not an h1.
+    if (kind==='trip') await page.waitForFunction(()=>document.querySelector('input[aria-label="Trip title"]')?.value==='Synthetic foundation demo trip');
+    else await page.waitForSelector('h1');
     return;
   }
   if (kind === 'home' || kind === 'explore') await page.waitForFunction(() => document.body.textContent.includes('Synthetic mobile lab guide'));
@@ -209,7 +211,7 @@ try {
     trip: foundation ? '/en/trips/demo-lab-trip' : '/en/trips/'+fixture.tripId};
   const foundationModel = foundation ? (await transform(execFileSync('git',['show',foundationSha+':app/travel/model.ts'],{cwd:app,encoding:'utf8'}),
     {loader:'ts',format:'iife',globalName:'KinnsoFoundationModel'})).code : null;
-  for (const [kind, initialRoute] of Object.entries(routes).filter(([kind])=>!probeTrip||kind==='trip')) for (const run of (probeTrip?[1]:[1,2,3])) {
+  for (const [kind, initialRoute] of Object.entries(routes).filter(([kind])=>!(probeTrip||tripOnly)||kind==='trip')) for (const run of (probeTrip?[1]:[1,2,3])) {
     const context = await browser.createBrowserContext(), page = await context.newPage();
     await page.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});
     page.setDefaultTimeout(45000); await guardPage(page);

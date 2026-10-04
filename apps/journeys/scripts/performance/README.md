@@ -27,3 +27,5 @@ node scripts/performance/run.mjs
 ```
 
 The foundation archive is exported to a new ignored directory without changing the checkout. An existing directory is preserved. The runner uses its own port 3522 and seeds the actual demo editor using the frozen public model. Comparisons validate the frozen source SHA and run type; a candidate report cannot stand in for foundation. Foundation guide/trip are demo screens and explicitly not comparable to current durable behavior; home/explore also have different datasets. Same-condition deltas show shell delivery cost, not a claim of functional or content parity. Baseline collection/comparison that has not run remains `NOT_RUN`.
+
+`--trip-only` collects three cold/warm pairs for the trip screen. Its report remains `INCOMPLETE` because the other core pages are missing; it exits nonzero and cannot serve as complete acceptance on its own. Preserve failed invocations and record the source reports and exact sample selection when combining unchanged-condition observations.
