@@ -25,5 +25,7 @@ export async function readPublicGuide(id:string,env:Environment,transport:typeof
  const response=await transport(new URL('/rest/v1/rpc/kinnso_guide',target.origin),{method:'POST',headers:{apikey:target.key,'Content-Type':'application/json'},body:JSON.stringify({p_guide_id:id}),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(8000)});
  const data:unknown=await response.json();
  if(!response.ok){if(record(data).message==='guide_not_found')return null;throw new Error('guide_unavailable');}
- return publicGuide(data);
+ const guide=publicGuide(data);
+ if(guide.id.toLowerCase()!==id.toLowerCase())throw new Error('guide_schema');
+ return guide;
 }

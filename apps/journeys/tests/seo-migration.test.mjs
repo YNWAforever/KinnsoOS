@@ -32,6 +32,20 @@ test('SSR guide schema rejects malformed itinerary and projects only public DTO'
  const projected=server.publicGuide(authored);assert.equal(projected.days[0].stops[0].startMinuteOfDay,600);assert.equal('travellerNote' in projected.days[0].stops[0],false);
  assert.throws(()=>server.publicGuide({...authored,days:[{...authored.days[0],stops:[{...authored.days[0].stops[0],source:{private:true}}]}]}));
 });
+test('SSR guide reads bind the returned identity to the requested UUID, allowing UUID case normalization',async()=>{
+ const id='e1c2820d-25e5-9795-54b5-637be546e04a';
+ const env={KINNSO_SUPABASE_URL:'https://approved.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://approved.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://approved.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
+ const dto={kind:'summary',id,title:'Published',summary:'Real summary',destinationId:null};
+ await assert.rejects(server.readPublicGuide(id,env,async()=>Response.json({...dto,id:'7559c30e-083f-5db5-d9c8-3d68cb242ce9'})),/guide_schema/);
+ const result=await server.readPublicGuide(id.toUpperCase(),env,async(url,options)=>{
+  assert.equal(new URL(url).pathname,'/rest/v1/rpc/kinnso_guide');
+  assert.equal(options.headers.apikey,'sb_publishable_test');
+  assert.equal('Authorization' in options.headers,false);
+  assert.deepEqual(JSON.parse(options.body),{p_guide_id:id.toUpperCase()});
+  return Response.json(dto);
+ });
+ assert.equal(result.id,id);
+});
 test('XML sitemap parser decodes and rejects offsite shards',()=>{
  assert.deepEqual(parity.locations('<urlset><url><loc>https://www.kinnso.ai/en/g/a&amp;b</loc></url></urlset>'),['https://www.kinnso.ai/en/g/a&b']);
  assert.throws(()=>parity.locations('<sitemapindex><loc>https://evil.test/x</loc></sitemapindex>'));
