@@ -226,6 +226,8 @@
     "tests/integration/local-fixtures.mjs",
     "tests/integration/media-cleanup.test.mjs",
     "tests/integration/merchant-branches.test.mjs",
+    "tests/integration/merchant-content-prerequisite.test.mjs",
+    "tests/integration/merchant-legacy-analytics.test.mjs",
     "tests/integration/ops-scale.test.mjs",
     "tests/integration/reports-agent-quota.test.mjs",
     "tests/integration/trips.test.mjs",

@@ -1,4 +1,24 @@
 -- Organization roles remain separate from mature ops/creator enums.
+-- The workspace persists authored brief content on the mature mission model.
+-- Install only its two absent content fields; preserve compatible definitions
+-- and all existing content, and refuse incompatible manual schema changes.
+do $content_prerequisite$
+declare field text; actual record;
+begin
+ if not exists(select 1 from pg_catalog.pg_class where oid=pg_catalog.to_regclass('public.missions') and relkind='r') then
+  raise exception 'merchant_content_prerequisite_incompatible';
+ end if;
+ foreach field in array array['requirements','deliverables'] loop
+  select a.atttypid,a.attnotnull into actual from pg_catalog.pg_attribute a
+   where a.attrelid=pg_catalog.to_regclass('public.missions') and a.attname=field and a.attnum>0 and not a.attisdropped;
+  if not found then
+   execute pg_catalog.format('alter table public.missions add column %I text[] not null default %L',field,'{}');
+  elsif actual.atttypid<>'text[]'::pg_catalog.regtype or not actual.attnotnull then
+   raise exception 'merchant_content_prerequisite_incompatible';
+  end if;
+ end loop;
+end $content_prerequisite$;
+
 create table kinnso_internal.merchant_branches(id uuid primary key,merchant_id uuid not null references public.merchant_profiles(id) on delete cascade,name text not null check(length(btrim(name)) between 1 and 120),active boolean not null default true,created_at timestamptz not null default now());
 create table kinnso_internal.merchant_members(merchant_id uuid not null references public.merchant_profiles(id) on delete cascade,user_id uuid not null references auth.users(id) on delete cascade,role text not null check(role in ('marketing','clerk','finance')),branch_ids uuid[] not null,active boolean not null default true,updated_at timestamptz not null default now(),primary key(merchant_id,user_id));
 create table kinnso_internal.workspace_requests(actor_id uuid not null references auth.users(id) on delete cascade,request_id uuid not null,digest text not null,result jsonb not null,created_at timestamptz not null default now(),primary key(actor_id,request_id));
@@ -115,10 +135,14 @@ begin
 
   v_token_hash := encode(extensions.digest(p_raw_token, 'sha256'), 'hex');
 
-  select id, offer_id, status, expires_at, analytics_journey_id, analytics_locale
+  -- Older installations have neither consent columns nor a collector. Missing
+  -- metadata is unconsented; do not install or infer attribution to redeem.
+  select c.id, c.offer_id, c.status, c.expires_at,
+         nullif(pg_catalog.to_jsonb(c)->>'analytics_journey_id','')::uuid as analytics_journey_id,
+         pg_catalog.to_jsonb(c)->>'analytics_locale' as analytics_locale
     into v_claim
-    from public.offer_claims
-    where claim_token_hash = v_token_hash
+    from public.offer_claims c
+    where c.claim_token_hash = v_token_hash
     for update;
   if not found then raise exception 'claim_not_found' using errcode = 'P0002'; end if;
 
@@ -146,6 +170,13 @@ begin
 
   if v_offer.commission_kind = 'percent' and p_amount_spent is null then
     raise exception 'amount_spent_required';
+  end if;
+
+  -- A partially installed consent contract must fail atomically, never discard
+  -- an opted-in event or save the redemption before detecting the missing sink.
+  if v_claim.analytics_journey_id is not null and
+     (v_claim.analytics_locale is null or pg_catalog.to_regclass('public.traveller_analytics_events') is null) then
+    raise exception 'analytics_contract_unavailable';
   end if;
 
   update public.offer_claims set status = 'redeemed' where id = v_claim.id;
