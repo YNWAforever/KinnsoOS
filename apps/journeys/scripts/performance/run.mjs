@@ -82,21 +82,18 @@ const flags = {logLevel: 'error', onlyCategories: ['performance'], disableStorag
   throttling: {requestLatencyMs: 150, downloadThroughputKbps: 1600, uploadThroughputKbps: 750, cpuSlowdownMultiplier: 4},
   maxWaitForLoad: 45000};
 async function button(page, text) {
-  const found = await page.evaluateHandle(label => [...document.querySelectorAll('button')].find(b => b.textContent.trim() === label), text);
-  const element = found.asElement(); if (!element) throw Error('Missing button '+text);
-  await element.evaluate(el=>el.scrollIntoView({block:'center',inline:'center'}));
-  await page.waitForFunction(label=>{const el=[...document.querySelectorAll('button')].find(b=>b.textContent.trim()===label);
-    if(!el||el.disabled)return false;const r=el.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return hit===el||el.contains(hit);},{},text);
-  await element.click(); await found.dispose();
+  // Reacquire after React replaces a node; retain real hit testing above fixed navigation.
+  await page.waitForFunction(label => {
+    const el = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === label);
+    if (!el || el.disabled) return false;
+    el.scrollIntoView({block: 'center', inline: 'center'});
+    const r = el.getBoundingClientRect(), hit = document.elementFromPoint(r.x+r.width/2, r.y+r.height/2);
+    return el.isConnected && (hit === el || el.contains(hit));
+  }, {}, text);
+  await page.locator(`::-p-aria([name=${JSON.stringify(text)}][role="button"])`).click();
 }
 async function input(page, label, value) {
-  const handle = await page.evaluateHandle(text => {
-    const l = [...document.querySelectorAll('label')].find(l => l.textContent.trim() === text);
-    return l?.control ?? l?.querySelector('input,textarea');
-  }, label);
-  const element = handle.asElement(); if (!element) throw Error('Missing input '+label);
-  await element.evaluate(el=>el.scrollIntoView({block:'center',inline:'center'}));
-  await element.click({clickCount: 3}); await element.press('Backspace'); await element.type(value); await handle.dispose();
+  await page.locator(`::-p-aria([name=${JSON.stringify(label)}])`).fill(value);
 }
 async function guardPage(page) {
   await page.setRequestInterception(true);
