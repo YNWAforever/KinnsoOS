@@ -1,3 +1,4 @@
+import {successEvent,timedRpc} from '../../../lib/telemetry/server';
 import { apiContext,backendFailure,boundedBody,failure,reply } from '../../../lib/api/server';
 import { object,uuid } from '../../../lib/api/validation';
 export async function GET(request: Request) {
@@ -16,7 +17,8 @@ export async function POST(request: Request) {
     const body = object(await boundedBody(request),['requestId','input']);
     if (!uuid(body.requestId)) return failure('INVALID',400);
     const input = object(body.input,['title','timezone','startDate','destinationId']);
-    const result = await ctx.client.rpc('create_trip_v2',{p_request_id:body.requestId,p_payload:input});
+    const result = await timedRpc(ctx.client,'create_trip_v2',{p_request_id:body.requestId,p_payload:input},ctx.actor);
+    if(!result.error)await successEvent(ctx.actor,'trip_created',body.requestId);
     return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data},201);
   } catch { return failure('INVALID',400); }
 }

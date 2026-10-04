@@ -1,8 +1,10 @@
 import type { ApiResult } from '../contracts/capabilities';
 import type { TripSnapshot,TripCommand } from '../contracts/trips';
+import {readConsent} from '../telemetry/events';
 export async function request<T>(url: string, method = 'GET', body?: unknown): Promise<ApiResult<T>> {
   try {
-    const response = await fetch(url,{method,headers:body ? {'Content-Type':'application/json'} : {},body:body ? JSON.stringify(body) : undefined,cache:'no-store'});
+    let consent='denied',session:string|undefined;try{if(typeof window!=='undefined'){const c=readConsent(window.localStorage);consent=c.consent;if(c.consent==='accepted')session=c.anonymousSessionId;}}catch{}
+    const response = await fetch(url,{method,headers:{...(body?{'Content-Type':'application/json'}:{}),'X-Kinnso-Analytics-Consent':consent,...session?{'X-Kinnso-Anonymous-Session':session}:{}},body:body ? JSON.stringify(body) : undefined,cache:'no-store'});
     const result = await response.json();
     if (typeof result.ok !== 'boolean' || (!response.ok && result.ok)) throw new Error('INVALID');
     return result;

@@ -24,7 +24,7 @@ export function localTestEnvironment(status, label) {
   SUPABASE_URL: api, SUPABASE_ANON_KEY: status.ANON_KEY, SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
   KINNSO_ENVIRONMENT: 'local', KINNSO_SUPABASE_URL: api, KINNSO_SUPABASE_PUBLISHABLE_KEY: status.ANON_KEY,
   KINNSO_APPROVED_SUPABASE_ORIGIN: api, KINNSO_LEGACY_AUTH_ORIGIN: api,
-  KINNSO_ENABLED_CAPABILITIES: 'trips,bookmarks,media,sharing,creator', KINNSO_MEDIA_RUNTIME: 'unified', KINNSO_SITE_URL: 'http://127.0.0.1:3495' };
+  KINNSO_ENABLED_CAPABILITIES: 'trips,bookmarks,media,sharing,creator,ops,merchant,notifications,agent,telemetry', KINNSO_MEDIA_RUNTIME: 'unified', KINNSO_SITE_URL: 'http://127.0.0.1:3495',KINNSO_CANONICAL_SOURCE_ORIGIN:'https://remix-kinnso-web.vercel.app' };
  verifyTestTarget(env); return env;
 }
 export function prepare(command, env = process.env) {

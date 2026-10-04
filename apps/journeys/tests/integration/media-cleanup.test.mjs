@@ -11,7 +11,7 @@ import {fixture,admin,anonymous} from './local-fixtures.mjs';
 
 const require=createRequire(import.meta.url);
 async function bundled(relative,stubCookies=false) {
- const result=await build({entryPoints:[fileURLToPath(new URL(relative,import.meta.url))],bundle:true,write:false,platform:'node',format:'cjs',external:['sharp','@supabase/supabase-js'],plugins:stubCookies?[{name:'unused-cookie-client',setup(b){
+ const result=await build({entryPoints:[fileURLToPath(new URL(relative,import.meta.url))],bundle:true,write:false,platform:'node',format:'cjs',external:['sharp','@supabase/supabase-js','next/server','next/headers'],plugins:stubCookies?[{name:'unused-cookie-client',setup(b){
   b.onResolve({filter:/supabase\/server$/},()=>({path:'cookies',namespace:'fixture'}));
   b.onLoad({filter:/.*/,namespace:'fixture'},()=>({contents:'export function serverClient(){throw Error("Cleanup must not use cookie auth")}',loader:'js'}));
  }}]:[]});

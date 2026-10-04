@@ -65,21 +65,32 @@ export function Modal({
   title,
   children,
   onClose,
+  returnFocus,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
+  returnFocus?: HTMLElement|null;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
-    ref.current?.showModal();
-    return () => ref.current?.close();
+    const dialog=ref.current;
+    const opener=returnFocus??(document.activeElement instanceof HTMLElement?document.activeElement:null);
+    dialog?.showModal();
+    return () => {dialog?.close();if(opener?.isConnected)opener.focus();};
   }, []);
   return (
     <dialog
       className="k-modal"
       ref={ref}
       onCancel={onClose}
+      onKeyDown={event=>{
+        if(event.key!=='Tab')return;
+        const controls=[...event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length>0);
+        const first=controls[0],last=controls.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+      }}
       aria-labelledby="modal-title"
     >
       <div className="k-modal-head">

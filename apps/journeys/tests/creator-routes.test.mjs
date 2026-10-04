@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
 const require = createRequire(import.meta.url), owner = '00000000-0000-4000-8000-000000000001', id = '00000000-0000-4000-8000-000000000002';
 async function handler(path) {
- const r = await build({ entryPoints: [fileURLToPath(new URL(path, import.meta.url))], bundle: true, write: false, platform: 'node', format: 'cjs', plugins: [{ name: 'author-session', setup(b) {
+ const r = await build({ entryPoints: [fileURLToPath(new URL(path, import.meta.url))], bundle: true, write: false, platform: 'node', format: 'cjs', external:['next/server','next/headers'],plugins: [{ name: 'author-session', setup(b) {
   b.onResolve({ filter: /supabase\/server$/ }, () => ({ path: 'fixture', namespace: 'test' }));
   b.onLoad({ filter: /.*/, namespace: 'test' }, () => ({ loader: 'js', contents: `export async function serverClient(){return globalThis.__creatorRouteClient}` }));
  } }] });

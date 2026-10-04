@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const repoRoot = resolve(process.cwd(), '../..')
-const workflow = readFileSync(resolve(repoRoot, '.github/workflows/ci.yml'), 'utf8')
+const workflow = readFileSync(resolve(repoRoot, '.github/workflows/ci.yml'), 'utf8').replace(/\r\n/g, '\n')
 const verificationWorkflow = readFileSync(resolve(repoRoot, '.github/workflows/verify.yml'), 'utf8')
 const previewSpec = readFileSync(resolve(repoRoot, 'apps/e2e/specs/r7-10-preview-smoke.spec.ts'), 'utf8')
 const accessibilitySource = readFileSync(resolve(repoRoot, 'apps/e2e/r7-10-accessibility.ts'), 'utf8')

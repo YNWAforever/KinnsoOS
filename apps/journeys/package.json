@@ -14,7 +14,8 @@
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "source:pack": "python scripts/package-source.py"
+    "source:pack": "python scripts/package-source.py",
+    "check:url-parity": "node scripts/check-url-parity.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.0",

@@ -1,3 +1,4 @@
+import {successEvent,timedRpc} from '../../../lib/telemetry/server';
 import { apiContext,backendFailure,boundedBody,failure,reply } from '../../../lib/api/server';
 import { object,uuid } from '../../../lib/api/validation';
 export async function GET(request:Request) {
@@ -10,7 +11,8 @@ export async function POST(request:Request) {
   try {
     const body = object(await boundedBody(request),['guideId','desiredState','requestId']);
     if (!uuid(body.guideId) || !uuid(body.requestId) || typeof body.desiredState !== 'boolean') return failure('INVALID',400);
-    const result = await ctx.client.rpc('kinnso_bookmark',{p_guide_id:body.guideId,p_desired_state:body.desiredState,p_request_id:body.requestId});
+    const result = await timedRpc(ctx.client,'kinnso_bookmark',{p_guide_id:body.guideId,p_desired_state:body.desiredState,p_request_id:body.requestId},ctx.actor);
+    if(!result.error&&body.desiredState===true)await successEvent(ctx.actor,'bookmark_saved',body.requestId);
     return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data});
   } catch { return failure('INVALID',400); }
 }

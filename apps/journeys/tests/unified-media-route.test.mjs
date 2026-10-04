@@ -18,7 +18,7 @@ async function handler(path) {
   const result = await build({
     entryPoints: [fileURLToPath(new URL(path, import.meta.url))],
     bundle: true, write: false, platform: 'node', format: 'cjs',
-    external: ['sharp', '@supabase/supabase-js'],
+    external: ['sharp', '@supabase/supabase-js','next/server','next/headers'],
     plugins: [{ name: 'cookie-session', setup(b) {
       b.onResolve({ filter: /supabase\/server$/ }, () => ({ path: 'session', namespace: 'fixture' }));
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: `

@@ -2,6 +2,7 @@ import { serverClient } from '../supabase/server';
 import { capabilities } from '../contracts/capabilities';
 import type { ErrorCode } from '../contracts/capabilities';
 import { sameOrigin } from './validation';
+import {observeRequest} from '../telemetry/server';
 
 export function reply(data: unknown, status = 200) {
   return Response.json(data, {status,headers:{'Cache-Control':'private, no-store','Vary':'Cookie'}});
@@ -11,14 +12,15 @@ export function failure(code: ErrorCode, status: number) {
 }
 export function backendFailure(error: {message?:string; code?:string} | null) {
   const message = error?.message ?? '';
-  if (/trip_not_found|guide_not_found|media_not_found|share_not_found/.test(message)) return failure('NOT_FOUND',404);
+  if (/trip_not_found|guide_not_found|media_not_found|share_not_found|job_not_found|claim_not_found|merchant_not_found|notification_not_found|support_not_found|report_not_found|submission_not_found/.test(message)) return failure('NOT_FOUND',404);
   if (/revision_conflict|idempotency_conflict/.test(message)) return failure('CONFLICT',409);
   if (/unauthenticated/.test(message)) return failure('AUTH_REQUIRED',401);
   if (/forbidden|creator_required/.test(message)) return failure('FORBIDDEN',403);
-  if (/invalid_|source_unavailable|guide_summary/.test(message) || error?.code?.startsWith('22') || error?.code === '23514') return failure('INVALID',400);
+  if (/invalid_|source_unavailable|guide_summary|amount_spent_required/.test(message) || error?.code?.startsWith('22') || error?.code === '23514') return failure('INVALID',400);
   return failure('UNAVAILABLE',503);
 }
 export async function apiContext(request: Request, capability: string, write = false) {
+  const started=performance.now();
   if (write && !sameOrigin(request,process.env.KINNSO_SITE_URL)) return {response:failure('FORBIDDEN',403)} as const;
   if (capabilities(process.env)[capability]?.mode !== 'connected') return {response:failure('UNAVAILABLE',503)} as const;
   const client = await serverClient();
@@ -28,6 +30,7 @@ export async function apiContext(request: Request, capability: string, write = f
   // The RPC also verifies the current auth.sessions row and authoritative roles.
   const actor = await client.rpc('kinnso_actor');
   if (actor.error || actor.data?.id !== user.id) return {response:failure('AUTH_REQUIRED',401)} as const;
+  observeRequest(actor.data,started);
   return {client,actor:actor.data} as const;
 }
 export async function boundedBody(request: Request, max = 262144): Promise<unknown> {

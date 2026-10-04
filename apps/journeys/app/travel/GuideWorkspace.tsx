@@ -10,8 +10,9 @@ import {invalidateAccountViews,subscribeAccountInvalidation} from '../../lib/tri
 import type {GuideSummary,GuideSnapshot} from '../../lib/contracts/trips';
 import {useApp} from './ui';
 import {GuestPlanner} from './GuestPlanner';
-export function GuideWorkspace({id,actorId}:{id:string;actorId:string|null}) {
- const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<GuideSummary|GuideSnapshot|null>(null),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
+import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
+export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:GuideSummary|GuideSnapshot|null}) {
+ const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<GuideSummary|GuideSnapshot|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId);
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
  const lock=useRef(false),intent=useRef<{desired:boolean;id:string}|null>(null),epoch=useRef(0),resumeCancelled=useRef(false);
@@ -29,7 +30,7 @@ export function GuideWorkspace({id,actorId}:{id:string;actorId:string|null}) {
   document.addEventListener('visibilitychange',check);
   return()=>{epoch.current++;unsubscribe();document.removeEventListener('visibilitychange',check)};
  },[id,actorId,router]);
- useEffect(()=>{let active=true;setGuide(null);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}});return()=>{active=false}},[id]);
+ useEffect(()=>{let active=true;setGuide(initialGuide);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else {setGuide(null);setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}}});return()=>{active=false}},[id,initialGuide]);
  useEffect(()=>{if(!actorId)return;let active=true;const generation=epoch.current;
   void bookmarks.list().then(r=>{if(active&&generation===epoch.current&&r.ok)setSaved(r.data.some(row=>row.guide_id===id))});
   void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok)setList(r.data.items);else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
@@ -64,8 +65,8 @@ export function GuideWorkspace({id,actorId}:{id:string;actorId:string|null}) {
   setBusy(false);lock.current=false;
  }
  if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
- return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><h1>{guide.title}</h1><p role="status">{message}</p><button className="k-btn" disabled={busy} onClick={()=>void toggle(!saved)}>{saved?t('Remove bookmark','取消收藏'):t('Bookmark guide','收藏攻略')}</button>
- {guide.kind==='summary'?<><p>{guide.summary}</p><p>{t('This is a summary guide. It has no structured itinerary to apply.','這是摘要攻略，未提供可套用的結構化行程。')}</p></>:<><p>{guide.creator.name} · v{guide.version}</p>{guide.days.map(d=><section key={d.id}><h2>{t('Day','第')} {d.offset+1} · {d.title}</h2>{d.stops.map(s=><article key={s.id}><h3>{s.title}</h3><p>{s.description}</p></article>)}</section>)}
+ return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/><p role="status">{message}</p><button className="k-btn" disabled={busy} onClick={()=>void toggle(!saved)}>{saved?t('Remove bookmark','取消收藏'):t('Bookmark guide','收藏攻略')}</button>
+ {guide.kind==='summary'?<><p>{t('This is a summary guide. It has no structured itinerary to apply.','這是摘要攻略，未提供可套用的結構化行程。')}</p></>:<><p>v{guide.version}</p>
  {actorId&&accountValid?<>
   <label htmlFor={'guide-trip-'+id}>{t('Apply to a trip','套用至行程')}</label><select id={'guide-trip-'+id} value={selected} disabled={busy||!!adoption.current} onChange={e=>{setSelected(e.target.value);setPreview(null)}}><option value="">{t('Choose an existing trip','選擇現有行程')}</option>{list.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select>
   <Link href={href('trips')}>{t('Create a trip first','先建立行程')}</Link><button className="k-btn primary" disabled={busy||!selected||!!adoption.current} onClick={()=>void reviewAdoption()}>{t('Apply published itinerary','套用已發布行程')}</button>

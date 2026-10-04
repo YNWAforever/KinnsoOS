@@ -11,8 +11,17 @@ import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
 import { CreatorWorkspace } from './CreatorWorkspace';
+import { OpsWorkspace as ConnectedOpsWorkspace } from './OpsWorkspace';
+import { MerchantWorkspace as RealMerchantWorkspace } from './MerchantWorkspace';
 import type { Actor } from '../../lib/auth/actor';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
+import type {PublicGuide} from '../../lib/seo/public-guide';
+import {InboxWorkspace,SupportWorkspace} from './InboxWorkspace';
+import {ReportWorkspace} from './ReportWorkspace';
+import {AgentPage} from '../agent/AgentPage';
+import {FinanceWorkspace} from './FinanceWorkspace';
+import {MonitoringWorkspace} from './MonitoringWorkspace';
+import {TelemetryConsent} from './TelemetryConsent';
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
@@ -204,13 +213,15 @@ export function Workbench({
   path,
   mode = 'demo',
   actor = null,
+  publicGuide = null,
   features={media:false,sharing:false},
 }: {
   locale: m.Locale;
   path: string;
   mode?:CapabilityMode;
   actor?:Actor|null;
-  features?:{media:boolean;sharing:boolean;creator?:boolean};
+  publicGuide?:PublicGuide|null;
+  features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const router = useRouter(),
     query = useSearchParams(),
@@ -583,10 +594,18 @@ export function Workbench({
   if(mode !== 'demo') {
     if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
-    else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null}/>;
+    else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null} initialGuide={publicGuide}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={actor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={actor?.id??null} roles={actor?.roles??[]} enabled={features.agent===true}/>;
+    else if(path==='inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
+    else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
+    else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
+    else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={actor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
+    else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace actorId={actor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
   }
@@ -687,6 +706,8 @@ export function Workbench({
           <Link href={href("workspace")}>
             {t("Existing workspaces", "現有工作區")}
           </Link>
+          {mode==='connected'&&actor&&features.notifications&&<Link href={href('inbox')}>{t('Inbox','通知')}</Link>}
+          {mode==='connected'&&actor&&features.agent&&<Link href={href('agent')}>{t('Task preview','任務預覽')}</Link>}
           <span>
             {mode === 'demo' ? t(
               "Travel editing remains device-local in this first version.",
@@ -733,6 +754,7 @@ export function Workbench({
             </Link>
           </div>
         </footer>
+        {mode==='connected'&&!path.startsWith('ops')&&<TelemetryConsent enabled={features.telemetry===true} fieldEnabled={features.fieldMetrics===true}/>}
         <nav
           className="k-bottom-nav"
           aria-label={t("Mobile navigation", "手機導航")}
