@@ -50,3 +50,19 @@ export function guidePageMetadata(guide:PublicGuide):Metadata {
   openGraph:{title:guide.title,description,type:'article',images,authors:author?[author]:undefined,publishedTime:publishedAt??undefined},
   twitter:{card:images.length?'summary_large_image':'summary',title:guide.title,description,images}};
 }
+/** Published prose only. Credits do not guess Person/Organization; sections do not claim visits, places or bookings. */
+export function guideStructuredData(guide:PublicGuide):string {
+ const credit=guide.kind==='itinerary'?guide.creator.name:guide.publication?.author;
+ const publishedAt=guide.kind==='itinerary'?guide.publishedAt:guide.publication?.publishedAt;
+ const cover=guide.publication?.coverUrl?publicCover(guide.publication.coverUrl):null;
+ const value={'@context':'https://schema.org','@type':'CreativeWork',name:guide.title,
+  ...(guide.kind==='summary'?{description:guide.summary}:{version:guide.version,hasPart:guide.days.map((day,index)=>({
+   '@type':'CreativeWork',name:day.title,position:index+1,hasPart:day.stops.map((stop,position)=>({
+    '@type':'CreativeWork',name:stop.title,description:stop.description,position:position+1,
+   })),
+  }))}),
+  ...(credit?.trim()?{creditText:credit}:{}),...(publishedAt?{datePublished:publishedAt}:{}),...(cover?{image:cover}:{}),
+ };
+ // Native JSON-LD script is inert; escape HTML delimiters and Unicode separators without changing authored text.
+ return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g,char=>'\\u'+char.charCodeAt(0).toString(16).padStart(4,'0'));
+}

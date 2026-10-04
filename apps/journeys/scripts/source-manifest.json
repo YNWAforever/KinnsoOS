@@ -225,6 +225,7 @@
     "tests/frontend-model.test.mjs",
     "tests/guest-draft.test.mjs",
     "tests/guide-publication.test.mjs",
+    "tests/guide-structured-data.test.mjs",
     "tests/helpers/worker.mjs",
     "tests/import-contract.test.mjs",
     "tests/integration/bookmarks.test.mjs",

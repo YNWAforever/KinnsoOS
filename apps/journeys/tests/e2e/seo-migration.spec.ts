@@ -18,6 +18,7 @@ test('no JavaScript private route remains noindex',async({browser,baseURL})=>{
  const context=await browser.newContext({javaScriptEnabled:false,baseURL});
  const page=await context.newPage();await page.goto('/en/sign-in');
  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+  await expect(page.locator('script[type="application/ld+json"]')).toHaveCount(0);
  await context.close();
 });
 
@@ -47,6 +48,9 @@ test('published summary author/date/cover survive SSR and hydration while owner 
     await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content',cover);
     await expect(page.locator('article img')).toHaveAttribute('alt',title);await expect(page.locator('article figure')).toHaveCSS('aspect-ratio','16 / 9');
     await expect(page.locator('article script')).toHaveCount(0);await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+    const structured=page.locator('script[type="application/ld+json"]');await expect(structured).toHaveCount(1);
+    const json=JSON.parse((await structured.textContent())!);expect(json).toEqual({'@context':'https://schema.org','@type':'CreativeWork',name:title,description:base.summary,creditText:author,datePublished:projected.publication.publishedAt,image:cover});
+    expect(await structured.textContent()).not.toContain('<script>');expect(json).not.toHaveProperty('hasPart');
     await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);
     expect(await page.content()).not.toContain('Private profile marker');expect(await page.content()).not.toContain('Private draft marker');
    } finally {await context.close();}
@@ -64,12 +68,17 @@ test('authored published guide renders without JavaScript; withdrawing versions 
   await ok(actor.rpc('save_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:0,p_request_id:randomUUID(),p_payload:payload}));
   await ok(actor.rpc('publish_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:1,p_request_id:randomUUID()}));
   const context=await browser.newContext({javaScriptEnabled:false,baseURL});
-  try{const page=await context.newPage();const response=await page.goto('/en/g/'+id);expect(response?.status()).toBe(200);await expect(page.getByRole('heading',{name:payload.title,exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Authored source stop',exact:true})).toBeVisible();await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content',payload.title);await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);await expect(page.locator('article script')).toHaveCount(0);await expect(page.getByText('Published description <script>unsafe()</script>',{exact:true})).toBeVisible();}finally{await context.close();}
+  try{const page=await context.newPage();const response=await page.goto('/en/g/'+id);expect(response?.status()).toBe(200);await expect(page.getByRole('heading',{name:payload.title,exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Authored source stop',exact:true})).toBeVisible();await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content',payload.title);await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);await expect(page.locator('article script')).toHaveCount(0);await expect(page.getByText('Published description <script>unsafe()</script>',{exact:true})).toBeVisible();
+   const structured=page.locator('script[type="application/ld+json"]');await expect(structured).toHaveCount(1);const json=JSON.parse((await structured.textContent())!);
+   expect(json.version).toBe(1);expect(json.name).toBe(payload.title);expect(json.creditText).toBe('Authored test creator');expect(json.hasPart).toEqual([{'@type':'CreativeWork',name:'Authored source day',position:1,hasPart:[{'@type':'CreativeWork',name:'Authored source stop',description:payload.content.days[0].stops[0].description,position:1}]}]);expect(await structured.textContent()).not.toContain('<script>');
+  }finally{await context.close();}
   await ok(actor.rpc('withdraw_guide_versions',{p_guide_id:id}));
   const withdrawn=await request.get('/api/guides/'+id);expect(withdrawn.status()).toBe(200);
   const summary=(await withdrawn.json()).data;expect(summary.kind).toBe('summary');expect(summary.title).toBe(payload.title);expect(summary).not.toHaveProperty('days');
   const summaryContext=await browser.newContext({javaScriptEnabled:false,baseURL});
-  try{const page=await summaryContext.newPage();await page.goto('/en/g/'+id);await expect(page.getByRole('heading',{name:payload.title,exact:true})).toBeVisible();await expect(page.getByText(payload.summary,{exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Authored source stop',exact:true})).toHaveCount(0);await expect(page.getByText('This is a summary guide. It has no structured itinerary to apply.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);}finally{await summaryContext.close();}
+  try{const page=await summaryContext.newPage();await page.goto('/en/g/'+id);await expect(page.getByRole('heading',{name:payload.title,exact:true})).toBeVisible();await expect(page.getByText(payload.summary,{exact:true})).toBeVisible();await expect(page.getByRole('heading',{name:'Authored source stop',exact:true})).toHaveCount(0);await expect(page.getByText('This is a summary guide. It has no structured itinerary to apply.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);
+   const json=JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);expect(json.name).toBe(payload.title);expect(json.description).toBe(payload.summary);expect(json).not.toHaveProperty('hasPart');expect(json).not.toHaveProperty('version');
+  }finally{await summaryContext.close();}
   // Missing content is rejected by the data API; a streamed Next page may carry its not-found state in HTML.
   const missing=await request.get('/api/guides/'+randomUUID());expect(missing.status()).toBe(404);expect((await missing.json()).code).toBe('NOT_FOUND');
  }finally{if(actorId)await ok(admin.auth.admin.deleteUser(actorId));}
