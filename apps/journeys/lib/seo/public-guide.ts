@@ -1,6 +1,7 @@
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
 import type {GuideSummary,GuideSnapshot} from '../contracts/trips';
-export type PublicGuide=GuideSummary|GuideSnapshot;
+export type GuidePublication={author:string|null;publishedAt:string|null;coverUrl:string|null};
+export type PublicGuide=(GuideSummary|GuideSnapshot)&{publication?:GuidePublication};
 function record(v:unknown):Record<string,unknown>{if(!v||typeof v!=='object'||Array.isArray(v))throw new Error('guide_schema');return v as Record<string,unknown>;}
 function text(v:unknown):string{if(typeof v!=='string')throw new Error('guide_schema');return v;}
 function nullable(v:unknown):string|null{return v===null?null:text(v);}

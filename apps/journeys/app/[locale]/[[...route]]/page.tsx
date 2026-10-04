@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Workbench } from "../../travel/Workbench";
 import { isKnownRoute } from "../../travel/routes";
@@ -6,16 +6,17 @@ import { fixtures } from "../../travel/model";
 import type { Metadata } from "next";
 import {currentActor} from '../../../lib/auth/actor';
 import {capabilities} from '../../../lib/contracts/capabilities';
-import {readPublicGuide} from '../../../lib/seo/public-guide';
+import {readPublicGuidePage,guidePageMetadata} from '../../../lib/seo/guide-publication';
 import {serverClient} from '../../../lib/supabase/server';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 type Props = { params: Promise<{ locale: string; route?: string[] }> };
+const publishedGuide=cache((id:string)=>readPublicGuidePage(id,process.env));
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, route = [] } = await params;
   if(route[0]==='g') {
-    const published=await readPublicGuide(route[1],process.env);
+    const published=await publishedGuide(route[1]);
     if(!published)notFound();
-    return {title:published.title,description:published.kind==='summary'?published.summary:undefined,robots:{index:false,follow:false},openGraph:{title:published.title,type:'article'}};
+    return guidePageMetadata(published);
   }
   const guide = route[0]==='demo'&&route[1]==='g'?fixtures.find(g=>g.slug===route[2]):undefined;
   return {
@@ -41,7 +42,7 @@ export default async function Page({ params }: Props) {
   const actor=demo?null:await currentActor();
   const tripHeading=!demo&&actor&&route[0]==='trips'&&route.length===2&&capabilities(process.env).trips.mode==='connected'
     ?await readPrivateTripHeading(await serverClient(),actor.id,route[1]):null;
-  const publicGuide=!demo&&route[0]==='g'?await readPublicGuide(route[1],process.env):null;
+  const publicGuide=!demo&&route[0]==='g'?await publishedGuide(route[1]):null;
   if(!demo&&route[0]==='g'&&!publicGuide)notFound();
   return (
     <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}>

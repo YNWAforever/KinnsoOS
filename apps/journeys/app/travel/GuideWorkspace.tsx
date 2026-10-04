@@ -7,12 +7,12 @@ import {adoptionPreview} from '../../lib/guides/adoption-preview';
 import {bookmarks} from '../../lib/bookmarks/repository';
 import {trips} from '../../lib/trips/repository';
 import {invalidateAccountViews,subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
-import type {GuideSummary,GuideSnapshot} from '../../lib/contracts/trips';
+import type {PublicGuide} from '../../lib/seo/public-guide';
 import {useApp} from './ui';
 import {GuestPlanner} from './GuestPlanner';
 import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
-export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:GuideSummary|GuideSnapshot|null}) {
- const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<GuideSummary|GuideSnapshot|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
+export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
+ const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId);
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
  const lock=useRef(false),intent=useRef<{desired:boolean;id:string}|null>(null),epoch=useRef(0),resumeCancelled=useRef(false);

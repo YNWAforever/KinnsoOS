@@ -20,6 +20,39 @@ test('no JavaScript private route remains noindex',async({browser,baseURL})=>{
  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
  await context.close();
 });
+
+test('published summary author/date/cover survive SSR and hydration while owner drafts remain absent',async({browser,baseURL,request})=>{
+ const admin=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!);
+ let actorId='';const id=randomUUID(),draft=randomUUID(),title='Synthetic published cover guide';
+ const author='Public source author <script>unsafe()</script>',date='2026-09-01T10:00:00Z',cover='https://cdn.kinnso.ai/synthetic-publication.png';
+ const ok=async(p:PromiseLike<any>)=>{const r=await p;expect(r.error).toBeNull();return r.data;};
+ try {
+  actorId=(await ok(admin.auth.admin.createUser({email:'synthetic-publication-'+randomUUID()+'@example.test',password:'Synthetic!'+randomUUID(),email_confirm:true}))).user.id;
+  await ok(admin.from('creators').update({status:'active',display_name:'Creator account',bio:'Private profile marker '+draft}).eq('id',actorId));
+  const base={creator_id:actorId,creator_handle:'synthetic',creator_name:author,city:'Kyoto',cover_url:cover,summary:'Public summary remains a summary'};
+  await ok(admin.from('guides').insert([{...base,id,slug:'synthetic-'+id,title,status:'published',published_at:date},{...base,id:draft,slug:'synthetic-'+draft,title:'Private draft marker '+draft,status:'draft',published_at:null}]));
+  const hidden=await request.get('/api/guides/'+draft);expect(hidden.status()).toBe(404);expect(await hidden.text()).not.toContain('Private draft marker');
+  const api=await request.get('/api/guides/'+id);expect(api.status()).toBe(200);const projected=(await api.json()).data;
+  expect(projected.kind).toBe('summary');expect(projected).not.toHaveProperty('days');expect(projected.publication.author).toBe(author);expect(projected.publication.coverUrl).toBe(cover);
+  for(const javaScriptEnabled of [false,true]) {
+   const context=await browser.newContext({javaScriptEnabled,baseURL});
+   try {
+    // Deterministic synthetic pixels verify image wiring/layout only, not production CDN parity.
+    await context.route('**/_next/image?*',route=>route.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfWQAAAAASUVORK5CYII=','base64')}));
+    const page=await context.newPage();const refreshed=javaScriptEnabled?page.waitForResponse(r=>r.url().endsWith('/api/guides/'+id)&&r.status()===200):null;
+    const response=await page.goto('/en/g/'+id);expect(response?.status()).toBe(200);if(refreshed)await refreshed;
+    await expect(page.locator('article').getByText(author,{exact:true})).toBeVisible();await expect(page.locator('article time')).toHaveAttribute('datetime',projected.publication.publishedAt);
+    await expect(page.locator('meta[name="author"]')).toHaveAttribute('content',author);
+    await expect(page.locator('meta[property="article:published_time"]')).toHaveAttribute('content',projected.publication.publishedAt);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content',cover);
+    await expect(page.locator('article img')).toHaveAttribute('alt',title);await expect(page.locator('article figure')).toHaveCSS('aspect-ratio','16 / 9');
+    await expect(page.locator('article script')).toHaveCount(0);await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+    await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);
+    expect(await page.content()).not.toContain('Private profile marker');expect(await page.content()).not.toContain('Private draft marker');
+   } finally {await context.close();}
+  }
+ } finally {if(actorId)await ok(admin.auth.admin.deleteUser(actorId));}
+});
 test('authored published guide renders without JavaScript; withdrawing versions removes structured adoption and preserves the published summary',async({browser,baseURL,request})=>{
  const admin=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!),password='Synthetic!'+randomUUID();let actorId='';const id=randomUUID();
  const ok=async(p:PromiseLike<any>)=>{const r=await p;expect(r.error).toBeNull();return r.data;};
