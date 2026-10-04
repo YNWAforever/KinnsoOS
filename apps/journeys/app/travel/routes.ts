@@ -98,7 +98,7 @@ export function isKnownRoute(path: string) {
     /^destinations\/(kyoto|hong-kong|lisbon|tokyo|seoul|singapore)$/.test(path)
   )
     return true;
-  if (/^c\/(mika|chloe|ines|you|creator-passport)$/.test(path)) return true;
+  if (/^c\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(path)) return true;
   if (
     /^(trips\/[^/]+|studio\/adventures\/[^/]+\/edit|bookings\/[^/]+)$/.test(
       path,
