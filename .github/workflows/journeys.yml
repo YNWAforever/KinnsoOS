@@ -19,7 +19,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p source_package_test.py
