@@ -58,3 +58,33 @@ export async function retainNavigation(result,persist,ready){
   if(result.lhr.runtimeError)throw Error(result.lhr.runtimeError.code+': '+result.lhr.runtimeError.message);
   await ready();
 }
+
+/** A controlled warm-read baseline, kept separate from browser/field metrics. */
+export function assessLatency(report, budgets) {
+  const layers = ['api', 'postgrest', 'postgres'], missing = [];
+  const dataset = report.dataset ?? {};
+  if (!(Number.isInteger(dataset.observedRowCap) && dataset.observedRowCap > 0 &&
+      Number.isInteger(dataset.guides) && dataset.guides > dataset.observedRowCap * 2 &&
+      dataset.tripDays === 1 && dataset.tripStops === 1)) missing.push('Verified scale dataset');
+  if (report.error) missing.push('Collection failed');
+  if (report.cleanup !== 'PASS_OWNED_SYNTHETIC_ACTORS_REMOVED') missing.push('Owned cleanup');
+  if (budgets !== undefined && layers.some(layer => !(typeof budgets[layer] === 'number' &&
+      Number.isFinite(budgets[layer]) && budgets[layer] > 0))) missing.push('Finite positive budgets for all layers');
+  const groups = layers.flatMap(layer => pages.map(operation => {
+    const selected = (report.samples ?? []).filter(s => s.layer === layer && s.operation === operation);
+    const valid = selected.length >= 40 && new Set(selected.map(s => s.run)).size === selected.length &&
+      selected.every(s => Number.isInteger(s.run) && s.run > 0 && s.status === 'PASS' && s.verified === true &&
+        typeof s.durationMs === 'number' && Number.isFinite(s.durationMs) && s.durationMs >= 0);
+    if (!valid) {missing.push(layer+'/'+operation+' measurements'); return {layer, operation, samples: selected.length, status: 'INCOMPLETE'};}
+    const values = selected.map(s => s.durationMs).sort((a,b) => a-b);
+    const p95Ms = values[Math.ceil(values.length * 0.95)-1];
+    const budgetMs = budgets?.[layer];
+    return {layer, operation, samples: selected.length, medianMs: median(values), p95Ms,
+      maxMs: values.at(-1), budgetMs: budgetMs ?? null,
+      status: budgetMs === undefined ? 'MEASURED_BUDGET_NOT_SET' : p95Ms <= budgetMs ? 'PASS' : 'FAIL'};
+  }));
+  return {status: missing.length ? 'INCOMPLETE' : budgets === undefined ? 'MEASURED_BUDGET_NOT_SET' :
+    groups.some(g => g.status === 'FAIL') ? 'FAIL' : 'PASS', groups, missing,
+    percentile: 'nearest-rank ceil(0.95*N), minimum 40 verified samples per operation/layer',
+    scope: 'Owned local warm reads only; not production, concurrent load, cold database or field latency'};
+}
