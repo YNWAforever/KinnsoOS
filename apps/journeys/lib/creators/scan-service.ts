@@ -1,4 +1,4 @@
-import type {BudgetStore} from '../budgets/service.ts';
+import {validRateVersion,type MonthlyBudgetStore} from '../budgets/monthly.ts';
 import {units} from '../budgets/contracts.ts';
 import {canonicalUrl} from '../agent/result-contract.ts';
 const id=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -6,7 +6,9 @@ export type ScanPorts={
  /** Each call must independently check the live session and creator row. */
  authorize:()=>Promise<{actorId:string;creatorStatus:'onboarding'|'active';accessToken:string}|null>;
  ownedJob:(jobId:string,actorId:string)=>Promise<{id:string;status:string}|null>;
- budget:BudgetStore;
+ budget:MonthlyBudgetStore;
+ costUnit:'USD_micro';
+ rateVersion:string;
  transport:typeof fetch;
 };
 export function scanTarget(env:Record<string,string|undefined>):string|null {
@@ -22,10 +24,11 @@ export async function requestScan(input:{jobId:string|null;requestId:string;esti
  units(input.estimate);
  const origin=scanTarget(env);if(!origin)return{ok:false,reason:'unconfigured'};
  if(typeof ports.budget.settle!=='function')return{ok:false,reason:'reconciliation_unconfigured'};
+ if(ports.budget.accounting!=='USD_calendar_month'||ports.costUnit!=='USD_micro'||!validRateVersion(ports.rateVersion)||ports.rateVersion!==ports.budget.rateVersion)return{ok:false,reason:'budget_disabled'};
  const actor=await ports.authorize();
  if(!actor||!id.test(actor.actorId)||!['onboarding','active'].includes(actor.creatorStatus)||!actor.accessToken)return{ok:false,reason:'forbidden'};
  if(input.jobId){const job=await ports.ownedJob(input.jobId,actor.actorId);if(!job||job.id!==input.jobId)return{ok:false,reason:'not_found'};if(job.status!=='failed')return{ok:false,reason:'conflict'};}
- const reservation=await ports.budget.reserve({service:'ai',requestId:input.requestId,estimate:input.estimate});
+ const reservation=await ports.budget.reserve({service:'scan',requestId:input.requestId,estimate:input.estimate});
  if(!reservation.allowed)return{ok:false,reason:reservation.reason};
  // A 202 response means work was accepted, not completed. Hold the reservation for trusted cost reconciliation.
  try{

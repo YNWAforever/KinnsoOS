@@ -2,7 +2,7 @@ import {AGENT_MODEL,allowedTools} from './policy.ts';
 import type {Actor,AgentTask} from './policy.ts';
 import {evidence,unsafeText} from './result-contract.ts';
 import type {AgentResult,Evidence,TripProposal} from './result-contract.ts';
-import type {BudgetStore} from '../budgets/service.ts';
+import {validRateVersion,type MonthlyBudgetStore} from '../budgets/monthly.ts';
 import {runBudgeted} from '../budgets/service.ts';
 import type {TripSnapshot} from '../contracts/trips.ts';
 /** A verified source older than 90 days is never presented as current. Publication is not verification. */
@@ -25,12 +25,13 @@ export function groundedResult(input:{task:AgentTask;sources:Evidence[];readFail
  }
  return {answer:reasons[state]+(usable?'\n\n'+records.map(s=>`${s.title}\n${s.excerpt}`).join('\n\n')+(input.ownedContext?'\n\nOwned private context (not a public citation):\n'+input.ownedContext:''):''),sources,proposedActions:proposals,capabilityMode:'sources_only',providerStatus:'unconfigured',evidenceState:state};
 }
-export type ProviderPort={authorized:true;estimate:number;generate:(input:{model:string;task:AgentTask;prompt:string;sources:Evidence[];signal:AbortSignal})=>Promise<{value:AgentResult;actual:number;successful:boolean}>};
+export type ProviderPort={authorized:true;estimate:number;costUnit:'USD_micro';rateVersion:string;generate:(input:{model:string;task:AgentTask;prompt:string;sources:Evidence[];signal:AbortSignal})=>Promise<{value:AgentResult;actual:number;successful:boolean}>};
 /** Only trusted server code can supply this paid transport and unit conversion. No provider is configured by default. */
-export async function executeAgent(input:{actor:Actor;task:AgentTask;prompt:string;sources:Evidence[];requestId:string;trip?:TripSnapshot|null;readFailure?:string;ownedContext?:string},paid?:{provider:ProviderPort;store:BudgetStore},deadlineMs=20000):Promise<AgentResult> {
+export async function executeAgent(input:{actor:Actor;task:AgentTask;prompt:string;sources:Evidence[];requestId:string;trip?:TripSnapshot|null;readFailure?:string;ownedContext?:string},paid?:{provider:ProviderPort;store:MonthlyBudgetStore},deadlineMs=20000):Promise<AgentResult> {
  allowedTools(input.actor,input.task);
  const fallback=groundedResult(input);
  if(!paid||paid.provider.authorized!==true)return fallback;
+ if(paid.store.accounting!=='USD_calendar_month'||paid.provider.costUnit!=='USD_micro'||!validRateVersion(paid.provider.rateVersion)||paid.provider.rateVersion!==paid.store.rateVersion)return {...fallback,providerStatus:'budget_disabled'};
  if(!['grounded','unverified'].includes(fallback.evidenceState))return fallback;
  const controller=new AbortController();
  let timedOut=false;let timer:ReturnType<typeof setTimeout>|undefined;

@@ -6,7 +6,7 @@ export type RpcClient={rpc:(name:string,args?:Record<string,unknown>)=>PromiseLi
 export async function rpc<T>(client:RpcClient,name:string,args:Record<string,unknown>={}):Promise<T> {
  const result=await client.rpc(name,args);if(result.error)throw new Error('MONITORING_UNAVAILABLE');return result.data as T;
 }
-export type Monitoring={day:string;funnel:{name:string;count:number|null;status:'unknown'|'measured'}[];performance:{metric:string;count:number;status:'unknown'|'insufficient'|'measured';p75:number|null}[];budgets:(Omit<Budget,'limit'|'spent'|'reserved'|'stopBehavior'>&{limit:number|null;spent:number|null;reserved:number|null;stopBehavior:'stop'|'degrade'|null;unit:string|null;status:'disabled'|'available'|'exhausted'|'overrun';successfulFlows:number|null;costPerSuccessfulFlow:number|null;owner:string;runbook:string})[];scheduledRuns:ScheduledRun[]};
+export type Monitoring={monthlyCosts?:import('../budgets/monthly').MonthlyCosts;day:string;funnel:{name:string;count:number|null;status:'unknown'|'measured'}[];performance:{metric:string;count:number;status:'unknown'|'insufficient'|'measured';p75:number|null}[];budgets:(Omit<Budget,'limit'|'spent'|'reserved'|'stopBehavior'>&{limit:number|null;spent:number|null;reserved:number|null;stopBehavior:'stop'|'degrade'|null;unit:string|null;status:'disabled'|'available'|'exhausted'|'overrun';successfulFlows:number|null;costPerSuccessfulFlow:number|null;owner:string;runbook:string})[];scheduledRuns:ScheduledRun[]};
 /** Service client is server-only. Caller determines environment/context and proves successful mutations. */
 export async function recordEvent(service:RpcClient,actorId:string|null,value:unknown) {
  const event=parseEvent(value);if(!event)return{accepted:false};
