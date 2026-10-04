@@ -1,0 +1,27 @@
+import type { MissionDraftInput } from '@/lib/missions/types'
+
+export const missionDraftFixture: MissionDraftInput = {
+  missionSource: 'merchant',
+  missionType: 'coupon_affiliate',
+  visibility: 'open',
+  title: 'Hong Kong staycation coupon',
+  summary: 'Promote a weekend staycation discount.',
+  couponCode: 'STAY10',
+  couponUrl: 'https://merchant.test/staycation',
+  affiliateCommissionRate: 10,
+  kinnsoCommissionRate: 4,
+  creatorCommissionRate: 6,
+  paidFeeAmount: null,
+  paidFeeCurrency: null,
+  affiliateNetworkProgramId: null,
+  minTier: null,
+  maxReceiptsPerCreator: null,
+  milestones: [{ title: 'Publish post', description: 'Share one post with the tracked link.' }],
+  deliverables: [],
+  requirements: [],
+  dos: [],
+  donts: [],
+  keyMessages: [],
+  referenceLinks: [],
+  effort: null,
+}

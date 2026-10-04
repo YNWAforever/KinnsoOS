@@ -1,0 +1,67 @@
+name: Journeys
+on: [push, pull_request]
+permissions:
+  contents: read
+concurrency:
+  group: journeys-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m unittest discover -s tests -p source_package_test.py
+      - run: npm test
+      - run: npm run build
+      - run: npm run typecheck
+      - name: Rebuild distributed corresponding source
+        run: |
+          python -m zipfile -e public/source/kinnsoos-source.zip "$RUNNER_TEMP/kinnso-source"
+          cd "$RUNNER_TEMP/kinnso-source"
+          npm ci
+          npm run build
+          npm run typecheck
+  connected:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - uses: supabase/setup-cli@46f7f98c7f948ad727d22c1e67fab04c223a0520
+        with:
+          version: 2.107.0
+      - name: Prepare the isolated CI target
+        run: node scripts/prepare-connected-ci.mjs config
+      - name: Start current local migrations without sample seeds
+        run: supabase start --workdir ../../.local-private/connected-ci-stack
+      - name: Derive local test environment after ownership verification
+        run: node scripts/prepare-connected-ci.mjs env
+      - run: npm run test:integration
+      - run: npm run build
+      - run: npm exec playwright install -- --with-deps chromium
+      - name: New-site creator and connected UAT flows
+        run: npm exec playwright test -- --config=playwright.connected.config.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: failure()
+        with:
+          name: journeys-connected-local-results
+          path: apps/journeys/evidence/connected-browser/

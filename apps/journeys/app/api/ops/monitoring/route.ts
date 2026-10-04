@@ -1,0 +1,2 @@
+import {apiContext,backendFailure,failure,reply} from '../../../../lib/api/server';
+export async function GET(request:Request){const ctx=await apiContext(request,'ops');if(ctx.response)return ctx.response;const day=new URL(request.url).searchParams.get('day');if(day&&!/^\d{4}-\d{2}-\d{2}$/.test(day))return failure('INVALID',400);const r=await ctx.client.rpc('get_kinnso_monitoring',day?{p_day:day}:{});return r.error?backendFailure(r.error):reply({ok:true,data:r.data});}

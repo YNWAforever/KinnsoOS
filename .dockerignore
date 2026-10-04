@@ -1,0 +1,20 @@
+# Keep the Docker build context lean and free of secrets / build artifacts.
+**/node_modules
+**/.next
+**/dist
+**/.turbo
+**/coverage
+**/playwright-report
+**/test-results
+**/.env
+**/.env.*
+.git
+.vercel
+out
+
+.local-private
+.superpowers
+evidence
+AGENTS.md
+CLAUDE.md
+packages/db/types.ts

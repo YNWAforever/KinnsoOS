@@ -1,15 +1,141 @@
-name: Verify
-on: [push, pull_request]
+name: Verify (cutover gate)
+
+# Post-deploy + on-demand. Targets the LIVE deploy, so it runs AFTER a deploy succeeds —
+# it cannot be a pre-merge gate on the URL that very deploy produces. The pre-merge gate
+# stays ci.yml (typecheck/lint/test, which includes @kinnso/parity's offline engine tests).
+#
+# AUTO-TRIGGER SCOPE: a Vercel deployment_status fires for EVERY deploy — the web app AND
+# the sync API app, production AND every PR preview. Only the PRODUCTION WEB deploy is a
+# valid target for this gate (the sync URL serves the Hono API, not the rendered site, and
+# previews lack the gate's secrets). The job `if:` below therefore requires environment
+# 'Production' and the generated remix-kinnso web URL prefix; sync URLs are explicitly
+# excluded. Everything else is skipped (neutral, not failed).
+#
+# To use as a PRE-MERGE gate instead: point E2E_BASE_URL / BASE_URL at a Vercel PREVIEW
+# deployment (or a local `next start`) and trigger via workflow_dispatch.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Target base URL (defaults to the production deploy)
+        required: false
+        default: https://remix-kinnso-web.vercel.app
+      allow_external_scan_skip:
+        description: Allow creator scan skip only for a live external target
+        required: false
+        type: boolean
+        default: false
+  deployment_status:
+
+permissions:
+  contents: read
+
 jobs:
-  verify:
+  parity:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment_status.environment == 'Production' &&
+       startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-') &&
+       !startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-sync-'))
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url || vars.VERIFY_BASE_URL || 'https://remix-kinnso-web.vercel.app' }}
+      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm test
-      - run: npm run build
-      - run: npm run typecheck
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Parity gate (fails on coverage gaps)
+        run: |
+          set -o pipefail
+          pnpm --filter @kinnso/parity parity -- --json | tee parity-report.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: parity-report
+          path: parity-report.json
+
+  e2e:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment_status.environment == 'Production' &&
+       startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-') &&
+       !startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-sync-'))
+    runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: ${{ github.event.inputs.base_url || github.event.deployment_status.environment_url || vars.VERIFY_BASE_URL || 'https://remix-kinnso-web.vercel.app' }}
+      # The shared Playwright config defaults to loopback and rejects any other host
+      # without this, so only the callers that legitimately drive a deployed URL declare
+      # it — and only alongside a spec selection that cannot mutate the target.
+      E2E_ALLOW_REMOTE_TARGET: '1'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm --filter @kinnso/e2e exec playwright install --with-deps chromium
+      - name: Playwright E2E (blocks on failure)
+        # --config is load-bearing. The default config collects every spec under specs/,
+        # which against a live deploy means signing up real creators, publishing profiles
+        # and driving Stripe — and it aborts collection outright on any spec that refuses
+        # to load without its local opt-in. playwright.prod.config.ts names the read-only,
+        # seed-count-free subset that a deployed target can actually answer for.
+        env:
+          # Sole declaration of the live-external scan tolerance switch. The onboarding
+          # journey it applies to is not part of the deployed selection, so it takes effect
+          # only if that journey is ever readmitted to a deployed target.
+          E2E_ALLOW_EXTERNAL_SCAN_SKIP: ${{ github.event_name == 'deployment_status' || inputs.allow_external_scan_skip }}
+        run: pnpm --filter @kinnso/e2e e2e --config playwright.prod.config.ts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: playwright-report
+          path: apps/e2e/playwright-report/
+      - name: Lighthouse CWV (CLS is a gate; the rest report)
+        if: always()
+        # Measured against the stable public alias, not the per-deployment URL in
+        # E2E_BASE_URL: deployment protection can put that behind SSO, and
+        # Lighthouse would score the auth page rather than the site.
+        env:
+          LHCI_BASE_URL: ${{ vars.VERIFY_PUBLIC_URL || 'https://remix-kinnso-web.vercel.app' }}
+        run: pnpm --filter @kinnso/e2e cwv
+  preview-smoke:
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment == 'Preview' &&
+      startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-') &&
+      !startsWith(github.event.deployment_status.environment_url, 'https://remix-kinnso-sync-')
+    runs-on: ubuntu-latest
+    env:
+      E2E_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+      - run: pnpm install --frozen-lockfile
+      - name: Install Playwright Chromium
+        run: pnpm --filter @kinnso/e2e exec playwright install --with-deps chromium
+      - name: R7.10 preview manifest smoke (read-only)
+        # Declared on the step, not the job: apps/web's workflow contract test pins this
+        # job's environment to the preview URL and nothing else, so the isolation it
+        # enforces stays readable. The spec only issues GETs, which is what makes a
+        # deployed preview a legitimate target for it.
+        env:
+          E2E_ALLOW_REMOTE_TARGET: '1'
+        run: pnpm --filter @kinnso/e2e e2e r7-10-preview-smoke

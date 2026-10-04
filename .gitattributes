@@ -1,0 +1,33 @@
+# Line endings are part of this repository's test contract, not a preference.
+#
+# 80 of the 82 `apps/web/tests/db.*.test.ts` files -- plus ci.product-state,
+# media.source-contract and r7-6-navigation-footer -- read a tracked file with
+# readFileSync and assert `expect(text).toContain('multi\nline\nfragment')`.
+# Those fragments are written with LF, so they can only match if the file on
+# disk also uses LF.
+#
+# Every blob in this repository is already stored with LF. Without a
+# .gitattributes, though, the *working tree* encoding is decided by whatever
+# `core.autocrlf` the contributor happens to have: on a Windows checkout with
+# `core.autocrlf=true` the files land as CRLF, every one of those assertions
+# fails, and 14 tests break for a reason that has nothing to do with the code.
+# CI runs on Linux and never sees it, so the suite is silently not reproducible
+# off-Linux.
+#
+# `eol=lf` pins the working tree instead of leaving it to local configuration.
+# It changes no committed content -- the blobs are LF already.
+
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.ico binary
+*.ttf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zip binary
