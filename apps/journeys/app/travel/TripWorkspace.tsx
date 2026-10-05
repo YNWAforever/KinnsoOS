@@ -40,8 +40,8 @@ function StopEditor({stop,dayId,days,busy,save,remove,move,edited}:{stop:TripSto
 export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false,sharingEnabled=false}:{id?:string;actorId:string|null;initialHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;mediaEnabled?:boolean;sharingEnabled?:boolean}) {
  const {t,href,ready}=useApp(),router=useRouter(),[list,setList]=useState<{id:string;title:string}[]>([]),[next,setNext]=useState<string|null>(null),[trip,setTrip]=useState<TripSnapshot|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[retry,setRetry]=useState(0),[title,setTitle]=useState(''),[date,setDate]=useState(''),[timezone,setTimezone]=useState('UTC'),[accountValid,setAccountValid]=useState(true);
  const pending=useRef<{key:string;requestId:string;revision:number;command?:TripCommand}|null>(null),lock=useRef(false),epoch=useRef(0),conflicted=useRef(false),reapply=useRef(false),preserveInputs=useRef(false);
- useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setTrip(null);setList([]);pending.current=null;preserveInputs.current=false;
-  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setTrip(null);setList([]);setTitle('');setDate('');pending.current=null;lock.current=false;setBusy(false);router.refresh()};
+ useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setTrip(null);setList([]);setNext(null);setTitle('');setDate('');pending.current=null;preserveInputs.current=false;conflicted.current=false;reapply.current=false;lock.current=false;setBusy(false);
+  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setTrip(null);setList([]);setNext(null);setTitle('');setDate('');pending.current=null;lock.current=false;setBusy(false);router.refresh()};
   const unsubscribe=subscribeAccountInvalidation(invalidate);
   const check=async()=>{if(document.visibilityState!=='visible'||!navigator.onLine)return;const generation=epoch.current;try{const response=await fetch('/api/session',{cache:'no-store'});if(!response.ok)return;const body=await response.json();if(generation===epoch.current&&body.data?.id!==actorId)invalidate(body.data?.id??null)}catch{}};
   document.addEventListener('visibilitychange',check);return()=>{epoch.current++;unsubscribe();document.removeEventListener('visibilitychange',check)}
@@ -52,12 +52,13 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
  async function apply(command:TripCommand) {
   if(!trip||!accountValid||lock.current)return false;const generation=epoch.current;lock.current=true;setBusy(true);setMessage(t('Saving…','保存中…'));
   const key=JSON.stringify(command),stored=await readLocalDraft(actorId!,trip.id).catch(()=>null);
+  if(generation!==epoch.current)return false;
   const sameTarget=stored?.command.type===command.type&&('id' in command&&'id' in stored.command?command.id===stored.command.id:JSON.stringify(stored.command)===key);
   const replaceDraft=!!stored&&reapply.current&&sameTarget;
   if(stored&&!replaceDraft){if(JSON.stringify(stored.command)!==key){setMessage(t('Another pending edit must be retried or reviewed first. New input stays in this tab.','請先重試或核對待同步編輯。新輸入會保留在此頁。'));setBusy(false);lock.current=false;return false}pending.current={key,requestId:stored.requestId,revision:stored.baseRevision,command}}
   else if(pending.current?.key!==key||replaceDraft)pending.current={key,requestId:crypto.randomUUID(),revision:trip.revision,command};
   reapply.current=false;const intent=pending.current!;let storedLocally=true;
-  try{await saveLocalDraft(actorId!,trip.id,intent.revision,command,intent.requestId,replaceDraft)}catch(error){storedLocally=false;if(error instanceof Error&&['PENDING_DRAFT','CACHE_ACCOUNT_CHANGED'].includes(error.message)){setMessage(t('Another pending edit or account change prevents this save. Input stays in this tab.','另有待同步編輯或帳戶已改變，輸入保留在此頁。'));setBusy(false);lock.current=false;return false}}
+  try{await saveLocalDraft(actorId!,trip.id,intent.revision,command,intent.requestId,replaceDraft)}catch(error){if(generation!==epoch.current)return false;storedLocally=false;if(error instanceof Error&&['PENDING_DRAFT','CACHE_ACCOUNT_CHANGED'].includes(error.message)){setMessage(t('Another pending edit or account change prevents this save. Input stays in this tab.','另有待同步編輯或帳戶已改變，輸入保留在此頁。'));setBusy(false);lock.current=false;return false}}
   if(generation!==epoch.current)return false;
   const result=await trips.apply(trip.id,intent.revision,intent.requestId,command);
   if(generation!==epoch.current)return false;
@@ -68,22 +69,43 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
  }
  function add(command:TripCommand){const prior=pending.current?.command;if(prior?.type===command.type&&(command.type!=='addStop'||prior.type==='addStop'&&prior.dayId===command.dayId))void apply(prior);else void apply(command)}
  async function create() {
-  if(lock.current)return;lock.current=true;setBusy(true);const input={title,timezone,startDate:date||null},key=JSON.stringify(input);
+  if(!actorId||!accountValid||lock.current)return;const generation=epoch.current;lock.current=true;setBusy(true);const input={title,timezone,startDate:date||null},key=JSON.stringify(input);
   if(pending.current?.key!==key)pending.current={key,requestId:crypto.randomUUID(),revision:0};
   const result=await trips.create(input,pending.current.requestId);
+  if(generation!==epoch.current)return;
   if(result.ok){pending.current=null;router.push(href('trips/'+result.data.id))}else setMessage(t('Trip was not confirmed saved. Input is kept; retry.','未確認行程已保存。輸入已保留，請重試。'));
   setBusy(false);lock.current=false;
+ }
+ async function remove() {
+  if(!trip||!accountValid||lock.current||!confirm(t('Delete this private trip?','刪除此私人行程？')))return;
+  const generation=epoch.current;lock.current=true;setBusy(true);const key='delete:'+trip.id;
+  if(pending.current?.key!==key)pending.current={key,requestId:crypto.randomUUID(),revision:trip.revision};
+  const result=await trips.remove(trip.id,pending.current.revision,pending.current.requestId);
+  if(generation!==epoch.current)return;
+  if(result.ok){pending.current=null;router.push(href('trips'))}else setMessage(t('Deletion was not confirmed. Reload and retry.','未確認刪除，請重新載入後重試。'));
+  setBusy(false);lock.current=false;
+ }
+ async function loadMore() {
+  if(!actorId||!accountValid||!next)return;const generation=epoch.current;const result=await trips.list(next);
+  if(generation!==epoch.current)return;
+  if(result.ok){setList(current=>[...current,...result.data.items]);setNext(result.data.nextCursor)}else setMessage(t('More trips could not be loaded.','未能載入更多行程。'));
+ }
+ async function retryDraft() {
+  if(!trip||!actorId||!accountValid||lock.current)return;const generation=epoch.current;const draft=await readLocalDraft(actorId,trip.id);
+  if(generation!==epoch.current||lock.current)return;
+  if(!draft){setMessage(t('No pending local draft','沒有待同步草稿'));return}
+  pending.current={key:JSON.stringify(draft.command),requestId:draft.requestId,revision:draft.baseRevision,command:draft.command};await apply(draft.command);
  }
  if(!actorId||!accountValid)return <div className="k-page"><h1>{t('Your trips','我的行程')}</h1><p>{t('Sign in to keep trips in your Kinnso account.','登入以將行程保存至 Kinnso 帳戶。')}</p><Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href(id?'trips/'+id:'trips'))}>{t('Sign in','登入')}</Link></div>;
  const initialTitle=accountValid&&initialHeading?.actorId===actorId&&initialHeading?.tripId===id?initialHeading.title:null;
  return <div className="k-page os-trips" data-ready={ready} data-trip-editor={!!id}><Link href={href('trips')}>{t('My trips','我的行程')}</Link><h1>{trip?trip.title:initialTitle??t('Your trips','我的行程')}</h1><p role="status" data-testid="trip-save-state" aria-live="polite">{message}</p>
  <button className="k-btn" disabled={busy} onClick={()=>{reapply.current=conflicted.current;preserveInputs.current=conflicted.current;conflicted.current=false;setRetry(n=>n+1)}}>{t('Load current version','載入目前版本')}</button>
- {!id?<><form onSubmit={e=>{e.preventDefault();void create()}}><label>{t('Trip title','行程標題')}<input disabled={!ready} required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('Start date (optional)','開始日期（可選）')}<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><label>{t('Time zone','時區')}<input required value={timezone} onChange={e=>setTimezone(e.target.value)}/></label><button className="k-btn primary" disabled={busy}>{t('Create trip','建立行程')}</button></form><ul>{list.map(item=><li key={item.id}><Link href={href('trips/'+item.id)}>{item.title}</Link></li>)}</ul>{next&&<button className="k-btn" onClick={async()=>{const result=await trips.list(next);if(result.ok){setList(current=>[...current,...result.data.items]);setNext(result.data.nextCursor)}else setMessage(t('More trips could not be loaded.','未能載入更多行程。'))}}>{t('More trips','更多行程')}</button>}
- <ImportPreview actorId={actorId}/></>:trip&&<><button className="k-btn" onClick={()=>exportPrivateTrip(trip)}>{t('Download private trip for offline reading','下載私人行程供離線閱讀')}</button><button className="k-btn" disabled={busy} onClick={async()=>{const draft=await readLocalDraft(actorId!,trip.id);if(!draft){setMessage(t('No pending local draft','沒有待同步草稿'));return} pending.current={key:JSON.stringify(draft.command),requestId:draft.requestId,revision:draft.baseRevision,command:draft.command};await apply(draft.command)}}>{t('Retry local draft with revision check','以版本檢查重試本機草稿')}</button><p>{t('Revision','版本')} {trip.revision} · {trip.timezone}</p><form onSubmit={e=>{e.preventDefault();void apply({type:'patchTrip',patch:{title,startDate:date||null,timezone}})}}><label>{t('Trip title','行程標題')}<input disabled={!ready} required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('Start date (optional)','開始日期（可選）')}<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><label>{t('Time zone','時區')}<input value={timezone} onChange={e=>setTimezone(e.target.value)}/></label><button className="k-btn primary" disabled={busy}>{t('Save trip details','保存行程資料')}</button></form>
+ {!id?<><form onSubmit={e=>{e.preventDefault();void create()}}><label>{t('Trip title','行程標題')}<input disabled={!ready} required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('Start date (optional)','開始日期（可選）')}<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><label>{t('Time zone','時區')}<input required value={timezone} onChange={e=>setTimezone(e.target.value)}/></label><button className="k-btn primary" disabled={busy}>{t('Create trip','建立行程')}</button></form><ul>{list.map(item=><li key={item.id}><Link href={href('trips/'+item.id)}>{item.title}</Link></li>)}</ul>{next&&<button className="k-btn" onClick={()=>void loadMore()}>{t('More trips','更多行程')}</button>}
+ <ImportPreview actorId={actorId}/></>:trip&&<><button className="k-btn" onClick={()=>exportPrivateTrip(trip)}>{t('Download private trip for offline reading','下載私人行程供離線閱讀')}</button><button className="k-btn" disabled={busy} onClick={()=>void retryDraft()}>{t('Retry local draft with revision check','以版本檢查重試本機草稿')}</button><p>{t('Revision','版本')} {trip.revision} · {trip.timezone}</p><form onSubmit={e=>{e.preventDefault();void apply({type:'patchTrip',patch:{title,startDate:date||null,timezone}})}}><label>{t('Trip title','行程標題')}<input disabled={!ready} required maxLength={200} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('Start date (optional)','開始日期（可選）')}<input type="date" value={date} onChange={e=>setDate(e.target.value)}/></label><label>{t('Time zone','時區')}<input value={timezone} onChange={e=>setTimezone(e.target.value)}/></label><button className="k-btn primary" disabled={busy}>{t('Save trip details','保存行程資料')}</button></form>
  {trip.days.map(day=><section key={day.id}><h2>{t('Day','第')} {day.offset+1} · {day.title}</h2><DayEditor day={day} busy={busy} save={apply}/><button className="k-btn" disabled={busy} onClick={()=>void apply({type:'removeDay',id:day.id})}>{t('Remove day','移除一天')}</button>{day.stops.map(stop=><StopEditor key={stop.id} stop={stop} dayId={day.id} days={trip.days} busy={busy} edited={()=>setMessage(t("Editing — not yet saved","編輯中 — 尚未保存"))} save={apply} remove={()=>void apply({type:'removeStop',id:stop.id})} move={()=>void apply({type:'moveStop',id:stop.id,dayId:day.id,position:0})}/>)}
  <button className="k-btn" disabled={busy} onClick={()=>add({type:'addStop',id:crypto.randomUUID(),dayId:day.id,position:day.stops.length,input:{title:t('New stop','新站點'),placeId:null,travellerNote:'',startMinuteOfDay:null,durationMinutes:null}})}>{t('Add stop','加入站點')}</button></section>)}
  <button className="k-btn primary" disabled={busy} onClick={()=>add({type:'addDay',id:crypto.randomUUID(),offset:trip.days.length?Math.max(...trip.days.map(d=>d.offset))+1:0,title:t('New day','新一天')})}>{t('Add day','加入一天')}</button>
- <button className="k-btn" disabled={busy} onClick={async()=>{if(!confirm(t('Delete this private trip?','刪除此私人行程？')))return;setBusy(true);const key='delete:'+trip.id;if(pending.current?.key!==key)pending.current={key,requestId:crypto.randomUUID(),revision:trip.revision};const result=await trips.remove(trip.id,pending.current.revision,pending.current.requestId);if(result.ok)router.push(href('trips'));else{setMessage(t('Deletion was not confirmed. Reload and retry.','未確認刪除，請重新載入後重試。'));setBusy(false)}}}>{t('Delete trip','刪除行程')}</button>
+ <button className="k-btn" disabled={busy} onClick={()=>void remove()}>{t('Delete trip','刪除行程')}</button>
  <TripWarnings trip={trip} save={apply}/><RecordCapture tripId={trip.id} save={apply} enabled={mediaEnabled}/><div>{trip.media.filter(m=>m.state==='ready').map(m=><img key={m.id} src={'/api/media/'+m.id} alt={t('Private trip photo','私人行程照片')} style={{maxWidth:'100%'}}/>)}</div><SharePreview trip={trip} enabled={sharingEnabled}/></>}
  </div>
 }

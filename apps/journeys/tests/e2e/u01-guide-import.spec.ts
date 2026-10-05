@@ -7,6 +7,102 @@ async function guide(title:string){const result=await creator.client.from('guide
 test.beforeAll(async()=>{a=await actor();b=await actor();creator=await actor(true);summaryId=await guide('Synthetic summary only');guideId=await guide('Synthetic authored itinerary');expect((await creator.client.rpc('publish_guide_version',{p_guide_id:guideId,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Authored day',stops:[{title:'Authored source stop',description:'Public authored description',placeId:null,startMinuteOfDay:600,durationMinutes:30}]}]}})).error).toBeNull()});
 test.afterAll(async()=>{for(const id of ids)expect((await admin.auth.admin.deleteUser(id)).error).toBeNull()});
 async function signIn(page:Page){await page.getByLabel('Email').fill(a.email);await page.getByLabel('Password').fill(a.password);await page.getByRole('button',{name:'Sign in',exact:true}).click()}
+
+async function openTrips(page:Page){
+ await page.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await signIn(page);await page.waitForURL('**/en/trips');
+ await expect(page.getByLabel('Trip title',{exact:true})).toBeEnabled();
+}
+async function savedTrip(title:string){
+ const result=await a.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title,timezone:'UTC'}});
+ expect(result.error).toBeNull();return result.data as {id:string;title:string;revision:number};
+}
+async function holdTripReply(page:Page,path:string,method:string){
+ let release!:()=>void,committed!:()=>void,delivered!:()=>void,createdId='',items:{id:string;title:string}[]=[];
+ const held=new Promise<void>(resolve=>{release=resolve}),persisted=new Promise<void>(resolve=>{committed=resolve}),acknowledged=new Promise<void>(resolve=>{delivered=resolve});
+ await page.route(path,async route=>{
+  if(route.request().method()!==method)return route.continue();
+  const response=await route.fetch();expect(response.ok()).toBe(true);
+  if(method==='POST')createdId=(await response.json()).data.id;
+  if(method==='GET')items=(await response.json()).data.items;
+  committed();await held;await route.fulfill({response});delivered();
+ });
+ return{release,persisted,acknowledged,id:()=>createdId,items:()=>items};
+}
+async function settleReply(page:Page,held:Awaited<ReturnType<typeof holdTripReply>>,path:string,method:string){
+ const response=page.waitForResponse(r=>new URL(r.url()).pathname===path&&r.request().method()===method);
+ held.release();await held.acknowledged;await (await response).finished();
+ // Include any RSC navigation triggered by the completed response body, not only its headers.
+ await page.waitForLoadState('networkidle');
+ // Cross a browser render after delivery before checking the route and visible account state.
+ await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+}
+
+test('late trip creation acknowledgement cannot replace a different open trip',async({page})=>{
+ const target=await savedTrip('Synthetic creation navigation target '+randomUUID());await openTrips(page);
+ await expect(page.getByRole('link',{name:target.title,exact:true})).toBeVisible();
+ const held=await holdTripReply(page,'**/api/trips','POST'),title='Synthetic creation while leaving '+randomUUID();
+ try{
+  await page.getByLabel('Trip title',{exact:true}).fill(title);await page.getByRole('button',{name:'Create trip',exact:true}).click();await held.persisted;
+  const created=(await a.client.rpc('get_trip_snapshot',{p_trip_id:held.id()})).data;expect(created.title).toBe(title);expect(created.revision).toBe(1);
+  await page.getByRole('link',{name:target.title,exact:true}).click();await page.waitForURL('**/en/trips/'+target.id);await expect(page.getByRole('heading',{name:target.title,exact:true})).toBeVisible();
+  await settleReply(page,held,'/api/trips','POST');
+  await expect(page).toHaveURL(new RegExp('/en/trips/'+target.id+'$'));await expect(page.getByRole('button',{name:'Save trip details',exact:true})).toBeEnabled();
+  await page.reload();await expect(page.getByRole('heading',{name:target.title,exact:true})).toBeVisible();
+  const trips=await page.request.get('/api/trips');expect((await trips.json()).data.items.filter((t:{id:string})=>t.id===held.id())).toHaveLength(1);
+  const edited=target.title+' edited';await page.getByLabel('Trip title',{exact:true}).fill(edited);await page.getByRole('button',{name:'Save trip details',exact:true}).click();await expect(page.getByTestId('trip-save-state')).toContainText('Saved to your account');
+  const updated=(await a.client.rpc('get_trip_snapshot',{p_trip_id:target.id})).data;expect(updated.title).toBe(edited);expect(updated.revision).toBe(2);
+ }finally{held.release()}
+});
+
+test('late trip deletion acknowledgement cannot close a different open trip',async({page})=>{
+ const removed=await savedTrip('Synthetic deletion source '+randomUUID()),target=await savedTrip('Synthetic deletion navigation target '+randomUUID());await openTrips(page);
+ await page.getByRole('link',{name:removed.title,exact:true}).click();await page.waitForURL('**/en/trips/'+removed.id);await expect(page.getByRole('button',{name:'Delete trip',exact:true})).toBeEnabled();
+ const held=await holdTripReply(page,'**/api/trips/'+removed.id,'DELETE');page.once('dialog',dialog=>dialog.accept());
+ try{
+  await page.getByRole('button',{name:'Delete trip',exact:true}).click();await held.persisted;expect((await page.request.get('/api/trips/'+removed.id)).status()).toBe(404);
+  await page.locator('#k-main').getByRole('link',{name:'My trips',exact:true}).click();await page.waitForURL('**/en/trips');
+  await page.getByRole('link',{name:target.title,exact:true}).click();await page.waitForURL('**/en/trips/'+target.id);await expect(page.getByRole('heading',{name:target.title,exact:true})).toBeVisible();
+  await settleReply(page,held,'/api/trips/'+removed.id,'DELETE');
+  await expect(page).toHaveURL(new RegExp('/en/trips/'+target.id+'$'));await expect(page.getByRole('button',{name:'Save trip details',exact:true})).toBeEnabled();
+  await page.reload();await expect(page.getByRole('heading',{name:target.title,exact:true})).toBeVisible();expect((await page.request.get('/api/trips/'+removed.id)).status()).toBe(404);
+  page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Delete trip',exact:true}).click();await page.waitForURL('**/en/trips');expect((await page.request.get('/api/trips/'+target.id)).status()).toBe(404);
+ }finally{held.release()}
+});
+
+test('late trip creation acknowledgement cannot navigate an invalidated account tab',async({page})=>{
+ await openTrips(page);const held=await holdTripReply(page,'**/api/trips','POST');let account:Page|null=null;
+ try{
+  await page.getByLabel('Trip title',{exact:true}).fill('Synthetic creation before local sign out');await page.getByRole('button',{name:'Create trip',exact:true}).click();await held.persisted;
+  expect((await a.client.rpc('get_trip_snapshot',{p_trip_id:held.id()})).data.id).toBe(held.id());
+  account=await page.context().newPage();await account.goto('/en/me');await account.getByRole('button',{name:'Sign out',exact:true}).click();await account.waitForURL('**/en/sign-in');
+  await expect(page.getByRole('link',{name:'Sign in',exact:true})).toBeVisible();await expect(page.getByLabel('Trip title',{exact:true})).toHaveCount(0);
+  await settleReply(page,held,'/api/trips','POST');
+  await expect(page).toHaveURL(/\/en\/trips$/);await expect(page.getByRole('link',{name:'Sign in',exact:true})).toHaveAttribute('href','/en/sign-in?next=%2Fen%2Ftrips');
+  expect((await page.request.get('/api/trips/'+held.id())).status()).toBe(401);
+ }finally{held.release();await account?.close()}
+});
+
+test('late trip pagination cannot append the previous account trips',async({page})=>{
+ test.setTimeout(90000);
+ const marker='Synthetic previous account '+randomUUID();
+ for(let i=0;i<22;i++)await savedTrip(marker+' '+i);
+ const result=await b.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Synthetic current account '+randomUUID(),timezone:'UTC'}});expect(result.error).toBeNull();const other=result.data;
+ await openTrips(page);await expect(page.getByRole('button',{name:'More trips',exact:true})).toBeVisible();
+ const held=await holdTripReply(page,'**/api/trips?after=*','GET');let account:Page|null=null;
+ try{
+  await page.getByRole('button',{name:'More trips',exact:true}).click();await held.persisted;
+  expect(held.items().some(item=>item.title.startsWith(marker))).toBe(true);
+  account=await page.context().newPage();await account.goto('/en/me');await account.getByRole('button',{name:'Sign out',exact:true}).click();await account.waitForURL('**/en/sign-in');
+  await account.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await account.getByLabel('Email').fill(b.email);await account.getByLabel('Password').fill(b.password);await account.getByRole('button',{name:'Sign in',exact:true}).click();await account.waitForURL('**/en/trips');
+  await expect(account.getByRole('link',{name:other.title,exact:true})).toBeVisible();
+  await page.bringToFront();await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();
+  expect((await (await page.request.get('/api/session')).json()).data.id).toBe(b.id);
+  await settleReply(page,held,'/api/trips','GET');
+  await expect(page.getByRole('link',{name:new RegExp('^'+marker)})).toHaveCount(0);await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();await expect(page.getByRole('link',{name:new RegExp('^'+marker)})).toHaveCount(0);
+ }finally{held.release();await account?.close()}
+});
 test('anonymous bookmark returns once; summary never offers invented itinerary',async({page})=>{test.setTimeout(90000);await page.goto('/en/g/'+summaryId);await expect(page.getByText('This is a summary guide. It has no structured itinerary to apply.')).toBeVisible({timeout:15000});await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Bookmark guide',exact:true}).click();await page.waitForURL('**/sign-in?*');await signIn(page);await expect(page.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible({timeout:20000});await page.reload();await expect(page.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();const saved=await a.client.from('guide_saves').select('id').eq('guide_id',summaryId);expect(saved.data).toHaveLength(1);expect((await b.client.from('guide_saves').select('id').eq('guide_id',summaryId)).data).toHaveLength(0)});
 test('guest edits import once, original stays, server adoption has real source, second context conflicts without losing input',async({page,browser})=>{test.setTimeout(150000);await page.goto('/en/g/'+guideId);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();await page.getByLabel('Draft stop title',{exact:true}).fill('Personal device stop');await page.getByLabel('Draft private note',{exact:true}).fill('Synthetic private draft');await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('It is not synced to an account.');await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await signIn(page);await page.waitForURL('**/en/trips');await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:'Synthetic authored itinerary',exact:true}).click();const imported=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();const first=(await (await imported).json()).data;expect(first.days[0].stops[0].source).toBeNull();const replay=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();expect((await (await replay).json()).data.id).toBe(first.id);
  const retained=await page.evaluate(()=>new Promise<number>((resolve,reject)=>{const request=indexedDB.open('kinnso_guest_drafts_v1');request.onsuccess=()=>{const db=request.result,r=db.transaction('trips').objectStore('trips').count();r.onsuccess=()=>{resolve(r.result);db.close()};r.onerror=()=>reject(r.error)}}));expect(retained).toBe(1);
