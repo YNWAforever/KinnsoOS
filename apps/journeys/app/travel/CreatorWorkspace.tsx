@@ -78,6 +78,7 @@ function CreatorEditor({ path }: { path: string }) {
  const isNew = path.endsWith('/new');
  const [id, setId] = useState<string | null>(isNew ? null : path.split('/')[2]);
  const [payload, setPayload] = useState<DraftPayload>(emptyDraft), [revision, setRevision] = useState(0), [version, setVersion] = useState(0), [loaded, setLoaded] = useState(isNew), [busy, setBusy] = useState(false), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [preview, setPreview] = useState(false), [message, setMessage] = useState('');
+ const [actionError, setActionError] = useState<{ action: 'save' | 'publish' | 'withdraw'; message: string } | null>(null);
  const saved = useRef(JSON.stringify(emptyDraft())), head = useRef(0), busyRef = useRef(false), lifetime = useRef(0);
  const intent = useRef<{ action: 'save' | 'publish' | 'withdraw'; requestId: string; revision: number; payload: DraftPayload } | null>(null);
  useEffect(() => {
@@ -104,9 +105,11 @@ function CreatorEditor({ path }: { path: string }) {
   busyRef.current = false; setBusy(false);
   if (!r.ok) {
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
-   setMessage(r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。')); return;
+   setMessage('');
+   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
   }
   intent.current = null; setPending(false);
+  setActionError(previous => previous?.action === command.action ? null : previous);
   if (command.action === 'save') { accept(r.data as GuideDraft); setMessage(t('Draft saved.', '草稿已保存。')); if (isNew) router.replace(href('studio/guides/' + id + '/edit')); }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; accept(result.draft); setMessage(t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
@@ -129,6 +132,7 @@ function CreatorEditor({ path }: { path: string }) {
    <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
    {pending && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
    {conflict && <><p role="alert">{t('A newer source version or draft exists. Your input is retained. Review the published guide and reload the saved draft before continuing.', '已有較新的來源版本或草稿，輸入仍保留。請先核對已發布攻略及重新載入已保存草稿。')}</p><button className="k-btn" onClick={async () => { const r = await creators.get(id!); if (r.ok) accept(r.data); }}>{t('Reload saved draft (replace this form)', '載入已保存草稿（替換此表格）')}</button><button className="k-btn" disabled={busy} onClick={() => run('save', true)}>{t('I reviewed the current version; save this draft', '我已核對目前版本，保存此草稿')}</button></>}
+   {actionError && <p role="alert">{actionError.message}</p>}
    <p role="status">{status}</p>
    {version > 0 && <Link className="k-btn" href={href('g/' + id)}>{t('View published guide', '查看已發布攻略')}</Link>}
    {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={i}><h3>{d.title || t(`Day ${i + 1}`, `第 ${i + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={j}><h4>{s.title}</h4><p>{s.description}</p></div>)}</article>)}</section>}

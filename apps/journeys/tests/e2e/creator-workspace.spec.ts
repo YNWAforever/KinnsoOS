@@ -114,6 +114,33 @@ test('late save acknowledgement cannot reopen an editor after client navigation'
   await expect(page.getByRole('heading', { name: 'Saved while leaving editor', exact: true })).toBeVisible();
  } finally { release(); }
 });
+test('publication rejection remains visible through edits and autosave until publication succeeds', async ({ page }) => {
+ await openNewDraft(page);
+ await page.getByLabel('Guide title', { exact: true }).fill('Incomplete local route');
+ await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+ await page.waitForURL(/\/en\/studio\/guides\/[0-9a-f-]{36}\/edit/);
+ const publish = page.getByRole('button', { name: 'Publish structured version', exact: true });
+ await expect(publish).toBeEnabled();
+ const rejected = page.waitForResponse(r => r.url().endsWith('/publish') && r.request().method() === 'POST');
+ await publish.click();
+ const response = await rejected;
+ expect((await response.json()).code).toBe('INVALID');
+ const error = page.getByText('Complete the authored route before publication. Your input is kept.', { exact: true });
+ await expect(error).toBeVisible();
+ await page.getByLabel('Summary', { exact: true }).fill('An unrelated summary edit cannot complete missing route stops.');
+ await expect(error).toBeVisible();
+ await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+ await expect(error).toBeVisible();
+ await page.getByLabel('Destination', { exact: true }).fill('Kyoto');
+ await page.getByLabel('Day title', { exact: true }).fill('An explicitly authored day');
+ await page.getByLabel('Stop title', { exact: true }).fill('An explicitly authored square');
+ await page.getByLabel('Public description', { exact: true }).fill('A description written by this local author');
+ await expect(publish).toBeEnabled();
+ await publish.click();
+ await expect(page.getByText('Version published. Existing traveller copies stay unchanged.', { exact: true })).toBeVisible();
+ await expect(error).toHaveCount(0);
+});
+
 test('creator completes manual onboarding and authors, recovers, publishes and withdraws on Journeys itself', async ({ page }) => {
  test.setTimeout(120000);
  await page.goto('/en/sign-in?next=' + encodeURIComponent('/en/studio')); await page.getByLabel('Email', { exact: true }).fill(email); await page.getByLabel('Password', { exact: true }).fill(password); await page.getByRole('button', { name: 'Sign in', exact: true }).click(); await page.waitForURL('**/en/studio');
