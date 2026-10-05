@@ -1,6 +1,24 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 const contract = await import('../lib/api/validation.ts').catch(() => ({}));
+
+test('database UUIDs retain existing content identities regardless of version and variant bits', () => {
+  for (const id of [
+    'cc08a943-52fc-44e8-9310-e0965d7d0fcb',
+    'cc08a943-52fc-94e8-5310-e0965d7d0fcb',
+    'CC08A943-52FC-D4E8-0310-E0965D7D0FCB',
+  ]) assert.equal(contract.uuid(id), true, id);
+});
+
+test('UUID validation still rejects malformed IDs and non-string input', () => {
+  for (const id of [null, 123, {}, [], '',
+    'cc08a94352fc44e89310e0965d7d0fcb',
+    'cc08a943-52fc-44e8-9310-e0965d7d0fc',
+    'cc08a943-52fc-44e8-9310-e0965d7d0fcg',
+    ' cc08a943-52fc-44e8-9310-e0965d7d0fcb',
+    'cc08a943-52fc-44e8-9310-e0965d7d0fcb/other',
+  ]) assert.equal(contract.uuid(id), false);
+});
 test('writes require the exact application origin and a bounded command envelope', () => {
   assert.equal(typeof contract.sameOrigin, 'function');
   assert.equal(contract.sameOrigin(new Request('https://journeys.test/api/trips', { method:'POST', headers:{ origin:'https://journeys.test' } })), true);
