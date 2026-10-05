@@ -78,8 +78,17 @@ function CreatorEditor({ path }: { path: string }) {
  const isNew = path.endsWith('/new');
  const [id, setId] = useState<string | null>(isNew ? null : path.split('/')[2]);
  const [payload, setPayload] = useState<DraftPayload>(emptyDraft), [revision, setRevision] = useState(0), [version, setVersion] = useState(0), [loaded, setLoaded] = useState(isNew), [busy, setBusy] = useState(false), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [preview, setPreview] = useState(false), [message, setMessage] = useState('');
- const saved = useRef(JSON.stringify(emptyDraft())), head = useRef(0), busyRef = useRef(false);
+ const [actionError, setActionError] = useState<{ action: 'save' | 'publish' | 'withdraw'; message: string } | null>(null);
+ const saved = useRef(JSON.stringify(emptyDraft())), head = useRef(0), busyRef = useRef(false), lifetime = useRef(0);
  const intent = useRef<{ action: 'save' | 'publish' | 'withdraw'; requestId: string; revision: number; payload: DraftPayload } | null>(null);
+ useEffect(() => {
+  lifetime.current++;
+  if (intent.current) {
+   busyRef.current = false; setBusy(false); setPending(true);
+   setMessage(t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。'));
+  }
+  return () => { lifetime.current++; };
+ }, []);
  function accept(d: GuideDraft) { const p = { ...d.payload, content: d.payload.content ?? emptyDraft().content }; saved.current = JSON.stringify(p); head.current = d.revision; setPayload(p); setRevision(d.revision); setVersion(d.publishedVersion); setLoaded(true); setConflict(d.sourceChanged); }
  useEffect(() => {
   if (isNew) { setId(crypto.randomUUID()); return; }
@@ -89,34 +98,42 @@ function CreatorEditor({ path }: { path: string }) {
  async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false) {
   if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return;
   const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload };
+  const startedLifetime = lifetime.current;
   intent.current = command; busyRef.current = true; setBusy(true);
   const r = command.action === 'save' ? await creators.save(id, command.revision, command.requestId, command.payload) : command.action === 'publish' ? await creators.publish(id, command.revision, command.requestId) : await creators.withdraw(id);
+  if (lifetime.current !== startedLifetime) return;
   busyRef.current = false; setBusy(false);
   if (!r.ok) {
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
-   setMessage(r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。')); return;
+   setMessage('');
+   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
   }
   intent.current = null; setPending(false);
+  setActionError(previous => previous?.action === command.action ? null : previous);
   if (command.action === 'save') { accept(r.data as GuideDraft); setMessage(t('Draft saved.', '草稿已保存。')); if (isNew) router.replace(href('studio/guides/' + id + '/edit')); }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; accept(result.draft); setMessage(t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
  }
  const dirty = JSON.stringify(payload) !== saved.current;
+ const status = busy ? intent.current?.action === 'publish' ? t('Publishing version…', '正在發布版本…') : intent.current?.action === 'withdraw' ? t('Withdrawing adoption…', '正在撤回套用…') : t('Saving draft…', '正在保存草稿…')
+  : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
+ function edit(update: (previous: DraftPayload) => DraftPayload) { setMessage(''); setPayload(update); }
  useEffect(() => { if (!loaded || !id || !dirty || busy || pending || conflict) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict]);
- function changeStop(day: number, stop: number, patch: Partial<DraftPayload['content']['days'][number]['stops'][number]>) { setPayload(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === day ? { ...d, stops: d.stops.map((s, j) => j === stop ? { ...s, ...patch } : s) } : d) } })); }
+ function changeStop(day: number, stop: number, patch: Partial<DraftPayload['content']['days'][number]['stops'][number]>) { edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === day ? { ...d, stops: d.stops.map((s, j) => j === stop ? { ...s, ...patch } : s) } : d) } })); }
  return <section className="k-page os-editor" data-testid="creator-editor"><Link href={href('studio/guides')}>{t('Back to guides', '返回攻略')}</Link><h1>{t('Author your route', '創作你的路線')}</h1><p>{t('Write only itinerary content you have rights to publish. Summary text is never converted into stops.', '只填寫你有權公開的行程內容，摘要不會自動變成站點。')}</p>
   {!loaded ? <p role="status">{message || t('Loading draft…', '正在載入草稿…')}</p> : <>
-   <fieldset disabled={busy || pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => setPayload(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
-   {payload.content.days.map((day, di) => <fieldset key={di} disabled={busy || pending || conflict}><legend>{t(`Day ${di + 1}`, `第 ${di + 1} 日`)}</legend><label>{t('Day title', '日期名稱')}<input value={day.title} maxLength={200} onChange={e => setPayload(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, title: e.target.value } : d) } }))}/></label>
+   <fieldset disabled={busy || pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => edit(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
+   {payload.content.days.map((day, di) => <fieldset key={di} disabled={busy || pending || conflict}><legend>{t(`Day ${di + 1}`, `第 ${di + 1} 日`)}</legend><label>{t('Day title', '日期名稱')}<input value={day.title} maxLength={200} onChange={e => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, title: e.target.value } : d) } }))}/></label>
     {day.stops.map((stop, si) => <div key={si}><label>{t('Stop title', '站點名稱')}<input value={stop.title} maxLength={200} onChange={e => changeStop(di, si, { title: e.target.value })}/></label><label>{t('Public description', '公開描述')}<textarea aria-label={t('Public description', '公開描述')} value={stop.description} maxLength={4000} onChange={e => changeStop(di, si, { description: e.target.value })}/></label><label>{t('Start minute of day (optional)', '開始時間（當日分鐘，可選）')}<input type="number" min={0} max={1439} value={stop.startMinuteOfDay ?? ''} onChange={e => changeStop(di, si, { startMinuteOfDay: e.target.value === '' ? null : Number(e.target.value) })}/></label><label>{t('Duration in minutes (optional)', '停留分鐘（可選）')}<input type="number" min={1} max={1440} value={stop.durationMinutes ?? ''} onChange={e => changeStop(di, si, { durationMinutes: e.target.value === '' ? null : Number(e.target.value) })}/></label></div>)}
-    <button className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => setPayload(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, stops: [...d.stops, emptyDraft().content.days[0].stops[0]] } : d) } }))}>{t('Add stop', '加入站點')}</button>
+    <button className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, stops: [...d.stops, emptyDraft().content.days[0].stops[0]] } : d) } }))}>{t('Add stop', '加入站點')}</button>
    </fieldset>)}
-   <button className="k-btn" disabled={busy || pending || conflict || payload.content.days.length >= 30} onClick={() => setPayload(p => ({ ...p, content: { days: [...p.content.days, { ...emptyDraft().content.days[0], offset: p.content.days.length }] } }))}>{t('Add day', '加入一天')}</button>
+   <button className="k-btn" disabled={busy || pending || conflict || payload.content.days.length >= 30} onClick={() => edit(p => ({ ...p, content: { days: [...p.content.days, { ...emptyDraft().content.days[0], offset: p.content.days.length }] } }))}>{t('Add day', '加入一天')}</button>
    <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('save')}>{t('Save draft', '保存草稿')}</button><button className="k-btn" onClick={() => setPreview(!preview)}>{t('Preview', '預覽')}</button>
    <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
    {pending && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
    {conflict && <><p role="alert">{t('A newer source version or draft exists. Your input is retained. Review the published guide and reload the saved draft before continuing.', '已有較新的來源版本或草稿，輸入仍保留。請先核對已發布攻略及重新載入已保存草稿。')}</p><button className="k-btn" onClick={async () => { const r = await creators.get(id!); if (r.ok) accept(r.data); }}>{t('Reload saved draft (replace this form)', '載入已保存草稿（替換此表格）')}</button><button className="k-btn" disabled={busy} onClick={() => run('save', true)}>{t('I reviewed the current version; save this draft', '我已核對目前版本，保存此草稿')}</button></>}
-   <p role="status">{message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : t('Draft saved.', '草稿已保存。'))}</p>
+   {actionError && <p role="alert">{actionError.message}</p>}
+   <p role="status">{status}</p>
    {version > 0 && <Link className="k-btn" href={href('g/' + id)}>{t('View published guide', '查看已發布攻略')}</Link>}
    {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={i}><h3>{d.title || t(`Day ${i + 1}`, `第 ${i + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={j}><h4>{s.title}</h4><p>{s.description}</p></div>)}</article>)}</section>}
   </>}
