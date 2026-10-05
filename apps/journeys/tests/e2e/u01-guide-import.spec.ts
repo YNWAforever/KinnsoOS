@@ -103,6 +103,38 @@ test('late trip pagination cannot append the previous account trips',async({page
   await page.reload();await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();await expect(page.getByRole('link',{name:new RegExp('^'+marker)})).toHaveCount(0);
  }finally{held.release();await account?.close()}
 });
+
+test('superseded offline snapshot read cannot overwrite a fresh server load',async({page})=>{
+ const trip=await savedTrip('Synthetic old offline snapshot '+randomUUID());await openTrips(page);
+ await page.getByRole('link',{name:trip.title,exact:true}).click();await expect(page.getByRole('heading',{name:trip.title,exact:true})).toBeVisible();
+ const key=a.id+':'+trip.id;
+ await expect.poll(()=>page.evaluate(key=>new Promise<number>((resolve,reject)=>{
+  const opening=indexedDB.open('kinnso_account_cache_v1',2);opening.onerror=()=>reject(opening.error);opening.onsuccess=()=>{const db=opening.result,read=db.transaction('snapshots').objectStore('snapshots').get(key);read.onsuccess=()=>{resolve(read.result?.snapshot.revision??0);db.close()};read.onerror=()=>reject(read.error)};
+ }),key)).toBe(1);
+ await page.evaluate(key=>{
+  const originalGet=IDBObjectStore.prototype.get,success=Object.getOwnPropertyDescriptor(IDBRequest.prototype,'onsuccess')!;
+  const state={revision:0,release:()=>{},restore:()=>{IDBObjectStore.prototype.get=originalGet}};let captured=false;
+  (window as unknown as {snapshotReadHold:typeof state}).snapshotReadHold=state;
+  IDBObjectStore.prototype.get=function(query){
+   const request=originalGet.call(this,query);
+   if(this.name==='snapshots'&&query===key&&!captured){
+    captured=true;
+    // Hold delivery of a real IndexedDB result; never replace its stored snapshot.
+    Object.defineProperty(request,'onsuccess',{configurable:true,get:()=>success.get!.call(request),set:handler=>success.set!.call(request,(event:Event)=>{state.revision=request.result?.snapshot.revision??0;state.release=()=>{state.release=()=>{};handler?.call(request,event)}})});
+   }
+   return request;
+  };
+ },key);
+ try{
+  await page.context().setOffline(true);await page.getByRole('button',{name:'Load current version',exact:true}).click();
+  await page.waitForFunction(()=>(window as unknown as {snapshotReadHold:{revision:number}}).snapshotReadHold.revision===1);
+  const title='Synthetic fresh server load '+randomUUID(),updated=await a.client.rpc('apply_trip_command',{p_trip_id:trip.id,p_expected_revision:1,p_request_id:randomUUID(),p_command:{type:'patchTrip',patch:{title}}});expect(updated.error).toBeNull();expect(updated.data.revision).toBe(2);
+  await page.context().setOffline(false);await page.getByRole('button',{name:'Load current version',exact:true}).click();await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();
+  await page.evaluate(()=>(window as unknown as {snapshotReadHold:{release:()=>void}}).snapshotReadHold.release());await page.waitForLoadState('networkidle');await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await expect(page.getByRole('heading',{name:title,exact:true})).toBeVisible();await expect(page.getByLabel('Trip title',{exact:true})).toHaveValue(title);await expect(page.getByTestId('trip-save-state')).not.toContainText('Offline');
+  expect((await a.client.rpc('get_trip_snapshot',{p_trip_id:trip.id})).data.revision).toBe(2);
+ }finally{await page.context().setOffline(false);await page.evaluate(()=>{const state=(window as unknown as {snapshotReadHold:{release:()=>void;restore:()=>void}}).snapshotReadHold;state.release();state.restore()})}
+});
 test('anonymous bookmark returns once; summary never offers invented itinerary',async({page})=>{test.setTimeout(90000);await page.goto('/en/g/'+summaryId);await expect(page.getByText('This is a summary guide. It has no structured itinerary to apply.')).toBeVisible({timeout:15000});await expect(page.getByRole('button',{name:'Apply published itinerary',exact:true})).toHaveCount(0);await page.getByRole('button',{name:'Bookmark guide',exact:true}).click();await page.waitForURL('**/sign-in?*');await signIn(page);await expect(page.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible({timeout:20000});await page.reload();await expect(page.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();const saved=await a.client.from('guide_saves').select('id').eq('guide_id',summaryId);expect(saved.data).toHaveLength(1);expect((await b.client.from('guide_saves').select('id').eq('guide_id',summaryId)).data).toHaveLength(0)});
 test('guest edits import once, original stays, server adoption has real source, second context conflicts without losing input',async({page,browser})=>{test.setTimeout(150000);await page.goto('/en/g/'+guideId);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();await page.getByLabel('Draft stop title',{exact:true}).fill('Personal device stop');await page.getByLabel('Draft private note',{exact:true}).fill('Synthetic private draft');await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('It is not synced to an account.');await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await signIn(page);await page.waitForURL('**/en/trips');await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:'Synthetic authored itinerary',exact:true}).click();const imported=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();const first=(await (await imported).json()).data;expect(first.days[0].stops[0].source).toBeNull();const replay=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();expect((await (await replay).json()).data.id).toBe(first.id);
  const retained=await page.evaluate(()=>new Promise<number>((resolve,reject)=>{const request=indexedDB.open('kinnso_guest_drafts_v1');request.onsuccess=()=>{const db=request.result,r=db.transaction('trips').objectStore('trips').count();r.onsuccess=()=>{resolve(r.result);db.close()};r.onerror=()=>reject(r.error)}}));expect(retained).toBe(1);
