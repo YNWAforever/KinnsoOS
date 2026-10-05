@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { loadEnvFile } from 'node:process';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
@@ -6,8 +6,114 @@ import { verifyTestTarget } from '../../scripts/verify-test-target.mjs';
 loadEnvFile('.env.test'); verifyTestTarget();
 const admin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 let userId: string, email: string, password: string;
-test.beforeAll(async () => { email = `synthetic-new-studio-${randomUUID()}@example.test`; password = `Author!${randomUUID()}`; const result = await admin.auth.admin.createUser({ email, password, email_confirm: true }); expect(result.error).toBeNull(); userId = result.data.user!.id; });
-test.afterAll(async () => { if (userId) expect((await admin.auth.admin.deleteUser(userId)).error).toBeNull(); });
+test.beforeEach(async () => { userId = ''; email = `synthetic-new-studio-${randomUUID()}@example.test`; password = `Author!${randomUUID()}`; const result = await admin.auth.admin.createUser({ email, password, email_confirm: true }); expect(result.error).toBeNull(); userId = result.data.user!.id; });
+test.afterEach(async () => { if (userId) expect((await admin.auth.admin.deleteUser(userId)).error).toBeNull(); });
+
+async function openNewDraft(page: Page) {
+ await page.goto('/en/sign-in?next=' + encodeURIComponent('/en/studio'));
+ await page.getByLabel('Email', { exact: true }).fill(email);
+ await page.getByLabel('Password', { exact: true }).fill(password);
+ await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+ await page.waitForURL('**/en/studio');
+ await expect(page.getByRole('heading', { name: 'Tell travellers about your work.', exact: true })
+  .or(page.getByRole('heading', { name: 'Your authored guides', exact: true }))).toBeVisible();
+ const confirm = page.getByRole('button', { name: 'Confirm creator profile', exact: true });
+ if (await confirm.isVisible()) {
+  await page.getByLabel('Bio', { exact: true }).fill('Synthetic local save recovery author');
+  await page.getByLabel('I have reviewed this profile and confirm publication.', { exact: true }).check();
+  await confirm.click();
+  await expect(page.getByRole('link', { name: 'Create guide', exact: true })).toBeVisible();
+ }
+ await page.goto('/en/studio/guides/new');
+ await expect(page.getByTestId('creator-editor')).toBeVisible();
+}
+
+test('draft status never reports a new unsaved guide as saved', async ({ page }) => {
+ await openNewDraft(page);
+ await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft not saved yet.');
+ await expect(page.getByRole('button', { name: 'Publish structured version', exact: true })).toBeDisabled();
+});
+
+test('draft status distinguishes edited, saving and server-confirmed content', async ({ page }) => {
+ await openNewDraft(page);
+ await page.getByLabel('Guide title', { exact: true }).fill('Confirmed local draft');
+ await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+ await page.waitForURL(/\/en\/studio\/guides\/[0-9a-f-]{36}\/edit/);
+ const id = page.url().split('/').at(-2)!;
+ await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+ let release!: () => void, committed!: () => void;
+ const held = new Promise<void>(resolve => { release = resolve; });
+ const persisted = new Promise<void>(resolve => { committed = resolve; });
+ await page.route('**/api/creator/guides/' + id, async route => {
+  if (route.request().method() !== 'PUT') return route.continue();
+  const response = await route.fetch();
+  expect(response.ok()).toBe(true);
+  committed();
+  await held;
+  await route.fulfill({ response });
+ });
+ try {
+  await page.getByLabel('Guide title', { exact: true }).fill('Edited local draft');
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft changes pending.');
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await persisted;
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Saving draft…');
+  release();
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+  await page.unroute('**/api/creator/guides/' + id);
+  const result = await page.request.get('/api/creator/guides/' + id);
+  const draft = (await result.json()).data;
+  expect(draft.revision).toBe(2);
+  expect(draft.payload.title).toBe('Edited local draft');
+  await page.getByLabel('Destination', { exact: true }).fill('Kyoto');
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft changes pending.');
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+  await page.reload();
+  await expect(page.getByLabel('Guide title', { exact: true })).toHaveValue('Edited local draft');
+  await expect(page.getByLabel('Destination', { exact: true })).toHaveValue('Kyoto');
+ } finally { release(); }
+});
+
+test('late save acknowledgement cannot reopen an editor after client navigation', async ({ page }) => {
+ await openNewDraft(page);
+ let release!: () => void, committed!: () => void, acknowledged!: () => void, id = '';
+ const held = new Promise<void>(resolve => { release = resolve; });
+ const persisted = new Promise<void>(resolve => { committed = resolve; });
+ const delivered = new Promise<void>(resolve => { acknowledged = resolve; });
+ await page.route('**/api/creator/guides/*', async route => {
+  if (route.request().method() !== 'PUT') return route.continue();
+  id = route.request().url().split('/').at(-1)!;
+  const response = await route.fetch();
+  expect(response.ok()).toBe(true);
+  committed();
+  await held;
+  await route.fulfill({ response });
+  acknowledged();
+ });
+ try {
+  await page.getByLabel('Guide title', { exact: true }).fill('Saved while leaving editor');
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  await persisted;
+  await page.getByRole('link', { name: 'Back to guides', exact: true }).click();
+  await page.waitForURL('**/en/studio/guides');
+  await expect(page.getByTestId('creator-editor')).toHaveCount(0);
+  const response = page.waitForResponse(r => r.url().endsWith('/api/creator/guides/' + id) && r.request().method() === 'PUT');
+  release();
+  await delivered;
+  await response;
+  // Cross a completed client render, so a late router.replace cannot hide behind the assertion.
+  await page.getByRole('link', { name: 'Create guide', exact: true }).focus();
+  await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  await expect(page).toHaveURL(/\/en\/studio\/guides$/);
+  const result = await page.request.get('/api/creator/guides/' + id);
+  const draft = (await result.json()).data;
+  expect(draft.revision).toBe(1);
+  expect(draft.payload.title).toBe('Saved while leaving editor');
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Saved while leaving editor', exact: true })).toBeVisible();
+ } finally { release(); }
+});
 test('creator completes manual onboarding and authors, recovers, publishes and withdraws on Journeys itself', async ({ page }) => {
  test.setTimeout(120000);
  await page.goto('/en/sign-in?next=' + encodeURIComponent('/en/studio')); await page.getByLabel('Email', { exact: true }).fill(email); await page.getByLabel('Password', { exact: true }).fill(password); await page.getByRole('button', { name: 'Sign in', exact: true }).click(); await page.waitForURL('**/en/studio');
