@@ -11,9 +11,11 @@ hashes and bytes with the deployment commit's Journeys Git objects, independent
 of working-tree edits or Windows line endings. It records the packaging
 workspace's dirty flag without hiding it. Wrong or stale source fails the check.
 
-It also checks English/Chinese server-rendered pages, anonymous trip/bookmark
+It also checks English/Chinese server-rendered homepage discovery forms, rejects
+rendered error/not-found headings, and checks anonymous trip/bookmark
 denials, private/no-store responses, disabled or unauthenticated role APIs, and
-safe callback returns. Redirects cannot leave the selected origin. Responses and
+safe callback returns with the sanitized `/en/trips` fallback. Redirects cannot
+leave the selected origin. Responses and
 archives have size/time bounds; archives are read in memory and never extracted
 or executed. The JSON artifact contains statuses and source hashes, without API
 response bodies or credentials.

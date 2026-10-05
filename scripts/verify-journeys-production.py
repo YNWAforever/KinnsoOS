@@ -8,9 +8,10 @@ import subprocess
 import sys
 import zipfile
 from datetime import datetime, timezone
+from html.parser import HTMLParser
 from pathlib import Path, PurePosixPath
 from urllib.error import HTTPError, URLError
-from urllib.parse import urljoin, urlsplit
+from urllib.parse import parse_qs, urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 
@@ -21,6 +22,36 @@ class CheckFailed(Exception):
 class NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         return None
+
+
+class HomeMarkup(HTMLParser):
+    def __init__(self, explore_path):
+        super().__init__()
+        self.explore_path = explore_path
+        self.heading = None
+        self.headings = []
+        self.discovery_form = False
+        self.in_discovery_form = False
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'h1':
+            self.heading = []
+        if tag == 'form':
+            self.in_discovery_form = attrs.get('action') == self.explore_path
+        if tag == 'input' and self.in_discovery_form and attrs.get('name') == 'q':
+            self.discovery_form = True
+
+    def handle_data(self, data):
+        if self.heading is not None:
+            self.heading.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'h1' and self.heading is not None:
+            self.headings.append(' '.join(''.join(self.heading).split()).casefold())
+            self.heading = None
+        if tag == 'form':
+            self.in_discovery_form = False
 
 
 def require(condition, message):
@@ -76,10 +107,14 @@ def verify(args, report):
                 require(origin(current) == target_origin, 'Foreign page redirect')
                 continue
             text = body.decode('utf-8', errors='replace')
+            markup = HomeMarkup('/' + locale + '/explore')
+            markup.feed(text)
             require(status == 200 and 'text/html' in headers.get('Content-Type', ''), 'Public page is unavailable')
             require(re.search(r'<html\b[^>]*\blang=["\']' + re.escape(locale) + r'["\']', text, re.I) and
                     re.search(r'<title\b[^>]*>[^<]*Kinnso', text, re.I) and
-                    re.search(r'<h1\b', text, re.I), 'Expected server-rendered page is missing')
+                    any(markup.headings) and markup.discovery_form, 'Expected server-rendered homepage content is missing')
+            errors = ('could not load this page', 'page not found', '暫時未能載入', '找不到此頁面')
+            require(not any(error in heading for heading in markup.headings for error in errors), 'Rendered error page')
             report['checks'].append({'path': path, 'status': status, 'result': 'PASS'})
             return
         raise CheckFailed('Page redirect limit exceeded')
@@ -136,9 +171,10 @@ def verify(args, report):
         private(headers)
         location = urljoin(base + '/', headers.get('Location', ''))
         destination = urlsplit(location)
+        query = parse_qs(destination.query, keep_blank_values=True)
         require(status in (302, 303, 307, 308) and bool(headers.get('Location')) and
                 origin(location) == target_origin and destination.path == '/en/sign-in' and
-                'error=failed' in destination.query, 'Callback return boundary failed')
+                query.get('error') == ['failed'] and query.get('next') == ['/en/trips'], 'Callback return boundary failed')
         report['checks'].append({'path': path.split('?')[0], 'status': status, 'result': 'PASS'})
 
 

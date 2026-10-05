@@ -43,12 +43,14 @@ sys.stdout.buffer.write(b.getvalue())`]);
     }
     if (url.pathname === '/' || url.pathname.includes('callback')) {
       response.statusCode = 307;
-      response.setHeader('Location', url.pathname === '/' ? '/zh-HK' : options.foreign ? 'https://example.org/evil' : '/en/sign-in?error=failed&next=%2Fen%2Ftrips');
+      response.setHeader('Location', url.pathname === '/' ? '/zh-HK' : options.foreign ? 'https://example.org/evil' : `/en/sign-in?error=${options.wrongError ? 'failed-extra' : 'failed'}&next=${encodeURIComponent(options.unsafeNext ?? '/en/trips')}`);
       response.setHeader('Cache-Control', 'private, no-store'); response.end(); return;
     }
     response.setHeader('Content-Type', 'text/html');
     const locale = url.pathname.startsWith('/zh-HK') ? 'zh-HK' : 'en';
-    response.end(options.errorShell ? '<html lang="en"><title>404</title><h1>Not found</h1></html>' : `<html lang="${locale}"><title>Kinnso Journeys</title><h1>Journeys</h1></html>`);
+    const search = `<form action="/${locale}/explore"><input name="q"/><button>Find guides</button></form>`;
+    const heading = options.errorShell ? '暫時未能載入 / Could not load this page' : options.notFound ? '找不到此頁面 / Page not found' : 'Journeys';
+    response.end(`<html lang="${locale}"><title>Kinnso Journeys</title><h1>${heading}</h1>${options.noSearch ? '' : search}</html>`);
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -102,7 +104,12 @@ for (const [name, options] of [
   ['private API without no-store cannot pass', { cacheLeak: true }],
   ['foreign callback redirect fails before following it', { foreign: true }],
   ['branded 404 shell cannot pass as a healthy homepage', { errorShell: true }],
+  ['matching-locale branded not-found heading cannot pass with a search form', { notFound: true }],
   ['malformed archive metadata fails with a sanitized JSON receipt', { badMetadata: true }],
+  ['callback external next value cannot pass behind a same-origin sign-in path', { unsafeNext: 'https://example.org/evil' }],
+  ['callback protocol-relative next value cannot pass behind a same-origin sign-in path', { unsafeNext: '//example.org/evil' }],
+  ['callback error parameter must exactly equal failed', { wrongError: true }],
+  ['generic branded shell without homepage discovery content cannot pass', { noSearch: true }],
 ]) {
   test(name, async () => {
     await fixture(options, async context => {
