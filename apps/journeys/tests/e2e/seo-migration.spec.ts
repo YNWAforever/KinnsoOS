@@ -22,9 +22,10 @@ test('no JavaScript private route remains noindex',async({browser,baseURL})=>{
  await context.close();
 });
 
-test('published summary author/date/cover survive SSR and hydration while owner drafts remain absent',async({browser,baseURL,request})=>{
+test('published summary with a legacy database UUID survives API, SSR and hydration while owner drafts remain absent',async({browser,baseURL,request})=>{
  const admin=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!);
- let actorId='';const id=randomUUID(),draft=randomUUID(),title='Synthetic published cover guide';
+ const generated=randomUUID(),id=generated.slice(0,14)+'9'+generated.slice(15,19)+'5'+generated.slice(20);
+ let actorId='';const draft=randomUUID(),title='Synthetic published cover guide';
  const author='Public source author <script>unsafe()</script>',date='2026-09-01T10:00:00Z',cover='https://cdn.kinnso.ai/synthetic-publication.png';
  const ok=async(p:PromiseLike<any>)=>{const r=await p;expect(r.error).toBeNull();return r.data;};
  try {
