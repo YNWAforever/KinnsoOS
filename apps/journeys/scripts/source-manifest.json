@@ -254,6 +254,7 @@
     "tests/integration/reports-agent-quota.test.mjs",
     "tests/integration/trips.test.mjs",
     "tests/latency-lab.test.mjs",
+    "tests/monitoring-partial.test.mjs",
     "tests/monthly-budget.test.mjs",
     "tests/notifications.delivery.test.mjs",
     "tests/performance-lab.test.mjs",
