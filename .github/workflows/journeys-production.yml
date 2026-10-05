@@ -1,0 +1,47 @@
+name: Journeys production read-only
+on:
+  deployment_status:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: journeys-production-readonly
+  cancel-in-progress: false
+jobs:
+  public-release:
+    # Legacy web/sync and preview deployments retain their separate checks.
+    # Only this repository's successful production Journeys deployment is selected.
+    if: >-
+      github.repository == 'YNWAforever/KinnsoOS' &&
+      ((github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') ||
+       (github.event_name == 'deployment_status' &&
+        github.event.deployment_status.state == 'success' &&
+        github.event.deployment_status.environment == 'Production' &&
+        startsWith(github.event.deployment_status.environment_url, 'https://kinnso-') &&
+        endsWith(github.event.deployment_status.environment_url, '-ynwaforevers-projects.vercel.app')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      EXPECTED_SHA: ${{ github.event.deployment.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ env.EXPECTED_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: '3.12'
+      - name: Check actual deployed source and anonymous boundaries
+        # No secrets, sign-in, fixtures, telemetry POSTs or business commands.
+        # A source-revision mismatch fails; it never silently accepts another release.
+        run: |
+          mkdir -p evidence
+          git merge-base --is-ancestor "$EXPECTED_SHA" origin/main
+          python scripts/verify-journeys-production.py --expected-sha "$EXPECTED_SHA" > evidence/journeys-production-readonly.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: journeys-production-readonly
+          path: evidence/journeys-production-readonly.json
+          if-no-files-found: error
