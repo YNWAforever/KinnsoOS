@@ -6,14 +6,14 @@ async function actor(author=false){const email=`synthetic-u01-${randomUUID()}@ex
 async function guide(title:string){const result=await creator.client.from('guides').insert({creator_id:creator.id,creator_name:'Synthetic browser author',creator_handle:'synthetic',slug:'synthetic-'+randomUUID(),title,summary:'Summary is not an itinerary',cover_url:'',city:'Kyoto',status:'published',published_at:new Date().toISOString()}).select('id').single();expect(result.error).toBeNull();return result.data!.id}
 test.beforeAll(async()=>{a=await actor();b=await actor();creator=await actor(true);summaryId=await guide('Synthetic summary only');guideId=await guide('Synthetic authored itinerary');expect((await creator.client.rpc('publish_guide_version',{p_guide_id:guideId,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Authored day',stops:[{title:'Authored source stop',description:'Public authored description',placeId:null,startMinuteOfDay:600,durationMinutes:30}]}]}})).error).toBeNull()});
 test.afterAll(async()=>{for(const id of ids)expect((await admin.auth.admin.deleteUser(id)).error).toBeNull()});
-async function signIn(page:Page){await page.getByLabel('Email').fill(a.email);await page.getByLabel('Password').fill(a.password);await page.getByRole('button',{name:'Sign in',exact:true}).click()}
+async function signIn(page:Page,owner=a){await page.getByLabel('Email').fill(owner.email);await page.getByLabel('Password').fill(owner.password);await page.getByRole('button',{name:'Sign in',exact:true}).click()}
 
-async function openTrips(page:Page){
- await page.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await signIn(page);await page.waitForURL('**/en/trips');
+async function openTrips(page:Page,owner=a){
+ await page.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await signIn(page,owner);await page.waitForURL('**/en/trips');
  await expect(page.getByLabel('Trip title',{exact:true})).toBeEnabled();
 }
-async function savedTrip(title:string){
- const result=await a.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title,timezone:'UTC'}});
+async function savedTrip(title:string,owner=a){
+ const result=await owner.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title,timezone:'UTC'}});
  expect(result.error).toBeNull();return result.data as {id:string;title:string;revision:number};
 }
 async function holdTripReply(page:Page,path:string,method:string){
@@ -84,20 +84,22 @@ test('late trip creation acknowledgement cannot navigate an invalidated account 
 
 test('late trip pagination cannot append the previous account trips',async({page})=>{
  test.setTimeout(90000);
+ // Pagination fixtures must not push later adoption fixtures out of their first page.
+ const previous=await actor(),current=await actor();
  const marker='Synthetic previous account '+randomUUID();
- for(let i=0;i<22;i++)await savedTrip(marker+' '+i);
- const result=await b.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Synthetic current account '+randomUUID(),timezone:'UTC'}});expect(result.error).toBeNull();const other=result.data;
- await openTrips(page);await expect(page.getByRole('button',{name:'More trips',exact:true})).toBeVisible();
+ for(let i=0;i<22;i++)await savedTrip(marker+' '+i,previous);
+ const result=await current.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Synthetic current account '+randomUUID(),timezone:'UTC'}});expect(result.error).toBeNull();const other=result.data;
+ await openTrips(page,previous);await expect(page.getByRole('button',{name:'More trips',exact:true})).toBeVisible();
  const held=await holdTripReply(page,'**/api/trips?after=*','GET');let account:Page|null=null;
  try{
   await page.getByRole('button',{name:'More trips',exact:true}).click();await held.persisted;
   expect(held.items().some(item=>item.title.startsWith(marker))).toBe(true);
   account=await page.context().newPage();await account.goto('/en/me');await account.getByRole('button',{name:'Sign out',exact:true}).click();await account.waitForURL('**/en/sign-in');
-  await account.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await account.getByLabel('Email').fill(b.email);await account.getByLabel('Password').fill(b.password);await account.getByRole('button',{name:'Sign in',exact:true}).click();await account.waitForURL('**/en/trips');
+  await account.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await signIn(account,current);await account.waitForURL('**/en/trips');
   await expect(account.getByRole('link',{name:other.title,exact:true})).toBeVisible();
   await page.bringToFront();await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
   await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();
-  expect((await (await page.request.get('/api/session')).json()).data.id).toBe(b.id);
+  expect((await (await page.request.get('/api/session')).json()).data.id).toBe(current.id);
   await settleReply(page,held,'/api/trips','GET');
   await expect(page.getByRole('link',{name:new RegExp('^'+marker)})).toHaveCount(0);await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();
   await page.reload();await expect(page.getByRole('link',{name:other.title,exact:true})).toBeVisible();await expect(page.getByRole('link',{name:new RegExp('^'+marker)})).toHaveCount(0);
