@@ -49,6 +49,27 @@ class SourcePackageTests(unittest.TestCase):
         self.manifest(['LICENSE', 'LICENSE'])
         self.assertNotEqual(self.run_pack().returncode, 0)
 
+    def test_source_archive_preserves_active_integration_cases(self):
+        source_root = Path(__file__).resolve().parents[1]
+        source_manifest = json.loads((source_root / 'scripts/source-manifest.json').read_text(encoding='utf-8'))
+        cases = {path.relative_to(source_root).as_posix(): path
+                 for path in (source_root / 'tests/integration').glob('*.test.mjs')}
+        self.assertTrue(cases, 'The integration runner must have distributable cases')
+        for name in source_manifest['files']:
+            source = source_root / name
+            target = self.root / name
+            self.assertTrue(source.resolve().is_relative_to(source_root), name)
+            self.assertTrue(target.resolve().is_relative_to(self.root), name)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+        result = self.run_pack()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(self.root / 'public/source/kinnsoos-source.zip') as archive:
+            missing = set(cases) - set(archive.namelist())
+            self.assertFalse(missing, f'Runner cases missing from source archive: {sorted(missing)}')
+            for name, source in cases.items():
+                self.assertEqual(archive.read(name), source.read_bytes(), name)
+
     def test_distributed_metadata_survives_extraction_inside_another_checkout(self):
         subprocess.run(['git', 'init', '-q', str(self.root)], check=True)
         original = self.root

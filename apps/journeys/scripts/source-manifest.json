@@ -236,6 +236,7 @@
     "tests/guide-structured-data.test.mjs",
     "tests/helpers/worker.mjs",
     "tests/import-contract.test.mjs",
+    "tests/integration/agent-accounting.test.mjs",
     "tests/integration/bookmarks.test.mjs",
     "tests/integration/budget-reservations.test.mjs",
     "tests/integration/catalog.test.mjs",
