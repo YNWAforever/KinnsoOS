@@ -24,13 +24,28 @@ async function handler(path) {
       b.onLoad({ filter: /.*/, namespace: 'fixture' }, () => ({ contents: `
         export async function serverClient() { return {
           auth: {getUser:async()=>({data:{user:{id:'${owner}'}},error:null}),getSession:async()=>({data:{session:{access_token:'owned-user-token'}}})},
-          rpc:async()=>({data:{id:'${owner}'},error:null})
+          rpc:async(name,args)=>{
+            if(name==='prepare_trip_upload'){
+              preparationCalls.push({name,args});
+              return {data:{id:'${media}',path:'${owner}/${trip}/${media}',state:'pending'},error:null};
+            }
+            return {data:{id:'${owner}'},error:null};
+          },
+          from:()=>({select:()=>({eq:()=>({eq:()=>({single:async()=>({data:{object_path:'${owner}/${trip}/${media}',mime:'image/png',state:'ready',trip_id:'${trip}'},error:null})})})})}),
+          storage:{from:()=>({createSignedUploadUrl:async(path)=>{
+            preparationCalls.push({name:'signed_upload',path});
+            return {data:{signedUrl:'https://example.supabase.co/storage/v1/object/upload/sign/kinnso-trip-private/'+path},error:null};
+          },download:async(path)=>{
+            preparationCalls.push({name:'owner_download',path});
+            return {data:new Blob([imageBytes],{type:'image/png'}),error:null};
+          }})}
         } }`, loader: 'js' }));
     } }],
   });
   const module = { exports: {} };
-  new Function('require', 'module', 'exports', result.outputFiles[0].text)(require, module, module.exports);
-  return module.exports;
+  const preparationCalls=[];
+  new Function('require', 'module', 'exports', 'preparationCalls', 'imageBytes', result.outputFiles[0].text)(require, module, module.exports,preparationCalls,bytes);
+  return Object.assign(module.exports,{preparationCalls});
 }
 const { POST } = await handler('../app/api/media/finalize/route.ts');
 const { GET } = await handler('../app/api/shared-media/[token]/[id]/route.ts');
@@ -73,6 +88,44 @@ function backend(t, denied = false) {
   return calls;
 }
 const request = () => new Request('https://journeys.example/api/media/finalize', { method: 'POST', headers: { Host: 'journeys.example', Origin: 'https://journeys.example', 'Content-Type': 'application/json' }, body: JSON.stringify({ id: media, checksum: createHash('sha256').update(bytes).digest('hex') }) });
+const prepareRequest = () => new Request('https://journeys.example/api/media', {method:'POST',headers:{Host:'journeys.example',Origin:'https://journeys.example','Content-Type':'application/json'},body:JSON.stringify({tripId:trip,requestId:media,mime:'image/png',size:bytes.length})});
+
+test('upload preparation with only the media flag refuses before metadata or signed URL creation',async t=>{
+  environment(t,{KINNSO_MEDIA_RUNTIME:undefined,KINNSO_SUPABASE_SECRET_KEY:undefined});
+  const handler=await importPrepare();
+  const response=await handler.POST(prepareRequest());
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).code,'UNAVAILABLE');
+  assert.deepEqual(handler.preparationCalls,[]);
+});
+test('upload preparation without a unified server key refuses before metadata or signed URL creation',async t=>{
+  environment(t,{KINNSO_SUPABASE_SECRET_KEY:undefined});
+  const handler=await importPrepare();
+  const response=await handler.POST(prepareRequest());
+  assert.equal(response.status,503);
+  assert.equal((await response.json()).code,'UNAVAILABLE');
+  assert.deepEqual(handler.preparationCalls,[]);
+});
+test('configured unified upload prepares its owner-scoped pending object and signed URL',async t=>{
+  environment(t);
+  const handler=await importPrepare();
+  const response=await handler.POST(prepareRequest());
+  assert.equal(response.status,200);
+  const body=await response.json();assert.equal(body.data.state,'pending');assert.equal(body.data.id,media);
+  assert.deepEqual(handler.preparationCalls,[{name:'prepare_trip_upload',args:{p_trip_id:trip,p_request_id:media,p_mime:'image/png',p_size:bytes.length}},{name:'signed_upload',path:`${owner}/${trip}/${media}`}]);
+});
+async function importPrepare(){return handler('../app/api/media/route.ts')}
+
+test('owner can still read an attached private image without an upload finalizer',async t=>{
+  environment(t,{KINNSO_MEDIA_RUNTIME:undefined,KINNSO_SUPABASE_SECRET_KEY:undefined});
+  const ownerHandler=await handler('../app/api/media/[id]/route.ts');
+  const response=await ownerHandler.GET(new Request('https://journeys.example/api/media/'+media),{params:Promise.resolve({id:media})});
+  assert.equal(response.status,200);
+  assert.deepEqual(Buffer.from(await response.arrayBuffer()),bytes);
+  assert.equal(response.headers.get('content-type'),'image/png');
+  assert.match(response.headers.get('cache-control'),/private, no-store/);
+  assert.deepEqual(ownerHandler.preparationCalls,[{name:'owner_download',path:`${owner}/${trip}/${media}`}]);
+});
 
 test('unified media finalize reuses owner authentication and actual image decoding without an external service origin', async t => {
   environment(t); const calls = backend(t);

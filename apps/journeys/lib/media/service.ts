@@ -1,15 +1,11 @@
 import {createHash} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
 import sharp from 'sharp'
-import {backendTarget} from '../contracts/capabilities'
+import {backendTarget,mediaRuntimeConfigured} from '../contracts/capabilities'
 type Env=Record<string,string|undefined>
 export function unifiedMediaEnvironment(env:Env):Env {
  const target=backendTarget(env),key=env.KINNSO_SUPABASE_SECRET_KEY
- if(env.KINNSO_MEDIA_RUNTIME!=='unified'||!target||!key)throw new Error('UNAVAILABLE')
- if(!key.startsWith('sb_secret_')) {
-  try{if(JSON.parse(Buffer.from(key.split('.')[1]??'','base64url').toString()).role!=='service_role')throw new Error('UNAVAILABLE')}
-  catch{throw new Error('UNAVAILABLE')}
- }
+ if(env.KINNSO_MEDIA_RUNTIME!=='unified'||!target||!key||!mediaRuntimeConfigured(env))throw new Error('UNAVAILABLE')
  return {
   SUPABASE_URL:target.origin,SUPABASE_ANON_KEY:target.key,SUPABASE_SERVICE_ROLE_KEY:key,
   KINNSO_APPROVED_SUPABASE_ORIGIN:target.origin,

@@ -3,7 +3,7 @@ import {object,uuid} from '../../../../lib/api/validation';
 import {finalizeMedia,unifiedMediaEnvironment} from '../../../../lib/media/service';
 export const runtime='nodejs';
 export async function POST(request:Request) {
- const ctx=await apiContext(request,'media',true);if(ctx.response)return ctx.response;
+ const ctx=await apiContext(request,'mediaUpload',true);if(ctx.response)return ctx.response;
  try{
   const body=object(await boundedBody(request,4096),['id','checksum']);if(!uuid(body.id)||typeof body.checksum!=='string'||!/^[0-9a-f]{64}$/.test(body.checksum))return failure('INVALID',400);
   if(process.env.KINNSO_MEDIA_RUNTIME==='unified') {
