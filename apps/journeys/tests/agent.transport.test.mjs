@@ -29,12 +29,41 @@ test('missing provider/budget does not fabricate AI mode; denial and failed sett
  assert.equal(calls,1);assert.equal(failed.providerStatus,'unavailable');assert.equal(failed.capabilityMode,'sources_only');
 });
 test('provider cannot insert mutation claim, uncited output, fabricated verification or executable action',async()=>{
- const store={accounting:'USD_calendar_month',rateVersion:'synthetic-usd-v1',reserve:async()=>({allowed:true,reservationId:requestId}),settle:async()=>({status:'settled'})};
  const base=groundedResult(input);
  for(const value of [{...base,answer:'I have paid and booked.'},{...base,sources:[{...source,url:'https://evil.test'}]},{...base,sources:[{...source,verifiedAt:'2026-10-04'}]},{...base,answer:'Invented place with fake hours.'},{...base,proposedActions:[{type:'book',requiresConfirmation:false}]}]){
+  const settlements=[];
+  const store={accounting:'USD_calendar_month',rateVersion:'synthetic-usd-v1',reserve:async()=>({allowed:true,reservationId:requestId}),settle:async(id,actual,successful)=>{settlements.push({id,actual,successful});return{status:'settled'};}};
   const result=await executeAgent(input,{store,provider:{authorized:true,costUnit:'USD_micro',rateVersion:'synthetic-usd-v1',estimate:1,generate:async()=>({value,actual:1,successful:true})}});
   assert.equal(result.providerStatus,'unavailable');assert.deepEqual(result.sources,base.sources);assert.deepEqual(result.proposedActions,[]);
+  assert.deepEqual(settlements,[{id:requestId,actual:1,successful:false}],'rejected output retains its cost without successful-flow credit');
  }
+});
+
+test('malformed source entries return fallback while retaining known provider cost without success',async()=>{
+ const base=groundedResult(input);
+ for(const sources of [[null],[42],[{}]]){
+  const settlements=[];let releases=0;
+  const store={accounting:'USD_calendar_month',rateVersion:'synthetic-usd-v1',reserve:async()=>({allowed:true,reservationId:requestId}),settle:async(id,actual,successful)=>{settlements.push({id,actual,successful});return{status:'settled'};},release:async()=>{releases++;return{status:'released'};}};
+  const result=await executeAgent(input,{store,provider:{authorized:true,costUnit:'USD_micro',rateVersion:'synthetic-usd-v1',estimate:1,generate:async()=>({value:{...base,sources},actual:7,successful:true})}});
+  assert.equal(result.providerStatus,'unavailable');assert.equal(result.capabilityMode,'sources_only');
+  assert.deepEqual(result.sources,base.sources);assert.deepEqual(result.proposedActions,[]);
+  assert.deepEqual(settlements,[{id:requestId,actual:7,successful:false}]);assert.equal(releases,0);
+ }
+});
+
+test('accepted deterministic output earns one successful flow with actual cost',async()=>{
+ const settlements=[];
+ const store={accounting:'USD_calendar_month',rateVersion:'synthetic-usd-v1',reserve:async()=>({allowed:true,reservationId:requestId}),settle:async(id,actual,successful)=>{settlements.push({id,actual,successful});return{status:'settled'};}};
+ const result=await executeAgent(input,{store,provider:{authorized:true,costUnit:'USD_micro',rateVersion:'synthetic-usd-v1',estimate:1,generate:async()=>({value:groundedResult(input),actual:3,successful:true})}});
+ assert.equal(result.providerStatus,'available');assert.equal(result.capabilityMode,'connected');
+ assert.deepEqual(settlements,[{id:requestId,actual:3,successful:true}]);
+});
+
+test('malformed provider success flag retains reconciliation without settling or releasing',async()=>{
+ let settlements=0,releases=0;
+ const store={accounting:'USD_calendar_month',rateVersion:'synthetic-usd-v1',reserve:async()=>({allowed:true,reservationId:requestId}),settle:async()=>{settlements++;return{status:'settled'};},release:async()=>{releases++;return{status:'released'};}};
+ const result=await executeAgent(input,{store,provider:{authorized:true,costUnit:'USD_micro',rateVersion:'synthetic-usd-v1',estimate:1,generate:async()=>({value:groundedResult(input),actual:3,successful:'yes'})}});
+ assert.equal(result.providerStatus,'unavailable');assert.equal(settlements,0);assert.equal(releases,0);
 });
 test('bounded provider timeout keeps the reservation and offers ordinary editing without a charge guess',async()=>{
  let aborted=false;let settled=0;let released=0;

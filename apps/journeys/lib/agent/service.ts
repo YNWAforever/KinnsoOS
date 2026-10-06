@@ -26,6 +26,14 @@ export function groundedResult(input:{task:AgentTask;sources:Evidence[];readFail
  return {answer:reasons[state]+(usable?'\n\n'+records.map(s=>`${s.title}\n${s.excerpt}`).join('\n\n')+(input.ownedContext?'\n\nOwned private context (not a public citation):\n'+input.ownedContext:''):''),sources,proposedActions:proposals,capabilityMode:'sources_only',providerStatus:'unconfigured',evidenceState:state};
 }
 export type ProviderPort={authorized:true;estimate:number;costUnit:'USD_micro';rateVersion:string;generate:(input:{model:string;task:AgentTask;prompt:string;sources:Evidence[];signal:AbortSignal})=>Promise<{value:AgentResult;actual:number;successful:boolean}>};
+function acceptedProviderResult(value:unknown,fallback:AgentResult):boolean {
+ if(!value||typeof value!=='object')return false;
+ const candidate=value as Partial<AgentResult>;
+ // Untrusted output must pass the application contract before earning successful-flow credit.
+ return typeof candidate.answer==='string'&&!unsafeText(candidate.answer)&&candidate.answer===fallback.answer&&
+  Array.isArray(candidate.sources)&&Array.isArray(candidate.proposedActions)&&candidate.proposedActions.length===0&&
+  candidate.sources.every(source=>source!==null&&typeof source==='object'&&fallback.sources.some(known=>known.url===source.url&&known.title===source.title&&known.verifiedAt===source.verifiedAt));
+}
 /** Only trusted server code can supply this paid transport and unit conversion. No provider is configured by default. */
 export async function executeAgent(input:{actor:Actor;task:AgentTask;prompt:string;sources:Evidence[];requestId:string;trip?:TripSnapshot|null;readFailure?:string;ownedContext?:string},paid?:{provider:ProviderPort;store:MonthlyBudgetStore},deadlineMs=20000):Promise<AgentResult> {
  allowedTools(input.actor,input.task);
@@ -35,15 +43,14 @@ export async function executeAgent(input:{actor:Actor;task:AgentTask;prompt:stri
  if(!['grounded','unverified'].includes(fallback.evidenceState))return fallback;
  const controller=new AbortController();
  let timedOut=false;let timer:ReturnType<typeof setTimeout>|undefined;
- const result=await runBudgeted(paid.store,{service:'ai',requestId:input.requestId,estimate:paid.provider.estimate},()=>new Promise<{value:AgentResult;actual:number;successful:boolean}>((resolve,reject)=>{
-  timer=setTimeout(()=>{timedOut=true;controller.abort();reject(new Error('TIMEOUT'));},Math.max(1,Math.min(deadlineMs,20000)));
-  paid.provider.generate({model:AGENT_MODEL,task:input.task,prompt:input.prompt,sources:input.sources,signal:controller.signal}).then(resolve,reject);
- })).finally(()=>{if(timer)clearTimeout(timer);});
+ const result=await runBudgeted(paid.store,{service:'ai',requestId:input.requestId,estimate:paid.provider.estimate},async()=>{
+  const outcome=await new Promise<{value:AgentResult;actual:number;successful:boolean}>((resolve,reject)=>{
+   timer=setTimeout(()=>{timedOut=true;controller.abort();reject(new Error('TIMEOUT'));},Math.max(1,Math.min(deadlineMs,20000)));
+   paid.provider.generate({model:AGENT_MODEL,task:input.task,prompt:input.prompt,sources:input.sources,signal:controller.signal}).then(resolve,reject);
+  });
+  if(typeof outcome.successful!=='boolean')throw new Error('INVALID_OUTCOME');
+  return {...outcome,successful:outcome.successful&&acceptedProviderResult(outcome.value,fallback)};
+ }).finally(()=>{if(timer)clearTimeout(timer);});
  if(!result.ok)return{...fallback,providerStatus:timedOut?'timeout':result.reason==='disabled'?'budget_disabled':result.reason==='exhausted'?'budget_exhausted':'unavailable'};
- const value=result.value as AgentResult;
- // The model can choose a subset of grounded excerpts, but cannot manufacture source URLs, verification dates or executable commands.
- if(!value||typeof value.answer!=='string'||unsafeText(value.answer)||!Array.isArray(value.sources)||!Array.isArray(value.proposedActions)||value.proposedActions.length||value.sources.some(s=>!fallback.sources.some(t=>t.url===s.url&&t.title===s.title&&t.verifiedAt===s.verifiedAt)))return{...fallback,providerStatus:'unavailable'};
- // Provider prose is untrusted. Only verbatim grounded excerpt output is eligible for deterministic display.
- if(value.answer!==fallback.answer)return{...fallback,providerStatus:'unavailable'};
  return{...fallback,capabilityMode:'connected',providerStatus:'available'};
 }
