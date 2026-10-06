@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {guides} from '../../lib/guides/repository';
 import {adoptionPreview} from '../../lib/guides/adoption-preview';
-import {bookmarks} from '../../lib/bookmarks/repository';
+import {bookmarks,type BookmarkCursor,type BookmarkRow} from '../../lib/bookmarks/repository';
 import {trips} from '../../lib/trips/repository';
 import {invalidateAccountViews,subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import type {PublicGuide} from '../../lib/seo/public-guide';
@@ -32,7 +32,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  },[id,actorId,router]);
  useEffect(()=>{let active=true;setGuide(initialGuide);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else {setGuide(null);setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}}});return()=>{active=false}},[id,initialGuide]);
  useEffect(()=>{if(!actorId)return;let active=true;const generation=epoch.current;
-  void bookmarks.list().then(r=>{if(active&&generation===epoch.current&&r.ok)setSaved(r.data.some(row=>row.guide_id===id))});
+  void bookmarks.list(undefined,id).then(r=>{if(active&&generation===epoch.current&&r.ok)setSaved(r.data.items.some(row=>row.guide_id===id))});
   void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok){setList(r.data.items);setNext(r.data.nextCursor)}else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
   return()=>{active=false};
  },[id,actorId]);
@@ -89,13 +89,26 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  </div>
 }
 export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
- const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<{guide_id:string;guides:{id:string;slug:string;title:string}|null}[]|null>(null),[message,setMessage]=useState(''),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0);
- useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setRows(null);setMessage('');
-  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setRows(null);setMessage('');router.refresh()};
+ const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<BookmarkRow[]|null>(null),[next,setNext]=useState<BookmarkCursor|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0),lock=useRef(false);
+ useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;
+  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;router.refresh()};
   const unsubscribe=subscribeAccountInvalidation(invalidate);
   const check=async()=>{if(document.visibilityState!=='visible'||!navigator.onLine)return;const generation=epoch.current;try{const response=await fetch('/api/session',{cache:'no-store'});if(!response.ok)return;const body=await response.json();if(generation===epoch.current&&body.data?.id!==actorId)invalidate(body.data?.id??null)}catch{}};
   document.addEventListener('visibilitychange',check);return()=>{epoch.current++;unsubscribe();document.removeEventListener('visibilitychange',check)};
  },[actorId,router]);
- useEffect(()=>{let active=true;const generation=epoch.current;if(actorId)void bookmarks.list().then(r=>{if(active&&generation===epoch.current){if(r.ok)setRows(r.data);else setMessage(t('Bookmarks could not be loaded.','未能載入收藏。'))}});return()=>{active=false}},[actorId]);
- return <div className="k-page"><h1>{t('Your bookmarks','我的收藏')}</h1>{!actorId||!accountValid?<Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href('saved'))}>{t('Sign in','登入')}</Link>:message?<p role="alert">{message}</p>:rows?<ul>{rows.map(row=><li key={row.guide_id}>{row.guides?<Link href={href('g/'+row.guide_id)}>{row.guides.title}</Link>:t('Source unavailable','來源未能提供')}</li>)}{!rows.length&&<li>{t('No bookmarks yet.','暫未有收藏。')}</li>}</ul>:<p role="status">{t('Loading…','載入中…')}</p>}</div>
+ async function loadPage(cursor:BookmarkCursor|null,initial=false){
+  if(!actorId||(!initial&&!accountValid)||lock.current)return;
+  const generation=epoch.current;lock.current=true;setBusy(true);
+  const result=await bookmarks.list(cursor??undefined);if(generation!==epoch.current)return;
+  if(result.ok){setRows(previous=>cursor?[...(previous??[]),...result.data.items]:result.data.items);setNext(result.data.nextCursor);setMessage('')}
+  else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
+  else setMessage(t('Bookmarks could not be loaded. Retry to continue.','未能載入收藏，請重試以繼續。'));
+  lock.current=false;setBusy(false);
+ }
+ useEffect(()=>{if(actorId)void loadPage(null,true)},[actorId]);
+ return <div className="k-page"><h1>{t('Your bookmarks','我的收藏')}</h1>{!actorId||!accountValid?<Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href('saved'))}>{t('Sign in','登入')}</Link>:<>
+  {message&&<><p role="alert">{message}</p><button className="k-btn" disabled={busy} onClick={()=>void loadPage(rows===null?null:next)}>{t('Retry bookmarks','重試載入收藏')}</button></>}
+  {rows?<ul>{rows.map(row=><li key={row.guide_id}>{row.guides?<Link href={href('g/'+row.guide_id)}>{row.guides.title}</Link>:t('Source unavailable','來源未能提供')}</li>)}{!rows.length&&<li>{t('No bookmarks yet.','暫未有收藏。')}</li>}</ul>:!message&&<p role="status">{t('Loading…','載入中…')}</p>}
+  {next&&!message&&<button className="k-btn" disabled={busy} onClick={()=>void loadPage(next)}>{t('More bookmarks','載入更多收藏')}</button>}
+ </>}</div>
 }
