@@ -13,14 +13,14 @@ import {GuestPlanner} from './GuestPlanner';
 import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
 export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
  const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
- const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId);
+ const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId),[next,setNext]=useState<string|null>(null);
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
  const lock=useRef(false),intent=useRef<{desired:boolean;id:string}|null>(null),epoch=useRef(0),resumeCancelled=useRef(false);
  useEffect(()=>{
-  epoch.current++;setAccountValid(!!actorId);setList([]);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);setMessage('');
+  epoch.current++;setAccountValid(!!actorId);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);setMessage('');
   const invalidate=(nextOwner:string|null)=>{
    if(nextOwner===actorId)return;
-   epoch.current++;resumeCancelled.current=true;setAccountValid(false);setList([]);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);
+   epoch.current++;resumeCancelled.current=true;setAccountValid(false);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);
    setMessage(t('Account changed. Sign in or reload to continue.','帳戶已變更，請登入或重新載入以繼續。'));
    if(query.get('bookmark')==='1')router.replace(href('g/'+id));
    router.refresh();
@@ -33,9 +33,17 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  useEffect(()=>{let active=true;setGuide(initialGuide);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else {setGuide(null);setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}}});return()=>{active=false}},[id,initialGuide]);
  useEffect(()=>{if(!actorId)return;let active=true;const generation=epoch.current;
   void bookmarks.list().then(r=>{if(active&&generation===epoch.current&&r.ok)setSaved(r.data.some(row=>row.guide_id===id))});
-  void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok)setList(r.data.items);else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
+  void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok){setList(r.data.items);setNext(r.data.nextCursor)}else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
   return()=>{active=false};
  },[id,actorId]);
+ async function loadMore(){
+  if(!actorId||!accountValid||!next||lock.current||adoption.current)return;
+  const generation=epoch.current;lock.current=true;setBusy(true);
+  const result=await trips.list(next);if(generation!==epoch.current)return;
+  if(result.ok){setList(previous=>[...previous,...result.data.items]);setNext(result.data.nextCursor);setMessage('')}
+  else{setMessage(t('More trips could not be loaded. Retry.','未能載入更多行程，請重試。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
+  setBusy(false);lock.current=false;
+ }
  async function toggle(desired:boolean,requestId?:string) {
   if(lock.current)return;
   if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();router.push(href('sign-in')+'?next='+encodeURIComponent(next));return}
@@ -69,6 +77,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  {guide.kind==='summary'?<><p>{t('This is a summary guide. It has no structured itinerary to apply.','這是摘要攻略，未提供可套用的結構化行程。')}</p></>:<><p>v{guide.version}</p>
  {actorId&&accountValid?<>
   <label htmlFor={'guide-trip-'+id}>{t('Apply to a trip','套用至行程')}</label><select id={'guide-trip-'+id} value={selected} disabled={busy||!!adoption.current} onChange={e=>{setSelected(e.target.value);setPreview(null)}}><option value="">{t('Choose an existing trip','選擇現有行程')}</option>{list.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select>
+  {next&&<button className="k-btn" disabled={busy||!!adoption.current} onClick={()=>void loadMore()}>{t('More trips','載入更多行程')}</button>}
   <Link href={href('trips')}>{t('Create a trip first','先建立行程')}</Link><button className="k-btn primary" disabled={busy||!selected||!!adoption.current} onClick={()=>void reviewAdoption()}>{t('Apply published itinerary','套用已發布行程')}</button>
   {preview&&<section data-testid="adoption-preview" aria-label={t('Review itinerary changes','核對行程更改')}><h2>{t('Review before applying','套用前核對')} · {preview.tripTitle}</h2>
    <p>{t('Existing source versions','現有來源版本')}: {preview.existingVersions.length?preview.existingVersions.map(v=>'v'+v).join(', '):t('None','無')}</p><p>{t('Published version','已發布版本')}: v{preview.guideVersion}</p>
