@@ -14,13 +14,14 @@ import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
 export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
  const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId),[next,setNext]=useState<string|null>(null);
+ const [bookmarkStatus,setBookmarkStatus]=useState<'loading'|'ready'|'error'>('loading'),bookmarkRead=useRef({ticket:0,loading:false});
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
  const lock=useRef(false),intent=useRef<{desired:boolean;id:string}|null>(null),epoch=useRef(0),resumeCancelled=useRef(false);
  useEffect(()=>{
-  epoch.current++;setAccountValid(!!actorId);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);setMessage('');
+  epoch.current++;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;setBookmarkStatus('loading');setAccountValid(!!actorId);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);setMessage('');
   const invalidate=(nextOwner:string|null)=>{
    if(nextOwner===actorId)return;
-   epoch.current++;resumeCancelled.current=true;setAccountValid(false);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);
+   epoch.current++;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;setBookmarkStatus('loading');resumeCancelled.current=true;setAccountValid(false);setList([]);setNext(null);setSaved(false);setSelected('');setPreview(null);adoption.current=null;intent.current=null;lock.current=false;setBusy(false);
    setMessage(t('Account changed. Sign in or reload to continue.','帳戶已變更，請登入或重新載入以繼續。'));
    if(query.get('bookmark')==='1')router.replace(href('g/'+id));
    router.refresh();
@@ -32,10 +33,19 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  },[id,actorId,router]);
  useEffect(()=>{let active=true;setGuide(initialGuide);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else {setGuide(null);setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}}});return()=>{active=false}},[id,initialGuide]);
  useEffect(()=>{if(!actorId)return;let active=true;const generation=epoch.current;
-  void bookmarks.list(undefined,id).then(r=>{if(active&&generation===epoch.current&&r.ok)setSaved(r.data.items.some(row=>row.guide_id===id))});
+  void loadBookmarkStatus(true);
   void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok){setList(r.data.items);setNext(r.data.nextCursor)}else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
   return()=>{active=false};
  },[id,actorId]);
+ async function loadBookmarkStatus(initial=false){
+  if(!actorId||(!initial&&!accountValid)||intent.current||lock.current||bookmarkRead.current.loading)return;
+  const generation=epoch.current,ticket=++bookmarkRead.current.ticket;bookmarkRead.current.loading=true;setBookmarkStatus('loading');
+  const result=await bookmarks.list(undefined,id);if(generation!==epoch.current||ticket!==bookmarkRead.current.ticket)return;
+  bookmarkRead.current.loading=false;
+  if(result.ok){setSaved(result.data.items.some(row=>row.guide_id===id));setBookmarkStatus('ready')}
+  else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
+  else setBookmarkStatus('error');
+ }
  async function loadMore(){
   if(!actorId||!accountValid||!next||lock.current||adoption.current)return;
   const generation=epoch.current;lock.current=true;setBusy(true);
@@ -47,9 +57,9 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  async function toggle(desired:boolean,requestId?:string) {
   if(lock.current)return;
   if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();router.push(href('sign-in')+'?next='+encodeURIComponent(next));return}
-  const generation=epoch.current;lock.current=true;setBusy(true);if(intent.current?.desired!==desired)intent.current={desired,id:requestId??crypto.randomUUID()};
+  const generation=epoch.current;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;lock.current=true;setBusy(true);if(intent.current?.desired!==desired)intent.current={desired,id:requestId??crypto.randomUUID()};
   const result=await bookmarks.toggle(id,desired,intent.current.id);if(generation!==epoch.current)return;
-  if(result.ok){setSaved(result.data.saved);intent.current=null;setMessage(t('Bookmark saved to your account','收藏已保存至你的帳戶'));router.replace(href('g/'+id))}
+  if(result.ok){setSaved(result.data.saved);setBookmarkStatus('ready');intent.current=null;setMessage(t('Bookmark saved to your account','收藏已保存至你的帳戶'));router.replace(href('g/'+id))}
   else{setMessage(t('Bookmark was not confirmed. Retry.','未確認收藏結果，請重試。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   setBusy(false);lock.current=false;
  }
@@ -73,7 +83,11 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   setBusy(false);lock.current=false;
  }
  if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
- return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/><p role="status">{message}</p><button className="k-btn" disabled={busy} onClick={()=>void toggle(!saved)}>{saved?t('Remove bookmark','取消收藏'):t('Bookmark guide','收藏攻略')}</button>
+ return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/><p role="status">{message}</p>
+ {actorId&&accountValid&&bookmarkStatus!=='ready'&&!intent.current?<>
+  <p role={bookmarkStatus==='error'?'alert':'status'}>{bookmarkStatus==='error'?t('Bookmark status could not be loaded. Retry.','未能載入收藏狀態，請重試。'):t('Checking bookmark status…','正在核對收藏狀態…')}</p>
+  {bookmarkStatus==='error'&&<button className="k-btn" disabled={busy} onClick={()=>void loadBookmarkStatus()}>{t('Retry bookmark status','重試載入收藏狀態')}</button>}
+ </>:<button className="k-btn" disabled={busy} onClick={()=>void toggle(intent.current?.desired??!saved)}>{intent.current?(busy?t('Updating bookmark…','正在更新收藏…'):t('Retry bookmark change','重試收藏變更')):saved?t('Remove bookmark','取消收藏'):t('Bookmark guide','收藏攻略')}</button>}
  {guide.kind==='summary'?<><p>{t('This is a summary guide. It has no structured itinerary to apply.','這是摘要攻略，未提供可套用的結構化行程。')}</p></>:<><p>v{guide.version}</p>
  {actorId&&accountValid?<>
   <label htmlFor={'guide-trip-'+id}>{t('Apply to a trip','套用至行程')}</label><select id={'guide-trip-'+id} value={selected} disabled={busy||!!adoption.current} onChange={e=>{setSelected(e.target.value);setPreview(null)}}><option value="">{t('Choose an existing trip','選擇現有行程')}</option>{list.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select>
