@@ -1,0 +1,34 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createContext,runInContext} from 'node:vm';
+import {transform} from 'esbuild';
+
+const source=await readFile(new URL('../app/travel/TripWorkspace.tsx',import.meta.url),'utf8');
+const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
+function preview(actorId,id,valid=true){
+ const ImportPreview=()=>null,module={exports:{}},jsx=(type,props)=>({type,props});
+ const context=createContext({module,exports:module.exports,require:name=>{
+  if(name==='react')return{useState:initial=>[initial===true&&!valid?false:initial,()=>{}],useRef:initial=>({current:initial}),useEffect:()=>{}};
+  if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
+  if(name==='next/link')return{__esModule:true,default:'a'};
+  if(name==='next/navigation')return{useRouter:()=>({})};
+  if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path,ready:true})};
+  if(name==='./ImportPreview')return{ImportPreview};
+  return{};
+ }});
+ runInContext(compiled.code,context);
+ const tree=module.exports.TripWorkspace({actorId,id});
+ const nodes=node=>!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(nodes)];
+ return nodes(tree).filter(node=>node.type===ImportPreview);
+}
+test('the anonymous trip index offers an explicit device preview after cancelled sign-in',()=>{
+ const children=preview(null);assert.equal(children.length,1,'cancelled login must not hide the original device copies');
+ assert.equal(children[0].props.actorId,null,'a device preview cannot gain an authenticated import capability');
+});
+test('an invalidated account view cannot expose device previews in place of account content',()=>{
+ assert.equal(preview('account-A',undefined,false).length,0);
+});
+test('an anonymous private-trip deep link does not reveal unrelated device copies',()=>{
+ assert.equal(preview(null,'private-trip-A').length,0);
+});
