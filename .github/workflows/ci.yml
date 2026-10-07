@@ -179,7 +179,9 @@ jobs:
           node-version: '22'
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @kinnso/e2e e2e:install
+      - name: Install Chromium and required system dependencies
+        timeout-minutes: 15
+        run: pnpm --filter @kinnso/e2e e2e:install
 
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359 # v3.0.1
         with:
