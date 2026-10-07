@@ -13,7 +13,7 @@ export function localConfiguration(source) {
   const port = line.match(/^(port|shadow_port) = (544\d\d)$/); if (port) return `${port[1]} = ${Number(port[2]) + 4000}`;
   if (section === '[db.seed]' && /^enabled =/.test(line)) return 'enabled = false';
   if (section === '[auth]' && /^site_url =/.test(line)) return 'site_url = "http://127.0.0.1:3495"';
-  if (section === '[auth]' && /^additional_redirect_urls =/.test(line)) return 'additional_redirect_urls = ["http://127.0.0.1:3495/auth/callback"]';
+  if (section === '[auth]' && /^additional_redirect_urls =/.test(line)) return 'additional_redirect_urls = ["http://127.0.0.1:3495/callback", "http://127.0.0.1:3495/auth/callback"]';
   return line;
  }).join('\n');
 }
