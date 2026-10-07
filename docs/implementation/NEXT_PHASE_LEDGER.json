@@ -29,14 +29,18 @@
       "dependencies": [],
       "owner_role": "Tech lead",
       "status": "partial",
-      "code_status": "reviewable_baseline",
-      "merge_status": "not_started",
+      "code_status": "reviewable_ci_evidence",
+      "merge_status": "PR23_pending_root_E2E",
       "environment_status": "local_verified_public_production_readonly",
       "acceptance_status": "partial",
-      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-      "prs": [],
+      "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/23"
+      ],
       "tests": [
-        "production readonly: 273 source files and 10 checks PASS"
+        "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
+        "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
+        "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
@@ -207,15 +211,22 @@
         "N03.contract_local_ready"
       ],
       "owner_role": "Full stack",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
+      "status": "partial",
+      "code_status": "reviewable_auth_entry",
+      "merge_status": "not_merged",
+      "environment_status": "isolated_local_candidate",
+      "acceptance_status": "local_synthetic_only_hosted_mail_blocked",
       "source_sha": null,
       "prs": [],
-      "tests": [],
-      "blockers": [],
+      "tests": [
+        "Candidate unit 295 PASS; isolated integration 27 PASS.",
+        "Candidate full browser 51 PASS; approved callback alias adjustment retested separately.",
+        "Native build/typecheck PASS; sandbox native-path build blocked, retained separately."
+      ],
+      "blockers": [
+        "Server-only KINNSO_AUTH_RECOVERY_SECRET not configured on production.",
+        "Named mailbox, confirmation/recovery delivery and hosted callback acceptance not provided."
+      ],
       "rollback": "Revert the task PR; preserve existing data."
     },
     {
@@ -792,19 +803,18 @@
       ],
       "owner_role": "DevOps + QA",
       "status": "partial",
-      "code_status": "summary_collector_in_review",
-      "merge_status": "not_started",
+      "code_status": "reviewable_ci_evidence",
+      "merge_status": "PR23_pending_root_E2E",
       "environment_status": "parser_RED_GREEN",
       "acceptance_status": "current_CI_artifact_pending",
-      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-      "prs": [],
+      "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/23"
+      ],
       "tests": [
-        "Parser RED then GREEN: 3 tests",
-        "Unit collector: 290 PASS",
-        "Isolated integration collector: 27 PASS",
-        "Build and typecheck PASS",
-        "Windows source package: 5 PASS / 1 symlink permission skip",
-        "Connected browser run in progress; current Linux CI pending"
+        "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
+        "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
+        "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
