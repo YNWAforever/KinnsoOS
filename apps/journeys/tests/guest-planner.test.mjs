@@ -10,7 +10,7 @@ import {guideDraft,restorableGuideDrafts} from '../lib/trips/guest-drafts.ts';
 const source=await readFile(new URL('../app/travel/GuestPlanner.tsx',import.meta.url),'utf8');
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
 const guide={id:'guide-one',version:2,title:'Kyoto walk',days:[{offset:0,title:'Morning',stops:[{title:'Temple',startMinuteOfDay:540,durationMinutes:60}]}]};
-function planner(actorId=null){
+function planner(actorId=null,initialDraft=null,onSaved=undefined){
  const states=[],refs=[],effects=[],writes=[],reads=[],listeners=new Map();let cursor=0,tree;
  const react={
   useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;}];},
@@ -28,7 +28,7 @@ function planner(actorId=null){
    if(name==='../../lib/trips/guest-drafts')return{guideDraft,restorableGuideDrafts,readGuestTrips:()=>new Promise((resolve,reject)=>reads.push({resolve,reject})),saveGuestTrip:trip=>new Promise((resolve,reject)=>writes.push({trip:structuredClone(trip),resolve,reject}))};
    throw Error('Unexpected dependency '+name);
   }}));
- function render(){cursor=0;tree=module.exports.GuestPlanner({guide,actorId});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}return tree;}
+ function render(){cursor=0;tree=module.exports.GuestPlanner({...(initialDraft?{initialDraft,onSaved}:{guide}),actorId});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}return tree;}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
  const button=name=>elements().find(el=>el.type==='button'&&el.props.children===name);
  const status=()=>elements().find(el=>el.props?.role==='status').props.children;
@@ -70,6 +70,25 @@ test('failed storage keeps editable content and requires a successful retry befo
 test('a repeated click in the same render creates only one device draft',()=>{
  const p=planner(),button=p.button('Plan as a device-only draft');button.props.onClick();button.props.onClick();p.render();
  assert.equal(p.writes.length,1);
+});
+
+test('selected device repair returns to preview only after the latest edits are acknowledged',async()=>{
+ const original=guideDraft({...guide,version:1},'device-withdrawn','guest-original','Asia/Tokyo'),completed=[];
+ original.days[0].stops[0].title='';original.days[0].stops[0].travellerNote='My original private note';
+ const p=planner('account-A',original,copy=>completed.push(copy));assert.equal(p.reads.length,0);assert.equal(p.writes.length,0);
+ assert.equal(p.elements().find(el=>el.type==='textarea')?.props.value,'My original private note','render the selected copy without fetching a guide');
+ p.edit('input','Repaired personal stop');p.button('Save device draft').props.onClick();p.render();p.edit('textarea','A later unsaved note');await p.settle(0);
+ assert.equal(completed.length,0,'an older transaction cannot close an editor with newer edits');assert.match(p.status(),/not saved yet/i);
+ p.button('Save device draft').props.onClick();p.render();await p.settle(1,new Error('quota'));assert.equal(completed.length,0);assert.equal(p.elements().find(el=>el.type==='textarea').props.value,'A later unsaved note');
+ p.button('Save device draft').props.onClick();p.render();await p.settle(2);assert.equal(completed.length,1);
+ assert.equal(completed[0].id,'device-withdrawn');assert.equal(completed[0].ownerId,'guest-original');assert.equal(completed[0].source.version,1);assert.equal(completed[0].days[0].stops[0].travellerNote,'A later unsaved note');assert.equal(original.days[0].stops[0].travellerNote,'My original private note');
+});
+
+test('a selected-copy save completed after editor unmount cannot replace the parent import preview',async()=>{
+ const original=guideDraft(guide,'device-old-editor','guest-original','UTC'),completed=[];
+ const p=planner('account-A',original,copy=>completed.push(copy)),save=p.button('Save device draft');assert.ok(save,'selected copy must have a save handler');
+ p.edit('textarea','Started saving before account/navigation changed');save.props.onClick();p.render();p.unmount();await p.settle(0);
+ assert.equal(completed.length,0,'a closed editor must not deliver its copy to a newer preview');assert.equal(p.writes[0].trip.id,original.id);
 });
 test('reload protection follows unsaved work and is removed after save or unmount',async()=>{
  const p=planner();p.button('Plan as a device-only draft').props.onClick();p.render();
