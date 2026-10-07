@@ -10,7 +10,7 @@ import {guideDraft,restorableGuideDrafts} from '../lib/trips/guest-drafts.ts';
 const source=await readFile(new URL('../app/travel/GuestPlanner.tsx',import.meta.url),'utf8');
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
 const guide={id:'guide-one',version:2,title:'Kyoto walk',days:[{offset:0,title:'Morning',stops:[{title:'Temple',startMinuteOfDay:540,durationMinutes:60}]}]};
-function planner(){
+function planner(actorId=null){
  const states=[],refs=[],effects=[],writes=[],reads=[],listeners=new Map();let cursor=0,tree;
  const react={
   useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;}];},
@@ -28,7 +28,7 @@ function planner(){
    if(name==='../../lib/trips/guest-drafts')return{guideDraft,restorableGuideDrafts,readGuestTrips:()=>new Promise((resolve,reject)=>reads.push({resolve,reject})),saveGuestTrip:trip=>new Promise((resolve,reject)=>writes.push({trip:structuredClone(trip),resolve,reject}))};
    throw Error('Unexpected dependency '+name);
   }}));
- function render(){cursor=0;tree=module.exports.GuestPlanner({guide});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}return tree;}
+ function render(){cursor=0;tree=module.exports.GuestPlanner({guide,actorId});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}return tree;}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
  const button=name=>elements().find(el=>el.type==='button'&&el.props.children===name);
  const status=()=>elements().find(el=>el.props?.role==='status').props.children;
@@ -122,4 +122,13 @@ for(const title of ['', '   '])test(`saving and reloading an incomplete ${JSON.s
  assert.equal(next.elements().find(el=>el.type==='textarea').props.value,'Keep this unfinished private note');
  next.edit('input','Completed stop');next.button('Save device draft').props.onClick();next.render();await next.settle(0);
  assert.equal(next.writes[0].trip.id,stored.id);assert.equal(next.writes[0].trip.days[0].stops[0].travellerNote,'Keep this unfinished private note');
+});
+test('a signed-in traveller can explicitly repair a device copy and return directly to import preview',async()=>{
+ const p=planner('account-A');assert.equal(p.reads.length,0);assert.equal(p.button('Plan as a device-only draft'),undefined);
+ const row=guideDraft(guide,'unfinished-copy','guest-local','UTC');row.days[0].stops[0].title='';row.days[0].stops[0].travellerNote='Retain my note';
+ p.button('Find saved device drafts').props.onClick();p.render();await p.settleRead(0,[row]);
+ p.elements().find(el=>el.props?.['data-draft-id']===row.id).props.onClick();p.render();p.edit('input','Repaired stop');
+ p.button('Save device draft').props.onClick();p.render();await p.settle(0);
+ const link=p.elements().find(el=>el.type==='a'&&el.props.children==='Review import to your account');assert.ok(link);assert.equal(link.props.href,'/en/trips');
+ assert.equal(p.writes[0].trip.ownerId,'guest-local','repair does not assign an account owner or import automatically');assert.equal(p.writes[0].trip.days[0].stops[0].travellerNote,'Retain my note');
 });

@@ -99,7 +99,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
    <p>{t('This appends a separate authored copy. Existing days, source copies and your private notes stay in the trip.','此操作會加入獨立的作者行程副本，現有日程、來源副本及私人筆記會保留。')}</p>
    <button className="k-btn primary" disabled={busy} onClick={()=>void confirmAdoption()}>{t('Confirm apply to this trip','確認套用至此行程')}</button>
   </section>}
- </>:!actorId?<GuestPlanner key={guide.id} guide={guide}/>:null}</>}
+ </>:null}{(!actorId||accountValid)&&<GuestPlanner key={guide.id+':'+(actorId??'guest')} guide={guide} actorId={actorId}/>}</>}
  </div>
 }
 export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
