@@ -96,7 +96,7 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
   if(!draft){setMessage(t('No pending local draft','沒有待同步草稿'));return}
   pending.current={key:JSON.stringify(draft.command),requestId:draft.requestId,revision:draft.baseRevision,command:draft.command};await apply(draft.command);
  }
- if(!actorId||!accountValid)return <div className="k-page"><h1>{t('Your trips','我的行程')}</h1><p>{t('Sign in to keep trips in your Kinnso account.','登入以將行程保存至 Kinnso 帳戶。')}</p><Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href(id?'trips/'+id:'trips'))}>{t('Sign in','登入')}</Link></div>;
+ if(!actorId||!accountValid)return <div className="k-page"><h1>{t('Your trips','我的行程')}</h1><p>{t('Sign in to keep trips in your Kinnso account.','登入以將行程保存至 Kinnso 帳戶。')}</p><Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href(id?'trips/'+id:'trips'))}>{t('Sign in','登入')}</Link>{!actorId&&!id&&<ImportPreview actorId={null}/>}</div>;
  const initialTitle=accountValid&&initialHeading?.actorId===actorId&&initialHeading?.tripId===id?initialHeading.title:null;
  return <div className="k-page os-trips" data-ready={ready} data-trip-editor={!!id}><Link href={href('trips')}>{t('My trips','我的行程')}</Link><h1>{trip?trip.title:initialTitle??t('Your trips','我的行程')}</h1><p role="status" data-testid="trip-save-state" aria-live="polite">{message}</p>
  <button className="k-btn" disabled={busy} onClick={()=>{reapply.current=conflicted.current;preserveInputs.current=conflicted.current;conflicted.current=false;setRetry(n=>n+1)}}>{t('Load current version','載入目前版本')}</button>
