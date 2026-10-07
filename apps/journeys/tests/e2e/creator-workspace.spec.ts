@@ -28,6 +28,79 @@ async function openNewDraft(page: Page) {
  await expect(page.getByTestId('creator-editor')).toBeVisible();
 }
 
+async function editableRoute(page:Page){
+ await openNewDraft(page);const id=randomUUID();
+ const payload={title:'Synthetic editable route',city:'Kyoto',summary:'Local isolated creator editor fixture',content:{days:[0,2].map(offset=>({offset,title:`Authored ${offset}`,stops:[{title:'Same stop',description:'First',placeId:null,startMinuteOfDay:0,durationMinutes:30},{title:'Same stop',description:'Second',placeId:null,startMinuteOfDay:1439,durationMinutes:20}]}))}};
+ const result=await page.request.put('/api/creator/guides/'+id,{headers:{Origin:'http://127.0.0.1:3495'},data:{expectedRevision:0,requestId:randomUUID(),payload}});expect(result.ok()).toBe(true);
+ await page.goto('/en/studio/guides/'+id+'/edit');await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue(payload.title);return{id,payload};
+}
+
+test('a rejected private save keeps input and waits for explicit correction or retry',async({page})=>{
+ const {id}=await editableRoute(page);let attempts=0;
+ await page.route('**/api/creator/guides/'+id,route=>{if(route.request().method()!=='PUT')return route.continue();attempts++;return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,code:'INVALID',retryable:false})});});
+ await page.getByLabel('Guide title',{exact:true}).fill('Retained after rejected save');await page.getByRole('button',{name:'Save draft',exact:true}).click();
+ await expect(page.getByTestId('creator-editor').getByRole('alert')).toBeVisible();await page.waitForTimeout(2100);expect(attempts).toBe(1);
+ await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Retained after rejected save');await page.unroute('**/api/creator/guides/'+id);
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+});
+
+test('the first confirmed save keeps deletion Undo in the same editor session',async({page})=>{
+ await openNewDraft(page);await page.getByLabel('Guide title',{exact:true}).fill('Synthetic new empty draft');
+ await page.getByRole('button',{name:'Delete stop',exact:true}).click();await page.getByRole('button',{name:'Save draft',exact:true}).click();
+ await page.waitForURL(/\/en\/studio\/guides\/[0-9a-f-]{36}\/edit/);
+ await expect(page.getByRole('button',{name:'Undo last deletion',exact:true})).toBeVisible();await page.getByRole('button',{name:'Undo last deletion',exact:true}).click();
+ await expect(page.getByLabel('Stop title',{exact:true})).toHaveValue('');
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');await page.reload();await expect(page.getByLabel('Stop title',{exact:true})).toHaveValue('');
+});
+
+test('keyboard reorder keeps duplicate stop identity, gaps and focus; deletion can Undo and persist empty drafts',async({page})=>{
+ const {id}=await editableRoute(page);const days=page.getByTestId('editor-day'),stops=days.first().getByTestId('editor-stop');
+ await expect(stops.first().getByLabel('Start time (HH:mm, optional)',{exact:true})).toHaveValue('00:00');
+ await stops.first().getByRole('button',{name:'Move stop down',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(stops.nth(1).getByLabel('Stop title',{exact:true})).toBeFocused();await expect(stops.first().getByLabel('Public description',{exact:true})).toHaveValue('Second');
+ await stops.first().getByLabel('Start time (HH:mm, optional)',{exact:true}).fill('09:30');
+ await days.first().getByRole('button',{name:'Move day down',exact:true}).focus();await page.keyboard.press('Enter');
+ await expect(days.nth(1).getByLabel('Day title',{exact:true})).toBeFocused();
+ await expect(days.first().getByLabel('Day title',{exact:true})).toHaveValue('Authored 2');
+ await days.nth(1).getByTestId('editor-stop').nth(1).getByLabel('Start time (HH:mm, optional)',{exact:true}).fill('');
+ await stops.first().getByRole('button',{name:'Delete stop',exact:true}).click();await page.getByRole('button',{name:'Undo last deletion',exact:true}).click();await expect(stops).toHaveCount(2);
+ await stops.first().getByRole('button',{name:'Delete stop',exact:true}).click();await stops.first().getByRole('button',{name:'Delete stop',exact:true}).click();await expect(stops).toHaveCount(0);
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+ let dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;expect(dto.payload.content.days.map((d:{offset:number})=>d.offset)).toEqual([0,2]);expect(dto.payload.content.days[0].stops).toEqual([]);expect(dto.payload.content.days[1].stops.map((s:{startMinuteOfDay:number|null})=>s.startMinuteOfDay)).toEqual([570,null]);expect(JSON.stringify(dto.payload)).not.toContain('editor-focus');
+ await days.first().getByRole('button',{name:'Delete day',exact:true}).click();await days.first().getByRole('button',{name:'Delete day',exact:true}).click();
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+ await page.reload();await expect(days).toHaveCount(0);await expect(page.getByText('No days. Add a day before publishing.',{exact:true})).toBeVisible();
+ dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;expect(dto.payload.content.days).toEqual([]);
+});
+
+test('new reorder during a held autosave survives its acknowledgement and persists on the next revision',async({page})=>{
+ const {id}=await editableRoute(page);let release!:()=>void,committed!:()=>void,first=true;const held=new Promise<void>(r=>release=r),saved=new Promise<void>(r=>committed=r);
+ await page.route('**/api/creator/guides/'+id,async route=>{if(route.request().method()!=='PUT'||!first)return route.continue();first=false;const response=await route.fetch();expect(response.ok()).toBe(true);committed();await held;await route.fulfill({response});});
+ try{
+  await page.getByLabel('Guide title',{exact:true}).fill('Earlier saved title');await saved;
+  const days=page.getByTestId('editor-day');await days.first().getByRole('button',{name:'Move day down',exact:true}).click();await page.getByLabel('Guide title',{exact:true}).fill('Newest retained title');
+  release();await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Newest retained title');
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+  const dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;expect(dto.revision).toBe(3);expect(dto.payload.title).toBe('Newest retained title');expect(dto.payload.content.days[0].title).toBe('Authored 2');
+ }finally{release();}
+});
+
+test('publication acknowledgement retains new draft edits and revision conflicts require explicit replacement',async({page})=>{
+ const {id,payload}=await editableRoute(page);let release!:()=>void,committed!:()=>void;const held=new Promise<void>(r=>release=r),published=new Promise<void>(r=>committed=r);
+ await page.route('**/api/creator/guides/'+id+'/publish',async route=>{const response=await route.fetch();expect(response.ok()).toBe(true);committed();await held;await route.fulfill({response});});
+ try{
+  await page.getByRole('button',{name:'Publish structured version',exact:true}).click();await published;
+  await page.getByLabel('Guide title',{exact:true}).fill('New private revision');release();await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('New private revision');
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+  const guide=(await(await page.request.get('/api/guides/'+id)).json()).data;expect(guide.title).toBe(payload.title);expect(guide.version).toBe(1);
+  const dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;
+  expect((await page.request.put('/api/creator/guides/'+id,{headers:{Origin:'http://127.0.0.1:3495'},data:{expectedRevision:dto.revision,requestId:randomUUID(),payload:{...dto.payload,title:'Other device revision'}}})).ok()).toBe(true);
+  await page.getByLabel('Guide title',{exact:true}).fill('Conflicting local input');await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.getByText('Another version was saved. Review the saved draft before retrying.',{exact:true})).toBeVisible();await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Conflicting local input');
+  await page.getByRole('button',{name:'Reload saved draft (replace this form)',exact:true}).click();await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Other device revision');
+ }finally{release();}
+});
+
 test('draft status never reports a new unsaved guide as saved', async ({ page }) => {
  await openNewDraft(page);
  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft not saved yet.');
