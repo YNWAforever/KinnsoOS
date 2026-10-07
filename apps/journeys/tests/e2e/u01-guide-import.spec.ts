@@ -283,6 +283,37 @@ test('a saved device draft can be repaired anonymously and after sign-in when it
  expect(snapshot.days[0].stops[0].source).toBeNull();expect(snapshot.days[0].stops[0].travellerNote).toBe('Personal note repaired without a published source');expect(snapshot.days[0].stops[0].title).toBe('My repaired device stop');expect((await a.client.rpc('get_trip_snapshot',{p_trip_id:snapshot.id})).data.days[0].stops[0].travellerNote).toBe('Personal note repaired without a published source');expect((await b.client.rpc('get_trip_snapshot',{p_trip_id:snapshot.id})).error?.message).toContain('trip_not_found');
  const retained=await copies();expect(retained.map(row=>row.id)).toEqual([original.id]);expect(retained[0].ownerId).toBe(original.ownerId);expect(retained[0].source).toEqual(original.source);expect(retained[0].days[0].stops[0].travellerNote).toBe('Personal note repaired without a published source');expect(sourceRequests).toEqual([]);
 });
+for(const scenario of ['unsaved','pending-save'])test(`device repair retains ${scenario} notes through account invalidation and a failed save`,async({page})=>{
+ test.setTimeout(120000);
+ const title='Synthetic device account recovery '+scenario,id=await guide(title),note='Newest personal note after '+scenario;
+ expect((await creator.client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Device day',stops:[{title:'Device stop',description:'Synthetic route',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}]}})).error).toBeNull();
+ await page.goto('/en/g/'+id);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
+ await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await signIn(page);await page.waitForURL('**/en/trips');await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:title,exact:true}).click();await page.getByRole('button',{name:'Edit this saved device draft',exact:true}).click();
+ const notes=page.getByRole('textbox',{name:'Draft private note',exact:true});
+ if(scenario==='pending-save'){
+  await page.evaluate(()=>{
+   const descriptor=Object.getOwnPropertyDescriptor(IDBTransaction.prototype,'oncomplete')!,state={captured:false,release:()=>{},restore:()=>Object.defineProperty(IDBTransaction.prototype,'oncomplete',descriptor)};
+   (window as unknown as {deviceSaveHold:typeof state}).deviceSaveHold=state;
+   Object.defineProperty(IDBTransaction.prototype,'oncomplete',{configurable:true,get(){return descriptor.get!.call(this)},set(handler){
+    if(this.db.name==='kinnso_guest_drafts_v1'&&this.mode==='readwrite'&&!state.captured){state.captured=true;descriptor.set!.call(this,(event:Event)=>{state.release=()=>{state.release=()=>{};handler?.call(this,event)}})}else descriptor.set!.call(this,handler);
+   }});
+  });
+  await notes.fill('Older submitted note');await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Saving device draft');
+ }
+ await notes.fill(note);let account:Page|null=null;
+ try{
+  account=await page.context().newPage();await account.goto('/en/me');await account.getByRole('button',{name:'Sign out',exact:true}).click();await account.waitForURL('**/en/sign-in');
+  await expect(page.getByLabel('Trip title',{exact:true})).toHaveCount(0);await expect(notes).toHaveCount(0);await expect(page.getByRole('button',{name:'Confirm import to this account',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Continue editing this device draft',exact:true})).toBeVisible();await page.getByRole('button',{name:'Continue editing this device draft',exact:true}).click();await expect(notes).toHaveValue(note);
+  if(scenario==='pending-save'){await page.evaluate(()=>{const state=(window as any).deviceSaveHold;state.release();state.restore()});await expect(page.getByTestId('guest-save-state')).toContainText('not saved yet');await expect(notes).toHaveValue(note)}
+  await account.goto('/en/sign-in?next='+encodeURIComponent('/en/trips'));await signIn(account,b);await account.waitForURL('**/en/trips');await page.bringToFront();await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));
+  await expect(page.getByRole('button',{name:'Continue editing this device draft',exact:true})).toBeVisible();await expect(notes).toHaveCount(0);await page.getByRole('button',{name:'Continue editing this device draft',exact:true}).click();await expect(notes).toHaveValue(note);
+  await page.evaluate(()=>{const original=IDBDatabase.prototype.transaction;(window as any).restoreDeviceQuota=()=>{IDBDatabase.prototype.transaction=original};IDBDatabase.prototype.transaction=function(stores,mode,options){if(this.name==='kinnso_guest_drafts_v1'&&mode==='readwrite')throw new DOMException('Synthetic quota failure','QuotaExceededError');return original.call(this,stores,mode,options)}});
+  await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('not saved');await expect(notes).toHaveValue(note);await expect(page.getByRole('button',{name:'Confirm import to this account',exact:true})).toHaveCount(0);await page.evaluate(()=>{(window as any).restoreDeviceQuota()});
+  await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByRole('status',{name:'Local import status',exact:true})).toContainText('Device draft saved.');
+  const imported=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/trips/import'&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();const snapshot=(await (await imported).json()).data;expect(snapshot.days[0].stops[0].travellerNote).toBe(note);expect((await b.client.rpc('get_trip_snapshot',{p_trip_id:snapshot.id})).data.days[0].stops[0].travellerNote).toBe(note);expect((await a.client.rpc('get_trip_snapshot',{p_trip_id:snapshot.id})).error?.message).toContain('trip_not_found');
+ }finally{if(scenario==='pending-save')await page.evaluate(()=>{const state=(window as any).deviceSaveHold;state?.release();state?.restore()}).catch(()=>{});await page.evaluate(()=>{(window as any).restoreDeviceQuota?.()}).catch(()=>{});await account?.close()}
+});
 test('large bounded device notes save and reload while the account import size gate stays closed',async({page})=>{
  test.setTimeout(150000);
  const id=await guide('Synthetic large recoverable notes'),note='n'.repeat(4000),content={days:Array.from({length:3},(_,offset)=>({offset,title:'Authored day '+offset,stops:Array.from({length:25},(_,i)=>({title:'Stop '+offset+'-'+i,description:'Authored directions',placeId:null,startMinuteOfDay:null,durationMinutes:null}))}))};
