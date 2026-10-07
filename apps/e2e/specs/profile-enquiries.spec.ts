@@ -127,8 +127,21 @@ test.beforeAll(async () => {
     status: 'active',
     handle: creatorHandle,
     public_profile: { platforms: [] },
-  }).eq('id', creatorId)
+  }).eq('id', creatorId).select('id').single()
   expect(creatorUpdate.error).toBeNull()
+  expect(creatorUpdate.data?.id, 'the Auth trigger must bootstrap the updated creator fixture').toBe(creatorId)
+
+  // A successful UPDATE with no selected row can affect zero records. Confirm
+  // the actual public projection before waiting on a page that may be a 404.
+  const anonymous = createClient(local.supabaseUrl, local.anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const publicCreator = await anonymous.from('creators')
+    .select('id, handle, display_name, public_profile')
+    .eq('handle', creatorHandle).eq('status', 'active').single()
+  expect(publicCreator.error, 'the isolated anonymous creator projection must be readable').toBeNull()
+  expect(publicCreator.data?.id).toBe(creatorId)
+  expect(publicCreator.data?.display_name).toBe(creatorName)
 
   const merchantProfile = await svc.from('merchant_profiles').insert({
     user_id: merchantUserId,
@@ -183,7 +196,8 @@ test('visitor enquiries flow into the authenticated ops queue', async ({ page })
   test.setTimeout(120_000)
   await page.context().setExtraHTTPHeaders({ 'x-vercel-forwarded-for': visitorIp })
 
-  await page.goto(`/en/c/${creatorHandle}`)
+  const creatorResponse = await page.goto(`/en/c/${creatorHandle}`)
+  expect(creatorResponse?.status(), 'the public creator route must render before enquiry submission').toBe(200)
   await page.getByRole('button', { name: `Work with ${creatorName}` }).click()
   await page.getByLabel('Name').fill('R7.7 E2E visitor')
   await page.getByLabel('Email').fill(creatorVisitorEmail)
