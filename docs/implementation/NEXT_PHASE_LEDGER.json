@@ -1,0 +1,813 @@
+{
+  "schema_version": 1,
+  "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+  "scope": "First batch: baseline, Auth, creator editor, device navigation, structured content acceptance.",
+  "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
+  "tasks": [
+    {
+      "task_id": "N01",
+      "finding_ids": [
+        "F01",
+        "F02"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A07",
+        "A13",
+        "A16",
+        "G01",
+        "G02",
+        "G04",
+        "LegacyE01",
+        "LegacyE05",
+        "LegacyE06",
+        "LegacyE09"
+      ],
+      "user_case_ids": [
+        "U06"
+      ],
+      "dependencies": [],
+      "owner_role": "Tech lead",
+      "status": "partial",
+      "code_status": "reviewable_baseline",
+      "merge_status": "not_started",
+      "environment_status": "local_verified_public_production_readonly",
+      "acceptance_status": "partial",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [],
+      "tests": [
+        "production readonly: 273 source files and 10 checks PASS"
+      ],
+      "blockers": [
+        "Hosted schema, provider configuration and role acceptance not observed."
+      ],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N02",
+      "finding_ids": [
+        "F01"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A02",
+        "G01",
+        "G02",
+        "G17",
+        "LegacyE01",
+        "LegacyE04"
+      ],
+      "user_case_ids": [
+        "U06"
+      ],
+      "dependencies": [
+        "N01"
+      ],
+      "owner_role": "Release engineer",
+      "status": "verified_done",
+      "code_status": "existing_source_verified",
+      "merge_status": "merged",
+      "environment_status": "production_readonly_verified",
+      "acceptance_status": "release_archive_match_only",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [],
+      "tests": [
+        "Actions 37651154493 artifact PASS; fresh root verifier PASS at source_sha"
+      ],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N03",
+      "finding_ids": [
+        "F02",
+        "F12"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A06",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12",
+        "A14",
+        "A15",
+        "A17",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G06",
+        "G09",
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G14",
+        "G17",
+        "G18",
+        "LegacyE01",
+        "LegacyE05",
+        "LegacyE06",
+        "LegacyE09",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06"
+      ],
+      "dependencies": [
+        "N01"
+      ],
+      "owner_role": "Backend + DevOps",
+      "status": "partial",
+      "code_status": "existing_contracts",
+      "merge_status": "merged",
+      "environment_status": "local_ready_hosted_unknown",
+      "acceptance_status": "blocked",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [],
+      "tests": [],
+      "blockers": [
+        "Named hosted role UAT and provider configuration evidence absent."
+      ],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N04",
+      "finding_ids": [
+        "F05"
+      ],
+      "requirement_ids": [
+        "A03",
+        "A17",
+        "G05",
+        "G06",
+        "G08"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U02"
+      ],
+      "dependencies": [
+        "N01"
+      ],
+      "owner_role": "Frontend",
+      "status": "code_merged",
+      "code_status": "existing_PR20_22",
+      "merge_status": "merged",
+      "environment_status": "local_regression_pending",
+      "acceptance_status": "blocked",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [
+        20,
+        21,
+        22
+      ],
+      "tests": [],
+      "blockers": [
+        "Formal signed-in and physical-device acceptance not run."
+      ],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N05",
+      "finding_ids": [
+        "F03"
+      ],
+      "requirement_ids": [
+        "A03",
+        "A06",
+        "A13",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G09",
+        "G10",
+        "G13",
+        "LegacyE06",
+        "U03"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U03"
+      ],
+      "dependencies": [
+        "N03.contract_local_ready"
+      ],
+      "owner_role": "Full stack",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N06",
+      "finding_ids": [
+        "F07"
+      ],
+      "requirement_ids": [
+        "A06",
+        "G04",
+        "G06",
+        "G09",
+        "G10",
+        "G13",
+        "LegacyE06",
+        "LegacyE09",
+        "U03"
+      ],
+      "user_case_ids": [
+        "U03"
+      ],
+      "dependencies": [
+        "N03.contract_local_ready"
+      ],
+      "owner_role": "Frontend + Content",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N07",
+      "finding_ids": [
+        "F04"
+      ],
+      "requirement_ids": [
+        "A06",
+        "A07",
+        "A08",
+        "A18",
+        "A20",
+        "G04",
+        "G06",
+        "G07",
+        "G09",
+        "G10",
+        "G13",
+        "G15",
+        "LegacyE06",
+        "LegacyE08",
+        "LegacyE09",
+        "U03"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U03"
+      ],
+      "dependencies": [
+        "N06;",
+        "N03.runtime_ready_for_publication"
+      ],
+      "owner_role": "Content owner + Creator",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N08",
+      "finding_ids": [
+        "F06"
+      ],
+      "requirement_ids": [
+        "A03",
+        "A17",
+        "G05",
+        "G06",
+        "G08"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U02"
+      ],
+      "dependencies": [
+        "N04.merged"
+      ],
+      "owner_role": "Frontend",
+      "status": "partial",
+      "code_status": "existing_recovery_remaining_navigation",
+      "merge_status": "PR21_22_merged",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N09",
+      "finding_ids": [
+        "F02",
+        "F12"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A03",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12",
+        "A13",
+        "A14",
+        "A16",
+        "A17",
+        "A19",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G14",
+        "G15",
+        "G16",
+        "G17",
+        "G18",
+        "LegacyE05",
+        "LegacyE06",
+        "LegacyE09",
+        "U01",
+        "U02",
+        "U04",
+        "U05",
+        "U06"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "dependencies": [
+        "N03.runtime_ready;",
+        "N04;",
+        "N05;",
+        "N07;",
+        "N08;",
+        "N10.for_U05;",
+        "N11.for_U04;",
+        "N15.for_U02;",
+        "N17.for_U04_U05"
+      ],
+      "owner_role": "QA + Backend",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N10",
+      "finding_ids": [
+        "F09"
+      ],
+      "requirement_ids": [
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12",
+        "G09",
+        "G11",
+        "G14",
+        "U05"
+      ],
+      "user_case_ids": [
+        "U05"
+      ],
+      "dependencies": [
+        "N03.contract_local_ready"
+      ],
+      "owner_role": "Full stack + Ops",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N11",
+      "finding_ids": [
+        "F08"
+      ],
+      "requirement_ids": [
+        "G04",
+        "G11",
+        "G12",
+        "U04"
+      ],
+      "user_case_ids": [
+        "U04"
+      ],
+      "dependencies": [
+        "N03.contract_local_ready"
+      ],
+      "owner_role": "Full stack + Merchant ops",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N12",
+      "finding_ids": [
+        "F10"
+      ],
+      "requirement_ids": [
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A15",
+        "A17",
+        "A18",
+        "A20",
+        "G07",
+        "G09",
+        "G13",
+        "G15",
+        "G17",
+        "G18",
+        "LegacyE08"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U06"
+      ],
+      "dependencies": [
+        "N01"
+      ],
+      "owner_role": "Frontend performance",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N13",
+      "finding_ids": [
+        "F04",
+        "F11"
+      ],
+      "requirement_ids": [
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A12",
+        "A16",
+        "A18",
+        "A19",
+        "A20",
+        "G02",
+        "G07",
+        "G09",
+        "G15",
+        "LegacyE02",
+        "LegacyE03",
+        "LegacyE08"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U03"
+      ],
+      "dependencies": [
+        "N03.contract_local_ready;",
+        "N07.for_real_covers"
+      ],
+      "owner_role": "Design + Frontend",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N14",
+      "finding_ids": [
+        "F12"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A12",
+        "A13",
+        "A16",
+        "A17",
+        "A18",
+        "A19",
+        "A20",
+        "G01",
+        "G02",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G10",
+        "G15",
+        "G17",
+        "G18",
+        "LegacyE02",
+        "LegacyE03",
+        "U01",
+        "U02",
+        "U06"
+      ],
+      "user_case_ids": [
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "dependencies": [
+        "N09.for_final_gate;",
+        "N13.for_final_gate"
+      ],
+      "owner_role": "QA + Accessibility",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N15",
+      "finding_ids": [
+        "F12"
+      ],
+      "requirement_ids": [
+        "A14",
+        "A17",
+        "A18",
+        "G05",
+        "G06",
+        "G08",
+        "G10",
+        "G13",
+        "G14",
+        "G17",
+        "LegacyE05"
+      ],
+      "user_case_ids": [
+        "U02",
+        "U05",
+        "U06"
+      ],
+      "dependencies": [
+        "N03.runtime_ready"
+      ],
+      "owner_role": "Backend + Operations",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N16",
+      "finding_ids": [
+        "F01",
+        "F12"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A13",
+        "A15",
+        "A16",
+        "A17",
+        "A18",
+        "A19",
+        "A20",
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08",
+        "G09",
+        "G12",
+        "G15",
+        "G17",
+        "G18",
+        "LegacyE01",
+        "LegacyE02",
+        "LegacyE03",
+        "LegacyE07",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U05",
+        "U06"
+      ],
+      "user_case_ids": [
+        "U06"
+      ],
+      "dependencies": [
+        "N02;",
+        "N09;",
+        "N14;",
+        "N15;",
+        "N18;",
+        "N17.for_commercial_rollout"
+      ],
+      "owner_role": "Release owner",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N17",
+      "finding_ids": [
+        "F02",
+        "F12"
+      ],
+      "requirement_ids": [
+        "A08",
+        "A09",
+        "A10",
+        "A14",
+        "A15",
+        "A17",
+        "G07",
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G16",
+        "G17",
+        "G18",
+        "U04",
+        "U05"
+      ],
+      "user_case_ids": [
+        "U04",
+        "U05"
+      ],
+      "dependencies": [
+        "N03.runtime_ready"
+      ],
+      "owner_role": "Backend + Finance/Ops",
+      "status": "not_started",
+      "code_status": "not_started",
+      "merge_status": "not_started",
+      "environment_status": "not_run",
+      "acceptance_status": "not_run",
+      "source_sha": null,
+      "prs": [],
+      "tests": [],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    },
+    {
+      "task_id": "N18",
+      "finding_ids": [
+        "F01",
+        "F12"
+      ],
+      "requirement_ids": [
+        "A01",
+        "A02",
+        "A08",
+        "A09",
+        "A10",
+        "A15",
+        "A16",
+        "A17",
+        "G13",
+        "G17",
+        "G18",
+        "LegacyE04"
+      ],
+      "user_case_ids": [
+        "U06"
+      ],
+      "dependencies": [
+        "N01;",
+        "N02.for_release_evidence"
+      ],
+      "owner_role": "DevOps + QA",
+      "status": "partial",
+      "code_status": "summary_collector_in_review",
+      "merge_status": "not_started",
+      "environment_status": "parser_RED_GREEN",
+      "acceptance_status": "current_CI_artifact_pending",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "prs": [],
+      "tests": [
+        "Parser RED then GREEN: 3 tests",
+        "Unit collector: 290 PASS",
+        "Isolated integration collector: 27 PASS",
+        "Build and typecheck PASS",
+        "Windows source package: 5 PASS / 1 symlink permission skip",
+        "Connected browser run in progress; current Linux CI pending"
+      ],
+      "blockers": [],
+      "rollback": "Revert the task PR; preserve existing data."
+    }
+  ]
+}
