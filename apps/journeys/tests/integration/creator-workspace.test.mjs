@@ -6,6 +6,20 @@ import { fixture, admin, anonymous } from './local-fixtures.mjs';
 const payload = () => ({ title: 'Authored Kyoto walk', city: 'Kyoto', summary: 'A route authored for the local contract test', content: { days: [{ offset: 0, title: 'A real authored day', stops: [{ title: 'Public square', description: 'Creator description', placeId: null, startMinuteOfDay: 600, durationMinutes: 45 }] }] } });
 const rpc = async (actor, name, args) => { const result = await actor.client.rpc(name, args); assert.equal(result.error, null, JSON.stringify(result.error)); return result.data; };
 
+test('empty editing days/stops persist and remain unpublishable without inventing content',async()=>{
+ const f=await fixture();try{
+  const a=await f.actor(true),id=randomUUID(),input=payload();input.content.days[0].stops=[];
+  const saved=await rpc(a,'save_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:0,p_request_id:randomUUID(),p_payload:input});
+  assert.deepEqual(saved.payload.content.days[0].stops,[]);
+  assert.ok((await a.client.rpc('publish_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:1,p_request_id:randomUUID()})).error);
+  input.content.days=[];
+  const empty=await rpc(a,'save_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:1,p_request_id:randomUUID(),p_payload:input});assert.deepEqual(empty.payload.content.days,[]);
+  assert.ok((await a.client.rpc('publish_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:2,p_request_id:randomUUID()})).error);
+  const restored=await rpc(a,'save_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:2,p_request_id:randomUUID(),p_payload:payload()});assert.equal(restored.revision,3);
+  const result=await rpc(a,'publish_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:3,p_request_id:randomUUID()});assert.equal(result.snapshot.days.length,1);
+ }finally{await f.cleanup();}
+});
+
 test('creator drafts persist with atomic revision and request replay; published sources keep traveller notes', async () => {
  const f = await fixture();
  try {

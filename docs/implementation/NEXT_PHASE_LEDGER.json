@@ -213,11 +213,13 @@
       "owner_role": "Full stack",
       "status": "partial",
       "code_status": "reviewable_auth_entry",
-      "merge_status": "not_merged",
+      "merge_status": "PR24_current_head_checks_pending",
       "environment_status": "isolated_local_candidate",
       "acceptance_status": "local_synthetic_only_hosted_mail_blocked",
-      "source_sha": null,
-      "prs": [],
+      "source_sha": "b7c383994dbce28a6f373e5fac984552d0240675",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/24"
+      ],
       "tests": [
         "Candidate unit 295 PASS; isolated integration 27 PASS.",
         "Candidate full browser 51 PASS; approved callback alias adjustment retested separately.",
@@ -252,15 +254,23 @@
         "N03.contract_local_ready"
       ],
       "owner_role": "Frontend + Content",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
+      "status": "partial",
+      "code_status": "reviewable_creator_controls_and_scoped_SQL",
+      "merge_status": "not_merged",
+      "environment_status": "identified_isolated_local",
+      "acceptance_status": "local_synthetic_only_hosted_blocked",
       "source_sha": null,
       "prs": [],
-      "tests": [],
-      "blockers": [],
+      "tests": [
+        "Unit 299 PASS; isolated integration 28 PASS; full browser 55 PASS before final first-save Undo fix.",
+        "After documented native History URL fix: creator browser 11 PASS, including Undo/reload and existing navigation/save fences.",
+        "Native build/typecheck PASS; package 5 PASS / 1 Windows symlink-permission SKIP.",
+        "Interrupted full integration retained as INTERRUPTED; later complete run independently passes."
+      ],
+      "blockers": [
+        "Specific production authorization and recovery review for 20261008000000_allow_empty_creator_editing_drafts.sql.",
+        "Hosted U03 and author-verified content acceptance absent."
+      ],
       "rollback": "Revert the task PR; preserve existing data."
     },
     {

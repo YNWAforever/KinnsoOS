@@ -1,11 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useApp } from './ui';
 import { creators, emptyDraft, emptyProfile, type CreatorProgress, type DraftPayload, type GuideDraft, type Profile } from '../../lib/creators/contracts';
 import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
+import {formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
  const { t, href, locale } = useApp();
@@ -29,7 +30,7 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
  if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
- return editor ? <CreatorEditor path={path}/> : <CreatorGuides/>;
+ return editor ? <CreatorEditor key={path} path={path}/> : <CreatorGuides/>;
 }
 
 function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; onDone: () => void }) {
@@ -73,14 +74,20 @@ function CreatorGuides() {
  </section>;
 }
 
+type EditorState={payload:DraftPayload;keys:{day:string;stops:string[]}[]};
+function editorState(payload:DraftPayload,key:(day:number,stop?:number)=>string):EditorState{return{payload,keys:payload.content.days.map((d,i)=>({day:key(i),stops:d.stops.map((_,j)=>key(i,j))}))};}
 function CreatorEditor({ path }: { path: string }) {
  const { t, href } = useApp(), router = useRouter();
  const isNew = path.endsWith('/new');
+ const editorId=useId();
  const [id, setId] = useState<string | null>(isNew ? null : path.split('/')[2]);
- const [payload, setPayload] = useState<DraftPayload>(emptyDraft), [revision, setRevision] = useState(0), [version, setVersion] = useState(0), [loaded, setLoaded] = useState(isNew), [busy, setBusy] = useState(false), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [preview, setPreview] = useState(false), [message, setMessage] = useState('');
+ const [editor,setEditor]=useState(()=>editorState(emptyDraft(),(d,s)=>`${editorId}-${d}-${s??'day'}`));const payload=editor.payload;
+ const currentEditor=useRef(editor),editRevision=useRef(0),[undo,setUndo]=useState<EditorState|null>(null);
+ const [revision, setRevision] = useState(0), [version, setVersion] = useState(0), [loaded, setLoaded] = useState(isNew), [busy, setBusy] = useState(false), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [preview, setPreview] = useState(false), [message, setMessage] = useState('');
  const [actionError, setActionError] = useState<{ action: 'save' | 'publish' | 'withdraw'; message: string } | null>(null);
+ const [saveRejected,setSaveRejected]=useState(false);
  const saved = useRef(JSON.stringify(emptyDraft())), head = useRef(0), busyRef = useRef(false), lifetime = useRef(0);
- const intent = useRef<{ action: 'save' | 'publish' | 'withdraw'; requestId: string; revision: number; payload: DraftPayload } | null>(null);
+ const intent = useRef<{ action: 'save' | 'publish' | 'withdraw'; requestId: string; revision: number; payload: DraftPayload; editRevision:number } | null>(null);
  useEffect(() => {
   lifetime.current++;
   if (intent.current) {
@@ -89,7 +96,8 @@ function CreatorEditor({ path }: { path: string }) {
   }
   return () => { lifetime.current++; };
  }, []);
- function accept(d: GuideDraft) { const p = { ...d.payload, content: d.payload.content ?? emptyDraft().content }; saved.current = JSON.stringify(p); head.current = d.revision; setPayload(p); setRevision(d.revision); setVersion(d.publishedVersion); setLoaded(true); setConflict(d.sourceChanged); }
+ function accept(d: GuideDraft,replace=true) { const p = { ...d.payload, content: d.payload.content ?? emptyDraft().content }; saved.current = JSON.stringify(p); head.current = d.revision; if(replace){const next=editorState(p,()=>crypto.randomUUID());currentEditor.current=next;setEditor(next);setUndo(null);} setRevision(d.revision); setVersion(d.publishedVersion); setLoaded(true); setConflict(d.sourceChanged); }
+ function acceptAck(d:GuideDraft,commandEdit:number){const latest=editRevision.current===commandEdit;accept(d,false);if(latest){const next={...currentEditor.current,payload:d.payload};currentEditor.current=next;setEditor(next);}return latest;}
  useEffect(() => {
   if (isNew) { setId(crypto.randomUUID()); return; }
   let active = true; creators.get(path.split('/')[2]).then(r => { if (!active) return; if (r.ok) accept(r.data); else setMessage(r.code === 'NOT_FOUND' ? t('Guide not found.', '找不到攻略。') : t('Could not load the draft. Refresh to retry.', '未能載入草稿，請重新整理。')); });
@@ -97,37 +105,49 @@ function CreatorEditor({ path }: { path: string }) {
  }, [path, isNew]);
  async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false) {
   if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return;
-  const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload };
+  const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload:currentEditor.current.payload,editRevision:editRevision.current };
   const startedLifetime = lifetime.current;
   intent.current = command; busyRef.current = true; setBusy(true);
+  setSaveRejected(false);
   const r = command.action === 'save' ? await creators.save(id, command.revision, command.requestId, command.payload) : command.action === 'publish' ? await creators.publish(id, command.revision, command.requestId) : await creators.withdraw(id);
   if (lifetime.current !== startedLifetime) return;
   busyRef.current = false; setBusy(false);
   if (!r.ok) {
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
+   if(command.action==='save'&&!r.retryable)setSaveRejected(true);
    setMessage('');
-   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
+   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
   }
   intent.current = null; setPending(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
-  if (command.action === 'save') { accept(r.data as GuideDraft); setMessage(t('Draft saved.', '草稿已保存。')); if (isNew) router.replace(href('studio/guides/' + id + '/edit')); }
-  if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; accept(result.draft); setMessage(t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。')); }
+  if (command.action === 'save') { const latest=acceptAck(r.data as GuideDraft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (isNew&&latest) window.history.replaceState(null,'',href('studio/guides/' + id + '/edit')); }
+  if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
  }
  const dirty = JSON.stringify(payload) !== saved.current;
  const status = busy ? intent.current?.action === 'publish' ? t('Publishing version…', '正在發布版本…') : intent.current?.action === 'withdraw' ? t('Withdrawing adoption…', '正在撤回套用…') : t('Saving draft…', '正在保存草稿…')
   : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
- function edit(update: (previous: DraftPayload) => DraftPayload) { setMessage(''); setPayload(update); }
- useEffect(() => { if (!loaded || !id || !dirty || busy || pending || conflict) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict]);
+ function transform(update:(previous:EditorState)=>EditorState,deleting=false){if(pending||conflict)return;const previous=currentEditor.current;const next=update(previous);if(next===previous)return;setUndo(deleting?previous:null);setSaveRejected(false);editRevision.current++;currentEditor.current=next;setEditor(next);setMessage('');}
+ function edit(update: (previous: DraftPayload) => DraftPayload) {transform(previous=>({...previous,payload:update(previous.payload)}));}
+ function focusItem(key:string){requestAnimationFrame(()=>document.querySelector<HTMLInputElement>(`[data-editor-focus="${CSS.escape(key)}"]`)?.focus());}
+ function reorderDay(from:number,to:number){const key=currentEditor.current.keys[from].day;transform(e=>({payload:{...e.payload,content:moveDay(e.payload.content,from,to)},keys:moved(e.keys,from,to)}));focusItem(key);}
+ function reorderStop(day:number,from:number,to:number){const key=currentEditor.current.keys[day].stops[from];transform(e=>({payload:{...e.payload,content:moveStop(e.payload.content,day,from,to)},keys:e.keys.map((k,i)=>i===day?{...k,stops:moved(k.stops,from,to)}:k)}));focusItem(key);}
+ useEffect(() => { if (!loaded || !id || !dirty || busy || pending || conflict || saveRejected) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict, saveRejected]);
  function changeStop(day: number, stop: number, patch: Partial<DraftPayload['content']['days'][number]['stops'][number]>) { edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === day ? { ...d, stops: d.stops.map((s, j) => j === stop ? { ...s, ...patch } : s) } : d) } })); }
  return <section className="k-page os-editor" data-testid="creator-editor"><Link href={href('studio/guides')}>{t('Back to guides', '返回攻略')}</Link><h1>{t('Author your route', '創作你的路線')}</h1><p>{t('Write only itinerary content you have rights to publish. Summary text is never converted into stops.', '只填寫你有權公開的行程內容，摘要不會自動變成站點。')}</p>
   {!loaded ? <p role="status">{message || t('Loading draft…', '正在載入草稿…')}</p> : <>
-   <fieldset disabled={busy || pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => edit(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
-   {payload.content.days.map((day, di) => <fieldset key={di} disabled={busy || pending || conflict}><legend>{t(`Day ${di + 1}`, `第 ${di + 1} 日`)}</legend><label>{t('Day title', '日期名稱')}<input value={day.title} maxLength={200} onChange={e => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, title: e.target.value } : d) } }))}/></label>
-    {day.stops.map((stop, si) => <div key={si}><label>{t('Stop title', '站點名稱')}<input value={stop.title} maxLength={200} onChange={e => changeStop(di, si, { title: e.target.value })}/></label><label>{t('Public description', '公開描述')}<textarea aria-label={t('Public description', '公開描述')} value={stop.description} maxLength={4000} onChange={e => changeStop(di, si, { description: e.target.value })}/></label><label>{t('Start minute of day (optional)', '開始時間（當日分鐘，可選）')}<input type="number" min={0} max={1439} value={stop.startMinuteOfDay ?? ''} onChange={e => changeStop(di, si, { startMinuteOfDay: e.target.value === '' ? null : Number(e.target.value) })}/></label><label>{t('Duration in minutes (optional)', '停留分鐘（可選）')}<input type="number" min={1} max={1440} value={stop.durationMinutes ?? ''} onChange={e => changeStop(di, si, { durationMinutes: e.target.value === '' ? null : Number(e.target.value) })}/></label></div>)}
-    <button className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, stops: [...d.stops, emptyDraft().content.days[0].stops[0]] } : d) } }))}>{t('Add stop', '加入站點')}</button>
+   <fieldset disabled={pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => edit(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
+   {payload.content.days.map((day, di) => <fieldset key={editor.keys[di].day} data-testid="editor-day" disabled={pending || conflict}><legend>{t(`Day ${day.offset + 1}`, `第 ${day.offset + 1} 日`)}</legend><label>{t('Day title', '日期名稱')}<input data-editor-focus={editor.keys[di].day} value={day.title} maxLength={200} onChange={e => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, title: e.target.value } : d) } }))}/></label>
+    <div><button type="button" className="k-btn" disabled={di===0} onClick={()=>reorderDay(di,di-1)}>{t('Move day up','日期上移')}</button><button type="button" className="k-btn" disabled={di===payload.content.days.length-1} onClick={()=>reorderDay(di,di+1)}>{t('Move day down','日期下移')}</button><button type="button" className="k-btn" onClick={()=>transform(e=>({payload:{...e.payload,content:{days:e.payload.content.days.filter((_,i)=>i!==di)}},keys:e.keys.filter((_,i)=>i!==di)}),true)}>{t('Delete day','刪除日期')}</button></div>
+    {day.stops.map((stop, si) => <div key={editor.keys[di].stops[si]} data-testid="editor-stop"><label>{t('Stop title', '站點名稱')}<input data-editor-focus={editor.keys[di].stops[si]} value={stop.title} maxLength={200} onChange={e => changeStop(di, si, { title: e.target.value })}/></label><label>{t('Public description', '公開描述')}<textarea aria-label={t('Public description', '公開描述')} value={stop.description} maxLength={4000} onChange={e => changeStop(di, si, { description: e.target.value })}/></label><label>{t('Start time (HH:mm, optional)', '開始時間（HH:mm，可選）')}<input type="time" step={60} value={formatTimeOfDay(stop.startMinuteOfDay)} onChange={e => {const parsed=parseTimeOfDay(e.target.value);if(parsed.ok)changeStop(di,si,{startMinuteOfDay:parsed.minutes});}}/></label><label>{t('Duration in minutes (optional)', '停留分鐘（可選）')}<input type="number" min={1} max={1440} value={stop.durationMinutes ?? ''} onChange={e => changeStop(di, si, { durationMinutes: e.target.value === '' ? null : Number(e.target.value) })}/></label>
+     <button type="button" className="k-btn" disabled={si===0} onClick={()=>reorderStop(di,si,si-1)}>{t('Move stop up','站點上移')}</button><button type="button" className="k-btn" disabled={si===day.stops.length-1} onClick={()=>reorderStop(di,si,si+1)}>{t('Move stop down','站點下移')}</button><button type="button" className="k-btn" onClick={()=>transform(e=>({payload:{...e.payload,content:removeStop(e.payload.content,di,si)},keys:e.keys.map((k,i)=>i===di?{...k,stops:k.stops.filter((_,j)=>j!==si)}:k)}),true)}>{t('Delete stop','刪除站點')}</button>
+    </div>)}
+    {!day.stops.length&&<p>{t('No stops. Add an authored stop before publishing.','尚未加入站點，發布前請填寫創作站點。')}</p>}
+    <button className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => transform(e=>({payload:{...e.payload,content:{days:e.payload.content.days.map((d,i)=>i===di?{...d,stops:[...d.stops,emptyDraft().content.days[0].stops[0]]}:d)}},keys:e.keys.map((k,i)=>i===di?{...k,stops:[...k.stops,crypto.randomUUID()]}:k)}))}>{t('Add stop', '加入站點')}</button>
    </fieldset>)}
-   <button className="k-btn" disabled={busy || pending || conflict || payload.content.days.length >= 30} onClick={() => edit(p => ({ ...p, content: { days: [...p.content.days, { ...emptyDraft().content.days[0], offset: p.content.days.length }] } }))}>{t('Add day', '加入一天')}</button>
+   {!payload.content.days.length&&<p>{t('No days. Add a day before publishing.','尚未加入日期，發布前請加入日期。')}</p>}
+   <button className="k-btn" disabled={pending || conflict || payload.content.days.length >= 30 || payload.content.days.some(d=>d.offset>=364)} onClick={() => transform(e=>({payload:{...e.payload,content:{days:[...e.payload.content.days,{...emptyDraft().content.days[0],offset:Math.max(-1,...e.payload.content.days.map(d=>d.offset))+1}]}},keys:[...e.keys,{day:crypto.randomUUID(),stops:[crypto.randomUUID()]}]}))}>{t('Add day', '加入一天')}</button>
+   {undo&&<><button type="button" className="k-btn" disabled={pending||conflict} onClick={()=>{const restored=undo;transform(()=>restored);}}>{t('Undo last deletion','復原上次刪除')}</button><p>{t('Undo is available until the next edit.','下一次修改前可復原此刪除。')}</p></>}
    <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('save')}>{t('Save draft', '保存草稿')}</button><button className="k-btn" onClick={() => setPreview(!preview)}>{t('Preview', '預覽')}</button>
    <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
    {pending && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
@@ -135,7 +155,7 @@ function CreatorEditor({ path }: { path: string }) {
    {actionError && <p role="alert">{actionError.message}</p>}
    <p role="status">{status}</p>
    {version > 0 && <Link className="k-btn" href={href('g/' + id)}>{t('View published guide', '查看已發布攻略')}</Link>}
-   {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={i}><h3>{d.title || t(`Day ${i + 1}`, `第 ${i + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={j}><h4>{s.title}</h4><p>{s.description}</p></div>)}</article>)}</section>}
+   {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={editor.keys[i].day}><h3>{d.title || t(`Day ${d.offset + 1}`, `第 ${d.offset + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={editor.keys[i].stops[j]}><h4>{s.title}</h4><p>{s.description}</p></div>)}</article>)}</section>}
   </>}
  </section>;
 }
