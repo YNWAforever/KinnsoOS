@@ -700,7 +700,7 @@ export function Workbench({
         </header>
         <div className="k-mode">
           <span>
-            {mode !== 'demo' ? (mode==='connected'?t('Kinnso · account connected','Kinnso · 已接通帳戶'):t('Account services unavailable','帳戶服務尚未接通')) : ["library", "workspace", "admin"].includes(path)
+            {mode !== 'demo' ? (mode==='connected'?(actor?t('Kinnso · account connected','Kinnso · 已接通帳戶'):t('Kinnso · Browsing published guides','Kinnso · 瀏覽已發布攻略')):t('Account services unavailable','帳戶服務尚未接通')) : ["library", "workspace", "admin"].includes(path)
               ? t("KinnsoOS · connection workspace", "KinnsoOS · 接駁工作區")
               : t(
                   "Demo — sample data, saved on this device",
