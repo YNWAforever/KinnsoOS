@@ -866,22 +866,27 @@
       "owner_role": "DevOps + QA",
       "status": "partial",
       "code_status": "ci_evidence_and_profile_fixture_diagnostics_reviewable",
-      "merge_status": "PR23_current_connected_check_pending; PR26_root_PR_job_rerun_pending",
+      "merge_status": "PR23-29_applicable_current_head_CI_pending",
       "environment_status": "parser_RED_GREEN",
       "acceptance_status": "exact_local_artifacts_PASS; hosted_role_acceptance_NOT_RUN",
-      "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3",
+      "source_sha": "3a92c45793f9f505e7a3bb27c734203b871fc3e3",
       "prs": [
-        "https://github.com/YNWAforever/KinnsoOS/pull/23"
+        "https://github.com/YNWAforever/KinnsoOS/pull/23",
+        "https://github.com/YNWAforever/KinnsoOS/pull/28",
+        "https://github.com/YNWAforever/KinnsoOS/pull/29"
       ],
       "tests": [
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
         "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
         "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI.",
         "Exact012841d local clean-tree collector: unit302/integration28/browser72 PASS; retained actual SHA/target/nonzero counts.",
-        "PR26 source039b97d root push37685207224 enquiry1 PASS; PR run37685221814 enquiry404 FAIL on both attempts. Unchanged local012841d enquiry1 PASS; failure cause unresolved. Failed-job rerun pending; no failure relabelled PASS."
+        "PR26 source039b97d root push37685207224 enquiry1 PASS; PR run37685221814 enquiry404 FAIL on both attempts. Unchanged local012841d enquiry1 PASS; failure cause unresolved. Failed-job rerun pending; no failure relabelled PASS.",
+        "Root enquiry diagnostic source8f01258: guarded actual local enquiry-to-ops1 PASS and E2EtypecheckPASS; 404 causal layer unresolved.",
+        "CI timeout source3a92c45: parsed workflow semanticdiff PASS, existingroottooling33 PASS. Linux browser installation/test gates remain pending."
       ],
       "blockers": [
-        "All applicable current-head checks and successful artifact verification are required before merge. Root PR26 failed404 is retained; pending rerun is not evidence of a fix."
+        "All applicable current-head checks and successful artifact verification are required before merge. Root PR26 failed404 is retained; pending rerun is not evidence of a fix.",
+        "Stale installer runs37674499554/37674553408/37680997547 were cancelled after over1h; fresh same-head retries pending. CANCELLED is not PASS."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     }

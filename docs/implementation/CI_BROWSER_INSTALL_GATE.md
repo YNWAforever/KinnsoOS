@@ -15,3 +15,4 @@ A timeout fails its job; subsequent tests that did not run remain NOT_RUN. A dia
 Root PR26 separately retains its profile404 failure. The selected-row/anonymous-projection diagnostics in PR28 do not claim that failure is fixed. First-wave local receipts are at012841d / PR27; hosted human acceptance and production configuration/content/SQL remain separate gates.
 
 Rollback reverts these two step timeouts. No provider, runtime flag, production schema, public content or application behavior changes.
+Review source3a92c45793f9f505e7a3bb27c734203b871fc3e3 is in [PR29](https://github.com/YNWAforever/KinnsoOS/pull/29). Root diagnostics source8f01258483af0531813c14ce9f668c073013695e is in [PR28](https://github.com/YNWAforever/KinnsoOS/pull/28), with scoped local enquiry1 PASS and E2Etypecheck PASS. The three stalled runs were confirmed CANCELLED and fresh same-head failed-job retries requested; their original incomplete executions remain cancelled.
