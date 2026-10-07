@@ -234,6 +234,7 @@
     "tests/e2e/account-recovery.spec.ts",
     "tests/e2e/agent-workspace.spec.ts",
     "tests/e2e/auth-entry.spec.ts",
+    "tests/e2e/content-first-wave.spec.ts",
     "tests/e2e/creator-source.spec.ts",
     "tests/e2e/creator-workspace.spec.ts",
     "tests/e2e/device-draft-navigation.spec.ts",
