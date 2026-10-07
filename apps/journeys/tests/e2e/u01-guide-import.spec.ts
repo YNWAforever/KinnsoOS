@@ -231,7 +231,7 @@ test('saved guest copy survives reload, a new guide version and cancelled sign-i
  expect((await creator.client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:0,p_request_id:randomUUID(),p_content:content('Version one source stop')})).error).toBeNull();
  await page.goto('/en/g/'+id);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();
  await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
- await page.getByLabel('Draft stop title',{exact:true}).fill('My edited device stop');await page.getByLabel('Draft private note',{exact:true}).fill('My note before reload');
+ await page.getByLabel('Draft stop title',{exact:true}).fill('   ');await page.getByLabel('Draft private note',{exact:true}).fill('My note before reload');
  await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
  const copies=()=>page.evaluate(()=>new Promise<any[]>((resolve,reject)=>{const r=indexedDB.open('kinnso_guest_drafts_v1');r.onsuccess=()=>{const db=r.result,q=db.transaction('trips').objectStore('trips').getAll();q.onsuccess=()=>{resolve(q.result);db.close()};q.onerror=()=>{db.close();reject(q.error)}};r.onerror=()=>reject(r.error)}));
  const original=(await copies())[0];expect(original.days[0].stops[0].source.version).toBe(1);
@@ -239,7 +239,12 @@ test('saved guest copy survives reload, a new guide version and cancelled sign-i
  await page.reload();await expect(page.getByLabel('Draft private note',{exact:true})).toHaveCount(0);
  await page.getByRole('button',{name:'Find saved device drafts',exact:true}).click();
  const restore=page.locator('[data-draft-id="'+original.id+'"]');await expect(restore).toContainText('v1');await restore.click();
- await expect(page.getByLabel('Draft stop title',{exact:true})).toHaveValue('My edited device stop');await expect(page.getByRole('textbox',{name:'Draft private note',exact:true})).toHaveValue('My note before reload');
+ await expect(page.getByLabel('Draft stop title',{exact:true})).toHaveValue('   ');await expect(page.getByRole('textbox',{name:'Draft private note',exact:true})).toHaveValue('My note before reload');
+ await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await page.getByRole('link',{name:'Cancel and return',exact:true}).click();await page.waitForURL('**/en/trips');
+ await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:'Synthetic recoverable device walk',exact:true}).click();
+ await expect(page.locator('.k-page').getByRole('alert')).toContainText('needs editing');await expect(page.getByRole('button',{name:'Confirm import to this account',exact:true})).toHaveCount(0);
+ await page.getByRole('link',{name:'Return to this guide’s device editor',exact:true}).click();await page.getByRole('button',{name:'Find saved device drafts',exact:true}).click();await page.locator('[data-draft-id="'+original.id+'"]').click();
+ await page.getByLabel('Draft stop title',{exact:true}).fill('My edited device stop');
  await page.getByRole('textbox',{name:'Draft private note',exact:true}).fill('My note after recovery');await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
  expect((await copies()).map(row=>row.id)).toEqual([original.id]);
  await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await page.getByRole('link',{name:'Cancel and return',exact:true}).click();await page.waitForURL('**/en/trips');
@@ -251,6 +256,22 @@ test('saved guest copy survives reload, a new guide version and cancelled sign-i
  const snapshot=(await (await imported).json()).data;expect(snapshot.days[0].stops[0].travellerNote).toBe('My note after recovery');expect(snapshot.days[0].stops[0].title).toBe('My edited device stop');expect(snapshot.days[0].stops[0].source).toBeNull();
  expect((await a.client.rpc('get_trip_snapshot',{p_trip_id:snapshot.id})).data.days[0].stops[0].travellerNote).toBe('My note after recovery');
  expect((await copies()).map(row=>row.id)).toEqual([original.id]);
+});
+test('large bounded device notes save and reload while the account import size gate stays closed',async({page})=>{
+ test.setTimeout(150000);
+ const id=await guide('Synthetic large recoverable notes'),note='n'.repeat(4000),content={days:Array.from({length:3},(_,offset)=>({offset,title:'Authored day '+offset,stops:Array.from({length:25},(_,i)=>({title:'Stop '+offset+'-'+i,description:'Authored directions',placeId:null,startMinuteOfDay:null,durationMinutes:null}))}))};
+ expect((await creator.client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:0,p_request_id:randomUUID(),p_content:content})).error).toBeNull();
+ await page.goto('/en/g/'+id);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
+ const notes=page.getByRole('textbox',{name:'Draft private note',exact:true});await expect(notes).toHaveCount(75);for(let i=0;i<75;i++)await notes.nth(i).fill(note);
+ await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
+ const copies=()=>page.evaluate(()=>new Promise<any[]>((resolve,reject)=>{const r=indexedDB.open('kinnso_guest_drafts_v1');r.onsuccess=()=>{const db=r.result,q=db.transaction('trips').objectStore('trips').getAll();q.onsuccess=()=>{resolve(q.result);db.close()};q.onerror=()=>{db.close();reject(q.error)}};r.onerror=()=>reject(r.error)}));
+ const original=(await copies())[0];expect(Buffer.byteLength(JSON.stringify(original),'utf8')).toBeGreaterThan(262144);
+ await page.reload();await page.getByRole('button',{name:'Find saved device drafts',exact:true}).click();await page.locator('[data-draft-id="'+original.id+'"]').click();
+ await expect(notes).toHaveCount(75);for(let i=0;i<75;i++)await expect(notes.nth(i)).toHaveValue(note);
+ await page.goto('/en/trips');await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:'Synthetic large recoverable notes',exact:true}).click();
+ await expect(page.locator('.k-page').getByRole('alert')).toContainText('exceeds the account import limit');await expect(page.getByRole('button',{name:'Confirm import to this account',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('link',{name:'Return to this guide’s device editor',exact:true})).toHaveAttribute('href','/en/g/'+id);
+ const retained=await copies();expect(retained.map(row=>row.id)).toEqual([original.id]);expect(retained[0].days[2].stops[24].travellerNote).toBe(note);
 });
 test('guest edits import once, original stays, server adoption has real source, second context conflicts without losing input',async({page,browser})=>{test.setTimeout(150000);await page.goto('/en/g/'+guideId);await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();await page.getByLabel('Draft stop title',{exact:true}).fill('Personal device stop');await page.getByLabel('Draft private note',{exact:true}).fill('Synthetic private draft');await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('It is not synced to an account.');await page.getByRole('link',{name:'Sign in to review import',exact:true}).click();await signIn(page);await page.waitForURL('**/en/trips');await page.getByRole('button',{name:'Preview device-only drafts',exact:true}).click();await page.getByRole('button',{name:'Synthetic authored itinerary',exact:true}).click();const imported=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();const first=(await (await imported).json()).data;expect(first.days[0].stops[0].source).toBeNull();const replay=page.waitForResponse(r=>r.url().endsWith('/api/trips/import')&&r.request().method()==='POST');await page.getByRole('button',{name:'Confirm import to this account',exact:true}).click();expect((await (await replay).json()).data.id).toBe(first.id);
  const retained=await page.evaluate(()=>new Promise<number>((resolve,reject)=>{const request=indexedDB.open('kinnso_guest_drafts_v1');request.onsuccess=()=>{const db=request.result,r=db.transaction('trips').objectStore('trips').count();r.onsuccess=()=>{resolve(r.result);db.close()};r.onerror=()=>reject(r.error)}}));expect(retained).toBe(1);

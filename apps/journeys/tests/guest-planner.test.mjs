@@ -111,3 +111,15 @@ test('a pending recovery cannot race creation or be applied after unmount',async
  p.unmount();await p.settleRead(0,[guideDraft(guide,'old-copy','guest-old','UTC')]);
  assert.equal(p.elements().some(el=>el.props?.['data-draft-id']==='old-copy'),false);
 });
+for(const title of ['', '   '])test(`saving and reloading an incomplete ${JSON.stringify(title)} stop keeps the note editable`,async()=>{
+ const first=planner();first.button('Plan as a device-only draft').props.onClick();first.render();await first.settle(0);
+ first.edit('textarea','Keep this unfinished private note');first.edit('input',title);
+ first.button('Save device draft').props.onClick();first.render();await first.settle(1);
+ assert.match(first.status(),/draft saved/i);
+ const stored=first.writes[1].trip,next=planner();next.button('Find saved device drafts').props.onClick();next.render();await next.settleRead(0,[stored]);
+ const resume=next.elements().find(el=>el.type==='button'&&el.props['data-draft-id']===stored.id);assert.ok(resume);
+ resume.props.onClick();next.render();assert.equal(next.elements().find(el=>el.type==='input').props.value,title);
+ assert.equal(next.elements().find(el=>el.type==='textarea').props.value,'Keep this unfinished private note');
+ next.edit('input','Completed stop');next.button('Save device draft').props.onClick();next.render();await next.settle(0);
+ assert.equal(next.writes[0].trip.id,stored.id);assert.equal(next.writes[0].trip.days[0].stops[0].travellerNote,'Keep this unfinished private note');
+});

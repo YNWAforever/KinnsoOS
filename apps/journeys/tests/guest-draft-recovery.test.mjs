@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as storage from '../lib/trips/guest-drafts.ts';
+import {previewLocalImport} from '../lib/trips/import.ts';
 
 const draft=()=>({id:'device-original',ownerId:'guest-local-owner',purpose:'personal',title:'Saved Kyoto walk',timezone:'Asia/Tokyo',startDate:null,pendingPhotos:[],days:[{offset:0,title:'Saved first day',stops:[{title:'My edited temple',travellerNote:'My saved private note',startMinuteOfDay:600,durationMinutes:30,source:{guideId:'guide-one',version:1}}]}]});
 function recover(rows){
@@ -48,4 +49,31 @@ test('mismatched or invalid source tags never inherit the current guide identity
 test('recovery drops unrelated stored fields instead of propagating roles or business records',()=>{
  const row={...draft(),role:'ops',payout:{amount:100},sourceSecret:'private'};
  const recovered=recover([row])[0];assert.equal(recovered.role,undefined);assert.equal(recovered.payout,undefined);assert.equal(recovered.sourceSecret,undefined);
+});
+for(const title of ['', '   '])test(`an incomplete saved title ${JSON.stringify(title)} remains recoverable with its private note`,()=>{
+ const row=draft();row.days[0].stops[0].title=title;
+ const restored=recover([row]);assert.equal(restored.length,1);
+ assert.equal(restored[0].days[0].stops[0].title,title);
+ assert.equal(restored[0].days[0].stops[0].travellerNote,'My saved private note');
+ assert.equal(previewLocalImport(restored[0],row.ownerId).ok,false,'incomplete editing drafts cannot bypass import validation');
+});
+test('bounded device notes over the account import size limit remain recoverable',()=>{
+ const row=draft(),stop={...row.days[0].stops[0],travellerNote:'x'.repeat(4000)};
+ row.days=Array.from({length:3},(_,offset)=>({offset,title:'Saved day',stops:Array.from({length:25},()=>structuredClone(stop))}));
+ assert.ok(new TextEncoder().encode(JSON.stringify(row)).length>262144);
+ const restored=recover([row]);assert.equal(restored.length,1);assert.deepEqual(restored[0].days,row.days);
+ assert.deepEqual(previewLocalImport(restored[0],row.ownerId),{ok:false,reason:'too_large'});
+});
+test('the full device editor bounds permit unicode notes but still exclude excess stop counts',()=>{
+ const row=draft(),stop={...row.days[0].stops[0],travellerNote:'旅'.repeat(4000)};
+ row.days=Array.from({length:5},(_,offset)=>({offset,title:'Saved day',stops:Array.from({length:40},()=>structuredClone(stop))}));
+ assert.equal(recover([row]).length,1,'all 200 bounded notes can be recovered');
+ row.days[0].stops.push(structuredClone(stop));assert.deepEqual(recover([row]),[]);
+});
+test('unsupported edits are rejected before opening storage or overwriting a saved copy',async()=>{
+ const original=draft(),bad=structuredClone(original);bad.days[0].stops[0].travellerNote='x'.repeat(4001);
+ let opened=0;const previous=Object.getOwnPropertyDescriptor(globalThis,'indexedDB');
+ Object.defineProperty(globalThis,'indexedDB',{configurable:true,get(){opened++;throw Error('Unexpected storage write');}});
+ try{await assert.rejects(storage.saveGuestTrip(bad),/supported editor limits/);assert.equal(opened,0);assert.equal(original.days[0].stops[0].travellerNote,'My saved private note');}
+ finally{if(previous)Object.defineProperty(globalThis,'indexedDB',previous);else delete globalThis.indexedDB;}
 });
