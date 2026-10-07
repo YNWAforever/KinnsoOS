@@ -26,6 +26,7 @@ import {AgentPage} from '../agent/AgentPage';
 import {FinanceWorkspace} from './FinanceWorkspace';
 import {MonitoringWorkspace} from './MonitoringWorkspace';
 import {TelemetryConsent} from './TelemetryConsent';
+import {useDraftNavigation} from './UnsavedDraftGuard';
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
@@ -233,7 +234,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
-  const router = useRouter(),
+  const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
     [store, setStore] = useState<m.Store>(m.blank),
     [ready, setReady] = useState(false),
@@ -412,7 +413,7 @@ export function Workbench({
   const open = (title: string, body: ReactNode) => setModal({ title, body }),
     close = () => setModal(null);
   const auth = (then?: () => void) => {
-    if(mode !== 'demo') { router.push(`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`); return; }
+    if(mode !== 'demo') { requestNavigation(`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`); return; }
     try {
       if (m.read().session) {
         then?.();
@@ -484,7 +485,7 @@ export function Workbench({
             const q = (input as { query: string }).query;
             if (q.length > 160) throw new Error("Query too long");
             const route = href("explore") + "?q=" + encodeURIComponent(q);
-            router.push(route);
+            requestNavigation(route);
             return { mode: "demo", query: q, route };
           },
         },

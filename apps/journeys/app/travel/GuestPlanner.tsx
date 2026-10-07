@@ -2,19 +2,23 @@
 import {useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import type {GuideSnapshot} from '../../lib/contracts/trips';
-import {guideDraft,readGuestTrips,restorableGuideDrafts,saveGuestTrip,type GuestTrip} from '../../lib/trips/guest-drafts';
-import {useApp} from './ui';
+import {deleteGuestTrip,guideDraft,readGuestTrips,restorableGuideDrafts,saveGuestTrip,type GuestTrip} from '../../lib/trips/guest-drafts';
+import {useApp,Modal} from './ui';
+import {useUnsavedDraftGuard} from './UnsavedDraftGuard';
 
-type GuestPlannerProps={actorId?:string|null}&(
+type GuestPlannerProps={actorId?:string|null;onDeleted?:(copy:GuestTrip)=>void}&(
  {guide:GuideSnapshot;initialDraft?:never;onSaved?:never}|
  {guide?:never;initialDraft:GuestTrip;onSaved:(copy:GuestTrip)=>void}
 );
-export function GuestPlanner({guide,actorId=null,initialDraft,onSaved}:GuestPlannerProps){
+export function GuestPlanner({guide,actorId=null,initialDraft,onSaved,onDeleted}:GuestPlannerProps){
  const {t,href}=useApp();
  const [draft,setDraft]=useState<GuestTrip|null>(initialDraft??null),[message,setMessage]=useState('');
  const [busy,setBusy]=useState(false),[dirty,setDirty]=useState(false);
  const [copies,setCopies]=useState<GuestTrip[]>([]);
+ const [deleteTarget,setDeleteTarget]=useState<GuestTrip|null>(null);
  const lock=useRef(false),editRevision=useRef(0),readEpoch=useRef(0);
+ const currentDraft=useRef(draft);currentDraft.current=draft;
+ useUnsavedDraftGuard({dirty:!!draft&&dirty,busy:!!draft&&busy,scopeKey:(actorId??'anonymous')+':'+(draft?.id??''),saveLatest:()=>currentDraft.current?save(currentDraft.current,false):Promise.resolve(false)});
 
  useEffect(()=>{readEpoch.current++;return()=>{readEpoch.current++;}},[]);
 
@@ -44,46 +48,58 @@ export function GuestPlanner({guide,actorId=null,initialDraft,onSaved}:GuestPlan
 
  function resume(copy:GuestTrip){
   if(lock.current)return;
-  editRevision.current++;setDraft(copy);setCopies([]);setDirty(false);
+  editRevision.current++;currentDraft.current=copy;setDraft(copy);setCopies([]);setDirty(false);
   setMessage(t('Device draft restored. It is not synced to an account.','裝置草稿已恢復，尚未同步至帳戶。'));
  }
 
  function editStop(dayIndex:number,stopIndex:number,field:'title'|'travellerNote',value:string){
   editRevision.current++;
-  setDraft(current=>current&&{...current,days:current.days.map((day,i)=>i===dayIndex?{
+  const current=currentDraft.current;const next=current&&{...current,days:current.days.map((day,i)=>i===dayIndex?{
    ...day,stops:day.stops.map((stop,j)=>j===stopIndex?{...stop,[field]:value}:stop),
-  }:day)});
+  }:day)};currentDraft.current=next;setDraft(next);
   setDirty(true);
   setMessage(t('Device edits are not saved yet.','裝置修改尚未保存。'));
  }
 
- async function save(next:GuestTrip){
-  if(lock.current)return;
+ async function save(next:GuestTrip,notifyParent=true):Promise<boolean>{
+  if(lock.current)return false;
   lock.current=true;
   const savingRevision=editRevision.current,generation=readEpoch.current;
-  setBusy(true);setDirty(true);setDraft(next);
+  currentDraft.current=next;setBusy(true);setDirty(true);setDraft(next);
   setMessage(t('Saving device draft…','正在保存裝置草稿…'));
   try{
    await saveGuestTrip(next);
-   if(generation!==readEpoch.current)return;
+   if(generation!==readEpoch.current)return false;
    // IndexedDB acknowledged this snapshot, not any edits made while it was saving.
    if(editRevision.current===savingRevision){
     setDirty(false);
     setMessage(t('Device draft saved. It is not synced to an account.','裝置草稿已保存，尚未同步至帳戶。'));
-    onSaved?.(next);
+    if(notifyParent)onSaved?.(next);
+    return true;
    }else{
     setMessage(t('Device edits are not saved yet.','裝置修改尚未保存。'));
    }
   }catch{
    if(generation===readEpoch.current)setMessage(t('Device draft was not saved. Keep this tab open.','未能保存裝置草稿，請保持此頁開啟。'));
   }finally{if(generation===readEpoch.current){lock.current=false;setBusy(false);}}
+  return false;
  }
 
+ async function remove(copy:GuestTrip){
+  if(lock.current)return;const generation=readEpoch.current;lock.current=true;setBusy(true);
+  try{await deleteGuestTrip(copy.id,copy.ownerId);if(generation!==readEpoch.current)return;
+   setDeleteTarget(null);setCopies(rows=>rows.filter(row=>row.id!==copy.id||row.ownerId!==copy.ownerId));
+   if(currentDraft.current?.id===copy.id&&currentDraft.current.ownerId===copy.ownerId){editRevision.current++;currentDraft.current=null;setDraft(null);setDirty(false);}
+   setMessage(t('This device copy was deleted. Other copies and account trips are kept.','此裝置副本已刪除，其他副本及帳戶行程保留。'));onDeleted?.(copy);
+  }catch{if(generation===readEpoch.current)setMessage(t('Device deletion was not confirmed. Original copies are kept; retry.','未確認裝置副本刪除，原副本已保留，請重試。'));}
+  finally{if(generation===readEpoch.current){lock.current=false;setBusy(false);}}
+ }
+ const deletion=deleteTarget&&<Modal title={t('Delete device copy?','刪除此裝置副本？')} onClose={()=>{if(!busy)setDeleteTarget(null)}}><div className="k-modal-body"><p>{t('Delete only this selected copy from this browser. Unsaved edits to this copy will also be discarded. Other device copies and account trips are kept.','只刪除此瀏覽器中選定的副本，亦會放棄此副本未保存的修改。其他裝置副本及帳戶行程保留。')}</p><p>{deleteTarget.title}</p><button className="k-btn" disabled={busy} onClick={()=>setDeleteTarget(null)}>{t('Keep device draft','保留裝置草稿')}</button><button className="k-btn" disabled={busy} onClick={()=>void remove(deleteTarget)}>{t('Delete device copy','刪除裝置副本')}</button></div></Modal>;
  if(!draft)return <section>
   {!actorId&&guide&&<button className="k-btn primary" disabled={busy} onClick={()=>void save(guideDraft(guide,crypto.randomUUID(),'guest-'+crypto.randomUUID(),Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC'))}>{t('Plan as a device-only draft','以裝置草稿規劃')}</button>}
   {guide&&<button className="k-btn" disabled={busy} onClick={()=>void restore()}>{t('Find saved device drafts','尋找已保存的裝置草稿')}</button>}
   <p>{t('Device drafts can be read by anyone using this browser. Only open your own copy on a shared device.','此瀏覽器的使用者均可讀取裝置草稿。共用裝置上請只開啟自己的副本。')}</p>
-  <ul>{copies.map(copy=><li key={copy.id}><button className="k-btn" data-draft-id={copy.id} onClick={()=>resume(copy)}>{t('Resume device draft','繼續編輯裝置草稿')} · {copy.title} · v{copy.source?.version} · {copy.days.length} {t('days','日')}</button></li>)}</ul>
+  <ul>{copies.map(copy=><li key={copy.id}><button className="k-btn" data-draft-id={copy.id} onClick={()=>resume(copy)}>{t('Resume device draft','繼續編輯裝置草稿')} · {copy.title} · v{copy.source?.version} · {copy.days.length} {t('days','日')}</button><button className="k-btn" disabled={busy} onClick={()=>setDeleteTarget(copy)}>{t('Delete this device draft','刪除此裝置草稿')}</button></li>)}</ul>{deletion}
   <p role="status" aria-label={t('Device draft status','裝置草稿狀態')} data-testid="guest-save-state">{message}</p>
  </section>;
  return <section className="os-guide os-stop">
@@ -98,6 +114,8 @@ export function GuestPlanner({guide,actorId=null,initialDraft,onSaved}:GuestPlan
    </div>)}
   </section>)}
   <button className="k-btn" disabled={busy} onClick={()=>void save(draft)}>{t('Save device draft','保存裝置草稿')}</button>
+  <button className="k-btn" disabled={busy} onClick={()=>setDeleteTarget(draft)}>{t('Delete this device draft','刪除此裝置草稿')}</button>{deletion}
+  <p>{t('Only confirmed saved copies can be restored after this tab or app closes. If your browser shows a leave-page warning, cancel it and save here first.','此頁或應用程式關閉後，只能恢復已確認保存的副本。如瀏覽器顯示離頁警告，請取消離開並先在此保存。')}</p>
   {busy||dirty?<>
    <button className="k-btn" disabled>{actorId?t('Review import to your account','核對匯入你的帳戶'):t('Sign in to review import','登入以核對匯入')}</button>
    <p>{t('Save your latest edits before reviewing this draft for account import.','請先保存最新修改，再核對匯入此草稿至帳戶。')}</p>

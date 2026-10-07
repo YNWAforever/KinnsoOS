@@ -6,6 +6,7 @@ import {trips} from '../../lib/trips/repository';
 import type {TripSnapshot,TripCommand,TripStop,TripDay} from '../../lib/contracts/trips';
 import {useApp} from './ui';
 import {ImportPreview} from './ImportPreview';
+import {useDraftNavigation} from './UnsavedDraftGuard';
 import {RecordCapture} from './RecordCapture';
 import {SharePreview} from './SharePreview';
 import {TripWarnings} from './TripWarnings';
@@ -38,6 +39,7 @@ function StopEditor({stop,dayId,days,busy,save,remove,move,edited}:{stop:TripSto
  <button className="k-btn" disabled={busy||!ready}>{t('Move stop','移動站點')}</button></form></article>
 }
 export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false,sharingEnabled=false}:{id?:string;actorId:string|null;initialHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;mediaEnabled?:boolean;sharingEnabled?:boolean}) {
+ const requestNavigation=useDraftNavigation();
  const {t,href,ready}=useApp(),router=useRouter(),[list,setList]=useState<{id:string;title:string}[]>([]),[next,setNext]=useState<string|null>(null),[trip,setTrip]=useState<TripSnapshot|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[retry,setRetry]=useState(0),[title,setTitle]=useState(''),[date,setDate]=useState(''),[timezone,setTimezone]=useState('UTC'),[accountValid,setAccountValid]=useState(true);
  const pending=useRef<{key:string;requestId:string;revision:number;command?:TripCommand}|null>(null),lock=useRef(false),epoch=useRef(0),conflicted=useRef(false),reapply=useRef(false),preserveInputs=useRef(false);
  useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setTrip(null);setList([]);setNext(null);setTitle('');setDate('');pending.current=null;preserveInputs.current=false;conflicted.current=false;reapply.current=false;lock.current=false;setBusy(false);
@@ -73,7 +75,7 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
   if(pending.current?.key!==key)pending.current={key,requestId:crypto.randomUUID(),revision:0};
   const result=await trips.create(input,pending.current.requestId);
   if(generation!==epoch.current)return;
-  if(result.ok){pending.current=null;router.push(href('trips/'+result.data.id))}else setMessage(t('Trip was not confirmed saved. Input is kept; retry.','未確認行程已保存。輸入已保留，請重試。'));
+  if(result.ok){pending.current=null;requestNavigation(href('trips/'+result.data.id))}else setMessage(t('Trip was not confirmed saved. Input is kept; retry.','未確認行程已保存。輸入已保留，請重試。'));
   setBusy(false);lock.current=false;
  }
  async function remove() {
@@ -82,7 +84,7 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
   if(pending.current?.key!==key)pending.current={key,requestId:crypto.randomUUID(),revision:trip.revision};
   const result=await trips.remove(trip.id,pending.current.revision,pending.current.requestId);
   if(generation!==epoch.current)return;
-  if(result.ok){pending.current=null;router.push(href('trips'))}else setMessage(t('Deletion was not confirmed. Reload and retry.','未確認刪除，請重新載入後重試。'));
+  if(result.ok){pending.current=null;requestNavigation(href('trips'))}else setMessage(t('Deletion was not confirmed. Reload and retry.','未確認刪除，請重新載入後重試。'));
   setBusy(false);lock.current=false;
  }
  async function loadMore() {

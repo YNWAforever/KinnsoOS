@@ -11,7 +11,9 @@ import type {PublicGuide} from '../../lib/seo/public-guide';
 import {useApp} from './ui';
 import {GuestPlanner} from './GuestPlanner';
 import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
+import {useDraftNavigation} from './UnsavedDraftGuard';
 export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
+ const requestNavigation=useDraftNavigation();
  const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId),[next,setNext]=useState<string|null>(null);
  const [bookmarkStatus,setBookmarkStatus]=useState<'loading'|'ready'|'error'>('loading'),bookmarkRead=useRef({ticket:0,loading:false});
@@ -56,7 +58,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  }
  async function toggle(desired:boolean,requestId?:string) {
   if(lock.current)return;
-  if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();router.push(href('sign-in')+'?next='+encodeURIComponent(next));return}
+  if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();requestNavigation(href('sign-in')+'?next='+encodeURIComponent(next));return}
   const generation=epoch.current;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;lock.current=true;setBusy(true);if(intent.current?.desired!==desired)intent.current={desired,id:requestId??crypto.randomUUID()};
   const result=await bookmarks.toggle(id,desired,intent.current.id);if(generation!==epoch.current)return;
   if(result.ok){setSaved(result.data.saved);setBookmarkStatus('ready');intent.current=null;setMessage(t('Bookmark saved to your account','收藏已保存至你的帳戶'));router.replace(href('g/'+id))}
@@ -77,7 +79,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   const generation=epoch.current,key=id+':'+preview.guideVersion+':'+preview.tripId;lock.current=true;setBusy(true);
   if(adoption.current?.key!==key)adoption.current={key,id:crypto.randomUUID(),revision:preview.revision};
   const result=await trips.adopt(id,preview.guideVersion,preview.tripId,adoption.current.revision,adoption.current.id);if(generation!==epoch.current)return;
-  if(result.ok)router.push(href('trips/'+result.data.id));
+  if(result.ok)requestNavigation(href('trips/'+result.data.id));
   else if(result.code==='CONFLICT'){adoption.current=null;setPreview(null);setMessage(t('Trip changed. Review the current version before applying.','行程已有變更，請核對目前版本後再套用。'))}
   else{setMessage(t('Application was not confirmed. Retry the same action or check your trip.','未確認套用結果；請重試同一操作或檢查行程。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   setBusy(false);lock.current=false;

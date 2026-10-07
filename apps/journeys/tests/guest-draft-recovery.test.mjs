@@ -4,6 +4,10 @@ import * as storage from '../lib/trips/guest-drafts.ts';
 import {previewLocalImport} from '../lib/trips/import.ts';
 
 const draft=()=>({id:'device-original',ownerId:'guest-local-owner',purpose:'personal',title:'Saved Kyoto walk',timezone:'Asia/Tokyo',startDate:null,pendingPhotos:[],days:[{offset:0,title:'Saved first day',stops:[{title:'My edited temple',travellerNote:'My saved private note',startMinuteOfDay:600,durationMinutes:30,source:{guideId:'guide-one',version:1}}]}]});
+test('single-copy deletion requires a bounded local identity before opening storage',async()=>{
+ assert.equal(typeof storage.deleteGuestTrip,'function');
+ for(const [id,owner] of [['','guest-local'],['valid','account-A'],['x'.repeat(101),'guest-local']])await assert.rejects(()=>storage.deleteGuestTrip(id,owner),/identity/i);
+});
 function recover(rows){
  assert.equal(typeof storage.restorableGuideDrafts,'function','saved device copies need a validated recovery path');
  return storage.restorableGuideDrafts(rows,'guide-one');

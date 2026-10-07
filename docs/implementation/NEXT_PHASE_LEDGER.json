@@ -30,7 +30,7 @@
       "owner_role": "Tech lead",
       "status": "partial",
       "code_status": "reviewable_ci_evidence",
-      "merge_status": "PR23_pending_root_E2E",
+      "merge_status": "PR23_pending_current_connected_check",
       "environment_status": "local_verified_public_production_readonly",
       "acceptance_status": "partial",
       "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3",
@@ -256,11 +256,13 @@
       "owner_role": "Frontend + Content",
       "status": "partial",
       "code_status": "reviewable_creator_controls_and_scoped_SQL",
-      "merge_status": "not_merged",
+      "merge_status": "PR25_pending_current_checks",
       "environment_status": "identified_isolated_local",
       "acceptance_status": "local_synthetic_only_hosted_blocked",
-      "source_sha": null,
-      "prs": [],
+      "source_sha": "587df975f92831ae6afbc4676e21ff2a107381c3",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/25"
+      ],
       "tests": [
         "Unit 299 PASS; isolated integration 28 PASS; full browser 55 PASS before final first-save Undo fix.",
         "After documented native History URL fix: creator browser 11 PASS, including Undo/reload and existing navigation/save fences.",
@@ -301,7 +303,7 @@
         "U03"
       ],
       "dependencies": [
-        "N06;",
+        "N06",
         "N03.runtime_ready_for_publication"
       ],
       "owner_role": "Content owner + Creator",
@@ -337,14 +339,22 @@
       ],
       "owner_role": "Frontend",
       "status": "partial",
-      "code_status": "existing_recovery_remaining_navigation",
-      "merge_status": "PR21_22_merged",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "code_status": "reviewable_navigation_and_single_copy_deletion",
+      "merge_status": "review_branch_pending_checks",
+      "environment_status": "ownership_verified_localhost",
+      "acceptance_status": "local_synthetic_not_hosted_human",
+      "source_sha": null,
       "prs": [],
-      "tests": [],
-      "blockers": [],
+      "tests": [
+        "Current candidate unit302/integration28/typecheck/build PASS.",
+        "Full connected browser67 PASS, including Auth/creator/U01/U02/U04/U05/U06 and navigation11.",
+        "Windows source package5 PASS/1 platform SKIP.",
+        "Actual cancelable Back/Forward and uncancelable cross-document native warning separately verified."
+      ],
+      "blockers": [
+        "Hosted human acceptance and physical iOS/Android/older-browser evidence absent.",
+        "Cross-document traversal uses native warning; only confirmed saved copies recover after process termination."
+      ],
       "rollback": "Revert the task PR; preserve existing data."
     },
     {
@@ -404,14 +414,14 @@
         "U05"
       ],
       "dependencies": [
-        "N03.runtime_ready;",
-        "N04;",
-        "N05;",
-        "N07;",
-        "N08;",
-        "N10.for_U05;",
-        "N11.for_U04;",
-        "N15.for_U02;",
+        "N03.runtime_ready",
+        "N04",
+        "N05",
+        "N07",
+        "N08",
+        "N10.for_U05",
+        "N11.for_U04",
+        "N15.for_U02",
         "N17.for_U04_U05"
       ],
       "owner_role": "QA + Backend",
@@ -562,7 +572,7 @@
         "U03"
       ],
       "dependencies": [
-        "N03.contract_local_ready;",
+        "N03.contract_local_ready",
         "N07.for_real_covers"
       ],
       "owner_role": "Design + Frontend",
@@ -621,7 +631,7 @@
         "U05"
       ],
       "dependencies": [
-        "N09.for_final_gate;",
+        "N09.for_final_gate",
         "N13.for_final_gate"
       ],
       "owner_role": "QA + Accessibility",
@@ -722,11 +732,11 @@
         "U06"
       ],
       "dependencies": [
-        "N02;",
-        "N09;",
-        "N14;",
-        "N15;",
-        "N18;",
+        "N02",
+        "N09",
+        "N14",
+        "N15",
+        "N18",
         "N17.for_commercial_rollout"
       ],
       "owner_role": "Release owner",
@@ -808,7 +818,7 @@
         "U06"
       ],
       "dependencies": [
-        "N01;",
+        "N01",
         "N02.for_release_evidence"
       ],
       "owner_role": "DevOps + QA",
