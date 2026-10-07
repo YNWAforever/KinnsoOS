@@ -83,7 +83,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   setBusy(false);lock.current=false;
  }
  if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
- return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/><p role="status">{message}</p>
+ return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/><p role="status" aria-label={t('Guide action status','攻略操作狀態')}>{message}</p>
  {actorId&&accountValid&&bookmarkStatus!=='ready'&&!intent.current?<>
   <p role={bookmarkStatus==='error'?'alert':'status'}>{bookmarkStatus==='error'?t('Bookmark status could not be loaded. Retry.','未能載入收藏狀態，請重試。'):t('Checking bookmark status…','正在核對收藏狀態…')}</p>
   {bookmarkStatus==='error'&&<button className="k-btn" disabled={busy} onClick={()=>void loadBookmarkStatus()}>{t('Retry bookmark status','重試載入收藏狀態')}</button>}

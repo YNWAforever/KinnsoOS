@@ -78,7 +78,7 @@ export function GuestPlanner({guide,actorId=null}:{guide:GuideSnapshot;actorId?:
   <button className="k-btn" disabled={busy} onClick={()=>void restore()}>{t('Find saved device drafts','尋找已保存的裝置草稿')}</button>
   <p>{t('Device drafts can be read by anyone using this browser. Only open your own copy on a shared device.','此瀏覽器的使用者均可讀取裝置草稿。共用裝置上請只開啟自己的副本。')}</p>
   <ul>{copies.map(copy=><li key={copy.id}><button className="k-btn" data-draft-id={copy.id} onClick={()=>resume(copy)}>{t('Resume device draft','繼續編輯裝置草稿')} · {copy.title} · v{copy.source?.version} · {copy.days.length} {t('days','日')}</button></li>)}</ul>
-  <p role="status" data-testid="guest-save-state">{message}</p>
+  <p role="status" aria-label={t('Device draft status','裝置草稿狀態')} data-testid="guest-save-state">{message}</p>
  </section>;
  return <section className="os-guide os-stop">
   <h2>{t('Device-only draft','只在此裝置的草稿')}</h2>
@@ -95,6 +95,6 @@ export function GuestPlanner({guide,actorId=null}:{guide:GuideSnapshot;actorId?:
    <button className="k-btn" disabled>{actorId?t('Review import to your account','核對匯入你的帳戶'):t('Sign in to review import','登入以核對匯入')}</button>
    <p>{t('Save your latest edits before reviewing this draft for account import.','請先保存最新修改，再核對匯入此草稿至帳戶。')}</p>
   </>:<Link className="k-btn" href={actorId?href('trips'):href('sign-in')+'?next='+encodeURIComponent(href('trips'))}>{actorId?t('Review import to your account','核對匯入你的帳戶'):t('Sign in to review import','登入以核對匯入')}</Link>}
-  <p role="status" data-testid="guest-save-state">{message}</p>
+  <p role="status" aria-label={t('Device draft status','裝置草稿狀態')} data-testid="guest-save-state">{message}</p>
  </section>;
 }
