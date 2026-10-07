@@ -63,7 +63,9 @@ jobs:
         run: node scripts/prepare-connected-ci.mjs env
       - run: node scripts/ci-evidence.mjs integration
       - run: npm run build
-      - run: npm exec playwright install -- --with-deps chromium
+      - name: Install Chromium and required system dependencies
+        timeout-minutes: 15
+        run: npm exec playwright install -- --with-deps chromium
       - name: New-site creator and connected UAT flows
         run: node scripts/ci-evidence.mjs browser
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
