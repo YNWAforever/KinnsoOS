@@ -23,7 +23,7 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p source_package_test.py
-      - run: npm test
+      - run: node scripts/ci-evidence.mjs unit
       - run: npm run build
       - run: npm run typecheck
       - name: Rebuild distributed corresponding source
@@ -33,6 +33,12 @@ jobs:
           npm ci
           npm run build
           npm run typecheck
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: journeys-verification-summary
+          path: apps/journeys/evidence/ci/*.json
+          if-no-files-found: warn
   connected:
     runs-on: ubuntu-latest
     defaults:
@@ -55,11 +61,17 @@ jobs:
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Derive local test environment after ownership verification
         run: node scripts/prepare-connected-ci.mjs env
-      - run: npm run test:integration
+      - run: node scripts/ci-evidence.mjs integration
       - run: npm run build
       - run: npm exec playwright install -- --with-deps chromium
       - name: New-site creator and connected UAT flows
-        run: npm exec playwright test -- --config=playwright.connected.config.ts
+        run: node scripts/ci-evidence.mjs browser
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: journeys-connected-summary
+          path: apps/journeys/evidence/ci/*.json
+          if-no-files-found: warn
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: failure()
         with:
