@@ -170,7 +170,7 @@
       "status": "code_merged",
       "code_status": "existing_PR20_22",
       "merge_status": "merged",
-      "environment_status": "local_regression_pending",
+      "environment_status": "isolated_local_regression_verified; hosted_human_blocked",
       "acceptance_status": "blocked",
       "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
       "prs": [
@@ -178,7 +178,9 @@
         21,
         22
       ],
-      "tests": [],
+      "tests": [
+        "Preserved PR20-22 repair/account-isolation regressions pass within exact012841d complete connected browser72; synthetic local evidence only."
+      ],
       "blockers": [
         "Formal signed-in and physical-device acceptance not run."
       ],
@@ -223,11 +225,13 @@
       "tests": [
         "Candidate unit 295 PASS; isolated integration 27 PASS.",
         "Candidate full browser 51 PASS; approved callback alias adjustment retested separately.",
-        "Native build/typecheck PASS; sandbox native-path build blocked, retained separately."
+        "Native build/typecheck PASS; sandbox native-path build blocked, retained separately.",
+        "Names-only Vercel CLI production metadata at2026-10-07T22:03:51.186Z: seven project settings; KINNSO_AUTH_RECOVERY_SECRET absent from that list. No values saved or settings changed; serving/shared configuration not verified."
       ],
       "blockers": [
         "Production recovery-secret/provider configuration and candidate deployment unverified.",
-        "Named mailbox, confirmation/recovery delivery and hosted callback acceptance not provided."
+        "Named mailbox, confirmation/recovery delivery and hosted callback acceptance not provided.",
+        "Configure the reviewed server-only recovery setting before runtime recovery acceptance; project-level names evidence is separate from shared/serving configuration."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     },
@@ -882,11 +886,13 @@
         "Exact012841d local clean-tree collector: unit302/integration28/browser72 PASS; retained actual SHA/target/nonzero counts.",
         "PR26 source039b97d root push37685207224 enquiry1 PASS; PR run37685221814 enquiry404 FAIL on both attempts. Unchanged local012841d enquiry1 PASS; failure cause unresolved. Failed-job rerun pending; no failure relabelled PASS.",
         "Root enquiry diagnostic source8f01258: guarded actual local enquiry-to-ops1 PASS and E2EtypecheckPASS; 404 causal layer unresolved.",
-        "CI timeout source3a92c45: parsed workflow semanticdiff PASS, existingroottooling33 PASS. Linux browser installation/test gates remain pending."
+        "CI timeout source3a92c45: parsed workflow semanticdiff PASS, existingroottooling33 PASS. Linux browser installation/test gates remain pending.",
+        "PR27 Linux checkout7ca3e06 tree matches012841d: unit302/integration28/browser72 PASS, packaging6 collected/PASS and extract/install/build/typecheck success.",
+        "PR26 root retry37685221814 SUCCESS: bookingOFF181PASS/1SKIP, enquiry1PASS, Stripe-test bookingON3PASS/1SKIP. Original404 remainsfailed; causeunresolved."
       ],
       "blockers": [
-        "All applicable current-head checks and successful artifact verification are required before merge. Root PR26 failed404 is retained; pending rerun is not evidence of a fix.",
-        "Stale installer runs37674499554/37674553408/37680997547 were cancelled after over1h; fresh same-head retries pending. CANCELLED is not PASS."
+        "Applicable current-head CI remains required before merge; baseline browser installer stillpending.",
+        "Original root404 and cancelled installer attempts are retained; successful retries do not establish their underlying cause."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     }

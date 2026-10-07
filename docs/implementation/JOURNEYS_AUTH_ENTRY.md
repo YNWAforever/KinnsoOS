@@ -10,4 +10,6 @@ Deployment configuration: set `KINNSO_AUTH_RECOVERY_SECRET` to a server-only ran
 
 The isolated local runner generates an ephemeral server ticket key after container ownership verification. Its existing confirmation-disabled Auth and admin-generated synthetic verification links prove credential handling only. Actual confirmation mail, recovery delivery, slow external mailbox behavior, hosted callback allowlist and human U01/U03 remain blocked until a named mailbox and environment are accepted. No production fixture, email request or provider configuration change is part of the local suite.
 
+At 2026-10-07T22:03:51.186Z, a names-only CLI read against the confirmed `kinnso-os` production project returned seven project settings and did not contain `KINNSO_AUTH_RECOVERY_SECRET`. The connector's earlier403 is retained separately and is not evidence of absence. No values were printed or saved, and no setting was changed. Project-list metadata does not verify shared settings, callback values or active serving configuration; recovery runtime/mail acceptance remains blocked.
+
 Rollback: revert the Auth entry PR; retain all accounts and stored device drafts. Remove the added server setting only after serving the reverted application. Original sign-in and RPC authorization continue using the same Auth service.
