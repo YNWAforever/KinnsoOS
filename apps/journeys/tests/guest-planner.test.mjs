@@ -11,7 +11,7 @@ const source=await readFile(new URL('../app/travel/GuestPlanner.tsx',import.meta
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
 const guide={id:'guide-one',version:2,title:'Kyoto walk',days:[{offset:0,title:'Morning',stops:[{title:'Temple',startMinuteOfDay:540,durationMinutes:60}]}]};
 function planner(actorId=null,initialDraft=null,onSaved=undefined){
- const states=[],refs=[],effects=[],writes=[],reads=[],listeners=new Map();let cursor=0,tree;
+ const states=[],refs=[],effects=[],writes=[],reads=[],listeners=new Map();let cursor=0,tree,guard;
  const react={
   useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;}];},
   useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},
@@ -25,6 +25,7 @@ function planner(actorId=null,initialDraft=null,onSaved=undefined){
    if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
    if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard:value=>{guard=value;}};
    if(name==='../../lib/trips/guest-drafts')return{guideDraft,restorableGuideDrafts,readGuestTrips:()=>new Promise((resolve,reject)=>reads.push({resolve,reject})),saveGuestTrip:trip=>new Promise((resolve,reject)=>writes.push({trip:structuredClone(trip),resolve,reject}))};
    throw Error('Unexpected dependency '+name);
   }}));
@@ -36,8 +37,20 @@ function planner(actorId=null,initialDraft=null,onSaved=undefined){
  const edit=(type,value)=>{elements().find(el=>el.type===type).props.onChange({target:{value}});render();};
  const settle=async(index,error)=>{if(error)writes[index].reject(error);else writes[index].resolve();await new Promise(resolve=>setImmediate(resolve));render();};
  const settleRead=async(index,rows,error)=>{if(error)reads[index].reject(error);else reads[index].resolve(rows);await new Promise(resolve=>setImmediate(resolve));render();};
- render();return{render,elements,button,status,importLink,edit,settle,settleRead,writes,reads,listeners,unmount:()=>effects.forEach(effect=>effect?.cleanup?.())};
+ render();return{render,elements,button,status,importLink,edit,settle,settleRead,writes,reads,listeners,guard:()=>guard,unmount:()=>effects.forEach(effect=>effect?.cleanup?.())};
 }
+
+test('navigation waits for the latest acknowledged snapshot without closing the repair editor',async()=>{
+ const original=guideDraft(guide,'device-navigation','guest-original','UTC'),completed=[];
+ const p=planner('account-A',original,copy=>completed.push(copy));p.edit('textarea','First revision');
+ assert.equal(p.guard()?.dirty,true,'register unsaved device work');
+ const older=p.guard().saveLatest();p.render();assert.equal(await p.guard().saveLatest(),false,'a pending write cannot acknowledge navigation');
+ p.edit('textarea','Latest revision');await p.settle(0);assert.equal(await older,false);
+ const latest=p.guard().saveLatest();p.render();await p.settle(1);assert.equal(await latest,true);
+ assert.equal(p.writes[1].trip.days[0].stops[0].travellerNote,'Latest revision');assert.equal(completed.length,0,'guard save does not close a cancelled navigation editor');
+ p.edit('textarea','Quota failure');const failed=p.guard().saveLatest();p.render();await p.settle(2,new Error('quota'));assert.equal(await failed,false);
+ const closed=p.guard().saveLatest();p.render();p.unmount();await p.settle(3);assert.equal(await closed,false,'unmounted writes cannot authorize navigation');
+});
 
 for(const [field,value] of [['input','A later stop title'],['textarea','Keep this newer private note']]){
  test(`a late device save cannot acknowledge newer ${field} edits`,async()=>{

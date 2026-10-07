@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import "./globals.css";
 import "./travel/workbench.css";
 import "./integration/integration.css";
+import {UnsavedDraftNavigationProvider} from './travel/UnsavedDraftGuard';
 export const metadata: Metadata = {
   title: {
     default: "KINNSO — Explore, plan & record",
@@ -16,7 +17,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const locale = (await headers()).get('x-kinnso-locale') === 'en' ? 'en' : 'zh-HK';
   return (
     <html lang={locale}>
-      <body>{children}</body>
+      <body><UnsavedDraftNavigationProvider>{children}</UnsavedDraftNavigationProvider></body>
     </html>
   );
 }

@@ -42,3 +42,11 @@ export function restorableGuideDrafts(input:unknown,guideId:string):GuestTrip[]{
 function open():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{const r=indexedDB.open('kinnso_guest_drafts_v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('trips',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(new Error('Device draft storage is unavailable. Keep this tab open.'))})}
 export async function saveGuestTrip(trip:GuestTrip){const recoverable=restorableDeviceDrafts([trip])[0];if(!recoverable)throw new Error('Device draft is outside the supported editor limits. Original copy is kept.');const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction('trips','readwrite');tx.objectStore('trips').put(recoverable);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error)})}finally{db.close()}}
 export async function readGuestTrips():Promise<GuestTrip[]>{const db=await open();try{return await new Promise((resolve,reject)=>{const request=db.transaction('trips').objectStore('trips').getAll();request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error)})}finally{db.close()}}
+export async function deleteGuestTrip(id:string,ownerId:string):Promise<void>{
+ if(!/^[\w-]{1,100}$/.test(id)||!/^guest-[\w-]{1,94}$/.test(ownerId))throw new Error('Invalid device identity.');
+ const db=await open();try{await new Promise<void>((resolve,reject)=>{
+  const tx=db.transaction('trips','readwrite'),store=tx.objectStore('trips'),get=store.get(id);let mismatch=false;
+  get.onsuccess=()=>{const row=get.result;if(!row||row.id!==id||row.ownerId!==ownerId||row.purpose!=='personal'){mismatch=true;tx.abort();return;}store.delete(id);};
+  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(mismatch?new Error('Device identity changed. Original copy is kept.'):tx.error);
+ })}finally{db.close()}
+}
