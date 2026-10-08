@@ -710,7 +710,7 @@ export function Workbench({
             </Link>
             <Link
               className="k-language"
-              href={`/${locale === "en" ? "zh-HK" : "en"}${path ? "/" + path : ""}${query.toString() ? "?" + query.toString() : ""}`}
+              href={`/${locale === "en" ? "zh-HK" : "en"}${mode === "demo" ? "/demo" : ""}${path ? "/" + path : ""}${query.toString() ? "?" + query.toString() : ""}`}
             >
               <Icon name="globe" size={18} />
               {locale === "en" ? "繁中" : "EN"}
