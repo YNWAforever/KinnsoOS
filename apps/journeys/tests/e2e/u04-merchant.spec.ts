@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import { randomUUID, createHash } from 'node:crypto';
 import { loadEnvFile } from 'node:process';
 import { createClient } from '@supabase/supabase-js';
+import {execFileSync} from 'node:child_process';
 import { verifyTestTarget } from '../../scripts/verify-test-target.mjs';
 
 loadEnvFile('.env.test');
@@ -55,7 +56,7 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Brief description', { exact: true }).fill('Authored synthetic promotion reviewed through the real merchant workspace.');
     await page.getByLabel('Coupon code', { exact: true }).fill('U04PROMO');
     await page.getByLabel('Coupon URL', { exact: true }).fill('https://example.test/u04');
-    for (const name of ['Affiliate commission rate', 'Platform commission rate', 'Creator commission rate']) await page.getByLabel(name, { exact: true }).fill('0');
+    for (const name of ['Affiliate commission rate (%)', 'Platform commission rate (%)', 'Creator commission rate (%)']) await page.getByLabel(name, { exact: true }).fill('0');
     await page.getByRole('button', { name: 'Publish promotion brief', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toBeVisible();
     const missions = await ok(admin.from('missions').select('id,status').eq('merchant_profile_id', companies[0]));
@@ -129,4 +130,29 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     for (const id of users) await clean('synthetic auth user', () => ok(admin.auth.admin.deleteUser(id)));
     if (errors.length) { testInfo.annotations.push({ type: 'cleanup failures', description: errors.join(', ') }); await testInfo.attach('u04-cleanup-failures', { body: JSON.stringify(errors), contentType: 'application/json' }).catch(() => {}); if (!failed) throw new Error('Synthetic cleanup failed: ' + errors.join(', ')); }
   }
+});
+
+test('U04 owner selects a scoped member, previews access and retries one audited change; bilingual percentages are explicit',async({page},testInfo)=>{
+ test.setTimeout(120_000);const users:string[]=[];let company:string|null=null;let failed=false;
+ async function actor(){const email=`synthetic-n11-${randomUUID()}@example.test`,password=`Synthetic!${randomUUID()}`;const user=(await ok(admin.auth.admin.createUser({email,password,email_confirm:true}))).user;users.push(user.id);const client=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_ANON_KEY!,{auth:{persistSession:false},global:{fetch:boundedFetch}});await ok(client.auth.signInWithPassword({email,password}));return{id:user.id,email,password,client};}
+ try{
+  const owner=await actor(),clerk=await actor(),outsider=await actor();
+  await ok(admin.from('creators').update({display_name:'Synthetic branch colleague'}).eq('id',clerk.id));
+  company=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic N11 team',contact_email:owner.email}).select('id').single())).id;
+  const branch=randomUUID(),command=(payload:object)=>ok(owner.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:company,p_request_id:randomUUID(),p_command:payload}));
+  await command({type:'createBranch',id:branch,name:'Synthetic Central branch'});await command({type:'setMember',userId:clerk.id,role:'clerk',branchIds:[branch],active:true});
+  await signIn(page,owner.email,owner.password,owner.id);
+  await expect(page.getByLabel('Existing team member',{exact:true})).toBeVisible();
+  const directory=await page.request.get('/api/merchant/team?id='+company);expect(directory.status()).toBe(200);expect(directory.headers()['cache-control']).toContain('private');expect(directory.headers()['cache-control']).toContain('no-store');const body=await directory.json();expect(body.data.members.map((m:any)=>m.userId)).toEqual([clerk.id]);expect(JSON.stringify(body)).not.toContain(outsider.id);expect(JSON.stringify(body)).not.toContain(clerk.email);
+  await page.getByLabel('Existing team member',{exact:true}).selectOption(clerk.id);await expect(page.getByRole('heading',{name:'Access preview',exact:true})).toBeVisible();await expect(page.getByText('Can redeem and view outcomes only at the assigned branches; no company financial review.',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'Cancel team edits',exact:true}).click();await expect(page.getByLabel('Existing team member',{exact:true})).toHaveValue('');
+  await page.getByLabel('Existing team member',{exact:true}).selectOption(clerk.id);await page.getByLabel('Organization role',{exact:true}).selectOption('finance');await expect(page.getByText('Can review recorded financial outcomes within the assigned branches; cannot redeem or manage members.',{exact:true})).toBeVisible();
+  await page.getByLabel('Access active',{exact:true}).uncheck();await page.getByLabel('Access change reason',{exact:true}).fill('Synthetic N11 owner reviewed finance access');
+  const payloads:unknown[]=[];let attempts=0;await page.route('**/api/merchant',async route=>{if(route.request().method()!=='POST'){await route.continue();return;}payloads.push(route.request().postDataJSON());const response=await route.fetch();if(++attempts===1)await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'UNAVAILABLE'})});else await route.fulfill({response});});
+  await page.getByRole('button',{name:'Save team access',exact:true}).click();await expect(page.getByRole('button',{name:'Retry the same request',exact:true})).toBeVisible();await expect(page.getByLabel('Organization role',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Retry the same request',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Saved on the server.'})).toBeVisible();expect(payloads).toHaveLength(2);expect(payloads[1]).toEqual(payloads[0]);
+  expect((await clerk.client.rpc('get_kinnso_merchant_workspace',{p_merchant_id:company})).error?.message).toBe('forbidden');
+  const audit=execFileSync('docker',['exec','supabase_db_kinnsoos-b1-20261002','psql','-U','postgres','-d','postgres','-X','-Atq','-c',`select count(*) from kinnso_internal.merchant_audit where merchant_id='${company}' and action='setMember' and reason='Synthetic N11 owner reviewed finance access';`],{encoding:'utf8'});expect(audit.trim()).toBe('1');
+  await page.goto('/zh-HK/merchant');await expect(page.getByLabel('現有公司成員',{exact:true})).toBeVisible();await page.getByLabel('現有公司成員',{exact:true}).selectOption(clerk.id);await expect(page.getByRole('heading',{name:'權限預覽',exact:true})).toBeVisible();await expect(page.getByLabel('創作者佣金比例（%）',{exact:true})).toBeVisible();
+  await page.setViewportSize({width:320,height:800});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await page.screenshot({path:'evidence/merchant-team-320.png',fullPage:true});
+ }catch(error){failed=true;throw error;}finally{const errors:string[]=[];if(company){try{await ok(admin.from('merchant_profiles').delete().eq('id',company));}catch{errors.push('merchant cleanup');}}for(const id of users){try{await ok(admin.auth.admin.deleteUser(id));}catch{errors.push('auth fixture cleanup');}}if(errors.length){testInfo.annotations.push({type:'cleanup failures',description:errors.join(',')});if(!failed)throw Error('Synthetic N11 cleanup failed');}}
 });

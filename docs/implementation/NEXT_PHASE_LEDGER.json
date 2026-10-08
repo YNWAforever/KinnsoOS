@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First-wave source delivery plus N10 existing operations queue filters, audited assignment, private presets and optional deadline ordering; all original task and requirement IDs retained.",
+  "scope": "First-wave plus N10 operations routing and N11 existing merchant team access source increments; original18 IDs and53 requirement mappings retained.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -74,14 +74,15 @@
       "merge_status": "PR23-29_merged",
       "environment_status": "production_readonly_verified",
       "acceptance_status": "current987_release_archive_public_parity_verified; signed_in_NOT_RUN",
-      "source_sha": "c8cdfa2fdfd0ab6ea2838b216751ec5666070760",
+      "source_sha": "0e2d758ad39b7f6aa674649bae5be34477125d0e",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
         "Current integration checkpoint ee84155 after green-only merges; new release source/archive binding requires fresh evidence.",
         "Main987 root CI37698360254 and Journeys37698360163 SUCCESS; production read-only37698407404 artifact checked independently.",
         "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN.",
-        "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence."
+        "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence.",
+        "Current0e public production/archive parity verified302 files/10 checks/archive213621f9; signed-in role acceptance NOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -498,8 +499,8 @@
       "owner_role": "Full stack + Ops",
       "status": "partial",
       "code_status": "implemented_queue_filters_assignments_private_presets_and_optional_deadline_order",
-      "merge_status": "PR30_merged_PR31_open_pending_current_head_green",
-      "environment_status": "isolated_local_verified; production_schema_metadata_readonly",
+      "merge_status": "PR30_PR31_merged",
+      "environment_status": "isolated_local_verified; main0e_public_production_readonly_verified",
       "acceptance_status": "local_contract_verified; production_SQL_and_named_human_U05_NOT_RUN",
       "source_sha": "6f68aae72776f872be9b1483dd21c05711366714",
       "prs": [
@@ -519,7 +520,8 @@
         "Assignment CAS race/replay/reason audit/revoked actor; owner-private presets/tombstones/20-limit/cross-owner ID race; actor-bound50+10 mine keyset;1205-row deadline and100-item bulk regressions PASS.",
         "Actual connected browser tests retained same request after committed response503 and observed one audit, reloaded private named criteria, and rejected revoked direct API403; bilingual320px viewport checked.",
         "Production readonly metadata at6f: three existing function contracts/grants match sourcec8 after CRLF-to-LF normalization; original raw-hash mismatch retained. New routing objects absent; no production SQL or role UAT.",
-        "Local transaction upgrade and intentional-failure rollback preserve prior catalog/Auth metadata; this is not a full backup/restore."
+        "Local transaction upgrade and intentional-failure rollback preserve prior catalog/Auth metadata; this is not a full backup/restore.",
+        "PR31 latestc7 mandatory push/PR checks SUCCESS; whole treea9bf matches testedba42 and main0e. Production READY0e; independent and CI37721950021 agree302 files/10 public checks/archive213621f9. Packaging dirty true and signed-in NOT_RUN retained."
       ],
       "blockers": [
         "New fixed routing migration requires separate exact-file production authorization and fresh consistency backup plus isolated full restore before application.",
@@ -548,16 +550,31 @@
         "N03.contract_local_ready"
       ],
       "owner_role": "Full stack + Merchant ops",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": null,
-      "prs": [],
-      "tests": [],
-      "blockers": [],
-      "rollback": "Revert the task PR; preserve existing data."
+      "status": "partial",
+      "code_status": "implemented_existing_company_team_selection_role_branch_preview_and_bilingual_percentages",
+      "merge_status": "PR32_open_pending_exact_current_head_green",
+      "environment_status": "isolated_local_verified; production_prerequisite_metadata_readonly",
+      "acceptance_status": "existing_team_local_verified; invitation_model_and_formal_U04_NOT_RUN",
+      "source_sha": "28e9c2743f43f88902169e2d4fac983d50e8038a",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/32"
+      ],
+      "tests": [
+        "RED missing helper/RPC and actual owner selector retained; focused5 real helper/component/BFF,2 owned RPC and2 connected U04 browser PASS.",
+        "Clean combined28e current source:320 unit/31 integration/75 browser PASS with zero skips/failures; build/typecheck PASS. Source3024325 preserves latest main0e via28e merge; original18 IDs/53 mappings retained.",
+        "Actual directory53 records pages50+3 exactly once; foreign-company/cursor/member and anon denied; same-session owner/member revocation; inactive member and archived branch metadata preserved.",
+        "Actual U04 unknown committed response503 retries identical request with audit1; cancel sends no change, role/branch preview and bilingual320px layout verified; prior clerk percentage correction/redemption replay remains PASS.",
+        "Windows source-package5 PASS/1 symlink-permission SKIP; Linux6 and extracted build/typecheck still required at final review head.",
+        "Narrow TLS verify-full READ ONLY production metadata:3 existing merchant function contracts plus2 private relation/grants match normalized local baseline; new team getter absent. No production migration or role UAT.",
+        "Initial wrong-config/script-path setup, ownership-transfer fixture unique constraint and test-harness recursion failures are preserved. Fixes retain business and privacy assertions."
+      ],
+      "blockers": [
+        "New-account single-use/expiring/revocable/recipient-bound invitation model remains the next separate implementation; no invitation success is claimed.",
+        "Exact new team read-RPC production SQL authorization and fresh consistency backup/full isolated restore have not occurred.",
+        "Owner invitation/financial policy and named hosted U04/physical/assistive-technology acceptance remain unverified."
+      ],
+      "rollback": "Revert this UI/BFF increment; preserve all existing memberships, audit and request receipts. No funding/payment activation.",
+      "review_branch": "codex/merchant-team-preview-20261008"
     },
     {
       "task_id": "N12",
