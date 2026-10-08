@@ -4,16 +4,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import * as m from "./model";
-import { AppContext, Chip, Empty, Icon, Modal } from "./ui";
+import { AppContext, Chip, Empty, Icon, Modal, useApp } from "./ui";
 import { HomePage, ExplorePage, AdventurePage, TripsPage } from "./explore";
 import { ConnectedHome } from './ConnectedHome';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
 import { CreatorWorkspace } from './CreatorWorkspace';
-import { OpsWorkspace as ConnectedOpsWorkspace } from './OpsWorkspace';
-import { MerchantWorkspace as RealMerchantWorkspace } from './MerchantWorkspace';
-import { MerchantInvitationRecipient } from './MerchantInvitationRecipient';
 import type { Actor } from '../../lib/auth/actor';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 import type {PublicGuide} from '../../lib/seo/public-guide';
@@ -28,6 +25,22 @@ import {FinanceWorkspace} from './FinanceWorkspace';
 import {MonitoringWorkspace} from './MonitoringWorkspace';
 import {TelemetryConsent} from './TelemetryConsent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
+function RoleWorkspaceLoading() {
+  const {t} = useApp();
+  return <div className="os-loading" role="status">{t('Loading workspace…', '正在載入工作區…')}</div>;
+}
+const ConnectedOpsWorkspace = dynamic(
+  () => import('./OpsWorkspace').then(mod => mod.OpsWorkspace),
+  {loading: RoleWorkspaceLoading},
+);
+const RealMerchantWorkspace = dynamic(
+  () => import('./MerchantWorkspace').then(mod => mod.MerchantWorkspace),
+  {loading: RoleWorkspaceLoading},
+);
+const MerchantInvitationRecipient = dynamic(
+  () => import('./MerchantInvitationRecipient').then(mod => mod.MerchantInvitationRecipient),
+  {loading: RoleWorkspaceLoading},
+);
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
