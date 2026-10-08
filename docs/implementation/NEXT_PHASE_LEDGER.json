@@ -880,16 +880,31 @@
         "N17.for_commercial_rollout"
       ],
       "owner_role": "Release owner",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": null,
+      "status": "partial",
+      "code_status": "existing_release_guards_verified_and_concrete_versioned_release_rollback_record_prepared",
+      "merge_status": "independent_N16_review_pending",
+      "environment_status": "main218_public_release_verified_current_candidate_recovery_roles_jobs_blocked",
+      "acceptance_status": "NO_GO_EXPANSION_formal_U06_NOT_RUN",
+      "source_sha": "409d501bd55d13a519e143a345d25bf0ba75f74e",
       "prs": [],
-      "tests": [],
-      "blockers": [],
-      "rollback": "Revert the task PR; preserve existing data."
+      "tests": [
+        "Existing pure release guard suite9 PASS0fail0skip; actual source409d501, documentation working tree dirty, no DB connection.",
+        "Main218 canonical read-only37760263360 plus independent316sourcefiles/10checks/archive1e3eeab3 PASS; signed-in NOT_RUN.",
+        "Five source-delta Git-object SQL hashes inventoried privately; this is not a production delta or approved bundle.",
+        "Historical Oct6 sourcec53 logical restore proof inspected: networknone/noports/stopped; restore phase14.633s is not operational RTO/RPO or current-candidate recovery."
+      ],
+      "blockers": [
+        "Formal named U01/U03 and U02/U04/U05; real content/mailbox, physical devices/AT and field performance remain NOT_RUN.",
+        "Current hosted schema/flags/job owner/token/schedules, exact necessary SQL approval and fresh exact-candidate backup/restore/failure rehearsal required.",
+        "Storage object bytes, Auth/OAuth/SMTP settings, DB login passwords and provider encryption-root-key/Vault recovery remain separate from the historical logical export.",
+        "Actual legacy URL inventory/redirect decisions, owner latency/5xx thresholds and operational RPO/RTO not established.",
+        "Commercial expansion requires N17 business rules/rates/named Finance/Ops acceptance; booking/payment/unapproved providers stay unavailable."
+      ],
+      "rollback": "Evidence-only revert; application rollback needs exact authorized last-good deployment, compatible schema/data preservation and fresh postchecks. Never reset/drop written data or receipts.",
+      "source_ref": "codex/n16-release-readiness-20261008",
+      "evidence_paths": [
+        "docs/implementation/NEXT_PHASE_RELEASE_GATE.md"
+      ]
     },
     {
       "task_id": "N17",
