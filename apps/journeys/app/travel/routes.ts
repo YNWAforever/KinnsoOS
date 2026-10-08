@@ -79,6 +79,7 @@ const retained = new Set([
   "legal/payment-handling",
 ]);
 export function isKnownRoute(path: string) {
+  if(path==='merchant/invitation')return true;
   if (
     /^(articles\/[^/]+(?:\/[^/]+)?|sessions\/[^/]+|m\/[^/]+)$/.test(path) &&
     !path.split("/").includes("..")

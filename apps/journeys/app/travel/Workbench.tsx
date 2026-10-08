@@ -13,6 +13,7 @@ import { AccountSignOut } from './AccountSignOut';
 import { CreatorWorkspace } from './CreatorWorkspace';
 import { OpsWorkspace as ConnectedOpsWorkspace } from './OpsWorkspace';
 import { MerchantWorkspace as RealMerchantWorkspace } from './MerchantWorkspace';
+import { MerchantInvitationRecipient } from './MerchantInvitationRecipient';
 import type { Actor } from '../../lib/auth/actor';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 import type {PublicGuide} from '../../lib/seo/public-guide';
@@ -618,6 +619,7 @@ export function Workbench({
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={actor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
     else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={actor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace actorId={actor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
