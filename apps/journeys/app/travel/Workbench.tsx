@@ -20,8 +20,6 @@ import type {PublicArticle} from '../../lib/seo/public-article';
 import {PublicArticleContent} from '../../lib/seo/PublicArticleContent';
 import {InboxWorkspace,SupportWorkspace} from './InboxWorkspace';
 import {ReportWorkspace} from './ReportWorkspace';
-import {AgentPage} from '../agent/AgentPage';
-import {FinanceWorkspace} from './FinanceWorkspace';
 import {MonitoringWorkspace} from './MonitoringWorkspace';
 import {TelemetryConsent} from './TelemetryConsent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
@@ -39,6 +37,14 @@ const RealMerchantWorkspace = dynamic(
 );
 const MerchantInvitationRecipient = dynamic(
   () => import('./MerchantInvitationRecipient').then(mod => mod.MerchantInvitationRecipient),
+  {loading: RoleWorkspaceLoading},
+);
+const AgentPage = dynamic(
+  () => import('../agent/AgentPage').then(mod => mod.AgentPage),
+  {loading: RoleWorkspaceLoading},
+);
+const FinanceWorkspace = dynamic(
+  () => import('./FinanceWorkspace').then(mod => mod.FinanceWorkspace),
   {loading: RoleWorkspaceLoading},
 );
 const TripEditor = dynamic(
