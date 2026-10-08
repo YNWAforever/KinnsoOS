@@ -71,10 +71,10 @@
       "owner_role": "Release engineer",
       "status": "verified_done",
       "code_status": "existing_source_verified",
-      "merge_status": "PR23-32_merged",
+      "merge_status": "PR23-33_merged",
       "environment_status": "production_readonly_verified",
-      "acceptance_status": "current5e_public_release_archive_parity_verified; signed_in_NOT_RUN",
-      "source_sha": "5e3377dff18b7de9b72453fdef56d993de68ff72",
+      "acceptance_status": "current586_public_release_archive_parity_verified; signed_in_NOT_RUN",
+      "source_sha": "586f2bb46106ed1e3a0a467bb794d8e95a11c920",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
@@ -83,7 +83,8 @@
         "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN.",
         "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence.",
         "Current0e public production/archive parity verified302 files/10 checks/archive213621f9; signed-in role acceptance NOT_RUN.",
-        "Current5e: production readonly37725534992 and independent verifier PASS;307 allowlisted files/10 public checks/archive8487891a70ed73eedcde41a2542868e2d16d0ae873492bfa9d05a329dd9f25a8; packaging workspace dirty true retained; signed-in NOT_RUN."
+        "Current5e: production readonly37725534992 and independent verifier PASS;307 allowlisted files/10 public checks/archive8487891a70ed73eedcde41a2542868e2d16d0ae873492bfa9d05a329dd9f25a8; packaging workspace dirty true retained; signed-in NOT_RUN.",
+        "Current586:production readonly37731718697 artifact and independent verifier PASS;308 files/10 public checks/archive7350eab6e3d1d84af618508eb960971fbce023e885323074982b46b1329332a6; packagingWorkspaceDirty=true retained; signed-in NOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -552,11 +553,11 @@
       ],
       "owner_role": "Full stack + Merchant ops",
       "status": "partial",
-      "code_status": "implemented_existing_team_UI_and_source_local_invitation_RPC_contract",
-      "merge_status": "PR32_merged; PR33_open_clean_head_CI_pending",
-      "environment_status": "directory_public_release_verified; invitation_owned_local_verification; production_new_SQL_NOT_RUN",
+      "code_status": "directory_and_invitation_contract_merged; invitation_UI_BFF_local_verification_in_progress",
+      "merge_status": "PR32_and_PR33_merged; UI_consumer_review_in_progress",
+      "environment_status": "main586_public_archive_parity_verified; production_new_SQL_NOT_RUN; UI_owned_local_candidate",
       "acceptance_status": "directory_and_invitation_contract_local_only; UI_invitation_and_formal_U04_NOT_RUN",
-      "source_sha": "6d625d666f9a4b862c412cd3b3db8047d7d440b7",
+      "source_sha": "586f2bb46106ed1e3a0a467bb794d8e95a11c920",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/32",
         "https://github.com/YNWAforever/KinnsoOS/pull/33"
@@ -572,15 +573,18 @@
         "PR32 latest1718 push/PR exact artifacts320 unit/31 integration/75 browser PASS zero skip/fail; tested0d5f9ce whole treeb2f7689 matches head and merged5e; mandatory root/Journeys and Vercel SUCCESS. Linux package6/distributed build/typecheck PASS.",
         "Directory1718 local transaction upgrade and intentional failure rollback PASS, exact original/provider/count/history preserved; initial raw hash mismatch retained and proven CRLF-only. Full backup restore and production SQL NOT_RUN.",
         "Invitation contract:6 absent-RPC RED; permanent ownership/status invalidation defect reproduced RED, then8 real RPC cases PASS. Final local candidate320 unit/39 integration/75 browser PASS,0 skips/failures; build/typecheck PASS; Windows package5PASS/1symlink-permissionSKIP. Collector identifies base5e + workingTreeDirty=true; clean-head CI still required.",
-        "Fixed SQL050badcaf9a13692699f18c86a53cc99596b8b4128933a089b39cfcf08f6084d: additive fresh-DDL and injected-failure rollback PASS, exact prior core/provider/trigger/catalog/count/history preserved; full backup restore and production SQL NOT_RUN. Wrong-profile browser55PASS/20FAIL retained separately before corrected owned-test profile75PASS."
+        "Fixed SQL050badcaf9a13692699f18c86a53cc99596b8b4128933a089b39cfcf08f6084d: additive fresh-DDL and injected-failure rollback PASS, exact prior core/provider/trigger/catalog/count/history preserved; full backup restore and production SQL NOT_RUN. Wrong-profile browser55PASS/20FAIL retained separately before corrected owned-test profile75PASS.",
+        "PR33 exact8a75784 push/PR clean Linux320unit/39integration/75browser PASS; tested09a0dac tree8aa8dbe matches source and merged586f2bb. Required root/Journeys/Vercel all SUCCESS; Linux6 packaging and extracted build/typecheck PASS. Source merge/public release do not apply invitation SQL or complete U04.",
+        "UI/BFF candidate: strict token/body/origin-context/private replies, owner/recipient transient state and account fences. StrictMode setup replay and same-route fragment reopening reproduced RED and fixed;11 focused component/helper/BFF tests PASS. Complete current-head regression remains pending.",
+        "Actual owned-local owner-to-recipient2 browser cases PASS after fragment reopen fix: manual persisted link, committed503 identical create/accept retries with one audit each, preview/cancel writes nothing, foreign-recipient denial, current workspace reread and same-JWT offboarding deny. Final full browser/private-head assertions pending; no named production U04 or mail delivery claim."
       ],
       "blockers": [
-        "Invitation UI/BFF integration remains a ready separate implementation; no user-facing invite success or email delivery claimed.",
+        "Invitation UI/BFF is under owned-local verification on its own review branch; complete current-head regression/CI and hosted U04 still required. No email delivery claimed.",
         "Directory and invitation additive SQL each require exact production authorization, fresh consistent backup/full isolated restore and applicable preflight; production application NOT_RUN.",
         "Proposed24h/100-pending invitation policy, owner financial policy, named hosted U04 and physical/AT acceptance unverified."
       ],
       "rollback": "Roll back consumers while retaining accepted memberships, invitation data, audits and receipts; no destructive reversal after writes.",
-      "review_branch": "codex/merchant-invitation-contract-20261008"
+      "review_branch": "codex/merchant-invitation-ui-20261008"
     },
     {
       "task_id": "N12",
