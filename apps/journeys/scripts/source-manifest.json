@@ -283,6 +283,7 @@
     "tests/integration/merchant-access.test.mjs",
     "tests/integration/merchant-branches.test.mjs",
     "tests/integration/merchant-content-prerequisite.test.mjs",
+    "tests/integration/merchant-invitations.test.mjs",
     "tests/integration/merchant-legacy-analytics.test.mjs",
     "tests/integration/monthly-budget.test.mjs",
     "tests/integration/ops-routing.test.mjs",
