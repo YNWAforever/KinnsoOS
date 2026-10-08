@@ -156,3 +156,71 @@ test('U04 owner selects a scoped member, previews access and retries one audited
   await page.setViewportSize({width:320,height:800});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await page.screenshot({path:'evidence/merchant-team-320.png',fullPage:true});
  }catch(error){failed=true;throw error;}finally{const errors:string[]=[];if(company){try{await ok(admin.from('merchant_profiles').delete().eq('id',company));}catch{errors.push('merchant cleanup');}}for(const id of users){try{await ok(admin.auth.admin.deleteUser(id));}catch{errors.push('auth fixture cleanup');}}if(errors.length){testInfo.annotations.push({type:'cleanup failures',description:errors.join(',')});if(!failed)throw Error('Synthetic N11 cleanup failed');}}
 });
+
+for (const locale of ['en', 'zh-HK'] as const) {
+  test(`N14 ${locale} merchant fields remain readable at narrow and enlarged-text widths with keyboard saving`, async ({ page, baseURL }, testInfo) => {
+    test.setTimeout(120_000);
+    expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+    const users: string[] = [];
+    let company: string | null = null, failed = false;
+    const text = (en: string, zh: string) => locale === 'en' ? en : zh;
+    try {
+      const email = `synthetic-n14-${randomUUID()}@example.test`, password = `Synthetic!${randomUUID()}`;
+      const user = (await ok(admin.auth.admin.createUser({ email, password, email_confirm: true }))).user;
+      users.push(user.id);
+      company = (await ok(admin.from('merchant_profiles').insert({ user_id: user.id, company_name: 'Synthetic N14 narrow company', contact_email: email }).select('id').single())).id;
+      const client = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!, { auth: { persistSession: false }, global: { fetch: boundedFetch } });
+      await ok(client.auth.signInWithPassword({ email, password }));
+      await ok(client.rpc('apply_kinnso_merchant_command', { p_merchant_id: company, p_request_id: randomUUID(), p_command: { type: 'createBranch', id: randomUUID(), name: 'Synthetic N14 initial branch', reason: 'Synthetic mobile fixture' } }));
+      await signIn(page, email, password, user.id);
+      if (locale !== 'en') await page.goto(`/${locale}/merchant`);
+      const section = page.getByRole('heading', { name: text('Merchant workspace', '商戶工作區'), exact: true }).locator('..');
+      await expect(section.getByLabel(text('Branch name', '分店名稱'), { exact: true })).toBeVisible();
+      const measurements = [];
+      for (const [width, enlarged] of [[320, false], [640, false], [1280, false], [320, true]] as const) {
+        await page.setViewportSize({ width, height: 900 });
+        await page.evaluate(enlarged => { document.documentElement.style.fontSize = enlarged ? '32px' : ''; (document.querySelector('.k-app') as HTMLElement).style.fontSize = enlarged ? '32px' : ''; }, enlarged);
+        const geometry = await section.evaluate(element => {
+          const fields = Array.from(element.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('form input:not([type="checkbox"]), form select, form textarea')).filter(field => field.getClientRects().length);
+          return { viewport: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, fields: fields.map(field => {
+            const label = field.closest('label')!, control = field.getBoundingClientRect(), bounds = label.getBoundingClientRect();
+            const node = Array.from(label.childNodes).find(child => child.nodeType === Node.TEXT_NODE && child.textContent?.trim())!;
+            const range = document.createRange(); range.selectNodeContents(node);
+            return { name: node.textContent!.trim(), height: control.height, width: control.width, available: bounds.width, separation: control.top - range.getBoundingClientRect().bottom, left: control.left, right: control.right };
+          }) };
+        });
+        measurements.push({ width, enlarged, geometry });
+        await page.screenshot({ path: `evidence/n14-merchant-${locale}-${width}-${enlarged ? 'double-text' : 'normal'}.png`, fullPage: true });
+        expect(geometry.fields.length).toBeGreaterThanOrEqual(12);
+        expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewport);
+        for (const field of geometry.fields) {
+          expect(field.height, `${field.name}: usable field height`).toBeGreaterThanOrEqual(44);
+          expect(field.width, `${field.name}: full-width entry`).toBeGreaterThanOrEqual(field.available - 2);
+          expect(field.separation, `${field.name}: label above the control`).toBeGreaterThanOrEqual(4);
+          expect(field.left).toBeGreaterThanOrEqual(0);
+          expect(field.right).toBeLessThanOrEqual(geometry.viewport);
+        }
+      }
+      await testInfo.attach('n14-local-browser-geometry', { body: JSON.stringify(measurements), contentType: 'application/json' });
+      await page.evaluate(() => { document.documentElement.style.fontSize = ''; (document.querySelector('.k-app') as HTMLElement).style.fontSize = ''; });
+      const branchName = section.getByLabel(text('Branch name', '分店名稱'), { exact: true });
+      await branchName.focus();
+      await expect(branchName).toBeFocused();
+      await branchName.fill('Synthetic N14 keyboard branch');
+      await page.keyboard.press('Tab');
+      const create = section.getByRole('button', { name: text('Create branch', '建立分店'), exact: true });
+      await expect(create).toBeFocused();
+      await page.keyboard.press('Enter');
+      await expect(section.getByRole('status').filter({ hasText: text('Saved on the server.', '已儲存至伺服器。') })).toBeVisible();
+      const workspace = await ok(client.rpc('get_kinnso_merchant_workspace', { p_merchant_id: company }));
+      expect(workspace.branches.filter((branch: any) => branch.name === 'Synthetic N14 keyboard branch')).toHaveLength(1);
+      await page.reload();
+      await expect(section.getByLabel(text('Redemption branch', '核銷分店'), { exact: true }).locator('option').filter({ hasText: 'Synthetic N14 keyboard branch' })).toHaveCount(1);
+    } catch (error) { failed = true; throw error; } finally {
+      const errors: string[] = [];
+      if (company) { try { await ok(admin.from('merchant_profiles').delete().eq('id', company)); } catch { errors.push('merchant'); } }
+      for (const id of users) { try { await ok(admin.auth.admin.deleteUser(id)); } catch { errors.push('auth'); } }
+      if (errors.length) { testInfo.annotations.push({ type: 'cleanup failures', description: errors.join(',') }); if (!failed) throw Error('Synthetic N14 cleanup failed: ' + errors.join(',')); }
+    }
+  });
+}

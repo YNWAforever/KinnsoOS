@@ -4353,3 +4353,64 @@ body:has(.k-app) {
 .os-trips form {max-width:680px}
 .os-stop {padding:20px;margin-block:16px;max-width:680px}
 .os-stop input[type=checkbox]{width:20px;height:20px;padding:0}
+
+.k-merchant .k-card {
+  margin-block: 24px;
+}
+.k-merchant form {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+  margin-block: 16px;
+}
+.k-merchant label {
+  display: block;
+}
+.k-merchant input:not([type="checkbox"]),
+.k-merchant select,
+.k-merchant textarea {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 44px;
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--white);
+  font: inherit;
+}
+.k-merchant textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+.k-merchant fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.k-merchant label:has(input[type="checkbox"]) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding-block: 4px;
+}
+.k-merchant input[type="checkbox"] {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin: 0;
+}
+.k-merchant form .k-btn {
+  justify-self: start;
+  max-width: 100%;
+}
+@media (max-width: 600px) {
+  .k-merchant form .k-btn {
+    width: 100%;
+  }
+}
