@@ -553,14 +553,15 @@
       ],
       "owner_role": "Full stack + Merchant ops",
       "status": "partial",
-      "code_status": "directory_and_invitation_contract_merged; invitation_UI_BFF_local_verification_in_progress",
-      "merge_status": "PR32_and_PR33_merged; UI_consumer_review_in_progress",
+      "code_status": "directory_invitation_contract_and_UI_BFF_implemented",
+      "merge_status": "PR32_and_PR33_merged; PR34_open_exact_head_CI_pending",
       "environment_status": "main586_public_archive_parity_verified; production_new_SQL_NOT_RUN; UI_owned_local_candidate",
-      "acceptance_status": "directory_and_invitation_contract_local_only; UI_invitation_and_formal_U04_NOT_RUN",
-      "source_sha": "586f2bb46106ed1e3a0a467bb794d8e95a11c920",
+      "acceptance_status": "current_local_synthetic_contract_and_UI_flows_PASS; named_hosted_U04_NOT_RUN",
+      "source_sha": "28d860b1e7b6d8b4999eb432aec11c4177832b8e",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/32",
-        "https://github.com/YNWAforever/KinnsoOS/pull/33"
+        "https://github.com/YNWAforever/KinnsoOS/pull/33",
+        "https://github.com/YNWAforever/KinnsoOS/pull/34"
       ],
       "tests": [
         "RED missing helper/RPC and actual owner selector retained; focused5 real helper/component/BFF,2 owned RPC and2 connected U04 browser PASS.",
@@ -576,10 +577,11 @@
         "Fixed SQL050badcaf9a13692699f18c86a53cc99596b8b4128933a089b39cfcf08f6084d: additive fresh-DDL and injected-failure rollback PASS, exact prior core/provider/trigger/catalog/count/history preserved; full backup restore and production SQL NOT_RUN. Wrong-profile browser55PASS/20FAIL retained separately before corrected owned-test profile75PASS.",
         "PR33 exact8a75784 push/PR clean Linux320unit/39integration/75browser PASS; tested09a0dac tree8aa8dbe matches source and merged586f2bb. Required root/Journeys/Vercel all SUCCESS; Linux6 packaging and extracted build/typecheck PASS. Source merge/public release do not apply invitation SQL or complete U04.",
         "UI/BFF candidate: strict token/body/origin-context/private replies, owner/recipient transient state and account fences. StrictMode setup replay and same-route fragment reopening reproduced RED and fixed;11 focused component/helper/BFF tests PASS. Complete current-head regression remains pending.",
-        "Actual owned-local owner-to-recipient2 browser cases PASS after fragment reopen fix: manual persisted link, committed503 identical create/accept retries with one audit each, preview/cancel writes nothing, foreign-recipient denial, current workspace reread and same-JWT offboarding deny. Final full browser/private-head assertions pending; no named production U04 or mail delivery claim."
+        "Actual owned-local owner-to-recipient2 browser cases PASS after fragment reopen fix: manual persisted link, committed503 identical create/accept retries with one audit each, preview/cancel writes nothing, foreign-recipient denial, current workspace reread and same-JWT offboarding deny. Final full browser/private-head assertions pending; no named production U04 or mail delivery claim.",
+        "Clean integrated28d860b:331unit/39integration/77connected browser PASS, zero skips/failures; build/typecheck PASS. Added noindex/private-no-store/token-free-network/storage assertions and actual same-route cancel/reopen pass. Windows native package5PASS/1symlinkSKIP; sandbox cleanup12errors preserved. Native author review only; exact latest-head Linux CI/package6/distributed rebuild pending."
       ],
       "blockers": [
-        "Invitation UI/BFF is under owned-local verification on its own review branch; complete current-head regression/CI and hosted U04 still required. No email delivery claimed.",
+        "UI/BFF source is reviewable in PR34; exact green current-head CI is required before merge. Hosted directory/invitation SQL and named U04 are NOT_RUN; no automatic email delivery.",
         "Directory and invitation additive SQL each require exact production authorization, fresh consistent backup/full isolated restore and applicable preflight; production application NOT_RUN.",
         "Proposed24h/100-pending invitation policy, owner financial policy, named hosted U04 and physical/AT acceptance unverified."
       ],
