@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First-wave plus N10 operations routing and N11 existing merchant team access source increments; original18 IDs and53 requirement mappings retained.",
+  "scope": "First-wave plus N10 routing and N11 directory/invitation contract increments; original18 IDs and53 requirement mappings retained.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -71,10 +71,10 @@
       "owner_role": "Release engineer",
       "status": "verified_done",
       "code_status": "existing_source_verified",
-      "merge_status": "PR23-29_merged",
+      "merge_status": "PR23-32_merged",
       "environment_status": "production_readonly_verified",
-      "acceptance_status": "current987_release_archive_public_parity_verified; signed_in_NOT_RUN",
-      "source_sha": "0e2d758ad39b7f6aa674649bae5be34477125d0e",
+      "acceptance_status": "current5e_public_release_archive_parity_verified; signed_in_NOT_RUN",
+      "source_sha": "5e3377dff18b7de9b72453fdef56d993de68ff72",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
@@ -82,7 +82,8 @@
         "Main987 root CI37698360254 and Journeys37698360163 SUCCESS; production read-only37698407404 artifact checked independently.",
         "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN.",
         "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence.",
-        "Current0e public production/archive parity verified302 files/10 checks/archive213621f9; signed-in role acceptance NOT_RUN."
+        "Current0e public production/archive parity verified302 files/10 checks/archive213621f9; signed-in role acceptance NOT_RUN.",
+        "Current5e: production readonly37725534992 and independent verifier PASS;307 allowlisted files/10 public checks/archive8487891a70ed73eedcde41a2542868e2d16d0ae873492bfa9d05a329dd9f25a8; packaging workspace dirty true retained; signed-in NOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -551,13 +552,14 @@
       ],
       "owner_role": "Full stack + Merchant ops",
       "status": "partial",
-      "code_status": "implemented_existing_company_team_selection_role_branch_preview_and_bilingual_percentages",
-      "merge_status": "PR32_open_pending_exact_current_head_green",
-      "environment_status": "isolated_local_verified; production_prerequisite_metadata_readonly",
-      "acceptance_status": "existing_team_local_verified; invitation_model_and_formal_U04_NOT_RUN",
-      "source_sha": "28e9c2743f43f88902169e2d4fac983d50e8038a",
+      "code_status": "implemented_existing_team_UI_and_source_local_invitation_RPC_contract",
+      "merge_status": "PR32_merged; PR33_open_clean_head_CI_pending",
+      "environment_status": "directory_public_release_verified; invitation_owned_local_verification; production_new_SQL_NOT_RUN",
+      "acceptance_status": "directory_and_invitation_contract_local_only; UI_invitation_and_formal_U04_NOT_RUN",
+      "source_sha": "6d625d666f9a4b862c412cd3b3db8047d7d440b7",
       "prs": [
-        "https://github.com/YNWAforever/KinnsoOS/pull/32"
+        "https://github.com/YNWAforever/KinnsoOS/pull/32",
+        "https://github.com/YNWAforever/KinnsoOS/pull/33"
       ],
       "tests": [
         "RED missing helper/RPC and actual owner selector retained; focused5 real helper/component/BFF,2 owned RPC and2 connected U04 browser PASS.",
@@ -566,15 +568,19 @@
         "Actual U04 unknown committed response503 retries identical request with audit1; cancel sends no change, role/branch preview and bilingual320px layout verified; prior clerk percentage correction/redemption replay remains PASS.",
         "Windows source-package5 PASS/1 symlink-permission SKIP; Linux6 and extracted build/typecheck still required at final review head.",
         "Narrow TLS verify-full READ ONLY production metadata:3 existing merchant function contracts plus2 private relation/grants match normalized local baseline; new team getter absent. No production migration or role UAT.",
-        "Initial wrong-config/script-path setup, ownership-transfer fixture unique constraint and test-harness recursion failures are preserved. Fixes retain business and privacy assertions."
+        "Initial wrong-config/script-path setup, ownership-transfer fixture unique constraint and test-harness recursion failures are preserved. Fixes retain business and privacy assertions.",
+        "PR32 latest1718 push/PR exact artifacts320 unit/31 integration/75 browser PASS zero skip/fail; tested0d5f9ce whole treeb2f7689 matches head and merged5e; mandatory root/Journeys and Vercel SUCCESS. Linux package6/distributed build/typecheck PASS.",
+        "Directory1718 local transaction upgrade and intentional failure rollback PASS, exact original/provider/count/history preserved; initial raw hash mismatch retained and proven CRLF-only. Full backup restore and production SQL NOT_RUN.",
+        "Invitation contract:6 absent-RPC RED; permanent ownership/status invalidation defect reproduced RED, then8 real RPC cases PASS. Final local candidate320 unit/39 integration/75 browser PASS,0 skips/failures; build/typecheck PASS; Windows package5PASS/1symlink-permissionSKIP. Collector identifies base5e + workingTreeDirty=true; clean-head CI still required.",
+        "Fixed SQL050badcaf9a13692699f18c86a53cc99596b8b4128933a089b39cfcf08f6084d: additive fresh-DDL and injected-failure rollback PASS, exact prior core/provider/trigger/catalog/count/history preserved; full backup restore and production SQL NOT_RUN. Wrong-profile browser55PASS/20FAIL retained separately before corrected owned-test profile75PASS."
       ],
       "blockers": [
-        "New-account single-use/expiring/revocable/recipient-bound invitation model remains the next separate implementation; no invitation success is claimed.",
-        "Exact new team read-RPC production SQL authorization and fresh consistency backup/full isolated restore have not occurred.",
-        "Owner invitation/financial policy and named hosted U04/physical/assistive-technology acceptance remain unverified."
+        "Invitation UI/BFF integration remains a ready separate implementation; no user-facing invite success or email delivery claimed.",
+        "Directory and invitation additive SQL each require exact production authorization, fresh consistent backup/full isolated restore and applicable preflight; production application NOT_RUN.",
+        "Proposed24h/100-pending invitation policy, owner financial policy, named hosted U04 and physical/AT acceptance unverified."
       ],
-      "rollback": "Revert this UI/BFF increment; preserve all existing memberships, audit and request receipts. No funding/payment activation.",
-      "review_branch": "codex/merchant-team-preview-20261008"
+      "rollback": "Roll back consumers while retaining accepted memberships, invitation data, audits and receipts; no destructive reversal after writes.",
+      "review_branch": "codex/merchant-invitation-contract-20261008"
     },
     {
       "task_id": "N12",
