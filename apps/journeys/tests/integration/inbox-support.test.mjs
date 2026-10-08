@@ -1,5 +1,6 @@
 import{test}from'node:test';import assert from'node:assert/strict';import{randomUUID}from'node:crypto';import{execFileSync}from'node:child_process';
-import{fixture,admin}from'./local-fixtures.mjs';import{verifyTestTarget}from'../../scripts/verify-test-target.mjs';
+import{fixture,admin,anonymous}from'./local-fixtures.mjs';import{verifyTestTarget}from'../../scripts/verify-test-target.mjs';
+import{deliverNext,completeDelivery}from'../../lib/notifications/delivery.ts';
 const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
 const target=verifyTestTarget();function sql(input){const container=JSON.parse(execFileSync('docker',['inspect',target.dbContainer],{encoding:'utf8'}))[0];assert.equal(container.Config.Labels['com.supabase.cli.project'],target.projectRef);return execFileSync('docker',['exec','-i',target.dbContainer,'psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-At'],{input,encoding:'utf8'});}
 test('inbox ownership, replay, linked support ownership and revocation preserve the mature notification contract',async()=>{
@@ -73,10 +74,77 @@ test('external delivery is post-commit, disabled by default, deduplicated, lease
   await ok(admin.from('kinnso_ops_members').update({status:'paused'}).eq('user_id',opsId));assert.equal((await operator.client.rpc('retry_kinnso_notification_delivery',retry)).error?.message,'forbidden');assert.equal((await operator.client.rpc('get_kinnso_delivery_failures')).error?.message,'forbidden');
   const claim=await ok(admin.rpc('claim_kinnso_notification_delivery'));assert.equal(claim.id,dead.id);assert.equal(claim.eventId,id);assert.equal(claim.attempts,1);
   await ok(admin.rpc('authorize_kinnso_notification_send',{p_id:claim.id,p_lease_token:claim.leaseToken,p_provider:claim.provider,p_template_version:claim.templateVersion}));
-  const success={p_id:claim.id,p_lease_token:claim.leaseToken,p_delivered:true,p_receipt:'synthetic-completion'};const delivered=await ok(admin.rpc('finish_kinnso_notification_delivery',success));assert.equal(delivered.state,'delivered');assert.deepEqual(await ok(admin.rpc('finish_kinnso_notification_delivery',success)),delivered);
+  const success={p_id:claim.id,p_lease_token:claim.leaseToken,p_delivered:true,p_receipt:'synthetic-completion'};const accepted=await ok(admin.rpc('finish_kinnso_notification_delivery',success));assert.equal(accepted.state,'accepted');assert.deepEqual(await ok(admin.rpc('finish_kinnso_notification_delivery',success)),accepted);
+  assert.equal(await ok(admin.rpc('claim_kinnso_notification_delivery')),null,'Accepted delivery must not be sent again');
   assert.equal(await ok(admin.rpc('queue_kinnso_notification_delivery')),0);assert.equal((await ok(a.client.rpc('get_kinnso_inbox'))).items.length,1);
  }finally{if(id)await ok(admin.from('notifications').delete().eq('id',id));if(opsId)await ok(admin.from('kinnso_ops_members').delete().eq('user_id',opsId));sql("delete from kinnso_internal.delivery_channels where provider='synthetic-sandbox';");await f.cleanup();}
 });
+test('legacy provider completions replay as unverified acceptance without rewriting immutable history or reclaiming',async()=>{
+ const f=await fixture();let eventId;try{
+  assert.equal(sql('select count(*) from kinnso_internal.delivery_channels;').trim(),'0');
+  const actor=await f.actor(true);eventId=randomUUID();
+  await ok(admin.from('notifications').insert({id:eventId,creator_id:actor.id,notification_type:'submission.approved',entity_type:'mission',entity_id:randomUUID(),payload:{}}));
+  await ok(actor.client.rpc('apply_kinnso_inbox_command',{p_request_id:randomUUID(),p_command:{type:'setPreference',channel:'email',enabled:true}}));
+  sql("insert into kinnso_internal.delivery_channels(channel,provider,template_version,approved)values('email','synthetic-sandbox','fixture-v1',true);");
+  assert.equal(await ok(admin.rpc('queue_kinnso_notification_delivery')),1);
+  const claim=await ok(admin.rpc('claim_kinnso_notification_delivery'));assert.equal(claim.eventId,eventId);
+  await ok(admin.rpc('authorize_kinnso_notification_send',{p_id:claim.id,p_lease_token:claim.leaseToken,p_provider:claim.provider,p_template_version:claim.templateVersion}));
+  const completion={p_id:claim.id,p_lease_token:claim.leaseToken,p_delivered:true,p_receipt:'synthetic-legacy-acceptance'};
+  // Faithful pre-upgrade receipt shape. Insert owned historic fixtures, never update an immutable completion.
+  sql(`update kinnso_internal.notification_outbox set state='delivered',provider_receipt='synthetic-legacy-acceptance',lease_token=null,lease_until=null,revision=revision+1 where id='${claim.id}' and recipient_id='${actor.id}';
+   insert into kinnso_internal.delivery_completions(delivery_id,lease_token,digest,result)
+   select id,'${claim.leaseToken}'::uuid,kinnso_internal.request_digest(jsonb_build_array(id,'${claim.leaseToken}'::uuid,true,'synthetic-legacy-acceptance')::text),jsonb_build_object('id',id,'state','delivered','attempts',attempts)
+   from kinnso_internal.notification_outbox where id='${claim.id}' and recipient_id='${actor.id}';`);
+  const fingerprint=()=>sql(`select md5(row_to_json(c)::text)from kinnso_internal.delivery_completions c where delivery_id='${claim.id}' and lease_token='${claim.leaseToken}';`).trim(),before=fingerprint();assert.match(before,/^[a-f0-9]{32}$/);
+  const replay=await ok(admin.rpc('finish_kinnso_notification_delivery',completion));assert.deepEqual(replay,{id:claim.id,state:'accepted',attempts:1});
+  assert.deepEqual(await ok(admin.rpc('finish_kinnso_notification_delivery',completion)),replay);
+  assert.equal(fingerprint(),before,'Historic completion must remain unchanged');
+  assert.equal(sql(`select state from kinnso_internal.notification_outbox where id='${claim.id}';`).trim(),'delivered','No destructive historical backfill');
+  assert.equal((await admin.rpc('finish_kinnso_notification_delivery',{...completion,p_receipt:'different-receipt'})).error?.message,'idempotency_conflict');
+  for(const client of [actor.client,anonymous])assert.equal((await client.rpc('finish_kinnso_notification_delivery',completion)).error?.code,'42501');
+  assert.equal(await ok(admin.rpc('claim_kinnso_notification_delivery')),null);
+  assert.equal(await ok(admin.rpc('queue_kinnso_notification_delivery')),0);
+ }finally{if(eventId)await ok(admin.from('notifications').delete().eq('id',eventId));sql("delete from kinnso_internal.delivery_channels where provider='synthetic-sandbox';");await f.cleanup();}
+});
+
+test('unknown uncommitted acceptance survives lease expiry without another provider send, while unsent leases remain reclaimable',async()=>{
+ const f=await fixture();const eventIds=[];try{
+  assert.equal(sql('select count(*)from kinnso_internal.delivery_channels;').trim(),'0');
+  sql("insert into kinnso_internal.delivery_channels(channel,provider,template_version,approved)values('email','synthetic-sandbox','fixture-v1',true);");
+  const actor=await f.actor(true);await ok(actor.client.rpc('apply_kinnso_inbox_command',{p_request_id:randomUUID(),p_command:{type:'setPreference',channel:'email',enabled:true}}));
+  const eventId=randomUUID();eventIds.push(eventId);await ok(admin.from('notifications').insert({id:eventId,creator_id:actor.id,notification_type:'submission.approved',entity_type:'mission',entity_id:randomUUID(),payload:{}}));
+  await ok(admin.rpc('queue_kinnso_notification_delivery'));
+  let loseAcknowledgement=true,sent=0;
+  const store={claim:()=>ok(admin.rpc('claim_kinnso_notification_delivery')),
+   authorizeSend:(id,leaseToken,provider,templateVersion)=>ok(admin.rpc('authorize_kinnso_notification_send',{p_id:id,p_lease_token:leaseToken,p_provider:provider,p_template_version:templateVersion})),
+   finish:(id,leaseToken,delivered,receipt)=>{if(loseAcknowledgement){loseAcknowledgement=false;throw Error('Synthetic request never committed');}return ok(admin.rpc('finish_kinnso_notification_delivery',{p_id:id,p_lease_token:leaseToken,p_delivered:delivered,p_receipt:receipt}));}};
+  const provider={name:'synthetic-sandbox',templateVersion:'fixture-v1',send:async()=>{sent++;return{receipt:'synthetic-uncommitted-acceptance'};}};
+  const unknown=await deliverNext(store,provider);assert.equal(unknown.state,'acknowledgement_unknown');assert.equal(sent,1);
+  const pending=unknown.completion;assert.equal(sql(`select count(*)from kinnso_internal.delivery_completions where delivery_id='${pending.id}';`).trim(),'0');
+  sql(`update kinnso_internal.notification_outbox set lease_until=now()-interval '1 second' where id='${pending.id}' and recipient_id='${actor.id}';`);
+  assert.deepEqual(await deliverNext(store,provider),{state:'idle'},'An expired send-start boundary cannot authorize another provider request');assert.equal(sent,1);
+  assert.equal(sql(`select lease_token::text from kinnso_internal.notification_outbox where id='${pending.id}';`).trim(),pending.leaseToken);
+  const accepted=await completeDelivery(store,pending);assert.deepEqual(accepted,{id:pending.id,state:'accepted',attempts:1});assert.deepEqual(await completeDelivery(store,pending),accepted);assert.equal(sent,1);
+  assert.equal(sql(`select count(*)from kinnso_internal.delivery_completions where delivery_id='${pending.id}';`).trim(),'1');
+  assert.equal((await admin.rpc('finish_kinnso_notification_delivery',{p_id:pending.id,p_lease_token:randomUUID(),p_delivered:true,p_receipt:pending.receipt})).error?.message,'invalid_lease');
+  // A lease taken before send-start is still safely reclaimable. Expiry must not
+  // permit the replaced token to finish or authorize an unsent success.
+  const unsentId=randomUUID();eventIds.push(unsentId);await ok(admin.from('notifications').insert({id:unsentId,creator_id:actor.id,notification_type:'submission.approved',entity_type:'mission',entity_id:randomUUID(),payload:{}}));await ok(admin.rpc('queue_kinnso_notification_delivery'));
+  const before=await store.claim();sql(`update kinnso_internal.notification_outbox set lease_until=now()-interval '1 second' where id='${before.id}' and recipient_id='${actor.id}';`);
+  const reclaimed=await store.claim();assert.equal(reclaimed.id,before.id);assert.equal(reclaimed.attempts,2);assert.notEqual(reclaimed.leaseToken,before.leaseToken);
+  assert.equal((await admin.rpc('finish_kinnso_notification_delivery',{p_id:before.id,p_lease_token:before.leaseToken,p_delivered:true,p_receipt:'must-not-complete'})).error?.message,'invalid_lease');
+  assert.equal((await admin.rpc('finish_kinnso_notification_delivery',{p_id:reclaimed.id,p_lease_token:reclaimed.leaseToken,p_delivered:true,p_receipt:'not-authorized-to-send'})).error?.message,'invalid_lease');
+  for(const client of [actor.client,anonymous])assert.equal((await client.rpc('claim_kinnso_notification_delivery')).error?.code,'42501');
+  const fifthId=randomUUID();eventIds.push(fifthId);await ok(admin.from('notifications').insert({id:fifthId,creator_id:actor.id,notification_type:'submission.approved',entity_type:'mission',entity_id:randomUUID(),payload:{}}));await ok(admin.rpc('queue_kinnso_notification_delivery'));
+  sql(`update kinnso_internal.notification_outbox set attempts=4 where event_id='${fifthId}' and recipient_id='${actor.id}';`);
+  loseAcknowledgement=true;const fifth=await deliverNext(store,provider);assert.equal(fifth.state,'acknowledgement_unknown');assert.equal(sent,2);
+  sql(`update kinnso_internal.notification_outbox set lease_until=now()-interval '1 second' where id='${fifth.completion.id}' and recipient_id='${actor.id}';`);
+  assert.deepEqual(await deliverNext(store,provider),{state:'idle'});assert.equal(sent,2);
+  assert.equal(sql(`select state from kinnso_internal.notification_outbox where id='${fifth.completion.id}';`).trim(),'sending','Attempt limit must not discard an uncertain sending token');
+  assert.deepEqual(await completeDelivery(store,fifth.completion),{id:fifth.completion.id,state:'accepted',attempts:5});
+ }finally{if(eventIds.length)await ok(admin.from('notifications').delete().in('id',eventIds));sql("delete from kinnso_internal.delivery_channels where provider='synthetic-sandbox';");await f.cleanup();}
+});
+
 test('pre-send authorization suppresses claims after preference, creator or channel revocation',async()=>{
  const f=await fixture();const eventIds=[];try{
   assert.equal(sql('select count(*)from kinnso_internal.delivery_channels;').trim(),'0');

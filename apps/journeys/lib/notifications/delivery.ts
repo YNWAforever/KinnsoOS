@@ -1,6 +1,7 @@
 export type DeliveryClaim={id:string;eventId:string;recipientId:string;channel:'email';type:string;entityType:string;entityId:string;templateVersion:string;provider:string;attempts:number;leaseToken:string};
+/** Legacy boolean name retained for exact pending-completion replay: true means provider acceptance, never verified delivery. */
 export type DeliveryCompletion={id:string;leaseToken:string;delivered:boolean;receipt:string|null};
-export type DeliveryStore={claim:()=>Promise<DeliveryClaim|null>;authorizeSend:(id:string,leaseToken:string,provider:string,templateVersion:string)=>Promise<{authorized:boolean;state:'sending'|'suppressed'|'stale'}>;finish:(id:string,leaseToken:string,delivered:boolean,receipt:string|null)=>Promise<{state:'delivered'|'retry'|'dead_letter'|'suppressed';attempts:number}>};
+export type DeliveryStore={claim:()=>Promise<DeliveryClaim|null>;authorizeSend:(id:string,leaseToken:string,provider:string,templateVersion:string)=>Promise<{authorized:boolean;state:'sending'|'suppressed'|'stale'}>;finish:(id:string,leaseToken:string,delivered:boolean,receipt:string|null)=>Promise<{state:'accepted'|'delivered'|'retry'|'dead_letter'|'suppressed';attempts:number}>};
 export type ApprovedProvider={name:string;templateVersion:string;send:(event:DeliveryClaim,idempotencyKey:string)=>Promise<{receipt:string}>};
 /** Runs after business commit. It never calls a payment, redemption or business command. */
 export async function deliverNext(store:DeliveryStore,provider:ApprovedProvider|null){
@@ -18,6 +19,8 @@ export async function deliverNext(store:DeliveryStore,provider:ApprovedProvider|
 }
 /** Retry this exact completion after an unknown acknowledgement; do not send again. */
 export async function completeDelivery(store:Pick<DeliveryStore,'finish'>,completion:DeliveryCompletion){
- try{return await store.finish(completion.id,completion.leaseToken,completion.delivered,completion.receipt);}
+ // Old store acknowledgements have no recipient-delivery proof. Normalize the
+ // response only; retain the exact completion material and immutable receipts.
+ try{const result=await store.finish(completion.id,completion.leaseToken,completion.delivered,completion.receipt);return result.state==='delivered'?{...result,state:'accepted' as const}:result;}
  catch{return {state:'acknowledgement_unknown' as const,completion};}
 }
