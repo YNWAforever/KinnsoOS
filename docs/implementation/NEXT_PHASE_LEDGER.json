@@ -273,13 +273,14 @@
       ],
       "owner_role": "Frontend + Content",
       "status": "partial",
-      "code_status": "creator_controls_and_explicit_reorder_focus_guard_reviewable",
-      "merge_status": "PR25_merged; focus_guard_increment_in_review",
-      "environment_status": "clean_source_checks_verified; local_connected_port_blocked; exact_CI_required",
-      "acceptance_status": "source337unit_PASS; connected_and_hosted_acceptance_separate",
-      "source_sha": "657fedfdda8ce90f819cae8d416f3c1c057559a5",
+      "code_status": "creator_reorder_focus_disabled_control_correction_reviewable",
+      "merge_status": "PR25_merged; PR41_correction_in_review",
+      "environment_status": "clean_source339_verified; local_connected_port_blocked; current_head_CI_required",
+      "acceptance_status": "source_only; hosted_roles_and_SQL_separate",
+      "source_sha": "7afab2e856d8500bf4e2f78c8dcc8b4851c4f360",
       "prs": [
-        "https://github.com/YNWAforever/KinnsoOS/pull/25"
+        "https://github.com/YNWAforever/KinnsoOS/pull/25",
+        "https://github.com/YNWAforever/KinnsoOS/pull/41"
       ],
       "tests": [
         "Unit 299 PASS; isolated integration 28 PASS; full browser 55 PASS before final first-save Undo fix.",
@@ -288,10 +289,12 @@
         "Interrupted full integration retained as INTERRUPTED; later complete run independently passes.",
         "Maine8b6606 tree equals tested587df97; Linux56/browser and28/integration PASS. New production SQL approval remains pending.",
         "Main62c6dcd92667f8bef712c335b70780b85075eae0 Journeys37811689185 attempt1:333unit/41integrationPASS,83browserPASS1FAIL0SKIP; held-autosave snapshot shows newly typed Guide title appended to moved Day title. Original failed workflow/artifact preserved; no blind rerun or relaxed acknowledgement assertion.",
-        "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge."
+        "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge.",
+        "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
+        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required."
       ],
       "blockers": [
-        "Specific production authorization and recovery review for 20261008000000_allow_empty_creator_editing_drafts.sql.",
+        "Production editing-draft SQL remains unapplied; fresh recovery and guarded prerequisite checks required.",
         "Hosted U03 and author-verified content acceptance absent.",
         "Current focus increment requires exact-head isolated connected CI. Local OS reserved-port setup is blocked; no system-global port changes made."
       ],
@@ -1016,7 +1019,8 @@
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/23",
         "https://github.com/YNWAforever/KinnsoOS/pull/28",
-        "https://github.com/YNWAforever/KinnsoOS/pull/29"
+        "https://github.com/YNWAforever/KinnsoOS/pull/29",
+        "https://github.com/YNWAforever/KinnsoOS/pull/41"
       ],
       "tests": [
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
@@ -1034,7 +1038,9 @@
         "Current093 Journeys37800780183 SUCCESS333/41/82; root37800780434 all3jobsSUCCESS, reader contract1SKIP/e2e2SKIPS preserved; applicable public37800840553SUCCESS and non-applicable eventsSKIPPED. N13 candidate latest-head CI still required.",
         "Main62c6dcd92667f8bef712c335b70780b85075eae0 Journeys37811689185 attempt1:333unit/41integrationPASS,83browserPASS1FAIL0SKIP; held-autosave snapshot shows newly typed Guide title appended to moved Day title. Original failed workflow/artifact preserved; no blind rerun or relaxed acknowledgement assertion.",
         "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge.",
-        "Main62c root37811689234 actual all3jobsSUCCESS/web516files3253testsPASS/reader1SKIP/e2e181PASS1SKIP/enquiry1PASS/Stripe3PASS1SKIP. Prior PR40 root configured retry retains180PASS1FLAKY1SKIP; original trace absent from downloaded later report, raw failure/retry log retained."
+        "Main62c root37811689234 actual all3jobsSUCCESS/web516files3253testsPASS/reader1SKIP/e2e181PASS1SKIP/enquiry1PASS/Stripe3PASS1SKIP. Prior PR40 root configured retry retains180PASS1FLAKY1SKIP; original trace absent from downloaded later report, raw failure/retry log retained.",
+        "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
+        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
