@@ -1011,11 +1011,11 @@
       ],
       "owner_role": "DevOps + QA",
       "status": "partial",
-      "code_status": "ci_evidence_and_profile_fixture_diagnostics_reviewable",
-      "merge_status": "PR23_PR28_PR29_merged",
-      "environment_status": "current987_CI_and_public_readonly_verified",
-      "acceptance_status": "exact_local_artifacts_PASS; hosted_role_acceptance_NOT_RUN",
-      "source_sha": "987289d46d49bb1c43056f9f5d70798758a81d94",
+      "code_status": "per_surface_CI_browser_report_retention_reviewable",
+      "merge_status": "separate_N18_increment_not_merged",
+      "environment_status": "clean_native29_contracts; actual_Linux_artifact_verification_pending",
+      "acceptance_status": "synthetic_artifact_retention_only; formal_release_and_role_UAT_separate",
+      "source_sha": "6c2c728b4cb1561086d3b1bcf897703c989e1d05",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/23",
         "https://github.com/YNWAforever/KinnsoOS/pull/28",
@@ -1040,11 +1040,13 @@
         "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge.",
         "Main62c root37811689234 actual all3jobsSUCCESS/web516files3253testsPASS/reader1SKIP/e2e181PASS1SKIP/enquiry1PASS/Stripe3PASS1SKIP. Prior PR40 root configured retry retains180PASS1FLAKY1SKIP; original trace absent from downloaded later report, raw failure/retry log retained.",
         "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
-        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required."
+        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
+        "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
-        "Named hosted-role UAT and applicable formal release/cutover acceptance remain separate gates."
+        "Named hosted-role UAT and applicable formal release/cutover acceptance remain separate gates.",
+        "Current-head Linux root CI and per-surface artifact reports must be independently verified before merge; historical missing trace is not reconstructed."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     }
