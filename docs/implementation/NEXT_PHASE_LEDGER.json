@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First batch: baseline, Auth, creator editor, device navigation, structured content acceptance.",
+  "scope": "First-wave source delivery plus N10 existing operations queue filters; all original task and requirement IDs retained.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -69,16 +69,18 @@
         "N01"
       ],
       "owner_role": "Release engineer",
-      "status": "partial",
+      "status": "verified_done",
       "code_status": "existing_source_verified",
-      "merge_status": "new_source_PR23-28_merged",
+      "merge_status": "PR23-29_merged",
       "environment_status": "production_readonly_verified",
-      "acceptance_status": "historical585_release_parity_verified; new_release_revalidation_pending",
-      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
+      "acceptance_status": "current987_release_archive_public_parity_verified; signed_in_NOT_RUN",
+      "source_sha": "987289d46d49bb1c43056f9f5d70798758a81d94",
       "prs": [],
       "tests": [
-        "Actions 37651154493 artifact PASS; fresh root verifier PASS at source_sha",
-        "Current integration checkpoint ee84155 after green-only merges; new release source/archive binding requires fresh evidence."
+        "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
+        "Current integration checkpoint ee84155 after green-only merges; new release source/archive binding requires fresh evidence.",
+        "Main987 root CI37698360254 and Journeys37698360163 SUCCESS; production read-only37698407404 artifact checked independently.",
+        "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -493,16 +495,29 @@
         "N03.contract_local_ready"
       ],
       "owner_role": "Full stack + Ops",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": null,
+      "status": "partial",
+      "code_status": "implemented_existing_contract_filters_and_retry_regressions",
+      "merge_status": "review_branch_pending_CI",
+      "environment_status": "isolated_local_synthetic",
+      "acceptance_status": "local_contract_verified; production_activation_and_human_U05_NOT_RUN",
+      "source_sha": "0b903b229771575df74caff7a1554197d2ff162a",
       "prs": [],
-      "tests": [],
-      "blockers": [],
-      "rollback": "Revert the task PR; preserve existing data."
+      "tests": [
+        "Actual helper/component/BFF8 focused PASS after retained RED cases; final source identity is the task PR head.",
+        "Actual local scale RPC1 PASS:1205 rows, filter-bound keysets,100-item97+3 failure,3-only retry,100 unique audit entries with reasons.",
+        "Focused connected browser2 PASS: filters/sign-in/reload,50+4 page-only selection,partial retry,320px width,revoked direct API403.",
+        "Initial profile2FAIL retained; CI capability profile1PASS/1locatorFAIL retained; corrected locator1PASS/1stale-status fixtureFAIL retained; submitted-state fixture2PASS. No business-rule relaxation.",
+        "Current local fullunit310/fullintegration28/build/typecheck PASS; roottooling33PASS; Windows package5PASS/1symlinkSKIP. Dirty-tree collectors explicitly retain base987 and workingTreeDirty=true.",
+        "Full local browser71PASS/2FAIL retained: missing canonical source origin and U06 option/text locator. Agent focused1PASS with the exact existing CI origin; U06 focused1PASS after the checkbox locator fix; exact-head full CI remains pending."
+      ],
+      "blockers": [
+        "Production ops capability remains unavailable; no configuration change or named hosted-role U05 run.",
+        "Assignment and server-managed named-preset contracts proposed in OPS_QUEUE_FILTERS.md; policy acceptance and separately reviewed schema/recovery required.",
+        "Global overdue-first ordering needs a separate cursor/index contract; current verification-then-deadline order is preserved."
+      ],
+      "rollback": "Revert the task PR; preserve existing data.",
+      "review_branch": "codex/ops-queue-filters-20261008",
+      "evidence_scope": "Source implementation commit; merge/runtime observations are separate receipts. Full current-head CI required before merge."
     },
     {
       "task_id": "N11",
@@ -879,10 +894,10 @@
       "owner_role": "DevOps + QA",
       "status": "partial",
       "code_status": "ci_evidence_and_profile_fixture_diagnostics_reviewable",
-      "merge_status": "PR23_and_PR28_merged; PR29_current_head_CI_pending",
-      "environment_status": "parser_RED_GREEN",
+      "merge_status": "PR23_PR28_PR29_merged",
+      "environment_status": "current987_CI_and_public_readonly_verified",
       "acceptance_status": "exact_local_artifacts_PASS; hosted_role_acceptance_NOT_RUN",
-      "source_sha": "3a92c45793f9f505e7a3bb27c734203b871fc3e3",
+      "source_sha": "987289d46d49bb1c43056f9f5d70798758a81d94",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/23",
         "https://github.com/YNWAforever/KinnsoOS/pull/28",
@@ -898,14 +913,16 @@
         "CI timeout source3a92c45: parsed workflow semanticdiff PASS, existingroottooling33 PASS. Linux browser installation/test gates remain pending.",
         "PR27 Linux checkout7ca3e06 tree matches012841d: unit302/integration28/browser72 PASS, packaging6 collected/PASS and extract/install/build/typecheck success.",
         "PR26 root retry37685221814 SUCCESS: bookingOFF181PASS/1SKIP, enquiry1PASS, Stripe-test bookingON3PASS/1SKIP. Original404 remainsfailed; causeunresolved.",
-        "Mainee84155 tree equals tested8f01258; all mandatory gates present andgreen. Originalfailed/cancelled attempts retained."
+        "Mainee84155 tree equals tested8f01258; all mandatory gates present andgreen. Originalfailed/cancelled attempts retained.",
+        "Fresh main987 workflows37698360254/37698360163/37698407404 SUCCESS; public release artifact295files/10checks/archive hash matches independent verification. Non-applicable cutover remains SKIPPED."
       ],
       "blockers": [
-        "PR29 applicable current-head CI and latest production source binding remain required.",
-        "Original root404 and cancelled installer attempts are retained; their underlying causes remainunconfirmed."
+        "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
+        "Named hosted-role UAT and applicable formal release/cutover acceptance remain separate gates."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     }
   ],
-  "integration_checkpoint_sha": "ee84155d53948bc74422221a98a34f73cec6df38"
+  "integration_checkpoint_sha": "ee84155d53948bc74422221a98a34f73cec6df38",
+  "integration_base_sha": "987289d46d49bb1c43056f9f5d70798758a81d94"
 }
