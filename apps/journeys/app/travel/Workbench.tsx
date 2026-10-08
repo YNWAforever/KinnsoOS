@@ -22,6 +22,7 @@ import {ReportWorkspace} from './ReportWorkspace';
 import {MonitoringWorkspace} from './MonitoringWorkspace';
 import {TelemetryConsent} from './TelemetryConsent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
+import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 function RoleWorkspaceLoading() {
   const {t} = useApp();
   return <div className="os-loading" role="status">{t('Loading workspace…', '正在載入工作區…')}</div>;
@@ -267,7 +268,14 @@ export function Workbench({
     [modal, setModal] = useState<{ title: string; body: ReactNode } | null>(
       null,
     ),
-    [storageError, setStorageError] = useState(false);
+    [storageError, setStorageError] = useState(false),
+    [invalidatedActor, setInvalidatedActor] = useState<Actor|null>(null);
+  // Retain invalidation before a deferred private workspace mounts. Only a new
+  // server-verified actor prop can restore that workspace's account scope.
+  const workspaceActor = invalidatedActor === actor ? null : actor;
+  useEffect(() => subscribeAccountInvalidation(next => {
+    if (actor && next !== actor.id) setInvalidatedActor(actor);
+  }), [actor]);
   const t = (en: string, zh: string) => (locale === "en" ? en : zh),
     href = (p: string) => `/${locale}${mode === 'demo' ? '/demo' : ''}${p ? "/" + p.replace(/^\//, "") : ""}`;
   const refresh = () => {
@@ -633,16 +641,16 @@ export function Workbench({
     else if(path.startsWith('articles/')&&publicArticle)content=<PublicArticleContent article={publicArticle} locale={locale}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
-    else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={actor?.id??null} enabled={features.creator===true}/>;
-    else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={actor?.id??null} roles={actor?.roles??[]} enabled={features.agent===true}/>;
+    else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.agent===true}/>;
     else if(path==='inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
-    else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={actor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
-    else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
-    else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={actor?.id??null} enabled={features.merchant===true}/>;
-    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace actorId={actor?.id??null} enabled={features.merchant===true}/>;
+    else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
+    else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
+    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
   }
