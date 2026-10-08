@@ -71,10 +71,10 @@
       "owner_role": "Release engineer",
       "status": "verified_done",
       "code_status": "main255_public_archive_parity_verified",
-      "merge_status": "PR23-35_merged",
-      "environment_status": "production_public_readonly_verified_at255",
-      "acceptance_status": "release_archive_public_scope_only; signed_in_acceptance_NOT_RUN",
-      "source_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5",
+      "merge_status": "PR23-36_merged",
+      "environment_status": "canonical_production_public_source_archive_parity_verified",
+      "acceptance_status": "public_release_binding_only_signed_in_NOT_RUN",
+      "source_sha": "21898df946bd3e59037630ed475d7486496b8309",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
@@ -86,7 +86,8 @@
         "Current5e: production readonly37725534992 and independent verifier PASS;307 allowlisted files/10 public checks/archive8487891a70ed73eedcde41a2542868e2d16d0ae873492bfa9d05a329dd9f25a8; packaging workspace dirty true retained; signed-in NOT_RUN.",
         "Current586:production readonly37731718697 artifact and independent verifier PASS;308 files/10 public checks/archive7350eab6e3d1d84af618508eb960971fbce023e885323074982b46b1329332a6; packagingWorkspaceDirty=true retained; signed-in NOT_RUN.",
         "Fresh Oct8 independent read-only: serving586 still308files/10public checks PASS; connector deployment READY586. Main558 is merged but not the serving release; no current-main runtime or role UAT inference.",
-        "PR35 merged255 normal production pipeline READY. Fresh successful read-only run37755960172 plus independent canonical-origin invocation316sourcefiles/10checks PASS, same archive; packagingWorkspaceDirty=true retained; signed-inNOT_RUN."
+        "PR35 merged255 normal production pipeline READY. Fresh successful read-only run37755960172 plus independent canonical-origin invocation316sourcefiles/10checks PASS, same archive; packagingWorkspaceDirty=true retained; signed-inNOT_RUN.",
+        "Main21898df canonical production read-only37760263360 plus independent GET-only verifier:316 allowlisted source files/10 public checks PASS; archive1e3eeab3; dirty packaging flag retained; signed-in NOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -800,8 +801,8 @@
       "owner_role": "Backend + Operations",
       "status": "partial",
       "code_status": "provider_acceptance_and_expired_sending_no_resend_reviewed",
-      "merge_status": "PR36_open; latest_head_CI_pending",
-      "environment_status": "exact_clean_owned_local_verified; production_SQL_and_provider_NOT_RUN",
+      "merge_status": "PR36_merged_at3275907; main21898df",
+      "environment_status": "local_candidate_verified_public_application_release218_verified_production_SQL_and_delivery_NOT_RUN",
       "acceptance_status": "local_contract_rehearsal_and_regression_PASS; hosted_named_NOT_RUN",
       "source_sha": "22213ec06572323eee229477b669d350b5517eb3",
       "prs": [
@@ -812,7 +813,8 @@
         "One fresh review retained Important inherited expired-sending reclaim. Actual real RPC/helper RED returned second accepted attempt rather than idle. One fix pass retains sending token at first/fifth attempts, acknowledges known original completion after expiry, safely reclaims unsent leases and denies replaced/foreign/unsent tokens plus direct API grants. Final6RPC GREEN; no second reviewer.",
         "Final SQL d89dde56367df4b142b7a66e53858e1711a98a73ffd52353b87d8ae0d54aa896 atomic injected failure restores both functions/constraint/ACL/owner/search_path/tableRLS before exact isolated applyPASS. Prior candidate/results preserved; no production application or provider activation.",
         "Exact clean22213ec on merged main255:333unit/41integration/80browser PASS,0fail/skip; build/typecheck PASS. Native source-package5PASS/1symlink-permissionSKIP; latest review-head Linux6/rebuild/type/root/Journeys/Vercel gates remain required.",
-        "Full current suite retains actual media reference/retention/claim-finalize race/late upload replay/cleanup/cancel/weak-network assertions. Isolated fixture evidence does not establish hosted scheduler or mailbox acceptance."
+        "Full current suite retains actual media reference/retention/claim-finalize race/late upload replay/cleanup/cancel/weak-network assertions. Isolated fixture evidence does not establish hosted scheduler or mailbox acceptance.",
+        "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN."
       ],
       "blockers": [
         "Exact latest review-head green CI before authorized merge.",
@@ -923,13 +925,15 @@
       "owner_role": "Backend + Finance/Ops",
       "status": "partial",
       "code_status": "existing_finance_and_agent_contracts_verified_without_reimplementation",
-      "merge_status": "existing_application_contracts_merged_evidence_increment_review_pending",
+      "merge_status": "PR37_open; current_review_head_CI_pending",
       "environment_status": "ownership_verified_isolated_localhost",
       "acceptance_status": "local_synthetic_contracts_pass_formal_finance_ops_and_provider_blocked",
-      "source_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5",
-      "prs": [],
+      "source_sha": "9ebeb68128beec2a2bdfe7d65aea48354985100c",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/37"
+      ],
       "tests": [
-        "Clean source2551fd1: 25 finance/evaluation units, 2 real local finance RPC cases and 1 real local AI accounting RPC case PASS; zero failed/skipped.",
+        "Clean rebased source9ebeb68 after main21898df: 25 finance/evaluation units, 2 real local finance RPC cases and 1 real local AI accounting RPC case PASS; zero failed/skipped.",
         "Finance above-row-limit1207 records, currency/basis totals, branch/ownership/session revocation and replay/immutable review verified.",
         "Rejected synthetic provider output costs7 USD micro-units with0 successful flows; accepted output costs3, aggregate10/reserved0/one successful flow.",
         "No actual payment, paid provider, formal hosted U04/U05 or approved refund-policy execution."
@@ -1004,6 +1008,6 @@
       "rollback": "Revert the task PR; preserve existing data."
     }
   ],
-  "integration_checkpoint_sha": "ee84155d53948bc74422221a98a34f73cec6df38",
-  "integration_base_sha": "987289d46d49bb1c43056f9f5d70798758a81d94"
+  "integration_checkpoint_sha": "21898df946bd3e59037630ed475d7486496b8309",
+  "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5"
 }

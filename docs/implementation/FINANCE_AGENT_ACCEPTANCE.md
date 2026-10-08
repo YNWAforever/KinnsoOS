@@ -1,6 +1,6 @@
 # Finance and agent acceptance
 
-N17 remains **partial**. Existing application contracts were verified at clean source `2551fd1e4658ad7cc710f94fd68b3041540b5fd5` on 2026-10-08; this increment records evidence and does not replace the financial or agent services. Formal hosted U04/U05, business-rule approval and paid-provider acceptance are **NOT_RUN**.
+N17 remains **partial**. Existing application contracts were verified at clean rebased source `9ebeb68128beec2a2bdfe7d65aea48354985100c` after merged main `21898df946bd3e59037630ed475d7486496b8309` on 2026-10-08; this increment records evidence and does not replace the financial or agent services. The relevant finance/agent source is unchanged from the earlier clean `2551fd1` verification. Formal hosted U04/U05, business-rule approval and paid-provider acceptance are **NOT_RUN**.
 
 ## Executed evidence
 
