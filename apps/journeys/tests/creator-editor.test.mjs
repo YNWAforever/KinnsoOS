@@ -24,13 +24,13 @@ test('deleting the last stop produces an empty authored day and Undo restores th
  const undo=structuredClone(first);assert.equal(undo.days[0].stops[0].description,'Second');
 });
 
-for(const item of ['day','stop'])for(const selectedAnotherField of [false,true]){
- test(`${item} reorder ${selectedAnotherField?'respects a field selected before its deferred focus':'focuses the moved item while the author stays on its control'}`,async()=>{
+for(const item of ['day','stop'])for(const focusState of ['control','chosen-field','disabled-control-blur']){
+ test(`${item} reorder ${focusState==='chosen-field'?'respects a field selected before its deferred focus':focusState==='disabled-control-blur'?'retains keyboard focus when its moved control becomes disabled':'focuses the moved item while the author stays on its control'}`,async()=>{
   const source=await readFile(new URL('../app/travel/CreatorWorkspace.tsx',import.meta.url),'utf8');
   const compiled=await transform(source+'\nexport {CreatorEditor};',{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
   const states=[],refs=[],effects=[],frames=[];let cursor=0,tree;
   const hooks={useId:()=>':editor:',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>states[i]=typeof value==='function'?value(states[i]):value];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={work,deps,pending:true};}};
-  const origin={},chosenField={},document={activeElement:origin,querySelector:()=>movedField},movedField={focus(){document.activeElement=movedField;}};
+  const origin={matches:selector=>selector===':disabled'&&focusState==='disabled-control-blur'},chosenField={},body={},document={activeElement:origin,body,querySelector:()=>movedField},movedField={focus(){document.activeElement=movedField;}};
   const blank=()=>({title:'',city:'',summary:'',content:{days:[0,2].map(offset=>({offset,title:`Day ${offset}`,stops:['First','Second'].map(description=>({title:'Same',description,placeId:null,startMinuteOfDay:null,durationMinutes:null}))}))}});
   const jsx=(type,props)=>({type,props}),module={exports:{}};
   runInContext(compiled.code,createContext({module,exports:module.exports,crypto,document,CSS:{escape:key=>key},requestAnimationFrame:callback=>frames.push(callback),setTimeout:()=>0,clearTimeout(){},require:name=>{
@@ -44,9 +44,10 @@ for(const item of ['day','stop'])for(const selectedAnotherField of [false,true])
   function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
   render();render();const button=elements().find(element=>element.type==='button'&&element.props.children===(item==='day'?'Move day down':'Move stop down')&&!element.props.disabled);
   assert.ok(button);button.props.onClick();render();assert.equal(frames.length,1);
-  if(selectedAnotherField)document.activeElement=chosenField;
+  if(focusState==='chosen-field')document.activeElement=chosenField;
+  if(focusState==='disabled-control-blur')document.activeElement=body;
   frames[0](0);
-  assert.equal(document.activeElement,selectedAnotherField?chosenField:movedField,'a delayed reorder must not steal an explicit next-field choice');
+  assert.equal(document.activeElement,focusState==='chosen-field'?chosenField:movedField,'preserve moved-item keyboard focus and explicit next-field choice');
  });
 }
 

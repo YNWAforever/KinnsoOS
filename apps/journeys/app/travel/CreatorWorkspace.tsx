@@ -131,7 +131,11 @@ function CreatorEditor({ path }: { path: string }) {
  function edit(update: (previous: DraftPayload) => DraftPayload) {transform(previous=>({...previous,payload:update(previous.payload)}));}
  function focusItem(key:string){
   const origin=document.activeElement;
-  requestAnimationFrame(()=>{if(document.activeElement===origin)document.querySelector<HTMLInputElement>(`[data-editor-focus="${CSS.escape(key)}"]`)?.focus();});
+  requestAnimationFrame(()=>{
+   const active=document.activeElement;
+   // Moving to the end disables the focused button and returns focus to body.
+   if(active===origin||(active===document.body&&origin?.matches(':disabled')))document.querySelector<HTMLInputElement>(`[data-editor-focus="${CSS.escape(key)}"]`)?.focus();
+  });
  }
  function reorderDay(from:number,to:number){const key=currentEditor.current.keys[from].day;transform(e=>({payload:{...e.payload,content:moveDay(e.payload.content,from,to)},keys:moved(e.keys,from,to)}));focusItem(key);}
  function reorderStop(day:number,from:number,to:number){const key=currentEditor.current.keys[day].stops[from];transform(e=>({payload:{...e.payload,content:moveStop(e.payload.content,day,from,to)},keys:e.keys.map((k,i)=>i===day?{...k,stops:moved(k.stops,from,to)}:k)}));focusItem(key);}
