@@ -37,32 +37,14 @@ filters, safe sign-in, reload, 50+4 paging, page-only selection, partial retry,
 checks; current production operations activation and human U05 acceptance are
 separate gates.
 
-## Assignment and named-preset review boundary
+## Assignment and named-preset continuation
 
-No existing assignment contract was found in this queue. The following minimal
-contract is proposed for a separate review; it is not an applied schema or an
-implemented feature:
+The subsequent N10 source change implements membership-backed assignments,
+revision/idempotency/audit commands, private named criteria and optional server
+scheduling by earliest deadline. See [OPS_ROUTING_CONTRACTS.md](OPS_ROUTING_CONTRACTS.md)
+for the contract and release boundaries. This source implementation does not
+establish production SQL application, policy-owner acceptance or hosted U05.
 
-- One assignment per submission, with `assigned_ops_member_id` referencing an
-  existing operations membership, a monotonic revision and timestamps. An
-  arbitrary account UUID cannot be assigned.
-- An active admin/owner assigns or clears work. The assignee must be an active
-  member with review permission. Every command checks fresh actor/assignee
-  authority, the expected revision and an idempotency key in one transaction.
-  It records before/after membership, actor, reason and request reference in the
-  existing audit boundary. No authenticated direct table-write grants.
-- Assignment is routing information, not permission to approve or read work.
-  Existing review authority still applies. A paused assignee is shown as
-  unavailable, without silently transferring work or granting access.
-- Named presets belong to an operations membership and contain only an
-  allowlisted filter version and criteria. They contain no submission snapshots,
-  notes or financial results. Every reopened preset uses current role checks and
-  a fresh cursor. Sharing presets needs a separately approved scope.
-- Assigned/unassigned filters, cursor scope, indexes and the interaction with
-  existing batch previews must be specified and tested together before migration.
-  Global overdue-first ordering also requires its own cursor/index contract.
-
-Assignment policy acceptance, new schema authorization/recovery, runtime
-configuration and named-role UAT remain pending. N10 remains PARTIAL until the
-applicable remaining gates are met. Revert the UI/BFF change to roll back this
-increment; existing batch receipts and audit records remain intact.
+Existing signal-first ordering remains the default. Missing routing schema keeps
+these controls unavailable while preserving the existing queue. Production
+activation and formal role UAT remain separate gates; N10 remains PARTIAL.

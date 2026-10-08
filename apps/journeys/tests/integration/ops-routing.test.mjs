@@ -1,0 +1,63 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {randomUUID} from 'node:crypto';
+import {fixture,admin,anonymous} from './local-fixtures.mjs';
+const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
+
+test('ops routing uses fresh membership, assignment CAS, one receipt and audit; presets stay owner scoped',async()=>{
+ const f=await fixture();const memberIds=[];let merchantId,missionId;
+ try{
+  const owner=await f.actor(),reviewer=await f.actor(),analyst=await f.actor(),outsider=await f.actor(true);
+  for(const [actor,role] of [[owner,'admin'],[reviewer,'moderator'],[analyst,'analyst']])memberIds.push((await ok(admin.from('kinnso_ops_members').insert({user_id:actor.id,display_name:'Synthetic '+role,role}).select('id').single())).id);
+  const bootstrap=await ok(owner.client.rpc('get_kinnso_review_routing'));assert.equal(bootstrap.memberId,memberIds[0]);assert.equal(bootstrap.canAssign,true);assert.equal((await ok(analyst.client.rpc('get_kinnso_review_routing'))).canAssign,false);
+  assert.equal((await outsider.client.rpc('get_kinnso_review_routing')).error?.message,'forbidden');assert.ok((await anonymous.rpc('get_kinnso_review_routing')).error);
+  merchantId=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic routing',contact_email:'synthetic@example.test'}).select('id').single())).id;
+  missionId=(await ok(admin.from('missions').insert({merchant_profile_id:merchantId,title:'Synthetic routing mission',summary:'Isolated fixture',mission_type:'coupon_affiliate',status:'published'}).select('id').single())).id;
+  const participant=(await ok(admin.from('mission_participants').insert({mission_id:missionId,creator_id:outsider.id,status:'active',source:'open_join'}).select('id').single())).id;
+  const milestone=(await ok(admin.from('mission_milestones').insert({mission_id:missionId,title:'Fixture',description:'Synthetic'}).select('id').single())).id;
+  const submission=(await ok(admin.from('mission_milestone_submissions').insert({mission_milestone_id:milestone,mission_participant_id:participant,status:'submitted',submitted_at:new Date().toISOString()}).select('id').single())).id;
+  const assign={p_submission_id:submission,p_member_id:memberIds[1],p_expected_revision:0,p_reason:'Synthetic routing reason',p_request_id:randomUUID()};
+  assert.equal((await analyst.client.rpc('set_kinnso_review_assignment',assign)).error?.message,'forbidden');
+  assert.equal((await owner.client.rpc('set_kinnso_review_assignment',{...assign,p_member_id:outsider.id})).error?.message,'invalid_assignee');
+  assert.equal((await owner.client.rpc('set_kinnso_review_assignment',{...assign,p_member_id:memberIds[2]})).error?.message,'invalid_assignee');
+  const race=await Promise.all([owner.client.rpc('set_kinnso_review_assignment',assign),owner.client.rpc('set_kinnso_review_assignment',{...assign,p_request_id:randomUUID()})]);
+  assert.equal(race.filter(x=>!x.error).length,1);assert.equal(race.find(x=>x.error)?.error.message,'revision_conflict');
+  const assigned=race.find(x=>!x.error).data;assert.equal(assigned.revision,1);assert.equal(assigned.memberId,memberIds[1]);
+  const winningArgs=race[0].error?{...assign,p_request_id:assigned.requestId}:assign;
+  assert.deepEqual(await ok(owner.client.rpc('set_kinnso_review_assignment',winningArgs)),assigned);
+  assert.equal((await owner.client.rpc('set_kinnso_review_assignment',{...winningArgs,p_reason:'Changed payload'})).error?.message,'idempotency_conflict');
+  const mine=await ok(reviewer.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'mine'},p_limit:50}));assert.equal(mine.items.length,1);assert.equal(mine.items[0].assignmentRevision,1);
+  assert.equal((await ok(owner.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'mine'},p_limit:50}))).items.length,0);
+  await ok(admin.from('kinnso_ops_members').update({status:'paused'}).eq('id',memberIds[1]));
+  const row=(await ok(owner.client.rpc('get_kinnso_review_queue',{p_filter:{missionId},p_limit:50}))).items[0];assert.equal(row.assigneeAvailable,false);assert.equal(row.assignedMemberId,memberIds[1]);
+  assert.equal((await owner.client.rpc('set_kinnso_review_assignment',{...assign,p_expected_revision:1,p_request_id:randomUUID()})).error?.message,'invalid_assignee');
+  const cleared=await ok(owner.client.rpc('set_kinnso_review_assignment',{...assign,p_member_id:null,p_expected_revision:1,p_request_id:randomUUID()}));assert.equal(cleared.revision,2);assert.equal(cleared.memberId,null);
+  assert.equal((await ok(owner.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'unassigned'},p_limit:50}))).items.length,1);
+  const audits=await ok(admin.from('ops_audit_log').select('reason,metadata').eq('entity_id',submission).eq('action','review.assign'));assert.equal(audits.length,2);assert.ok(audits.every(x=>x.reason===assign.p_reason));assert.ok(audits.some(x=>x.metadata.requestId===assigned.requestId));
+  const preset={p_id:randomUUID(),p_expected_revision:0,p_request_id:randomUUID(),p_command:{type:'save',name:'My queue',filter:{missionId,status:'submitted',assignment:'unassigned',order:'deadline'}}};
+  const saved=await ok(owner.client.rpc('command_kinnso_review_preset',preset));assert.equal(saved.revision,1);assert.deepEqual(saved.filter,preset.p_command.filter);
+  assert.deepEqual(await ok(owner.client.rpc('command_kinnso_review_preset',preset)),saved);
+  assert.equal((await owner.client.rpc('command_kinnso_review_preset',{...preset,p_command:{...preset.p_command,name:'Changed'}})).error?.message,'idempotency_conflict');
+  assert.equal((await analyst.client.rpc('command_kinnso_review_preset',{...preset,p_request_id:randomUUID()})).error?.message,'preset_not_found');
+  assert.equal((await owner.client.rpc('command_kinnso_review_preset',{...preset,p_id:randomUUID(),p_request_id:randomUUID(),p_command:{type:'save',name:'Private',filter:{notes:'SECRET',ids:[submission]}}})).error?.message,'invalid_command');
+  assert.equal((await owner.client.rpc('command_kinnso_review_preset',{...preset,p_request_id:randomUUID()})).error?.message,'revision_conflict');
+  const removed=await ok(owner.client.rpc('command_kinnso_review_preset',{...preset,p_expected_revision:1,p_request_id:randomUUID(),p_command:{type:'delete'}}));assert.equal(removed.revision,2);
+  assert.equal((await ok(owner.client.rpc('get_kinnso_review_routing'))).presets.length,0);assert.equal((await ok(analyst.client.rpc('get_kinnso_review_routing'))).presets.length,0);
+  const collision={...preset,p_id:randomUUID(),p_request_id:randomUUID()};
+  const presetRace=await Promise.all([owner.client.rpc('command_kinnso_review_preset',collision),analyst.client.rpc('command_kinnso_review_preset',{...collision,p_request_id:randomUUID()})]);
+  assert.equal(presetRace.filter(x=>!x.error).length,1);assert.equal(presetRace.find(x=>x.error)?.error.message,'preset_not_found');
+  const existing=(await ok(owner.client.rpc('get_kinnso_review_routing'))).presets.length;
+  for(let n=existing;n<20;n++)await ok(owner.client.rpc('command_kinnso_review_preset',{...preset,p_id:randomUUID(),p_request_id:randomUUID()}));
+  assert.equal((await owner.client.rpc('command_kinnso_review_preset',{...preset,p_id:randomUUID(),p_request_id:randomUUID()})).error?.message,'preset_limit');
+  const pageIds=Array.from({length:60},()=>randomUUID());await ok(admin.from('mission_milestones').insert(pageIds.map(id=>({id,mission_id:missionId,title:'Routing page fixture',description:'Synthetic'}))));
+  await ok(admin.from('mission_milestone_submissions').insert(pageIds.map(id=>({id,mission_milestone_id:id,mission_participant_id:participant,status:'submitted',submitted_at:new Date().toISOString()}))));
+  for(const id of pageIds)await ok(owner.client.rpc('set_kinnso_review_assignment',{...assign,p_submission_id:id,p_member_id:memberIds[0],p_request_id:randomUUID()}));
+  const ownPage=await ok(owner.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'mine'},p_limit:50}));assert.equal(ownPage.items.length,50);assert.ok(ownPage.nextCursor);
+  assert.equal((await analyst.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'mine'},p_cursor:ownPage.nextCursor,p_limit:50})).error?.message,'invalid_cursor');
+  const ownNext=await ok(owner.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,assignment:'mine'},p_cursor:ownPage.nextCursor,p_limit:50}));assert.equal(ownNext.items.length,10);assert.equal(ownNext.nextCursor,null);assert.equal(new Set([...ownPage.items,...ownNext.items].map(row=>row.submissionId)).size,60);
+  // Internal tables are not an authenticated direct-write/read surface.
+  const direct=await owner.client.schema('kinnso_internal').from('review_assignments').select('*');assert.ok(direct.error);
+  await ok(admin.from('kinnso_ops_members').update({status:'paused'}).eq('id',memberIds[0]));
+  assert.equal((await owner.client.rpc('set_kinnso_review_assignment',winningArgs)).error?.message,'forbidden');assert.equal((await owner.client.rpc('command_kinnso_review_preset',preset)).error?.message,'forbidden');
+ }finally{if(missionId)await ok(admin.from('missions').delete().eq('id',missionId));if(merchantId)await ok(admin.from('merchant_profiles').delete().eq('id',merchantId));if(memberIds.length){await ok(admin.from('ops_audit_log').delete().in('actor_ops_member_id',memberIds));await ok(admin.from('kinnso_ops_members').delete().in('id',memberIds));}await f.cleanup();}
+});

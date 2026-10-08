@@ -22,6 +22,13 @@ test('ops queue keyset and currency totals remain complete above the actual API 
    {mission_milestone_submission_id:ids[1204],creator_id:creator.id,status:'ready',confidence_status:'verified_signal',created_at:'2030-01-01T00:00:00Z'},
    {mission_milestone_submission_id:ids[1204],creator_id:creator.id,status:'ready',confidence_status:'needs_review',created_at:'2031-01-01T00:00:00Z'}]));
   const ranked=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId},p_cursor:null,p_limit:50}));assert.equal(ranked.items[0].submissionId,ids[1203]);assert.equal(ranked.items[1].submissionId,ids[1204]);assert.equal(ranked.items[1].confidenceStatus,'needs_review');
+  await ok(admin.from('mission_milestone_submissions').update({review_deadline:'2020-01-01T00:00:00Z'}).eq('id',ids[1202]));
+  const earliest=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,order:'deadline'},p_limit:50}));assert.equal(earliest.items[0].submissionId,ids[1202]);assert.equal(earliest.nextCursor.bucket,0);
+  assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId},p_cursor:earliest.nextCursor,p_limit:50})).error?.message,'invalid_cursor');
+  const deadlinesSeen=new Set();let deadlineCursor=null;
+  do{const deadlinePage=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,order:'deadline'},p_cursor:deadlineCursor,p_limit:50}));for(const row of deadlinePage.items){assert.ok(!deadlinesSeen.has(row.submissionId));deadlinesSeen.add(row.submissionId);}deadlineCursor=deadlinePage.nextCursor;}while(deadlineCursor);
+  assert.equal(deadlinesSeen.size,1205);
+  assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,order:'deadline'},p_cursor:{...earliest.nextCursor,bucket:null},p_limit:50})).error?.message,'invalid_cursor');
   // Supported status criteria must be applied in SQL before pagination, not to the first REST page.
   const revisionIds=ids.slice(1100,1103);await ok(admin.from('mission_milestone_submissions').update({status:'revision_requested'}).in('id',revisionIds));
   const revisionPage=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,status:'revision_requested'},p_cursor:null,p_limit:50}));
