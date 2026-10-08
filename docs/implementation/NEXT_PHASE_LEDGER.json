@@ -553,12 +553,13 @@
       "owner_role": "Full stack + Merchant ops",
       "status": "partial",
       "code_status": "implemented_existing_team_UI_and_source_local_invitation_RPC_contract",
-      "merge_status": "PR32_merged; invitation_contract_review_pending",
+      "merge_status": "PR32_merged; PR33_open_clean_head_CI_pending",
       "environment_status": "directory_public_release_verified; invitation_owned_local_verification; production_new_SQL_NOT_RUN",
       "acceptance_status": "directory_and_invitation_contract_local_only; UI_invitation_and_formal_U04_NOT_RUN",
-      "source_sha": "5e3377dff18b7de9b72453fdef56d993de68ff72",
+      "source_sha": "6d625d666f9a4b862c412cd3b3db8047d7d440b7",
       "prs": [
-        "https://github.com/YNWAforever/KinnsoOS/pull/32"
+        "https://github.com/YNWAforever/KinnsoOS/pull/32",
+        "https://github.com/YNWAforever/KinnsoOS/pull/33"
       ],
       "tests": [
         "RED missing helper/RPC and actual owner selector retained; focused5 real helper/component/BFF,2 owned RPC and2 connected U04 browser PASS.",
