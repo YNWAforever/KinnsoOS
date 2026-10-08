@@ -690,11 +690,11 @@
       ],
       "owner_role": "Design + Frontend",
       "status": "partial",
-      "code_status": "home_guide_first_wave_and_client_document_language_navigation_implemented",
-      "merge_status": "PR27_merged; document_language_review_branch_prepared",
-      "environment_status": "exact_source_ownership_verified_isolated_localhost",
-      "acceptance_status": "333_unit_41_integration_84_browser_PASS; physical_AT_named_hosted_content_NOT_RUN",
-      "source_sha": "76114b6998818f274a2213a4c962761aec44ce71",
+      "code_status": "home_guide_document_language_and_explicit_demo_locale_navigation_implemented",
+      "merge_status": "PR27_PR40_merged; demo_locale_review_branch_prepared",
+      "environment_status": "native_current_code_demo_browser_and_source_verified; connected_Linux_CI_pending",
+      "acceptance_status": "explicit_demo_navigation_native_verified; physical_AT_named_hosted_content_NOT_RUN",
+      "source_sha": "77b6859693b3bc1e6c3fdecd372e9a1d1943c4ac",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
@@ -703,14 +703,16 @@
         "Focused browser5 PASS: authored guide revision/publication, registration, explicit import with acknowledged same-ID replay, fresh-context owned server trip/note after withdrawal, bilingual Home/metadata and320px overflow.",
         "Exact012841d Windows package5 PASS/1 platform SKIP. Linux extract/install/rebuild remains a distinct required CI gate.",
         "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge.",
-        "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN."
+        "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
+        "N13 demo locale77b6859:4 actual wrong-href RED->4 current-code browser GREEN, both locales/exploration/labelled guide/keyboard/history/query/zero browser account API calls; clean339unit/build/typePASS. Windows package5PASS1symlink-permissionSKIP. New browser case included in unchanged isolated CI collection and explicit318-file source manifest. Current review Linux/root/Journeys checks still pending; DEMO_LANGUAGE_NAVIGATION_ACCEPTANCE.md. Formal roles/physical/AT/real content NOT_RUN."
       ],
       "blockers": [
-        "Rights-reviewed real content and overall navigation/physical/AT/named hosted acceptance remain required.",
-        "Interface/document localization does not translate authored guide text; authored content locale is not exposed by the current DTO and is not inferred."
+        "Current demo-locale review-head Linux/root/Journeys/configured review gates pending.",
+        "Rights-reviewed real content/physical/AT/named hosted acceptance remain required.",
+        "Authored content locale is unavailable in the DTO; do not infer or translate it."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n13-document-language-20261008"
+      "source_ref": "codex/n13-demo-locale-20261009"
     },
     {
       "task_id": "N14",
