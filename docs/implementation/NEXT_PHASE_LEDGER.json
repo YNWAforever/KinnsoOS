@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First-wave plus N10 routing, N11 merchant services/UI, measured N12 loading and N15 acceptance/no-resend contract; original18 IDs and53 mappings retained.",
+  "scope": "Original18 N IDs/53 requirement mappings retained. Source increments through observed PR39 merged; N13 document-language increment is reviewable. Source/local/public/runtime/formal acceptance remain distinct.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -70,11 +70,11 @@
       ],
       "owner_role": "Release engineer",
       "status": "verified_done",
-      "code_status": "main9ed_public_source_archive_parity_verified",
-      "merge_status": "PR23_through_PR38_merged",
-      "environment_status": "canonical_production_public_source_archive_parity_verified",
-      "acceptance_status": "main9ed_public_release_archive_scope_only; signed_in_NOT_RUN",
-      "source_sha": "9ed9efbb8821b0f2375cac10831074692d2306ca",
+      "code_status": "main093_public_source_archive_parity_verified",
+      "merge_status": "PR23_through_PR39_merged",
+      "environment_status": "production_public_readonly_verified_at_093",
+      "acceptance_status": "release_archive_public_only_not_role_UAT",
+      "source_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
@@ -88,7 +88,8 @@
         "Fresh Oct8 independent read-only: serving586 still308files/10public checks PASS; connector deployment READY586. Main558 is merged but not the serving release; no current-main runtime or role UAT inference.",
         "PR35 merged255 normal production pipeline READY. Fresh successful read-only run37755960172 plus independent canonical-origin invocation316sourcefiles/10checks PASS, same archive; packagingWorkspaceDirty=true retained; signed-inNOT_RUN.",
         "Main21898df canonical production read-only37760263360 plus independent GET-only verifier:316 allowlisted source files/10 public checks PASS; archive1e3eeab3; dirty packaging flag retained; signed-in NOT_RUN.",
-        "Actual main9ed: CI37764474754 and independent canonical credential-free verifier MATCH316 source files/10 anonymous checks/archive0912c8d46216c48f8db9c2482783e7a1f8f360997e33315722602be00ec59c79. Packaging dirtytrue retained; signed-inNOT_RUN."
+        "Actual main9ed: CI37764474754 and independent canonical credential-free verifier MATCH316 source files/10 anonymous checks/archive0912c8d46216c48f8db9c2482783e7a1f8f360997e33315722602be00ec59c79. Packaging dirtytrue retained; signed-inNOT_RUN.",
+        "Actual093 read-only37800840553 and independent canonical GET MATCH:316 allowlisted files/10 anonymous checks/archivefb44d1a2047e4d101812853644b34947b578da7c72c6078521273c4ea8d141ae; dirty packaging flag retained; signed-in NOT_RUN. N13 candidate761 is not claimed serving."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -683,11 +684,11 @@
       ],
       "owner_role": "Design + Frontend",
       "status": "partial",
-      "code_status": "reviewable_home_and_guide_first_wave",
-      "merge_status": "PR27_merged",
-      "environment_status": "ownership_verified_isolated_localhost",
-      "acceptance_status": "local_synthetic_only_hosted_human_blocked",
-      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720",
+      "code_status": "home_guide_first_wave_and_client_document_language_navigation_implemented",
+      "merge_status": "PR27_merged; document_language_review_branch_prepared",
+      "environment_status": "exact_source_ownership_verified_isolated_localhost",
+      "acceptance_status": "333_unit_41_integration_84_browser_PASS; physical_AT_named_hosted_content_NOT_RUN",
+      "source_sha": "76114b6998818f274a2213a4c962761aec44ce71",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
@@ -695,14 +696,15 @@
         "Exact012841d clean-tree build/typecheck PASS; unit302/integration28/complete connected browser72 PASS on ownership-verified local kinnsoos-b1-20261002 API58421.",
         "Focused browser5 PASS: authored guide revision/publication, registration, explicit import with acknowledged same-ID replay, fresh-context owned server trip/note after withdrawal, bilingual Home/metadata and320px overflow.",
         "Exact012841d Windows package5 PASS/1 platform SKIP. Linux extract/install/rebuild remains a distinct required CI gate.",
-        "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge."
+        "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge.",
+        "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN."
       ],
       "blockers": [
-        "Remaining overall navigation/language and real approved-content acceptance belongs to later N13/N14 batch.",
-        "Interface localization does not translate authored guide text; authored locale is not exposed by the current DTO."
+        "Rights-reviewed real content and overall navigation/physical/AT/named hosted acceptance remain required.",
+        "Interface/document localization does not translate authored guide text; authored content locale is not exposed by the current DTO and is not inferred."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/structured-content-first-wave-20261008"
+      "source_ref": "codex/n13-document-language-20261008"
     },
     {
       "task_id": "N14",
@@ -754,7 +756,7 @@
       "owner_role": "QA + Accessibility",
       "status": "partial",
       "code_status": "scoped_merchant_forms_and_bilingual_geometry_keyboard_persistence_regressions_implemented",
-      "merge_status": "PR27_merged; merchant_mobile_review_branch_prepared",
+      "merge_status": "PR27_PR39_merged; document_language_review_branch_prepared",
       "environment_status": "owned_isolated_local_browser_verified; physical_AT_formal_NOT_RUN",
       "acceptance_status": "source_local_only; full_mobile_acceptance_partial",
       "source_sha": "5e224566eae2ba7365fda14a9276ff8eb02026ff",
@@ -767,7 +769,9 @@
         "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge.",
         "Actual en/zh-HK browser RED: branch input31.59375px at320px; minimal scoped CSS fix then2 focused GREEN across320/640/1280 and bounded double-text emulation. Separate readable labels/full-width fields, keyboard Enter writes one branch, existing RPC and reload confirm persistence; synthetic cleanup independently0.",
         "Exact clean5e224566eae2ba7365fda14a9276ff8eb02026ff:333unit/41integration/82connected browser PASS,0fail0skip; build/typecheck PASS. Existing U04 ownership/replay/session/offboarding assertions unchanged and covered. Windows package5PASS/1symlink-permissionSKIP; exact final-review-head Linux/package6/root/Journeys/Vercel CI required before merge.",
-        "Native author review and actual before/after screenshot inspection; no extra agent. MERCHANT_MOBILE_ACCEPTANCE.md records local scope. Browser widths/font scaling do not substitute for real iOS/Android/200%/NVDA/VoiceOver or named U04."
+        "Native author review and actual before/after screenshot inspection; no extra agent. MERCHANT_MOBILE_ACCEPTANCE.md records local scope. Browser widths/font scaling do not substitute for real iOS/Android/200%/NVDA/VoiceOver or named U04.",
+        "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
+        "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
@@ -1023,7 +1027,8 @@
         "PR26 root retry37685221814 SUCCESS: bookingOFF181PASS/1SKIP, enquiry1PASS, Stripe-test bookingON3PASS/1SKIP. Original404 remainsfailed; causeunresolved.",
         "Mainee84155 tree equals tested8f01258; all mandatory gates present andgreen. Originalfailed/cancelled attempts retained.",
         "Fresh main987 workflows37698360254/37698360163/37698407404 SUCCESS; public release artifact295files/10checks/archive hash matches independent verification. Non-applicable cutover remains SKIPPED.",
-        "Main9ed Journeys37764415193 actual333/41/80PASS and root37764415182 allSUCCESS; root516testfiles/3253testsPASS, E2E181PASS1SKIP/enquiry1PASS/Stripe-test3PASS1SKIP. Production37764474754SUCCESS and non-applicable37764679993SKIPPED; original failures/skips retained."
+        "Main9ed Journeys37764415193 actual333/41/80PASS and root37764415182 allSUCCESS; root516testfiles/3253testsPASS, E2E181PASS1SKIP/enquiry1PASS/Stripe-test3PASS1SKIP. Production37764474754SUCCESS and non-applicable37764679993SKIPPED; original failures/skips retained.",
+        "Current093 Journeys37800780183 SUCCESS333/41/82; root37800780434 all3jobsSUCCESS, reader contract1SKIP/e2e2SKIPS preserved; applicable public37800840553SUCCESS and non-applicable eventsSKIPPED. N13 candidate latest-head CI still required."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1032,6 +1037,6 @@
       "rollback": "Revert the task PR; preserve existing data."
     }
   ],
-  "integration_checkpoint_sha": "21898df946bd3e59037630ed475d7486496b8309",
+  "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
   "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5"
 }
