@@ -22,6 +22,14 @@ test('ops queue keyset and currency totals remain complete above the actual API 
    {mission_milestone_submission_id:ids[1204],creator_id:creator.id,status:'ready',confidence_status:'verified_signal',created_at:'2030-01-01T00:00:00Z'},
    {mission_milestone_submission_id:ids[1204],creator_id:creator.id,status:'ready',confidence_status:'needs_review',created_at:'2031-01-01T00:00:00Z'}]));
   const ranked=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId},p_cursor:null,p_limit:50}));assert.equal(ranked.items[0].submissionId,ids[1203]);assert.equal(ranked.items[1].submissionId,ids[1204]);assert.equal(ranked.items[1].confidenceStatus,'needs_review');
+  // Supported status criteria must be applied in SQL before pagination, not to the first REST page.
+  const revisionIds=ids.slice(1100,1103);await ok(admin.from('mission_milestone_submissions').update({status:'revision_requested'}).in('id',revisionIds));
+  const revisionPage=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,status:'revision_requested'},p_cursor:null,p_limit:50}));
+  assert.deepEqual(new Set(revisionPage.items.map(row=>row.submissionId)),new Set(revisionIds));assert.equal(revisionPage.nextCursor,null);
+  assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,status:'submitted'},p_cursor:ranked.nextCursor,p_limit:50})).error?.message,'invalid_cursor');
+  const submittedSeen=new Set();let submittedCursor=null;
+  do{const filtered=await ok(ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId,status:'submitted'},p_cursor:submittedCursor,p_limit:50}));for(const row of filtered.items){assert.equal(row.status,'submitted');assert.equal(row.missionId,missionId);assert.ok(!submittedSeen.has(row.submissionId));submittedSeen.add(row.submissionId);}submittedCursor=filtered.nextCursor;}while(submittedCursor);
+  assert.equal(submittedSeen.size,1202);assert.ok(revisionIds.every(id=>!submittedSeen.has(id)));
   assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{missionId},p_cursor:ranked.nextCursor,p_limit:51})).error?.message,'invalid_filter');
   assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{},p_cursor:ranked.nextCursor,p_limit:50})).error?.message,'invalid_cursor');
   const seen=new Set();let cursor=null;
@@ -38,7 +46,7 @@ test('ops queue keyset and currency totals remain complete above the actual API 
   assert.equal((await ops.client.rpc('run_kinnso_review_bulk',{...args,p_reason:'Different reason'})).error?.message,'idempotency_conflict');
   const retryPreview=await ok(ops.client.rpc('preview_kinnso_review_bulk',{p_ids:bulk.results.filter(x=>!x.ok).map(x=>x.id)}));
   const retry=await ok(ops.client.rpc('run_kinnso_review_bulk',{...args,p_job_id:retryPreview.jobId,p_request_id:randomUUID()}));assert.equal(retry.succeeded,3);assert.equal(retry.failed,0);
-  const audit=await ok(admin.from('ops_audit_log').select('id').eq('entity_type','mission_submission').in('entity_id',selected));assert.equal(audit.length,100);
+  const audit=await ok(admin.from('ops_audit_log').select('id,entity_id,reason').eq('entity_type','mission_submission').in('entity_id',selected));assert.equal(audit.length,100);assert.equal(new Set(audit.map(row=>row.entity_id)).size,100);assert.ok(audit.every(row=>row.reason==='Synthetic review contract'));
   await ok(admin.from('kinnso_ops_members').update({status:'paused'}).eq('user_id',ops.id));assert.equal((await ops.client.rpc('get_kinnso_review_queue',{p_filter:{},p_cursor:null,p_limit:50})).error?.message,'forbidden');
   assert.equal((await ops.client.rpc('run_kinnso_review_bulk',args)).error?.message,'forbidden');
  }finally{if(missionId)await ok(admin.from('missions').delete().eq('id',missionId));if(merchantId)await ok(admin.from('merchant_profiles').delete().eq('id',merchantId));if(opsId){const member=await ok(admin.from('kinnso_ops_members').select('id').eq('user_id',opsId));if(member[0])await ok(admin.from('ops_audit_log').delete().eq('actor_ops_member_id',member[0].id));await ok(admin.from('kinnso_ops_members').delete().eq('user_id',opsId));}await f.cleanup();}
