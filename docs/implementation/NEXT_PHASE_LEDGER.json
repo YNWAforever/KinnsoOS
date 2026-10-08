@@ -882,16 +882,19 @@
       "owner_role": "Release owner",
       "status": "partial",
       "code_status": "existing_release_guards_verified_and_concrete_versioned_release_rollback_record_prepared",
-      "merge_status": "independent_N16_review_pending",
+      "merge_status": "PR38_open_stacked_on_PR37; current_head_CI_pending",
       "environment_status": "main218_public_release_verified_current_candidate_recovery_roles_jobs_blocked",
       "acceptance_status": "NO_GO_EXPANSION_formal_U06_NOT_RUN",
-      "source_sha": "409d501bd55d13a519e143a345d25bf0ba75f74e",
-      "prs": [],
+      "source_sha": "0ab943cc5d1952a353b7d0d4ad0e03cc7260ea3d",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/38"
+      ],
       "tests": [
         "Existing pure release guard suite9 PASS0fail0skip; actual source409d501, documentation working tree dirty, no DB connection.",
         "Main218 canonical read-only37760263360 plus independent316sourcefiles/10checks/archive1e3eeab3 PASS; signed-in NOT_RUN.",
         "Five source-delta Git-object SQL hashes inventoried privately; this is not a production delta or approved bundle.",
-        "Historical Oct6 sourcec53 logical restore proof inspected: networknone/noports/stopped; restore phase14.633s is not operational RTO/RPO or current-candidate recovery."
+        "Historical Oct6 sourcec53 logical restore proof inspected: networknone/noports/stopped; restore phase14.633s is not operational RTO/RPO or current-candidate recovery.",
+        "Clean committed source0ab943c:9 pure release guards PASS0fail0skip; current-head fullCI remains separate; no DB connection."
       ],
       "blockers": [
         "Formal named U01/U03 and U02/U04/U05; real content/mailbox, physical devices/AT and field performance remain NOT_RUN.",
