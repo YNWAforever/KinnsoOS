@@ -14,6 +14,32 @@ for(const locale of ['en','zh-HK'])test('home retry, approved cover, original te
  await page.setViewportSize({width:320,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await page.screenshot({path:test.info().outputPath('home-320.png'),fullPage:true});
 });
 async function login(page:Page,email:string,password:string,next:string){await page.goto('/en/sign-in?next='+encodeURIComponent(next));await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL('**'+next);}
+for(const initial of ['en','zh-HK'])test('document language follows client locale navigation and history '+initial,async({page})=>{
+ const other=initial==='en'?'zh-HK':'en',query='?q=Kyoto&page=2';
+ const original={id:randomUUID(),slug:'synthetic-locale-original',title:'Synthetic original English author wording',city:'Kyoto',summary:'Original authored directions',cover:null,creator:'Synthetic author',creatorHandle:'synthetic',publishedAt:null};
+ await page.route('**/api/catalog**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({status:'ready',items:[original],hasMore:false,query:{page:2,pageSize:12,q:'Kyoto',city:''}})}));
+ await page.goto('/'+initial+'/explore'+query);
+ await expect(page.locator('html')).toHaveAttribute('lang',initial);
+ await expect(page.getByRole('navigation',{name:initial==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:original.title,exact:true})).toBeVisible();
+ await page.evaluate(()=>{(window as unknown as Record<string,unknown>).__n13DocumentMarker='same-document';});
+ await page.locator('.k-language').focus();await page.keyboard.press('Enter');
+ await expect(page).toHaveURL('/'+other+'/explore'+query);
+ await expect(page.getByRole('navigation',{name:other==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>(window as unknown as Record<string,unknown>).__n13DocumentMarker)).toBe('same-document');
+ await expect(page.locator('html')).toHaveAttribute('lang',other);
+ await expect(page.getByRole('link',{name:original.title,exact:true})).toHaveAttribute('href','/'+other+'/g/'+original.id);
+ await page.goBack();
+ await expect(page).toHaveURL('/'+initial+'/explore'+query);
+ await expect(page.locator('html')).toHaveAttribute('lang',initial);
+ await expect(page.getByRole('navigation',{name:initial==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
+ await page.goForward();
+ await expect(page).toHaveURL('/'+other+'/explore'+query);
+ await expect(page.locator('html')).toHaveAttribute('lang',other);
+ await expect(page.getByRole('navigation',{name:other==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
+ await expect(page.getByRole('link',{name:original.title,exact:true})).toHaveAttribute('href','/'+other+'/g/'+original.id);
+ expect(await page.evaluate(()=>(window as unknown as Record<string,unknown>).__n13DocumentMarker)).toBe('same-document');
+});
 test('synthetic creator publishes structured revisions; new traveller explicitly imports and reads another device after withdrawal',async({page,browser})=>{
  test.setTimeout(120000);const email=`synthetic-content-author-${randomUUID()}@example.test`,password=`Author!${randomUUID()}`,title='Synthetic structured U01 U03 '+randomUUID();
  const actor=await admin.auth.admin.createUser({email,password,email_confirm:true});expect(actor.error).toBeNull();ids.push(actor.data.user!.id);await login(page,email,password,'/en/studio');

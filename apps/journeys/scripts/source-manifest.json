@@ -5,6 +5,7 @@
     ".gitignore",
     "LICENSE",
     "README.md",
+    "app/DocumentLanguage.tsx",
     "app/[locale]/[[...route]]/page.tsx",
     "app/[locale]/forgot-password/actions.ts",
     "app/[locale]/forgot-password/page.tsx",
