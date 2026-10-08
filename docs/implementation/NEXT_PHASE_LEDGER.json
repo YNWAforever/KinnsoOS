@@ -273,11 +273,11 @@
       ],
       "owner_role": "Frontend + Content",
       "status": "partial",
-      "code_status": "reviewable_creator_controls_and_scoped_SQL",
-      "merge_status": "PR25_merged",
-      "environment_status": "identified_isolated_local",
-      "acceptance_status": "local_synthetic_only_hosted_blocked",
-      "source_sha": "587df975f92831ae6afbc4676e21ff2a107381c3",
+      "code_status": "creator_controls_and_explicit_reorder_focus_guard_reviewable",
+      "merge_status": "PR25_merged; focus_guard_increment_in_review",
+      "environment_status": "clean_source_checks_verified; local_connected_port_blocked; exact_CI_required",
+      "acceptance_status": "source337unit_PASS; connected_and_hosted_acceptance_separate",
+      "source_sha": "657fedfdda8ce90f819cae8d416f3c1c057559a5",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/25"
       ],
@@ -286,11 +286,14 @@
         "After documented native History URL fix: creator browser 11 PASS, including Undo/reload and existing navigation/save fences.",
         "Native build/typecheck PASS; package 5 PASS / 1 Windows symlink-permission SKIP.",
         "Interrupted full integration retained as INTERRUPTED; later complete run independently passes.",
-        "Maine8b6606 tree equals tested587df97; Linux56/browser and28/integration PASS. New production SQL approval remains pending."
+        "Maine8b6606 tree equals tested587df97; Linux56/browser and28/integration PASS. New production SQL approval remains pending.",
+        "Main62c6dcd92667f8bef712c335b70780b85075eae0 Journeys37811689185 attempt1:333unit/41integrationPASS,83browserPASS1FAIL0SKIP; held-autosave snapshot shows newly typed Guide title appended to moved Day title. Original failed workflow/artifact preserved; no blind rerun or relaxed acknowledgement assertion.",
+        "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge."
       ],
       "blockers": [
         "Specific production authorization and recovery review for 20261008000000_allow_empty_creator_editing_drafts.sql.",
-        "Hosted U03 and author-verified content acceptance absent."
+        "Hosted U03 and author-verified content acceptance absent.",
+        "Current focus increment requires exact-head isolated connected CI. Local OS reserved-port setup is blocked; no system-global port changes made."
       ],
       "rollback": "Revert the task PR; preserve existing data."
     },
@@ -1028,7 +1031,10 @@
         "Mainee84155 tree equals tested8f01258; all mandatory gates present andgreen. Originalfailed/cancelled attempts retained.",
         "Fresh main987 workflows37698360254/37698360163/37698407404 SUCCESS; public release artifact295files/10checks/archive hash matches independent verification. Non-applicable cutover remains SKIPPED.",
         "Main9ed Journeys37764415193 actual333/41/80PASS and root37764415182 allSUCCESS; root516testfiles/3253testsPASS, E2E181PASS1SKIP/enquiry1PASS/Stripe-test3PASS1SKIP. Production37764474754SUCCESS and non-applicable37764679993SKIPPED; original failures/skips retained.",
-        "Current093 Journeys37800780183 SUCCESS333/41/82; root37800780434 all3jobsSUCCESS, reader contract1SKIP/e2e2SKIPS preserved; applicable public37800840553SUCCESS and non-applicable eventsSKIPPED. N13 candidate latest-head CI still required."
+        "Current093 Journeys37800780183 SUCCESS333/41/82; root37800780434 all3jobsSUCCESS, reader contract1SKIP/e2e2SKIPS preserved; applicable public37800840553SUCCESS and non-applicable eventsSKIPPED. N13 candidate latest-head CI still required.",
+        "Main62c6dcd92667f8bef712c335b70780b85075eae0 Journeys37811689185 attempt1:333unit/41integrationPASS,83browserPASS1FAIL0SKIP; held-autosave snapshot shows newly typed Guide title appended to moved Day title. Original failed workflow/artifact preserved; no blind rerun or relaxed acknowledgement assertion.",
+        "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge.",
+        "Main62c root37811689234 actual all3jobsSUCCESS/web516files3253testsPASS/reader1SKIP/e2e181PASS1SKIP/enquiry1PASS/Stripe3PASS1SKIP. Prior PR40 root configured retry retains180PASS1FLAKY1SKIP; original trace absent from downloaded later report, raw failure/retry log retained."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
