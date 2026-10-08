@@ -1,5 +1,5 @@
 import {test, expect, type Page} from '@playwright/test';
-const roleMarkers = ['Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', 'Source questions: read published sources and verification dates.'];
+const roleMarkers = ['Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', 'Source questions: read published sources and verification dates.', 'Drafts are private. Published versions can be adopted into traveller trips.'];
 
 function downloadedScripts(page: Page) {
   const bodies: Promise<string>[] = [];
@@ -11,7 +11,7 @@ function downloadedScripts(page: Page) {
   return async () => (await Promise.all(bodies)).join('\n');
 }
 
-test('U06 public search loads no connected merchant or operations panel JavaScript', async ({page, baseURL}) => {
+test('U06 public search defers private role-workspace JavaScript', async ({page, baseURL}) => {
   expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
   const scripts = downloadedScripts(page);
   const response = await page.goto('/en');
@@ -35,6 +35,7 @@ test('U06 deferred role panels retain server headings, language, private cache a
     {path: '/en/merchant/invitation', heading: 'Company invitation'},
     {path: '/zh-HK/ops/reconciliation', heading: '財務對帳'},
     {path: '/en/agent', heading: 'Task preview'},
+    {path: '/zh-HK/studio/guides/new', heading: '你的創作工作室'},
   ];
   for (const route of routes) {
     const response = await page.goto(route.path);

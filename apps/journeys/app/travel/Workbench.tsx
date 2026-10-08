@@ -10,7 +10,6 @@ import { ConnectedHome } from './ConnectedHome';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
-import { CreatorWorkspace } from './CreatorWorkspace';
 import type { Actor } from '../../lib/auth/actor';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 import type {PublicGuide} from '../../lib/seo/public-guide';
@@ -45,6 +44,10 @@ const AgentPage = dynamic(
 );
 const FinanceWorkspace = dynamic(
   () => import('./FinanceWorkspace').then(mod => mod.FinanceWorkspace),
+  {loading: RoleWorkspaceLoading},
+);
+const CreatorWorkspace = dynamic(
+  () => import('./CreatorWorkspace').then(mod => mod.CreatorWorkspace),
   {loading: RoleWorkspaceLoading},
 );
 const TripEditor = dynamic(
