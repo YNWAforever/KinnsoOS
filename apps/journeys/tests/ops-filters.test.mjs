@@ -18,6 +18,11 @@ test('deadline state is page-local and preserves unknown timestamps',()=>{
  assert.equal(filters.deadlineState('2030-01-01T00:00:00Z',now),'overdue');assert.equal(filters.deadlineState('2030-01-03T00:00:00Z',now),'upcoming');
  assert.equal(filters.deadlineState(null,now),'unknown');assert.equal(filters.deadlineState('invalid',now),'unknown');
 });
+test('routing criteria links reject duplicates and keep only assignment/order criteria',()=>{
+ assert.deepEqual(filters.readQueueFilter(new URLSearchParams('assignment=mine&order=deadline&selected=PRIVATE')),{assignment:'mine',order:'deadline'});
+ assert.equal(filters.queueFilterPath('en',{assignment:'unassigned',order:'deadline',results:'PRIVATE'}),'/en/ops?assignment=unassigned&order=deadline');
+ for(const raw of ['assignment=uuid','order=client','assignment=mine&assignment=unassigned','order=deadline&order=signal'])assert.equal(filters.readQueueFilter(new URLSearchParams(raw)),null);
+});
 const source=await readFile(new URL('../app/travel/OpsWorkspace.tsx',import.meta.url),'utf8');
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
 function harness(ports,search='',actorId='actor-A'){
@@ -29,7 +34,7 @@ function harness(ports,search='',actorId='actor-A'){
   if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
   if(name==='./ui')return{useApp:()=>({locale:'en',t:en=>en}),Modal:'modal'};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};
-  if(name==='../../lib/ops/repository')return{ops:ports};if(name==='../../lib/ops/queue-filters')return filters;
+  if(name==='../../lib/ops/repository')return{ops:{routing:async()=>({ok:false,code:'UNAVAILABLE'}),...ports}};if(name==='../../lib/ops/queue-filters')return filters;
   throw Error('Unexpected dependency '+name);
  }}));
  function render(){for(let n=0;n<8;n++){changed=false;cursor=0;tree=module.exports.OpsWorkspace({actorId,enabled:true});for(const e of effects)if(e?.pending){e.pending=false;e.cleanup?.();e.cleanup=e.work();}if(!changed)break;}return tree;}
@@ -39,6 +44,18 @@ function harness(ports,search='',actorId='actor-A'){
 }
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const row=id=>({submissionId:id,missionId:mission,missionTitle:'Mission',status:'submitted',reviewDeadline:'2030-01-01T00:00:00Z'});
+const routing={memberId:'member-A',canAssign:true,members:[{id:'member-A',name:'Current operator',role:'admin',status:'active'}],membersTruncated:false,presets:[{id:'preset-A',name:'Deadline work',filter:{order:'deadline'},revision:1}]};
+test('workspace opens server-owned criteria and assignment retries exactly one held command',async()=>{
+ const calls=[],reads=[];let attempt=0;
+ const h=harness({queue:async(...args)=>{reads.push(args);return{ok:true,data:{items:[{...row('submission-A'),assignmentRevision:0}],nextCursor:null}};},summary:async()=>({ok:true,data:[]}),routing:async()=>({ok:true,data:routing}),assign:async(...args)=>{calls.push(args);return ++attempt===1?{ok:false,code:'UNAVAILABLE'}:{ok:true,data:{revision:1}};}});
+ await tick();h.render();const open=h.find('button','Open filter: Deadline work');assert.ok(open);await open.props.onClick();await tick();h.render();assert.deepEqual(JSON.parse(JSON.stringify(reads.at(-1)[0])),{order:'deadline'});
+ h.find('button','Assign review').props.onClick({currentTarget:{}});h.render();h.find('select','Assigned operator').props.onChange({target:{value:'member-A'}});h.find('textarea','Assignment reason').props.onChange({target:{value:'Routing audit'}});h.render();await h.find('button','Confirm assignment').props.onClick();await tick();h.render();assert.equal(calls.length,1);
+ await h.find('button','Retry routing request').props.onClick();await tick();h.render();assert.deepEqual(calls[1],calls[0]);assert.deepEqual(calls[0].slice(0,4),['submission-A','member-A',0,'Routing audit']);
+});
+test('routing missing schema does not remove the existing queue; revoked responses clear saved criteria',async()=>{
+ const h=harness({queue:async()=>({ok:true,data:{items:[row('old')],nextCursor:null}}),summary:async()=>({ok:true,data:[]})});await tick();h.render();assert.ok(h.find('h2','Review submissions'));assert.ok(h.find('p','Assignment and saved filters are not connected yet.'));
+ let resolve;const delayed=harness({queue:async()=>({ok:true,data:{items:[row('old')],nextCursor:null}}),summary:async()=>({ok:true,data:[]}),routing:()=>new Promise(r=>{resolve=r;})});delayed.invalidate();delayed.render();resolve({ok:true,data:routing});await tick();delayed.render();assert.equal(JSON.stringify(delayed.elements()).includes('Deadline work'),false);
+});
 test('sign-in from a reusable filter preserves only validated criteria as the original task',()=>{
  const h=harness({queue:()=>assert.fail('Anonymous workspace must not read private queue')},'?missionId='+mission+'&status=submitted&notes=PRIVATE',null);
  const next=new URL(h.find('a','Sign in to continue').props.href,'https://local.test').searchParams.get('next');assert.equal(next,'/en/ops?missionId='+mission+'&status=submitted');

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First-wave source delivery plus N10 existing operations queue filters; all original task and requirement IDs retained.",
+  "scope": "First-wave source delivery plus N10 existing operations queue filters, audited assignment, private presets and optional deadline ordering; all original task and requirement IDs retained.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -74,13 +74,14 @@
       "merge_status": "PR23-29_merged",
       "environment_status": "production_readonly_verified",
       "acceptance_status": "current987_release_archive_public_parity_verified; signed_in_NOT_RUN",
-      "source_sha": "987289d46d49bb1c43056f9f5d70798758a81d94",
+      "source_sha": "c8cdfa2fdfd0ab6ea2838b216751ec5666070760",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
         "Current integration checkpoint ee84155 after green-only merges; new release source/archive binding requires fresh evidence.",
         "Main987 root CI37698360254 and Journeys37698360163 SUCCESS; production read-only37698407404 artifact checked independently.",
-        "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN."
+        "Current987:295 allowlisted source files and10 public checks PASS; archiveSHA2567094ea5db0d28ac26fa0033bcc4d3d57d02483fe268fe88322a9f35ef44ced54; packaging workspace dirty flag true retained; signed-in acceptance NOT_RUN.",
+        "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -496,27 +497,37 @@
       ],
       "owner_role": "Full stack + Ops",
       "status": "partial",
-      "code_status": "implemented_existing_contract_filters_and_retry_regressions",
-      "merge_status": "review_branch_pending_CI",
-      "environment_status": "isolated_local_synthetic",
-      "acceptance_status": "local_contract_verified; production_activation_and_human_U05_NOT_RUN",
-      "source_sha": "0b903b229771575df74caff7a1554197d2ff162a",
-      "prs": [],
+      "code_status": "implemented_queue_filters_assignments_private_presets_and_optional_deadline_order",
+      "merge_status": "PR30_merged_PR31_open_pending_current_head_green",
+      "environment_status": "isolated_local_verified; production_schema_metadata_readonly",
+      "acceptance_status": "local_contract_verified; production_SQL_and_named_human_U05_NOT_RUN",
+      "source_sha": "6f68aae72776f872be9b1483dd21c05711366714",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/30",
+        "https://github.com/YNWAforever/KinnsoOS/pull/31"
+      ],
       "tests": [
         "Actual helper/component/BFF8 focused PASS after retained RED cases; final source identity is the task PR head.",
         "Actual local scale RPC1 PASS:1205 rows, filter-bound keysets,100-item97+3 failure,3-only retry,100 unique audit entries with reasons.",
         "Focused connected browser2 PASS: filters/sign-in/reload,50+4 page-only selection,partial retry,320px width,revoked direct API403.",
         "Initial profile2FAIL retained; CI capability profile1PASS/1locatorFAIL retained; corrected locator1PASS/1stale-status fixtureFAIL retained; submitted-state fixture2PASS. No business-rule relaxation.",
         "Current local fullunit310/fullintegration28/build/typecheck PASS; roottooling33PASS; Windows package5PASS/1symlinkSKIP. Dirty-tree collectors explicitly retain base987 and workingTreeDirty=true.",
-        "Full local browser71PASS/2FAIL retained: missing canonical source origin and U06 option/text locator. Agent focused1PASS with the exact existing CI origin; U06 focused1PASS after the checkbox locator fix; exact-head full CI remains pending."
+        "Full local browser71PASS/2FAIL retained: missing canonical source origin and U06 option/text locator. Agent focused1PASS with the exact existing CI origin; U06 focused1PASS after the checkbox locator fix; exact-head full CI remains pending.",
+        "PR30 merged at c8cdfa2 after exact-head green gates: clean310 unit/28 integration/73 browser; Linux package6/extracted build/typecheck PASS. Source changes from PR30 are retained.",
+        "Routing source6f68aae clean local315 unit/29 integration/74 browser PASS; no skipped tests in these collectors; target owned kinnsoos-b1-20261002 at127.0.0.1:58421. Build/typecheck PASS. Windows package5 PASS/1 symlink-permission SKIP.",
+        "Current source6f Linux push/PR artifacts315/29/74 PASS on clean checkouts; all synthetic evidence retains signedInProductionAcceptance=NOT_RUN. Final review head must pass its own green merge gate.",
+        "Assignment CAS race/replay/reason audit/revoked actor; owner-private presets/tombstones/20-limit/cross-owner ID race; actor-bound50+10 mine keyset;1205-row deadline and100-item bulk regressions PASS.",
+        "Actual connected browser tests retained same request after committed response503 and observed one audit, reloaded private named criteria, and rejected revoked direct API403; bilingual320px viewport checked.",
+        "Production readonly metadata at6f: three existing function contracts/grants match sourcec8 after CRLF-to-LF normalization; original raw-hash mismatch retained. New routing objects absent; no production SQL or role UAT.",
+        "Local transaction upgrade and intentional-failure rollback preserve prior catalog/Auth metadata; this is not a full backup/restore."
       ],
       "blockers": [
-        "Production ops capability remains unavailable; no configuration change or named hosted-role U05 run.",
-        "Assignment and server-managed named-preset contracts proposed in OPS_QUEUE_FILTERS.md; policy acceptance and separately reviewed schema/recovery required.",
-        "Global overdue-first ordering needs a separate cursor/index contract; current verification-then-deadline order is preserved."
+        "New fixed routing migration requires separate exact-file production authorization and fresh consistency backup plus isolated full restore before application.",
+        "Owner/admin assignment policy and named hosted-role U05 acceptance remain unverified; production ops capability is unavailable.",
+        "Physical device and assistive technology acceptance have not run."
       ],
-      "rollback": "Revert the task PR; preserve existing data.",
-      "review_branch": "codex/ops-queue-filters-20261008",
+      "rollback": "Revert the UI/BFF PR to the prior queue; retain new tables, receipt history and audit data if migration is later approved. After writes use reviewed forward repair; do not drop routing data.",
+      "review_branch": "codex/ops-routing-20261008",
       "evidence_scope": "Source implementation commit; merge/runtime observations are separate receipts. Full current-head CI required before merge."
     },
     {
