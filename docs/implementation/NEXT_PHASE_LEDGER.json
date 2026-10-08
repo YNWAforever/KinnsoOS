@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f",
-  "scope": "First-wave plus N10 routing and N11 directory/invitation contract increments; original18 IDs and53 requirement mappings retained.",
+  "scope": "First-wave plus N10 routing, N11 directory/invitation UI and measured N12 role-bundle increments; original18 IDs and53 requirement mappings retained.",
   "verified_done_rule": "Exact source SHA, named environment and all task-specific acceptance evidence required. Public release checks never imply role UAT.",
   "tasks": [
     {
@@ -69,11 +69,11 @@
         "N01"
       ],
       "owner_role": "Release engineer",
-      "status": "verified_done",
+      "status": "partial",
       "code_status": "existing_source_verified",
-      "merge_status": "PR23-33_merged",
-      "environment_status": "production_readonly_verified",
-      "acceptance_status": "current586_public_release_archive_parity_verified; signed_in_NOT_RUN",
+      "merge_status": "PR23-34_merged",
+      "environment_status": "serving586_public_readonly_verified; main558_runtime_pending",
+      "acceptance_status": "serving586_public_archive_parity_verified; current_main_runtime_and_signed_in_NOT_RUN",
       "source_sha": "586f2bb46106ed1e3a0a467bb794d8e95a11c920",
       "prs": [],
       "tests": [
@@ -84,9 +84,12 @@
         "N10 prior mainc8 readonly artifact37714828029 independently verified297 allowlisted files/10 public checks and archive7c114677; source6f preview does not replace that production evidence.",
         "Current0e public production/archive parity verified302 files/10 checks/archive213621f9; signed-in role acceptance NOT_RUN.",
         "Current5e: production readonly37725534992 and independent verifier PASS;307 allowlisted files/10 public checks/archive8487891a70ed73eedcde41a2542868e2d16d0ae873492bfa9d05a329dd9f25a8; packaging workspace dirty true retained; signed-in NOT_RUN.",
-        "Current586:production readonly37731718697 artifact and independent verifier PASS;308 files/10 public checks/archive7350eab6e3d1d84af618508eb960971fbce023e885323074982b46b1329332a6; packagingWorkspaceDirty=true retained; signed-in NOT_RUN."
+        "Current586:production readonly37731718697 artifact and independent verifier PASS;308 files/10 public checks/archive7350eab6e3d1d84af618508eb960971fbce023e885323074982b46b1329332a6; packagingWorkspaceDirty=true retained; signed-in NOT_RUN.",
+        "Fresh Oct8 independent read-only: serving586 still308files/10public checks PASS; connector deployment READY586. Main558 is merged but not the serving release; no current-main runtime or role UAT inference."
       ],
-      "blockers": [],
+      "blockers": [
+        "Merged main558 release has not been observed serving; use the existing authorized pipeline or obtain exact manual deployment authorization after review. Named signed-in acceptance NOT_RUN."
+      ],
       "rollback": "Revert the task PR; preserve existing data."
     },
     {
@@ -554,10 +557,10 @@
       "owner_role": "Full stack + Merchant ops",
       "status": "partial",
       "code_status": "directory_invitation_contract_and_UI_BFF_implemented",
-      "merge_status": "PR32_and_PR33_merged; PR34_open_exact_head_CI_pending",
-      "environment_status": "main586_public_archive_parity_verified; production_new_SQL_NOT_RUN; UI_owned_local_candidate",
+      "merge_status": "PR32_PR33_PR34_merged",
+      "environment_status": "UI_merge558_exact_CI_verified; serving586_public_only; new_production_SQL_NOT_RUN",
       "acceptance_status": "current_local_synthetic_contract_and_UI_flows_PASS; named_hosted_U04_NOT_RUN",
-      "source_sha": "28d860b1e7b6d8b4999eb432aec11c4177832b8e",
+      "source_sha": "e1977805202748ea9a93c477e2812783885133b5",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/32",
         "https://github.com/YNWAforever/KinnsoOS/pull/33",
@@ -578,10 +581,11 @@
         "PR33 exact8a75784 push/PR clean Linux320unit/39integration/75browser PASS; tested09a0dac tree8aa8dbe matches source and merged586f2bb. Required root/Journeys/Vercel all SUCCESS; Linux6 packaging and extracted build/typecheck PASS. Source merge/public release do not apply invitation SQL or complete U04.",
         "UI/BFF candidate: strict token/body/origin-context/private replies, owner/recipient transient state and account fences. StrictMode setup replay and same-route fragment reopening reproduced RED and fixed;11 focused component/helper/BFF tests PASS. Complete current-head regression remains pending.",
         "Actual owned-local owner-to-recipient2 browser cases PASS after fragment reopen fix: manual persisted link, committed503 identical create/accept retries with one audit each, preview/cancel writes nothing, foreign-recipient denial, current workspace reread and same-JWT offboarding deny. Final full browser/private-head assertions pending; no named production U04 or mail delivery claim.",
-        "Clean integrated28d860b:331unit/39integration/77connected browser PASS, zero skips/failures; build/typecheck PASS. Added noindex/private-no-store/token-free-network/storage assertions and actual same-route cancel/reopen pass. Windows native package5PASS/1symlinkSKIP; sandbox cleanup12errors preserved. Native author review only; exact latest-head Linux CI/package6/distributed rebuild pending."
+        "Clean integrated28d860b:331unit/39integration/77connected browser PASS, zero skips/failures; build/typecheck PASS. Added noindex/private-no-store/token-free-network/storage assertions and actual same-route cancel/reopen pass. Windows native package5PASS/1symlinkSKIP; sandbox cleanup12errors preserved. Native author review only; exact latest-head Linux CI/package6/distributed rebuild pending.",
+        "PR34 exacte197 independent push/PR artifacts331unit/39integration/77browser PASS,0skip/fail; required root/Journeys/Vercel SUCCESS; Linux6package/extracted build/typecheck PASS. Tested merge whole tree64e037ea equals head and merged5582584. UI runtime/SQL/named U04 remain separate."
       ],
       "blockers": [
-        "UI/BFF source is reviewable in PR34; exact green current-head CI is required before merge. Hosted directory/invitation SQL and named U04 are NOT_RUN; no automatic email delivery.",
+        "PR34 UI/BFF source merged after exact green. Hosted directory/invitation SQL and named U04 NOT_RUN; no automatic email delivery or claim the new UI is serving.",
         "Directory and invitation additive SQL each require exact production authorization, fresh consistent backup/full isolated restore and applicable preflight; production application NOT_RUN.",
         "Proposed24h/100-pending invitation policy, owner financial policy, named hosted U04 and physical/AT acceptance unverified."
       ],
@@ -619,16 +623,28 @@
         "N01"
       ],
       "owner_role": "Frontend performance",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": null,
-      "prs": [],
-      "tests": [],
-      "blockers": [],
-      "rollback": "Revert the task PR; preserve existing data."
+      "status": "partial",
+      "code_status": "six_private_route_panels_lazily_loaded_and_measured; eager_account_invalidation_retained",
+      "merge_status": "PR35_open; exact_head_CI_pending",
+      "environment_status": "exact_clean_owned_local_verified; production_NOT_RUN",
+      "acceptance_status": "local_engineering_goal_PASS; field_physical_named_acceptance_NOT_RUN",
+      "source_sha": "4a5df3b5d783d7fded486730119ff7a521176c69",
+      "prs": [
+        "https://github.com/YNWAforever/KinnsoOS/pull/35"
+      ],
+      "tests": [
+        "Actual public navigation bundle RED before increments;3 real browser boundary cases GREEN including actual held Agent chunk/completed cross-tab logout and same-identity reauthentication. Default SSR, bilingual headings, private/no-store/noindex retained.",
+        "Exact clean4a5df3b:331unit/39integration/80connected browser PASS,0fail/skip; build/typecheck PASS; source archive316allowlisted files clean/exact SHA. Windows packaging5PASS/1symlink-permissionSKIP; latest-head Linux CI remains required.",
+        "Same existing unchanged harness, exact clean baselinee197780 and afterac0c561/fe450bd/cfcf663/4a5df3b; each24navigation/4interaction/12backend samples and independently verified owned cleanup. Required metrics/audits/traces checked; optional insight diagnostics retained.",
+        "Predeclared20KiB cold JS goal: firstafterFAIL(-10697B each route); secondafterFAIL(-16306B each route); pre-review six-panelafterPASS(-22591B); current post-fixafterPASS. Full numeric medians/ranges and slower timing groups in JOURNEYS_ROLE_BUNDLE_PERFORMANCE.md; not field/cloud/image or human acceptance.",
+        "Original fullbrowser78PASS/1bookmark observerFAIL retained; controlled delayed observerRED then bounded promise captureGREEN plus3 ordinary repeats. Existing product cursor/account/persistence assertions unchanged."
+      ],
+      "blockers": [
+        "Exact latest review-head root/Journeys/Vercel CI and Linux packaging required before authorized green-only merge.",
+        "Serving production does not yet match merged main; field consent/owner configuration, real covers/devices/AT and named UAT NOT_RUN. Lab evidence cannot close these gates."
+      ],
+      "rollback": "Revert source-only route loading; preserve existing data, authority, receipts and audits.",
+      "review_branch": "codex/n12-role-bundle-20261008"
     },
     {
       "task_id": "N13",
