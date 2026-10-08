@@ -921,16 +921,29 @@
         "N03.runtime_ready"
       ],
       "owner_role": "Backend + Finance/Ops",
-      "status": "not_started",
-      "code_status": "not_started",
-      "merge_status": "not_started",
-      "environment_status": "not_run",
-      "acceptance_status": "not_run",
-      "source_sha": null,
+      "status": "partial",
+      "code_status": "existing_finance_and_agent_contracts_verified_without_reimplementation",
+      "merge_status": "existing_application_contracts_merged_evidence_increment_review_pending",
+      "environment_status": "ownership_verified_isolated_localhost",
+      "acceptance_status": "local_synthetic_contracts_pass_formal_finance_ops_and_provider_blocked",
+      "source_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5",
       "prs": [],
-      "tests": [],
-      "blockers": [],
-      "rollback": "Revert the task PR; preserve existing data."
+      "tests": [
+        "Clean source2551fd1: 25 finance/evaluation units, 2 real local finance RPC cases and 1 real local AI accounting RPC case PASS; zero failed/skipped.",
+        "Finance above-row-limit1207 records, currency/basis totals, branch/ownership/session revocation and replay/immutable review verified.",
+        "Rejected synthetic provider output costs7 USD micro-units with0 successful flows; accepted output costs3, aggregate10/reserved0/one successful flow.",
+        "No actual payment, paid provider, formal hosted U04/U05 or approved refund-policy execution."
+      ],
+      "blockers": [
+        "Hosted financial schema/flags and named Finance/Ops U04/U05 remain NOT_RUN.",
+        "Refund/adjustment and duplicate-receipt business rules require owner decisions; waiting_business_rules is not approval.",
+        "US$5 aggregate monthly cap approved; actual provider rates/conversions, authorization and provider privacy/quality acceptance remain blocked."
+      ],
+      "rollback": "Evidence-only revert; retain financial, reservation, receipt and immutable audit data.",
+      "source_ref": "codex/n17-finance-agent-verification-20261008",
+      "evidence_paths": [
+        "docs/implementation/FINANCE_AGENT_ACCEPTANCE.md"
+      ]
     },
     {
       "task_id": "N18",
