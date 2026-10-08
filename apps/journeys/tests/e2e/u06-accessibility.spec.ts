@@ -35,7 +35,7 @@ test('U06 connected routes reflow across four widths and a 200% zoom-equivalent 
     await page.getByRole('button', { name: 'Sign in', exact: true }).click();
     await page.waitForURL('**/en/ops');
     await expect(page.getByRole('heading', { name: 'Review submissions', exact: true })).toBeVisible();
-    await expect(page.getByText('Synthetic accessible review', { exact: true })).toBeVisible();
+    await expect(page.getByRole('checkbox', { name: 'Synthetic accessible review', exact: true })).toBeVisible();
     await expect.poll(async () => { const r = await page.request.get('/api/session', { timeout: 10_000 }); const b = await r.json(); return r.ok() && b.ok && b.data?.id === operator.id; }, { timeout: 15_000, message: 'Browser session must identify the signed-in synthetic operator before route navigation' }).toBe(true);
     const routes = [
       { path: '/en/trips', heading: 'Your trips', ready: () => page.getByLabel('Trip title', { exact: true }) },
