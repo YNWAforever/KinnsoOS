@@ -265,6 +265,7 @@
     "tests/e2e/u04-merchant.spec.ts",
     "tests/e2e/u05-ops.spec.ts",
     "tests/e2e/u06-accessibility.spec.ts",
+    "tests/e2e/u06-role-bundle.spec.ts",
     "tests/feasibility.test.mjs",
     "tests/finance-reconciliation.test.mjs",
     "tests/frontend-model.test.mjs",
