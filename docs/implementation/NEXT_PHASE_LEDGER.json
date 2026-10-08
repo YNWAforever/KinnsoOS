@@ -70,11 +70,11 @@
       ],
       "owner_role": "Release engineer",
       "status": "verified_done",
-      "code_status": "main255_public_archive_parity_verified",
-      "merge_status": "PR23-36_merged",
+      "code_status": "main9ed_public_source_archive_parity_verified",
+      "merge_status": "PR23_through_PR38_merged",
       "environment_status": "canonical_production_public_source_archive_parity_verified",
-      "acceptance_status": "public_release_binding_only_signed_in_NOT_RUN",
-      "source_sha": "21898df946bd3e59037630ed475d7486496b8309",
+      "acceptance_status": "main9ed_public_release_archive_scope_only; signed_in_NOT_RUN",
+      "source_sha": "9ed9efbb8821b0f2375cac10831074692d2306ca",
       "prs": [],
       "tests": [
         "Historical source585: Actions37651154493 artifact PASS and independent verifier PASS.",
@@ -87,7 +87,8 @@
         "Current586:production readonly37731718697 artifact and independent verifier PASS;308 files/10 public checks/archive7350eab6e3d1d84af618508eb960971fbce023e885323074982b46b1329332a6; packagingWorkspaceDirty=true retained; signed-in NOT_RUN.",
         "Fresh Oct8 independent read-only: serving586 still308files/10public checks PASS; connector deployment READY586. Main558 is merged but not the serving release; no current-main runtime or role UAT inference.",
         "PR35 merged255 normal production pipeline READY. Fresh successful read-only run37755960172 plus independent canonical-origin invocation316sourcefiles/10checks PASS, same archive; packagingWorkspaceDirty=true retained; signed-inNOT_RUN.",
-        "Main21898df canonical production read-only37760263360 plus independent GET-only verifier:316 allowlisted source files/10 public checks PASS; archive1e3eeab3; dirty packaging flag retained; signed-in NOT_RUN."
+        "Main21898df canonical production read-only37760263360 plus independent GET-only verifier:316 allowlisted source files/10 public checks PASS; archive1e3eeab3; dirty packaging flag retained; signed-in NOT_RUN.",
+        "Actual main9ed: CI37764474754 and independent canonical credential-free verifier MATCH316 source files/10 anonymous checks/archive0912c8d46216c48f8db9c2482783e7a1f8f360997e33315722602be00ec59c79. Packaging dirtytrue retained; signed-inNOT_RUN."
       ],
       "blockers": [],
       "rollback": "Revert the task PR; preserve existing data."
@@ -752,25 +753,28 @@
       ],
       "owner_role": "QA + Accessibility",
       "status": "partial",
-      "code_status": "first_wave_existing_layout_regression_only",
-      "merge_status": "PR27_merged",
-      "environment_status": "ownership_verified_isolated_localhost",
-      "acceptance_status": "local_synthetic_only_hosted_human_blocked",
-      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720",
+      "code_status": "scoped_merchant_forms_and_bilingual_geometry_keyboard_persistence_regressions_implemented",
+      "merge_status": "PR27_merged; merchant_mobile_review_branch_prepared",
+      "environment_status": "owned_isolated_local_browser_verified; physical_AT_formal_NOT_RUN",
+      "acceptance_status": "source_local_only; full_mobile_acceptance_partial",
+      "source_sha": "5e224566eae2ba7365fda14a9276ff8eb02026ff",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
       "tests": [
         "Exact012841d clean-tree connected browser72 PASS on ownership-verified local kinnsoos-b1-20261002, including keyboard/navigation and four widths/zoom-equivalent regressions.",
         "Focused Home en/zh-HK at320px: no horizontal overflow; private screenshots retained. Physical-device/screen-reader acceptance NOT_RUN.",
-        "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge."
+        "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge.",
+        "Actual en/zh-HK browser RED: branch input31.59375px at320px; minimal scoped CSS fix then2 focused GREEN across320/640/1280 and bounded double-text emulation. Separate readable labels/full-width fields, keyboard Enter writes one branch, existing RPC and reload confirm persistence; synthetic cleanup independently0.",
+        "Exact clean5e224566eae2ba7365fda14a9276ff8eb02026ff:333unit/41integration/82connected browser PASS,0fail0skip; build/typecheck PASS. Existing U04 ownership/replay/session/offboarding assertions unchanged and covered. Windows package5PASS/1symlink-permissionSKIP; exact final-review-head Linux/package6/root/Journeys/Vercel CI required before merge.",
+        "Native author review and actual before/after screenshot inspection; no extra agent. MERCHANT_MOBILE_ACCEPTANCE.md records local scope. Browser widths/font scaling do not substitute for real iOS/Android/200%/NVDA/VoiceOver or named U04."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/structured-content-first-wave-20261008"
+      "source_ref": "codex/n14-merchant-mobile-20261008"
     },
     {
       "task_id": "N15",
@@ -817,7 +821,6 @@
         "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN."
       ],
       "blockers": [
-        "Exact latest review-head green CI before authorized merge.",
         "New candidate SQL requires fresh scoped production metadata/consistent backup/isolated restore and specific authorization; prior SQL approvals do not cover it.",
         "Scheduler owner/token and retention policy, approved provider/sender/mailbox and uncertain-send reconciliation owner/procedure remain external gates. No email/cron activation or named hosted acceptance."
       ],
@@ -882,7 +885,7 @@
       "owner_role": "Release owner",
       "status": "partial",
       "code_status": "existing_release_guards_verified_and_concrete_versioned_release_rollback_record_prepared",
-      "merge_status": "PR38_open_stacked_on_PR37; current_head_CI_pending",
+      "merge_status": "PR38_merged_at33a48f5f2e0d93249f186c8ad7f1a3c61d58eecb; main9ed9efbb8821b0f2375cac10831074692d2306ca",
       "environment_status": "main218_public_release_verified_current_candidate_recovery_roles_jobs_blocked",
       "acceptance_status": "NO_GO_EXPANSION_formal_U06_NOT_RUN",
       "source_sha": "0ab943cc5d1952a353b7d0d4ad0e03cc7260ea3d",
@@ -894,7 +897,8 @@
         "Main218 canonical read-only37760263360 plus independent316sourcefiles/10checks/archive1e3eeab3 PASS; signed-in NOT_RUN.",
         "Five source-delta Git-object SQL hashes inventoried privately; this is not a production delta or approved bundle.",
         "Historical Oct6 sourcec53 logical restore proof inspected: networknone/noports/stopped; restore phase14.633s is not operational RTO/RPO or current-candidate recovery.",
-        "Clean committed source0ab943c:9 pure release guards PASS0fail0skip; current-head fullCI remains separate; no DB connection."
+        "Clean committed source0ab943c:9 pure release guards PASS0fail0skip; current-head fullCI remains separate; no DB connection.",
+        "PR38 actual exact-head333/41/80 clean push/PR receipts PASS; Linux6/extracted build/typecheck and mandatory root/Vercel green before merge. Current main9ed also actual333/41/80PASS. This does not complete formal acceptance."
       ],
       "blockers": [
         "Formal named U01/U03 and U02/U04/U05; real content/mailbox, physical devices/AT and field performance remain NOT_RUN.",
@@ -943,7 +947,7 @@
       "owner_role": "Backend + Finance/Ops",
       "status": "partial",
       "code_status": "existing_finance_and_agent_contracts_verified_without_reimplementation",
-      "merge_status": "PR37_open; current_review_head_CI_pending",
+      "merge_status": "PR37_merged_at409d501bd55d13a519e143a345d25bf0ba75f74e; mainbbfe3c9283fcf1c60dc9214bef6fb06a63d435ee",
       "environment_status": "ownership_verified_isolated_localhost",
       "acceptance_status": "local_synthetic_contracts_pass_formal_finance_ops_and_provider_blocked",
       "source_sha": "9ebeb68128beec2a2bdfe7d65aea48354985100c",
@@ -954,7 +958,8 @@
         "Clean rebased source9ebeb68 after main21898df: 25 finance/evaluation units, 2 real local finance RPC cases and 1 real local AI accounting RPC case PASS; zero failed/skipped.",
         "Finance above-row-limit1207 records, currency/basis totals, branch/ownership/session revocation and replay/immutable review verified.",
         "Rejected synthetic provider output costs7 USD micro-units with0 successful flows; accepted output costs3, aggregate10/reserved0/one successful flow.",
-        "No actual payment, paid provider, formal hosted U04/U05 or approved refund-policy execution."
+        "No actual payment, paid provider, formal hosted U04/U05 or approved refund-policy execution.",
+        "PR37 actual exact-head333/41/80 clean push/PR receipts PASS; Linux6/extracted build/typecheck and mandatory root/Vercel green before merge. Current main9ed also actual333/41/80PASS. This does not complete formal acceptance."
       ],
       "blockers": [
         "Hosted financial schema/flags and named Finance/Ops U04/U05 remain NOT_RUN.",
@@ -1017,7 +1022,8 @@
         "PR27 Linux checkout7ca3e06 tree matches012841d: unit302/integration28/browser72 PASS, packaging6 collected/PASS and extract/install/build/typecheck success.",
         "PR26 root retry37685221814 SUCCESS: bookingOFF181PASS/1SKIP, enquiry1PASS, Stripe-test bookingON3PASS/1SKIP. Original404 remainsfailed; causeunresolved.",
         "Mainee84155 tree equals tested8f01258; all mandatory gates present andgreen. Originalfailed/cancelled attempts retained.",
-        "Fresh main987 workflows37698360254/37698360163/37698407404 SUCCESS; public release artifact295files/10checks/archive hash matches independent verification. Non-applicable cutover remains SKIPPED."
+        "Fresh main987 workflows37698360254/37698360163/37698407404 SUCCESS; public release artifact295files/10checks/archive hash matches independent verification. Non-applicable cutover remains SKIPPED.",
+        "Main9ed Journeys37764415193 actual333/41/80PASS and root37764415182 allSUCCESS; root516testfiles/3253testsPASS, E2E181PASS1SKIP/enquiry1PASS/Stripe-test3PASS1SKIP. Production37764474754SUCCESS and non-applicable37764679993SKIPPED; original failures/skips retained."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
