@@ -129,7 +129,10 @@ function CreatorEditor({ path }: { path: string }) {
   : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
  function transform(update:(previous:EditorState)=>EditorState,deleting=false){if(pending||conflict)return;const previous=currentEditor.current;const next=update(previous);if(next===previous)return;setUndo(deleting?previous:null);setSaveRejected(false);editRevision.current++;currentEditor.current=next;setEditor(next);setMessage('');}
  function edit(update: (previous: DraftPayload) => DraftPayload) {transform(previous=>({...previous,payload:update(previous.payload)}));}
- function focusItem(key:string){requestAnimationFrame(()=>document.querySelector<HTMLInputElement>(`[data-editor-focus="${CSS.escape(key)}"]`)?.focus());}
+ function focusItem(key:string){
+  const origin=document.activeElement;
+  requestAnimationFrame(()=>{if(document.activeElement===origin)document.querySelector<HTMLInputElement>(`[data-editor-focus="${CSS.escape(key)}"]`)?.focus();});
+ }
  function reorderDay(from:number,to:number){const key=currentEditor.current.keys[from].day;transform(e=>({payload:{...e.payload,content:moveDay(e.payload.content,from,to)},keys:moved(e.keys,from,to)}));focusItem(key);}
  function reorderStop(day:number,from:number,to:number){const key=currentEditor.current.keys[day].stops[from];transform(e=>({payload:{...e.payload,content:moveStop(e.payload.content,day,from,to)},keys:e.keys.map((k,i)=>i===day?{...k,stops:moved(k.stops,from,to)}:k)}));focusItem(key);}
  useEffect(() => { if (!loaded || !id || !dirty || busy || pending || conflict || saveRejected) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict, saveRejected]);

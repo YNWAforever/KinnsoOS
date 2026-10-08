@@ -85,6 +85,35 @@ test('new reorder during a held autosave survives its acknowledgement and persis
  }finally{release();}
 });
 
+for (const item of ['day', 'stop'] as const) {
+ test(`delayed ${item} reorder focus respects the next field explicitly chosen by the author`,async({page})=>{
+  const {id}=await editableRoute(page);
+  const days=page.getByTestId('editor-day');
+  const move=item==='day'?days.first().getByRole('button',{name:'Move day down',exact:true}):days.first().getByTestId('editor-stop').first().getByRole('button',{name:'Move stop down',exact:true});
+  // Hold only frames scheduled by this actual reorder event. Other browser
+  // frames run normally while the author chooses the next field.
+  await move.evaluate(button=>{
+   const original=window.requestAnimationFrame,frames:FrameRequestCallback[]=[];
+   window.requestAnimationFrame=callback=>{frames.push(callback);return 0;};
+   try{const control=button as HTMLButtonElement;control.focus();control.click();}finally{window.requestAnimationFrame=original;}
+   (window as typeof window & {releaseReorderFrame?:()=>void}).releaseReorderFrame=()=>{for(const callback of frames)callback(performance.now());};
+  });
+  const title=page.getByLabel('Guide title',{exact:true});
+  await title.fill('Author chose this field');
+  await page.evaluate(()=>{const control=window as typeof window & {releaseReorderFrame?:()=>void};control.releaseReorderFrame?.();delete control.releaseReorderFrame;});
+  await expect(title).toBeFocused();
+  await page.keyboard.type(' next');
+  await expect(title).toHaveValue('Author chose this field next');
+  await page.getByRole('button',{name:'Save draft',exact:true}).click();
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+  const dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;
+  expect(dto.payload.title).toBe('Author chose this field next');
+  expect(dto.payload.content.days.map((day:{title:string})=>day.title)).toEqual(item==='day'?['Authored 2','Authored 0']:['Authored 0','Authored 2']);
+  expect(dto.payload.content.days[0].stops.map((stop:{description:string})=>stop.description)).toEqual(item==='stop'?['Second','First']:['First','Second']);
+  await page.reload();await expect(title).toHaveValue('Author chose this field next');
+ });
+}
+
 test('publication acknowledgement retains new draft edits and revision conflicts require explicit replacement',async({page})=>{
  const {id,payload}=await editableRoute(page);let release!:()=>void,committed!:()=>void;const held=new Promise<void>(r=>release=r),published=new Promise<void>(r=>committed=r);
  await page.route('**/api/creator/guides/'+id+'/publish',async route=>{const response=await route.fetch();expect(response.ok()).toBe(true);committed();await held;await route.fulfill({response});});
