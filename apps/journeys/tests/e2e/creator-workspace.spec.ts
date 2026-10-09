@@ -285,3 +285,48 @@ test('onboarding resumes actual job states and late AI suggestions never publish
   const failed = await page.request.get('/api/creator/profile'); const dto = (await failed.json()).data; expect(dto.step).toBe('retry'); expect(dto.retryable).toBe(true); expect(dto.scanAvailable).toBe(false);
  } finally { expect((await admin.auth.admin.deleteUser(actorId)).error).toBeNull(); }
 });
+
+for(const locale of ['en','zh-HK'] as const)for(const item of ['day','stop'] as const){
+ test(`keyboard deletion and Undo keep ${item} editing focus (${locale})`,async({page})=>{
+  const {id}=await editableRoute(page);
+  if(locale==='zh-HK')await page.goto('/zh-HK/studio/guides/'+id+'/edit');
+  const zh=locale==='zh-HK',days=page.getByTestId('editor-day');
+  const fieldName=item==='day'?(zh?'日期名稱':'Day title'):(zh?'站點名稱':'Stop title');
+  const original=item==='day'?'Authored 0':'Same stop';
+  const container=item==='day'?days.first():days.first().getByTestId('editor-stop').first();
+  const remove=container.getByRole('button',{name:item==='day'?(zh?'刪除日期':'Delete day'):(zh?'刪除站點':'Delete stop'),exact:true});
+  await remove.focus();await page.keyboard.press('Enter');
+  const undo=page.getByRole('button',{name:zh?'復原上次刪除':'Undo last deletion',exact:true});
+  await expect(undo).toBeFocused();await page.keyboard.press('Enter');
+  const restored=(item==='day'?days.first():days.first().getByTestId('editor-stop').first()).getByLabel(fieldName,{exact:true});
+  await expect(restored).toHaveValue(original);await expect(restored).toBeFocused();
+  await page.keyboard.press('End');await page.keyboard.type(' restored');
+  await expect(restored).toHaveValue(original+' restored');
+  await page.getByRole('button',{name:zh?'保存草稿':'Save draft',exact:true}).click();
+  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(zh?'草稿已保存。':'Draft saved.');
+  const dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;
+  expect(dto.payload.content.days.map((day:{offset:number})=>day.offset)).toEqual([0,2]);
+  expect(item==='day'?dto.payload.content.days[0].title:dto.payload.content.days[0].stops[0].title).toBe(original+' restored');
+  expect(dto.payload.content.days[0].stops.map((stop:{description:string})=>stop.description)).toEqual(['First','Second']);
+  await page.reload();await expect(restored).toHaveValue(original+' restored');
+ });
+}
+
+for(const item of ['day','stop'] as const)test(`delayed ${item} deletion focus respects the author's next field`,async({page})=>{
+ const {id}=await editableRoute(page),days=page.getByTestId('editor-day');
+ const remove=(item==='day'?days.first():days.first().getByTestId('editor-stop').first()).getByRole('button',{name:item==='day'?'Delete day':'Delete stop',exact:true});
+ await remove.evaluate(button=>{
+  const original=window.requestAnimationFrame,frames:FrameRequestCallback[]=[];
+  window.requestAnimationFrame=callback=>{frames.push(callback);return 0;};
+  try{const control=button as HTMLButtonElement;control.focus();control.click();}finally{window.requestAnimationFrame=original;}
+  (window as typeof window & {releaseDeletionFrame?:()=>void}).releaseDeletionFrame=()=>{for(const callback of frames)callback(performance.now());};
+ });
+ const title=page.getByLabel('Guide title',{exact:true});await title.fill('Chosen after deletion');
+ await page.evaluate(()=>{const control=window as typeof window & {releaseDeletionFrame?:()=>void};control.releaseDeletionFrame?.();delete control.releaseDeletionFrame;});
+ await expect(title).toBeFocused();await page.keyboard.type(' retained');await expect(title).toHaveValue('Chosen after deletion retained');
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
+ const dto=(await(await page.request.get('/api/creator/guides/'+id)).json()).data;expect(dto.payload.title).toBe('Chosen after deletion retained');
+ expect(dto.payload.content.days.map((day:{offset:number})=>day.offset)).toEqual(item==='day'?[2]:[0,2]);
+ expect(dto.payload.content.days[0].stops.map((stop:{description:string})=>stop.description)).toEqual(item==='day'?['First','Second']:['Second']);
+ await page.reload();await expect(title).toHaveValue('Chosen after deletion retained');
+});
