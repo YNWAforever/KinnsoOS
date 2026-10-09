@@ -273,11 +273,11 @@
       ],
       "owner_role": "Frontend + Content",
       "status": "partial",
-      "code_status": "creator_reorder_focus_disabled_control_correction_reviewable",
-      "merge_status": "PR25_merged; PR41_correction_in_review",
-      "environment_status": "clean_source339_verified; local_connected_port_blocked; current_head_CI_required",
-      "acceptance_status": "source_only; hosted_roles_and_SQL_separate",
-      "source_sha": "7afab2e856d8500bf4e2f78c8dcc8b4851c4f360",
+      "code_status": "creator_delete_undo_focus_increment_reviewable; existing_previous_controls_preserved",
+      "merge_status": "prior_increments_merged; deletion_focus_review_branch",
+      "environment_status": "clean_code339unit_build_type_PASS; local_creator19PASS; exact_head_CI_required",
+      "acceptance_status": "scoped_local_keyboard_verified; hosted_named_roles_physical_AT_NOT_RUN",
+      "source_sha": "f9c62f8f2446d2a7af1a90cc1d125579be823f71",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/25",
         "https://github.com/YNWAforever/KinnsoOS/pull/41"
@@ -291,14 +291,16 @@
         "Main62c6dcd92667f8bef712c335b70780b85075eae0 Journeys37811689185 attempt1:333unit/41integrationPASS,83browserPASS1FAIL0SKIP; held-autosave snapshot shows newly typed Guide title appended to moved Day title. Original failed workflow/artifact preserved; no blind rerun or relaxed acknowledgement assertion.",
         "Exact clean code657fedfdda8ce90f819cae8d416f3c1c057559a5:337unit/build/typecheckPASS,0unitfail/skip; nativeWindows package5PASS1symlink-permissionSKIP. Component normal focus controls6PASS plus2actual RED before minimal guard, then8GREEN. Local connected blocked by Windows reserved API port; actual isolated CI required before merge.",
         "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
-        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required."
+        "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
+        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate."
       ],
       "blockers": [
         "Production editing-draft SQL remains unapplied; fresh recovery and guarded prerequisite checks required.",
         "Hosted U03 and author-verified content acceptance absent.",
         "Current focus increment requires exact-head isolated connected CI. Local OS reserved-port setup is blocked; no system-global port changes made."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "source_ref": "codex/n06-delete-undo-focus-20261009"
     },
     {
       "task_id": "N07",
@@ -769,11 +771,11 @@
       ],
       "owner_role": "QA + Accessibility",
       "status": "partial",
-      "code_status": "scoped_merchant_forms_and_bilingual_geometry_keyboard_persistence_regressions_implemented",
-      "merge_status": "PR27_PR39_merged; document_language_review_branch_prepared",
-      "environment_status": "owned_isolated_local_browser_verified; physical_AT_formal_NOT_RUN",
-      "acceptance_status": "source_local_only; full_mobile_acceptance_partial",
-      "source_sha": "5e224566eae2ba7365fda14a9276ff8eb02026ff",
+      "code_status": "creator_delete_undo_focus_increment_reviewable; existing_previous_controls_preserved",
+      "merge_status": "prior_increments_merged; deletion_focus_review_branch",
+      "environment_status": "clean_code339unit_build_type_PASS; local_creator19PASS; exact_head_CI_required",
+      "acceptance_status": "scoped_local_keyboard_verified; hosted_named_roles_physical_AT_NOT_RUN",
+      "source_sha": "f9c62f8f2446d2a7af1a90cc1d125579be823f71",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
@@ -786,14 +788,15 @@
         "Native author review and actual before/after screenshot inspection; no extra agent. MERCHANT_MOBILE_ACCEPTANCE.md records local scope. Browser widths/font scaling do not substitute for real iOS/Android/200%/NVDA/VoiceOver or named U04.",
         "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
         "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred.",
-        "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open."
+        "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open.",
+        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n14-merchant-mobile-20261008"
+      "source_ref": "codex/n06-delete-undo-focus-20261009"
     },
     {
       "task_id": "N15",
