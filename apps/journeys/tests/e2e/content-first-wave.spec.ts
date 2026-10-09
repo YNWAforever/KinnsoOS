@@ -8,7 +8,7 @@ for(const locale of ['en','zh-HK'])test('home retry, approved cover, original te
  await page.route('https://cdn.kinnso.ai/synthetic-local-test-cover.svg',route=>route.fulfill({contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg" width="400" height="240"><rect width="400" height="240" fill="#e7eadf"/></svg>'}));
  await page.goto('/'+locale);await expect(page.locator('.k-mode')).toContainText(locale==='en'?'Browsing published guides':'瀏覽已發布攻略');
  const retry=page.getByRole('button',{name:locale==='en'?'Retry published guides':'重試已發布攻略',exact:true});await expect(retry).toBeVisible();await retry.click();await expect(page.getByRole('link',{name:covered.title,exact:true})).toBeVisible();expect(requests).toBe(2);
- const cards=page.locator('.k-card-grid.home article');await expect(cards).toHaveCount(2);await expect(cards.first().locator('img')).toHaveAttribute('src',covered.cover);await expect(cards.nth(1).locator('img')).toHaveCount(0);await expect(cards.nth(1)).toContainText(bare.creator);await expect(cards.nth(1)).toContainText('Kyoto');
+ const cards=page.locator('.k-card-grid.home article');await expect(cards).toHaveCount(2);for(const card of await cards.all())await expect(card).toHaveAttribute('lang','');await expect(page.locator('html')).toHaveAttribute('lang',locale);await expect(cards.first().locator('img')).toHaveAttribute('src',covered.cover);await expect(cards.nth(1).locator('img')).toHaveCount(0);await expect(cards.nth(1)).toContainText(bare.creator);await expect(cards.nth(1)).toContainText('Kyoto');
  await expect(page.getByRole('link',{name:locale==='en'?'Kyoto':'京都',exact:true})).toHaveAttribute('href','/'+locale+'/explore?q=Kyoto');await expect(page.getByRole('link',{name:locale==='en'?'Hong Kong':'香港',exact:true})).toHaveAttribute('href','/'+locale+'/explore?q=Hong%20Kong');
  await expect(page.locator('.k-record-banner .k-eyebrow')).toHaveText(locale==='en'?'KEEP THE LITTLE THINGS.':'記住旅途的小事。');await expect(page.getByText(locale==='en'?'Guide text is shown as published by its author.':'攻略原文依作者發布內容顯示。',{exact:true})).toBeVisible();
  await page.setViewportSize({width:320,height:900});expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);await page.screenshot({path:test.info().outputPath('home-320.png'),fullPage:true});
@@ -16,12 +16,14 @@ for(const locale of ['en','zh-HK'])test('home retry, approved cover, original te
 async function login(page:Page,email:string,password:string,next:string){await page.goto('/en/sign-in?next='+encodeURIComponent(next));await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL('**'+next);}
 for(const initial of ['en','zh-HK'])test('document language follows client locale navigation and history '+initial,async({page})=>{
  const other=initial==='en'?'zh-HK':'en',query='?q=Kyoto&page=2';
- const original={id:randomUUID(),slug:'synthetic-locale-original',title:'Synthetic original English author wording',city:'Kyoto',summary:'Original authored directions',cover:null,creator:'Synthetic author',creatorHandle:'synthetic',publishedAt:null};
+ const original={id:randomUUID(),slug:'synthetic-locale-original',title:'Synthetic original English author wording',city:'Kyoto',summary:'Original authored directions',cover:null,creator:'',creatorHandle:'',publishedAt:null};
  await page.route('**/api/catalog**',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({status:'ready',items:[original],hasMore:false,query:{page:2,pageSize:12,q:'Kyoto',city:''}})}));
  await page.goto('/'+initial+'/explore'+query);
  await expect(page.locator('html')).toHaveAttribute('lang',initial);
  await expect(page.getByRole('navigation',{name:initial==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
  await expect(page.getByRole('link',{name:original.title,exact:true})).toBeVisible();
+ const originalCard=page.locator('article.os-guide');await expect(originalCard).toHaveAttribute('lang','');await expect(originalCard.locator('small')).toHaveAttribute('lang',initial);
+ await expect(originalCard.getByText(initial==='en'?'Kinnso creator':'Kinnso 創作者',{exact:true})).toHaveAttribute('lang',initial);
  await page.evaluate(()=>{(window as unknown as Record<string,unknown>).__n13DocumentMarker='same-document';});
  await page.locator('.k-language').focus();await page.keyboard.press('Enter');
  await expect(page).toHaveURL('/'+other+'/explore'+query);
@@ -39,6 +41,9 @@ for(const initial of ['en','zh-HK'])test('document language follows client local
  await expect(page.getByRole('navigation',{name:other==='en'?'Main navigation':'主導航',exact:true})).toBeVisible();
  await expect(page.getByRole('link',{name:original.title,exact:true})).toHaveAttribute('href','/'+other+'/g/'+original.id);
  expect(await page.evaluate(()=>(window as unknown as Record<string,unknown>).__n13DocumentMarker)).toBe('same-document');
+ await expect(originalCard).toHaveAttribute('lang','');await expect(originalCard.locator('small')).toHaveAttribute('lang',other);
+ await expect(originalCard.getByText(other==='en'?'Kinnso creator':'Kinnso 創作者',{exact:true})).toHaveAttribute('lang',other);
+ await expect(originalCard.getByText(original.summary,{exact:true})).toBeVisible();
 });
 test('synthetic creator publishes structured revisions; new traveller explicitly imports and reads another device after withdrawal',async({page,browser})=>{
  test.setTimeout(120000);const email=`synthetic-content-author-${randomUUID()}@example.test`,password=`Author!${randomUUID()}`,title='Synthetic structured U01 U03 '+randomUUID();
