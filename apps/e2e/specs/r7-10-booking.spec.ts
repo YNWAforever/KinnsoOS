@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test'
 import { tabTo } from '../r7-10-accessibility'
 import { resolveR710LocalConfig } from '../r7-10-local'
 import { FIXTURES } from '../fixtures'
+import { assertBookingFixturePage, assertBookingFixtureProjection } from '../r7-10-booking-fixture'
 
 const LOCAL_ENV = {
   R7_10_LOCAL: '1',
@@ -50,8 +51,8 @@ test('R7.10 local booking config pins runner booking state', () => {
 test('Booking OFF submits interest capture entirely by keyboard', async ({ page }) => {
   test.skip(process.env.R7_10_BOOKING_STATE === 'on', 'Interest-capture form only renders when booking is off')
 
-  await page.goto(FIXTURES.seoEntities.experiencePath)
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  const response = await page.goto(FIXTURES.seoEntities.experiencePath)
+  await assertBookingFixturePage(page, response)
 
   await tabTo(page, page.getByLabel('Email'))
   await page.keyboard.type('r710-accessibility@kinnso.test')
@@ -61,11 +62,13 @@ test('Booking OFF submits interest capture entirely by keyboard', async ({ page 
   await expect(page.getByRole('status')).toContainText(/you.re on the list/i)
 })
 
-test('Booking ON enters Stripe test checkout entirely by keyboard', async ({ page }) => {
+test('Booking ON enters Stripe test checkout entirely by keyboard', async ({ page }, testInfo) => {
   test.skip(process.env.R7_10_BOOKING_STATE !== 'on', 'Booking ON journey runs only in the isolated Stripe test-mode invocation')
 
-  await page.goto(FIXTURES.seoEntities.experiencePath)
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  await assertBookingFixtureProjection(testInfo)
+
+  const response = await page.goto(FIXTURES.seoEntities.experiencePath)
+  await assertBookingFixturePage(page, response)
 
   const date = page.getByLabel(/choose a date/i)
   await tabTo(page, date)

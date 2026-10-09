@@ -41,12 +41,24 @@
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
         "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
         "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI.",
-        "Main84217b2 Git tree equals tested65a81a0; current-head mandatory checks and43 browser/27 integration artifacts verified before merge."
+        "Main84217b2 Git tree equals tested65a81a0; current-head mandatory checks and43 browser/27 integration artifacts verified before merge.",
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "source_increments": [
+        {
+          "code_sha": "3964a9780b970e6e17c4cdde86aa28effba7b1b2",
+          "review_branch": "codex/n01-booking-fixture-preflight-20261010",
+          "code_status": "locally_verified_test_readiness_increment",
+          "merge_status": "not_merged",
+          "environment_status": "owned_local_root_kinnso_v3_API54421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "pending"
+        }
+      ]
     },
     {
       "task_id": "N02",
@@ -1055,7 +1067,8 @@
         "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
         "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
         "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN.",
-        "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md."
+        "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md.",
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1069,6 +1082,17 @@
         "Current-head PUSH/PR CI artifacts and configured review must be verified before merge.",
         "Hosted metadata workflow is NOT_RUN before merge; original runtime workflow conclusions remain separate.",
         "Formal named-role U06 and applicable cutover acceptance remain open."
+      ],
+      "source_increments": [
+        {
+          "code_sha": "3964a9780b970e6e17c4cdde86aa28effba7b1b2",
+          "review_branch": "codex/n01-booking-fixture-preflight-20261010",
+          "code_status": "locally_verified_test_readiness_increment",
+          "merge_status": "not_merged",
+          "environment_status": "owned_local_root_kinnso_v3_API54421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "pending"
+        }
       ]
     }
   ],

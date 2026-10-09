@@ -24,6 +24,7 @@ export const R7_10_OFF_SPECS = [
   // default config, which nothing runs any more, so it executed nowhere.
   'r7-10-accessibility-review.spec.ts',
   'r7-10-booking.spec.ts',
+  'r7-10-booking-fixture.spec.ts',
   // The story 21 suites. Registered ahead of being written, deliberately: the guard
   // checks that disk is a SUBSET of this list, so naming a file early is harmless,
   // whereas forgetting to add it later is the exact failure this module exists to
