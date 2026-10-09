@@ -23,6 +23,11 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p source_package_test.py
+      - name: Deployment scope native contracts (metadata only)
+        run: |
+          set -o pipefail
+          mkdir -p evidence/ci
+          python ../../scripts/deployment_scope_test.py -v 2>&1 | tee evidence/ci/deployment-scope-tests.log
       - run: node scripts/ci-evidence.mjs unit
       - run: npm run build
       - run: npm run typecheck
@@ -37,7 +42,9 @@ jobs:
         if: always()
         with:
           name: journeys-verification-summary
-          path: apps/journeys/evidence/ci/*.json
+          path: |
+            apps/journeys/evidence/ci/*.json
+            apps/journeys/evidence/ci/deployment-scope-tests.log
           if-no-files-found: warn
   connected:
     runs-on: ubuntu-latest
