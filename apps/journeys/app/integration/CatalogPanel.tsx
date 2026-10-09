@@ -144,7 +144,7 @@ export function CatalogPanel() {
           {result.items.length ? (
             <div className="os-guide-grid">
               {result.items.map((item) => (
-                <article className="os-guide" key={item.id}>
+                <article className="os-guide" key={item.id} lang="">
                   <div className="os-guide-image">
                     {item.cover ? (
                       <Image
@@ -169,12 +169,12 @@ export function CatalogPanel() {
                       </a>
                     </h2>
                     <p>{item.summary}</p>
-                    <span>
+                    <span lang={item.creator || item.creatorHandle ? "" : locale}>
                       {item.creator ||
                         item.creatorHandle ||
                         t("Kinnso creator", "Kinnso 創作者")}
                     </span>
-                    <small>
+                    <small lang={locale}>
                       {t(
                         "Open to check the published format and source",
                         "開啟以核對已發布格式及來源",

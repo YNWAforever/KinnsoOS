@@ -690,11 +690,11 @@
       ],
       "owner_role": "Design + Frontend",
       "status": "partial",
-      "code_status": "home_guide_document_language_and_explicit_demo_locale_navigation_implemented",
-      "merge_status": "PR27_PR40_merged; demo_locale_review_branch_prepared",
-      "environment_status": "native_current_code_demo_browser_and_source_verified; connected_Linux_CI_pending",
-      "acceptance_status": "explicit_demo_navigation_native_verified; physical_AT_named_hosted_content_NOT_RUN",
-      "source_sha": "77b6859693b3bc1e6c3fdecd372e9a1d1943c4ac",
+      "code_status": "original_author_text_language_unknown_boundary_and_UI_exceptions_implemented",
+      "merge_status": "authored_language_review_branch_prepared",
+      "environment_status": "clean_code_native4_browser339_unit_build_typePASS; native_SSR2_environment_BLOCKED; current_Linux_CI_PENDING",
+      "acceptance_status": "source_language_unknown_boundary_native_verified; authored_metadata_named_hosted_physical_AT_NOT_RUN",
+      "source_sha": "c81725bdde9e35edd09a2f45b55e5b4e9c5a21d2",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
@@ -704,7 +704,8 @@
         "Exact012841d Windows package5 PASS/1 platform SKIP. Linux extract/install/rebuild remains a distinct required CI gate.",
         "Maine19d0e7 tree equals exact012841d, verified before and after authorized merge.",
         "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
-        "N13 demo locale77b6859:4 actual wrong-href RED->4 current-code browser GREEN, both locales/exploration/labelled guide/keyboard/history/query/zero browser account API calls; clean339unit/build/typePASS. Windows package5PASS1symlink-permissionSKIP. New browser case included in unchanged isolated CI collection and explicit318-file source manifest. Current review Linux/root/Journeys checks still pending; DEMO_LANGUAGE_NAVIGATION_ACCEPTANCE.md. Formal roles/physical/AT/real content NOT_RUN."
+        "N13 demo locale77b6859:4 actual wrong-href RED->4 current-code browser GREEN, both locales/exploration/labelled guide/keyboard/history/query/zero browser account API calls; clean339unit/build/typePASS. Windows package5PASS1symlink-permissionSKIP. New browser case included in unchanged isolated CI collection and explicit318-file source manifest. Current review Linux/root/Journeys checks still pending; DEMO_LANGUAGE_NAVIGATION_ACCEPTANCE.md. Formal roles/physical/AT/real content NOT_RUN.",
+        "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open."
       ],
       "blockers": [
         "Current demo-locale review-head Linux/root/Journeys/configured review gates pending.",
@@ -712,7 +713,12 @@
         "Authored content locale is unavailable in the DTO; do not infer or translate it."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n13-demo-locale-20261009"
+      "source_ref": "codex/n13-authored-language-20261009",
+      "current_blockers": [
+        "Current review-head Linux Root/Journeys/configured review pending.",
+        "Actual authored locale remains unavailable in DTO; unknown boundary does not infer it.",
+        "Real rights-reviewed content, named hosted U01/U03 and physical/AT acceptance remain NOT_RUN."
+      ]
     },
     {
       "task_id": "N14",
@@ -779,7 +785,8 @@
         "Exact clean5e224566eae2ba7365fda14a9276ff8eb02026ff:333unit/41integration/82connected browser PASS,0fail0skip; build/typecheck PASS. Existing U04 ownership/replay/session/offboarding assertions unchanged and covered. Windows package5PASS/1symlink-permissionSKIP; exact final-review-head Linux/package6/root/Journeys/Vercel CI required before merge.",
         "Native author review and actual before/after screenshot inspection; no extra agent. MERCHANT_MOBILE_ACCEPTANCE.md records local scope. Browser widths/font scaling do not substitute for real iOS/Android/200%/NVDA/VoiceOver or named U04.",
         "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
-        "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred."
+        "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred.",
+        "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",

@@ -87,6 +87,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
  return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/>
  <p className="k-muted">{t('Guide text is shown as published by its author.','攻略原文依作者發布內容顯示。')}</p>
+ <p className="k-muted">{t('Original language: not provided.','原文語言：來源未提供。')}</p>
  <p className="k-muted">{t('Last updated: not provided.','最後更新：來源未提供。')}</p>
  <p className="k-muted">{t('Opening hours: not provided. Confirm before travelling.','營業時間：來源未提供，出發前請核實。')}</p>
  <p role="status" aria-label={t('Guide action status','攻略操作狀態')}>{message}</p>
