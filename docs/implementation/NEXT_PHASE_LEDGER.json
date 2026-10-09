@@ -1020,16 +1020,17 @@
       ],
       "owner_role": "DevOps + QA",
       "status": "partial",
-      "code_status": "per_surface_CI_browser_report_retention_reviewable",
-      "merge_status": "separate_N18_increment_not_merged",
-      "environment_status": "clean_native29_contracts; actual_Linux_artifact_verification_pending",
-      "acceptance_status": "synthetic_artifact_retention_only; formal_release_and_role_UAT_separate",
-      "source_sha": "6c2c728b4cb1561086d3b1bcf897703c989e1d05",
+      "code_status": "independent_deployment_eligibility_metadata_implemented",
+      "merge_status": "report_retention_PR42_merged; deployment_scope_increment_not_merged",
+      "environment_status": "clean_native20_scope_and339unit_PASS; exact_head_Linux_CI_PENDING; hosted_metadata_NOT_RUN",
+      "acceptance_status": "metadata_only; runtime_checks_and_formal_U06_role_UAT_separate",
+      "source_sha": "416f94e8e315e0c19b7d9a1e38d5fd5da38c9650",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/23",
         "https://github.com/YNWAforever/KinnsoOS/pull/28",
         "https://github.com/YNWAforever/KinnsoOS/pull/29",
-        "https://github.com/YNWAforever/KinnsoOS/pull/41"
+        "https://github.com/YNWAforever/KinnsoOS/pull/41",
+        "https://github.com/YNWAforever/KinnsoOS/pull/42"
       ],
       "tests": [
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
@@ -1050,14 +1051,22 @@
         "Main62c root37811689234 actual all3jobsSUCCESS/web516files3253testsPASS/reader1SKIP/e2e181PASS1SKIP/enquiry1PASS/Stripe3PASS1SKIP. Prior PR40 root configured retry retains180PASS1FLAKY1SKIP; original trace absent from downloaded later report, raw failure/retry log retained.",
         "PR41 first review d3794c8: actual isolated PUSH/PR connected85PASS1FAIL0SKIP, integration41PASS/unit337PASS. Existing keyboard assertion caught disabled initiating-control blur; original held-save and explicit-choice browser cases passed. Original failures retained, no assertion/retry relaxation.",
         "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
-        "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN."
+        "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN.",
+        "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
         "Named hosted-role UAT and applicable formal release/cutover acceptance remain separate gates.",
         "Current-head Linux root CI and per-surface artifact reports must be independently verified before merge; historical missing trace is not reconstructed."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "candidate_base_sha": "4db0c7a72379f73567ff90cd861e03f996573f08",
+      "review_branch": "codex/n18-deployment-scope-20261009",
+      "current_blockers": [
+        "Current-head PUSH/PR CI artifacts and configured review must be verified before merge.",
+        "Hosted metadata workflow is NOT_RUN before merge; original runtime workflow conclusions remain separate.",
+        "Formal named-role U06 and applicable cutover acceptance remain open."
+      ]
     }
   ],
   "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
