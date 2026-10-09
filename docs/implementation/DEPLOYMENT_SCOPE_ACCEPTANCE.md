@@ -20,7 +20,7 @@ The artifact includes allowed SHA/condition/selection fields and a sanitized ori
 
 ## Separate gates
 
-Code is implemented. This increment is not merged at document creation. Hosted metadata execution is NOT_RUN until actual events after merge. Original read-only/cutover results, named-role hosted U06, mailbox/content/device acceptance and formal release acceptance remain separate. No production data, settings, provider activation, flags or manual deployment is changed.
+Code is implemented. This increment is not merged at document creation. Hosted metadata execution requires an actual event at the corresponding source; a preview record proves preview applicability only. At document creation no hosted record had yet been observed. Original read-only/cutover results, named-role hosted U06, mailbox/content/device acceptance and formal release acceptance remain separate. No production data, settings, provider activation, flags or manual deployment is changed.
 
 The author performed a separate review; it has weaker independence than an external review. Configured GitHub Codex review and exact-head green CI are required before using the standing merge authorization. Public ledger status remains `partial`, and historical failed/skipped evidence is preserved.
 
