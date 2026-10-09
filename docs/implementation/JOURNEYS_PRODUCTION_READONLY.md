@@ -35,3 +35,29 @@ field performance, backup/Storage recovery or payment gates.
 On failure, retain the artifact and inspect the named boundary. Reconcile a
 revision mismatch with deployment/alias metadata before rerunning; do not replace
 the expected revision with whichever archive is currently served to obtain a pass.
+
+## Deployment eligibility records
+
+`Deployment scope (metadata only)` independently records the current Journeys,
+legacy production web and legacy preview guard results. Each event receives a
+`deployment-scope-metadata` artifact and a table in the job summary with
+`SELECTED` or `NOT_APPLICABLE` and a specific reason. Original runtime workflows
+keep their existing conditions and neutral skipped outcomes.
+
+`SELECTED` means that the existing guard would select a check for that event;
+runtime acceptance in this record is always `NOT_RUN_METADATA_ONLY`. Read the
+separate production read-only artifact to verify source/target checks. A manual
+metadata run records eligibility only; execute the checker workflow separately
+for an actual check. GitHub does not create a workflow run for an `inactive`
+deployment status. See [GitHub deployment events](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#deployment_status).
+
+The artifact records workflow source SHA, expected deployment SHA, condition
+fingerprints and a sanitized deployment origin. It excludes raw event payloads,
+URL credentials/path/query/fragment, API responses and account data. Changed or
+missing workflow conditions produce `UNKNOWN_POLICY` and a failed metadata job;
+review the current guards and update the classifier instead of guessing a reason.
+
+The existing Python unittest runner exercises 20 native synthetic metadata cases
+in Journeys CI; its successful or failed log is retained in
+`journeys-verification-summary`. These tests make no DB or target HTTP requests
+and do not provide hosted role UAT evidence.
