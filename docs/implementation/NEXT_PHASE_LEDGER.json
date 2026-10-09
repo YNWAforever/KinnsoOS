@@ -405,14 +405,26 @@
         "Actual cancelable Back/Forward and uncancelable cross-document native warning separately verified.",
         "Main7873961 tree equals tested039b97d; Linux67/browser and28/integration PASS.",
         "N08/N14 modal cancellation code 77adb31ab10fbb5ce975f49bee3da60f951a314d: two English/Traditional Chinese actual-browser busy Escape RED -> GREEN. Native IndexedDB committed deletion and delayed acknowledgement are real; ordinary cancellation/focus, busy close refusal, selected-copy-only deletion and other-copy reload checked. All13 navigation cases PASS0FAIL0SKIP on owned isolated local fixture target; full connected 96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; clean339unit/build/typecheck PASS. Windows source packaging5PASS1 permissionSKIP retained. Four cancelled-navigation stream messages also appear in previous actual-main CI and are retained, not counted as assertions or acceptance. Exact review-head Journeys/root/Linux packaging and configured review required; hosted human/device/AT acceptance NOT_RUN.",
-        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic."
+        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic.",
+        "PR47 fresh main integration 1e2f807482e4cee708e235dea713da64b8db957d incorporates merged PR48/main513b8c871f2551fb0989718017fdc73c2e5dc311 booking fixture readiness. Existing modal and real device-navigation test bytes equal original code77adb31. Current clean339unit/build/typecheck and13device-navigationPASS0FAIL0SKIP; both source evidence additions and53 original mappings preserved. Earlier PR47 rootPR attempts1/2 fixture404 failures remain FAIL; current new-head PUSH/PR CI and configured review required before merge. Formal hosted named-role/physical acceptance NOT_RUN."
       ],
       "blockers": [
         "Hosted human acceptance and physical iOS/Android/older-browser evidence absent.",
         "Cross-document traversal uses native warning; only confirmed saved copies recover after process termination."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n08-modal-busy-cancel-20261009"
+      "source_ref": "codex/n08-modal-busy-cancel-20261009",
+      "source_increments": [
+        {
+          "code_sha": "1e2f807482e4cee708e235dea713da64b8db957d",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "code_status": "existing_modal_fix_verified_on_new_main",
+          "merge_status": "PR47_not_merged",
+          "environment_status": "owned_local_Journeys_API58421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "new_head_pending"
+        }
+      ]
     },
     {
       "task_id": "N09",
@@ -806,14 +818,26 @@
         "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open.",
         "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate.",
         "N08/N14 modal cancellation code 77adb31ab10fbb5ce975f49bee3da60f951a314d: two English/Traditional Chinese actual-browser busy Escape RED -> GREEN. Native IndexedDB committed deletion and delayed acknowledgement are real; ordinary cancellation/focus, busy close refusal, selected-copy-only deletion and other-copy reload checked. All13 navigation cases PASS0FAIL0SKIP on owned isolated local fixture target; full connected 96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; clean339unit/build/typecheck PASS. Windows source packaging5PASS1 permissionSKIP retained. Four cancelled-navigation stream messages also appear in previous actual-main CI and are retained, not counted as assertions or acceptance. Exact review-head Journeys/root/Linux packaging and configured review required; hosted human/device/AT acceptance NOT_RUN.",
-        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic."
+        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic.",
+        "PR47 fresh main integration 1e2f807482e4cee708e235dea713da64b8db957d incorporates merged PR48/main513b8c871f2551fb0989718017fdc73c2e5dc311 booking fixture readiness. Existing modal and real device-navigation test bytes equal original code77adb31. Current clean339unit/build/typecheck and13device-navigationPASS0FAIL0SKIP; both source evidence additions and53 original mappings preserved. Earlier PR47 rootPR attempts1/2 fixture404 failures remain FAIL; current new-head PUSH/PR CI and configured review required before merge. Formal hosted named-role/physical acceptance NOT_RUN."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n08-modal-busy-cancel-20261009"
+      "source_ref": "codex/n08-modal-busy-cancel-20261009",
+      "source_increments": [
+        {
+          "code_sha": "1e2f807482e4cee708e235dea713da64b8db957d",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "code_status": "existing_modal_fix_verified_on_new_main",
+          "merge_status": "PR47_not_merged",
+          "environment_status": "owned_local_Journeys_API58421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "new_head_pending"
+        }
+      ]
     },
     {
       "task_id": "N15",
