@@ -5,6 +5,7 @@ import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {creatorMissions,type CreatorMission,type CreatorMissionDetail,type CreatorMissionCommand,type Evidence,type MissionScope} from '../../lib/creators/collaboration';
 import {evidenceUrl} from '../../lib/creators/collaboration-validation';
+import {WorkspaceServiceState} from './WorkspaceServiceState';
 
 type EvidenceForm={milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofText:string;notes:string};
 export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;actorId:string|null;enabled:boolean}){
@@ -15,17 +16,18 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
  const [busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [applicationNote,setApplicationNote]=useState(''),[agreed,setAgreed]=useState(false),[form,setForm]=useState<EvidenceForm|null>(null);
  const generation=useRef(0),pending=useRef<{command:CreatorMissionCommand;requestId:string}|null>(null);
+ const reference=useRef<string|undefined>(undefined);
  function clear(){setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
  function denied(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){clear();if(code==='AUTH_REQUIRED')setValid(false);}}
  async function load(after?:string,nextScope=scope){
   const own=++generation.current;setBusy(true);setError('');
   if(missionId){
    const r=await creatorMissions.get(missionId,after);if(own!==generation.current)return;setBusy(false);
-   if(!r.ok){denied(r.code);setError(r.code);if(!after)setDetail(null);return;}
+   if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setDetail(null);return;}
    setDetail(previous=>after&&previous?{...r.data,submissions:[...previous.submissions,...r.data.submissions].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index)}:r.data);
   }else{
    const r=await creatorMissions.list(nextScope,after);if(own!==generation.current)return;setBusy(false);
-   if(!r.ok){denied(r.code);setError(r.code);if(!after)setItems(null);return;}
+   if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setItems(null);return;}
    setItems(previous=>after?[...(previous??[]),...r.data.items].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index):r.data.items);setCursor(r.data.nextCursor);
   }
  }
@@ -39,9 +41,14 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   if(!missionId||busy||!valid)return;
   if(!pending.current&&command)pending.current={command,requestId:crypto.randomUUID()};
   const intent=pending.current;if(!intent)return;
+  const wasUnknown=unknown;
   const own=++generation.current;setBusy(true);setError('');setMessage('');
+  if(wasUnknown){
+   const saved=await creatorMissions.get(missionId);if(own!==generation.current)return;
+   if(!saved.ok){setBusy(false);reference.current=saved.requestId;denied(saved.code);setError(saved.code);return;}
+  }
   const result=await creatorMissions.command(missionId,intent.command,intent.requestId);if(own!==generation.current)return;setBusy(false);
-  if(!result.ok){denied(result.code);setError(result.code);setUnknown(result.retryable);if(!result.retryable)pending.current=null;return;}
+  if(!result.ok){reference.current=result.requestId;denied(result.code);setError(result.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(result.code))return;setUnknown(wasUnknown||result.retryable);if(!wasUnknown&&!result.retryable)pending.current=null;return;}
   pending.current=null;setUnknown(false);setForm(null);setAgreed(false);setApplicationNote('');setMessage(t('Your update is saved.','更新已保存。'));await load();
  }
  function prepare(milestoneId:string,submission?:Evidence){setForm({milestoneId,submissionId:submission?.id??null,expectedUpdatedAt:submission?.updatedAt??null,proofText:submission?.proofUrls.join('\n')??'',notes:submission?.notes??''});setError('');setMessage('');}
@@ -55,17 +62,17 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   error==='FORBIDDEN'?t('Complete your creator profile or check your account access to continue.','請先完成創作者檔案，或檢查帳戶存取權。'):
   error==='INVALID'?t('This action is unavailable or the evidence needs correction. Check the campaign status, eligibility and HTTPS links.','此操作目前不可用或證明資料需要修正。請檢查合作狀態、資格及 HTTPS 連結。'):
   t('The request was not completed. Your input is retained; retry when the connection is available.','請求尚未完成，輸入仍保留，請在連線恢復後重試。');
- if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><Link className="k-btn primary" href={`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`}>{t('Sign in to continue','登入後繼續')}</Link></section>;
- if(!enabled)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><p>{t('Collaboration service is not connected yet.','合作服務尚未接通。')}</p></section>;
+ if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href(path)}/></section>;
+ if(!enabled)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="UNAVAILABLE" retryState="blocked"/></section>;
  return <section className="k-page" data-testid="creator-collaborations">
   <p className="k-eyebrow">{t('CREATOR STUDIO','創作者工作室')}</p>
   <h1>{detail?.title??t('Creator collaborations','創作者合作')}</h1>
   <div className="k-actions"><Link className="k-btn" href={href('studio/guides')}>{t('My guides','我的攻略')}</Link><Link className="k-btn" href={href('studio/earnings')}>{t('Earnings records','收益紀錄')}</Link><Link className="k-btn" href={href('inbox')}>{t('Inbox','收件匣')}</Link></div>
-  {error&&<p role="alert">{errorText}{error==='FORBIDDEN'&&<Link href={href('studio')}>{t('Open creator profile','開啟創作者檔案')}</Link>}</p>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load()} returnPath={href(path)}/>}
+  {error==='INVALID'&&<p>{errorText}</p>}{error==='FORBIDDEN'&&<Link href={href('studio')}>{t('Open creator profile','開啟創作者檔案')}</Link>}
   {message&&<p role="status">{message}</p>}
   {busy&&<p role="status">{t('Loading collaboration records…','正在載入合作紀錄…')}</p>}
   <button className="k-btn" disabled={locked} onClick={()=>load()}>{t('Refresh collaborations','重新載入合作')}</button>
-  {unknown&&<button className="k-btn primary" disabled={busy} onClick={()=>send()}>{t('Retry the same request','重試相同請求')}</button>}
   {!missionId&&<>
    <div className="k-actions" aria-label={t('Collaboration views','合作檢視')}><button className="k-btn" aria-pressed={scope==='available'} disabled={locked} onClick={()=>{setScope('available');void load(undefined,'available');}}>{t('Available collaborations','可參加的合作')}</button><button className="k-btn" aria-pressed={scope==='mine'} disabled={locked} onClick={()=>{setScope('mine');void load(undefined,'mine');}}>{t('My collaborations','我的合作')}</button></div>
    {items?.length===0&&<div className="k-card"><h2>{scope==='mine'?t('Your next collaboration starts here.','從這裡開始下一次合作。'):t('No open collaborations yet.','暫未有開放的合作。')}</h2><p>{scope==='mine'?t('Browse open briefs or return when a merchant invites you.','瀏覽開放的合作簡介，或在收到商戶邀請後返回。'):t('Check back for briefs that match your interests.','稍後再來尋找符合你興趣的合作。')}</p></div>}

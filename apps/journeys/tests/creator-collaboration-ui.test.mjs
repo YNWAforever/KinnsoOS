@@ -1,3 +1,4 @@
+import {serviceStateModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -11,10 +12,11 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
  const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic'}),states=[],refs=[],effects=[];let cursor=0,changed=false,tree,invalidate;
  const props={path:'studio/missions/'+id,actorId:'creator-A',enabled:true};
  const react={useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((x,j)=>!Object.is(x,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
- const jsx=(type,props)=>({type,props}),module={exports:{}};let sequence=0;
+ const jsx=(type,props)=>typeof type==='function'&&type.name==='WorkspaceServiceState'?type(props):({type,props}),module={exports:{}};
+ const service=await serviceStateModule(jsx);let sequence=0;
  const validation=await import('../lib/creators/collaboration-validation.ts');
  runInContext(compiled.code,createContext({module,exports:module.exports,Date,URL,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},require:name=>{
-  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+  if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
   if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en',href:path=>'/en/'+path})};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;

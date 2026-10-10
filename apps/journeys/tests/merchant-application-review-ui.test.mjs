@@ -1,3 +1,4 @@
+import {serviceStateModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -14,10 +15,11 @@ async function harness(port={},session=storage(),initial={}){
  assert.ok(compiled,'MerchantApplicationReview must provide a native review UI');
  const states=[],refs=[],effects=[],calls=[];let cursor=0,changed=false,tree,invalidator,props={actorId:'actor-A',enabled:true,...initial};
  const react={useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
- const jsx=(type,props)=>({type,props}),module={exports:{}};
+ const jsx=(type,props)=>typeof type==='function'&&type.name==='WorkspaceServiceState'?type(props):({type,props}),module={exports:{}};
  const request=async(url,method='GET',body)=>{calls.push({url,method,body});return method==='POST'?(port.write?.(body)??{ok:true,data:{...row,status:body.action==='approve'?'approved':'rejected',decidedAt:'2026-10-10T13:00:00Z',decisionReason:body.reason}}):url.includes('?id=')?(port.current?.()??{ok:true,data:row}):(port.list?.(url)??{ok:true,data:{applications:[row],nextCursor:null}});};
+ const service=await serviceStateModule(jsx);
  runInContext(compiled.code,createContext({module,exports:module.exports,URLSearchParams,window:{sessionStorage:session},require:name=>{
-  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
+  if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
   if(name==='../../lib/trips/repository')return{request};if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};
   if(name==='../../lib/merchants/application-review')return review;throw Error('Unexpected dependency '+name);
  }}));
@@ -61,7 +63,7 @@ test('account invalidation discards private data and ignores late decision and d
 
 test('disabled review, denied role and failed recovery persistence never submit a decision',async()=>{
  const disabled=await harness({},storage(),{enabled:false});assert.equal(disabled.calls.length,0);
- const denied=await harness({list:async()=>({ok:false,code:'FORBIDDEN'})});assert.equal(denied.find('select','Pending merchant application'),undefined);assert.match(JSON.stringify(denied.elements()),/Moderator access is required/);
+ const denied=await harness({list:async()=>({ok:false,code:'FORBIDDEN'})});assert.equal(denied.find('select','Pending merchant application'),undefined);assert.ok(denied.elements().some(node=>node.props?.role==='alert'&&node.props['aria-label']));assert.equal(denied.find('button','Retry loading'),undefined);
  const blocked=storage();blocked.setItem=()=>{throw Error('Blocked');};const h=await harness({},blocked);select(h);reason(h);h.find('button','Reject application').props.onClick();await tick();h.render();assert.equal(h.calls.some(x=>x.method==='POST'),false);
 });
 

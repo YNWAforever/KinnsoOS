@@ -1,3 +1,4 @@
+import {serviceStateModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -64,9 +65,10 @@ async function uiHarness(port){
  const states=[],refs=[],effects=[];let cursor=0,changed=false,tree,invalidator,unload;
  const props={actorId:'actor-A',merchantId:id,refreshKey:0,locked:false,onLockChange:()=>{},onChanged:async()=>{},onDenied:port.denied??(()=>{})};
  const react={useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
- const jsx=(type,props)=>({type,props});let uuidIndex=1;
+ const jsx=(type,props)=>typeof type==='function'&&type.name==='WorkspaceServiceState'?type(props):({type,props});let uuidIndex=1;
+ const service=await serviceStateModule(jsx);
  runInContext(compiled.code,createContext({module,exports:module.exports,URL,Date,window:{addEventListener:(name,callback)=>{if(name==='beforeunload')unload=callback;},removeEventListener:()=>{}},crypto:{randomUUID:()=>`11111111-1111-4111-8111-${String(uuidIndex++).padStart(12,'0')}`},require:name=>{
-  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
+  if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
  }}));
  function render(){for(let n=0;n<10;n++){cursor=0;changed=false;tree=module.exports.MerchantCampaigns(props);for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;}return tree;}
  function elements(node){if(arguments.length===0)node=tree;return!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
