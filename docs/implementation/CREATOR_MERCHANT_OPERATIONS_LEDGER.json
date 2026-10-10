@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-11T04:36:17.229774+08:00",
+  "observed_at": "2026-10-10T21:28:26.363761+00:00",
   "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
   "baseline": {
     "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
@@ -1286,10 +1286,18 @@
           "result": "PASS_396_FAIL_0_SKIP_0",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/baseline-unit.log",
           "observed_at": "2026-10-10T20:40:51.2740524Z"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
         }
       ],
       "blockers": [],
-      "next_action": "Rebind continuation review/CI/deployment after each new head; preserve parent release blocker.",
+      "next_action": "Bind the new disabled-service correction head to owned CI; retain designated staging gate.",
       "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {
@@ -1319,12 +1327,20 @@
           "result": "503_UNAVAILABLE_private_no_store; required project settings target production only; deployment value relationships/Auth/actor/schema unverified",
           "run_artifact": "Vercel protected fetch 2026-10-10T20:41:44Z and 20:53:48Z; CLI project env metadata inspection; no values exported",
           "observed_at": "2026-10-10T20:58:12.331182+00:00"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
         }
       ],
       "blockers": [
         "BLOCKED_CONFIG_VALUE_RELATIONS: connector env listing 403; CLI metadata succeeds, preview required settings absent from current project list. Effective deployment values, Auth, actor and schema not checked."
       ],
-      "next_action": "Bind committed source and CI; designate staging before config or schema changes.",
+      "next_action": "Bind the new disabled-service correction head to owned CI; retain designated staging gate.",
       "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {
@@ -1359,7 +1375,7 @@
       "ci_status": "PENDING_CURRENT_HEAD",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "220990b0ce65251813a85c5e6b7eee6021b59d72",
+      "source_sha": "036be6772c6a718c9e44b3f03bbd9d2b968fc7cf",
       "evidence": [
         {
           "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
@@ -1376,12 +1392,28 @@
           "result": "2_P2_RED_to_GREEN; related28_PASS; fullunit416_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS; no_critical_or_deferred_minor_findings",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p03-review-red.log; p03-review-green.log; p03-review-unit.log; p03-review-build.log",
           "observed_at": "2026-10-10T21:02:55.593429+00:00"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
+        },
+        {
+          "source_sha": "036be6772c6a718c9e44b3f03bbd9d2b968fc7cf",
+          "environment": "local_isolated",
+          "scenario": "disabled creator service with signed-out actor: real component first reports unavailable without login loop or reads",
+          "result": "1_RED_then_GREEN; unit417_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p03-disabled-red.log; p03-disabled-green.log; p03-disabled-build.log",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
         }
       ],
       "blockers": [
         "HOSTED_UAT_NOT_RUN: staging target, approved synthetic actors and recovery packet not designated; local component browser fixture is not connected or hosted acceptance."
       ],
-      "next_action": "Complete current-head independent review and owned CI; hosted acceptance waits for designated staging.",
+      "next_action": "Bind the new disabled-service correction head to owned CI; retain designated staging gate.",
       "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {

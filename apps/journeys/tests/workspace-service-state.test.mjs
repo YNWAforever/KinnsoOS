@@ -44,6 +44,16 @@ test('503 is a service state rather than an empty creator list or earnings categ
   assert.ok(h.elements().some(n=>n.props?.role==='alert'&&n.props['aria-label']));
  }
 });
+
+test('disabled creator services report unavailability before inviting a signed-out actor to log in',async()=>{
+ for(const locale of ['en','zh-HK'])for(const name of ['CreatorMissionsWorkspace','CreatorEarningsWorkspace']){
+  let reads=0;const read=async()=>{reads++;return unavailable;};
+  const h=await workspaceHarness(name,{creatorMissions:{list:read},creatorEarnings:{get:read}},{locale,actorId:null,enabled:false});
+  assert.match(h.text(),locale==='en'?/temporarily unavailable/i:/暫時未能使用/);
+  assert.equal(h.elements().some(n=>n.type==='a'&&n.props.href?.includes('/sign-in')),false);
+  assert.equal(reads,0);
+ }
+});
 test('merchant onboarding and moderator error panels remain visible for unavailable and revoked sessions',async()=>{
  for(const code of ['UNAVAILABLE','AUTH_REQUIRED','FORBIDDEN'])for(const name of ['MerchantOnboarding','MerchantApplicationReview']) {
   const result={ok:false,code,retryable:code==='UNAVAILABLE',requestId:uuid};
