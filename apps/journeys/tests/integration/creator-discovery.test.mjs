@@ -26,7 +26,7 @@ test('native invite receipt replay charges once, keeps full creator brief and re
  assert.equal((await x.command({...x.invite(x.authors[1]),expectedUpdatedAt:'2000-01-01T00:00:00Z'})).error?.message,'revision_conflict');
  await ok(admin.from('creators').update({status:'suspended'}).eq('id',x.authors[2].id));assert.equal((await x.command(x.invite(x.authors[2]))).error?.message,'creator_not_found');
  assert.equal((await x.foreign.client.rpc('apply_kinnso_merchant_campaign_command',{p_merchant_id:x.merchantId,p_request_id:randomUUID(),p_command:x.invite(x.authors[1])})).error?.message,'forbidden');
- const creatorView=await ok(x.authors[0].client.rpc('get_kinnso_creator_missions',{p_scope:'mine',p_mission_id:x.mission.id}));assert.match(JSON.stringify(creatorView),/Authored complete public brief/);
+ const creatorView=await ok(x.authors[0].client.rpc('get_kinnso_creator_mission',{p_mission_id:x.mission.id}));assert.match(JSON.stringify(creatorView),/Authored complete public brief/);
  await ok(x.authors[0].client.rpc('accept_mission_invite',{p_mission_id:x.mission.id}));assert.equal((await ok(x.list())).quota.used,1);
  }finally{await x.cleanup();}});
 test('legacy/native/direct invitation paths serialize the last quota slot and immutable attribution prevents backdating',async()=>{const x=await setup();try{
@@ -36,4 +36,9 @@ test('legacy/native/direct invitation paths serialize the last quota slot and im
  const prior=await ok(admin.from('mission_participants').select('id').eq('mission_id',x.mission.id).eq('creator_id',x.authors[0].id).single());
  for(const patch of [{created_at:'2000-01-01T00:00:00Z'},{source:'open_join'}])assert.equal((await x.owner.client.from('mission_participants').update(patch).eq('id',prior.id)).error?.message,'invalid_invite_attribution');
  assert.equal((await ok(admin.from('mission_participants').select('id').eq('mission_id',x.mission.id))).length,3);
+ }finally{await x.cleanup();}});
+test('direct owner insertion cannot evade the mature monthly quota with an earlier created_at',async()=>{const x=await setup();try{
+ for(const a of x.authors.slice(0,3))await ok(x.owner.client.rpc('merchant_invite_creator',{p_mission_id:x.mission.id,p_creator_id:a.id}));
+ const attempt=await x.owner.client.from('mission_participants').insert({mission_id:x.mission.id,creator_id:x.authors[4].id,status:'invited',source:'merchant_invite',created_at:'2000-01-01T00:00:00Z'});
+ assert.equal(attempt.error?.message,'invite_quota_exceeded');assert.equal((await ok(admin.from('mission_participants').select('id').eq('mission_id',x.mission.id))).length,3);
  }finally{await x.cleanup();}});

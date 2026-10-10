@@ -2,11 +2,15 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {campaignCommand} from '../lib/merchants/campaigns.ts';
 import {workspaceHarness,tick} from './helpers/workspace-harness.mjs';
-const discovery=await import('../lib/merchants/creator-discovery.ts').catch(()=>({}));
+import {readFile} from 'node:fs/promises';import {createContext,runInContext} from 'node:vm';import {transform} from 'esbuild';
+const discoveryModule={exports:{}};
+const discoverySource=await readFile(new URL('../lib/merchants/creator-discovery.ts',import.meta.url),'utf8').catch(e=>{if(e.code==='ENOENT')return '';throw e;});
+if(discoverySource){const compiled=await transform(discoverySource,{loader:'ts',format:'cjs'});runInContext(compiled.code,createContext({module:discoveryModule,exports:discoveryModule.exports,URLSearchParams,require:()=>({})}));}
+const discovery=discoveryModule.exports;
 const id='11111111-1111-4111-8111-111111111111',creatorId='22222222-2222-4222-8222-222222222222',updatedAt='2026-10-10T12:00:00.123456Z';
 test('discovery query rejects duplicated, unknown, oversized and malformed filters before IO',()=>{
  assert.equal(typeof discovery.discoveryQuery,'function');
- assert.deepEqual(discovery.discoveryQuery(new URLSearchParams('q=city&savedOnly=true')),{q:'city',savedOnly:true});
+ assert.deepEqual(JSON.parse(JSON.stringify(discovery.discoveryQuery(new URLSearchParams('q=city&savedOnly=true')))),{q:'city',savedOnly:true});
  for(const q of ['q=a&q=b','q='+('a'.repeat(101)),'savedOnly=yes','savedOnly=true&savedOnly=false','after=','userId='+id,'after='+('a'.repeat(1501))])assert.throws(()=>discovery.discoveryQuery(new URLSearchParams(q)),/INVALID/);
 });
 test('saved/private-note and invite commands retain authored input and exact CAS state',()=>{
@@ -16,6 +20,10 @@ test('saved/private-note and invite commands retain authored input and exact CAS
  const invite={type:'inviteCreator',id,creatorId,expectedUpdatedAt:updatedAt,reason:'Owner invitation'};
  assert.deepEqual(campaignCommand(invite),invite);
  for(const c of [{...invite,expectedUpdatedAt:undefined},{...invite,creatorId:'not-a-uuid'},{...invite,quota:999},{...note,note:'a'.repeat(2001)},{...note,expectedUpdatedAt:undefined}])assert.throws(()=>campaignCommand(c),/INVALID/);
+});
+test('mature invitation denials are terminal private errors with no raw SQL detail',async()=>{
+ const source=await readFile(new URL('../lib/api/server.ts',import.meta.url),'utf8'),module={exports:{}};const compiled=await transform(source,{loader:'ts',format:'cjs'});runInContext(compiled.code,createContext({module,exports:module.exports,Response,crypto,require:()=>({})}));
+ for(const [message,status,code] of [['not_authorized',403,'FORBIDDEN'],['creator_not_found',404,'NOT_FOUND'],['already_participant',409,'CONFLICT'],['invite_quota_exceeded',400,'INVALID']]){const r=module.exports.backendFailure({message});assert.equal(r.status,status);assert.equal(r.headers.get('cache-control'),'private, no-store');const body=await r.json();assert.equal(body.code,code);assert.equal(body.retryable,false);assert.ok(!JSON.stringify(body).includes(message));}
 });
 test('discovery renders real public attributes and clears private notes after account invalidation',async()=>{
  const data={items:[{id:creatorId,handle:'city-author',name:'City author',bio:'Original city guides',niches:['City'],languages:['en'],audienceGeos:['HK'],platforms:['instagram'],guideCount:2,lastGuideAt:null,saved:true,note:'Owner private note',savedUpdatedAt:updatedAt}],nextCursor:null,quota:{limit:3,used:0,remaining:3,periodStart:updatedAt},campaigns:[],campaignsNextCursor:null};
