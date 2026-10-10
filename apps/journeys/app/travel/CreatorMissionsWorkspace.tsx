@@ -62,8 +62,8 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   error==='FORBIDDEN'?t('Complete your creator profile or check your account access to continue.','請先完成創作者檔案，或檢查帳戶存取權。'):
   error==='INVALID'?t('This action is unavailable or the evidence needs correction. Check the campaign status, eligibility and HTTPS links.','此操作目前不可用或證明資料需要修正。請檢查合作狀態、資格及 HTTPS 連結。'):
   t('The request was not completed. Your input is retained; retry when the connection is available.','請求尚未完成，輸入仍保留，請在連線恢復後重試。');
- if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href(path)}/></section>;
  if(!enabled)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="UNAVAILABLE" retryState="blocked"/></section>;
+ if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href(path)}/></section>;
  return <section className="k-page" data-testid="creator-collaborations">
   <p className="k-eyebrow">{t('CREATOR STUDIO','創作者工作室')}</p>
   <h1>{detail?.title??t('Creator collaborations','創作者合作')}</h1>

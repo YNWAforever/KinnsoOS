@@ -23,8 +23,8 @@ export function CreatorEarningsWorkspace({actorId,enabled}:{actorId:string|null;
   if(actorId&&enabled)void load('settled');return()=>{++generation.current;unsubscribe();};
  },[actorId,enabled]);
  const amount=(currency:string|null,value:string)=>`${currency??t('Currency unspecified','未註明貨幣')} ${value}`;
- if(!actorId||!valid)return <section className="k-page"><h1>{t('Your earnings records','你的收益紀錄')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href('studio/earnings')}/></section>;
  if(!enabled)return <section className="k-page"><h1>{t('Your earnings records','你的收益紀錄')}</h1><WorkspaceServiceState locale={locale} code="UNAVAILABLE" retryState="blocked"/></section>;
+ if(!actorId||!valid)return <section className="k-page"><h1>{t('Your earnings records','你的收益紀錄')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href('studio/earnings')}/></section>;
  return <section className="k-page" data-testid="creator-earnings"><p className="k-eyebrow">{t('CREATOR STUDIO','創作者工作室')}</p><h1>{t('Your earnings records','你的收益紀錄')}</h1><p>{t('These records show settlement and payout status. Each currency is reported separately.','以下紀錄顯示結算及付款狀態，各種貨幣分開列出。')}</p>
   <div className="k-actions"><Link className="k-btn" href={href('studio/missions')}>{t('Collaborations','合作')}</Link><Link className="k-btn" href={href('inbox')}>{t('Inbox','收件匣')}</Link><Link className="k-btn" href={href('support')}>{t('Ask about a record','查詢紀錄')}</Link></div>
   {error&&<WorkspaceServiceState locale={locale} code={error} requestId={reference.current} retryState={busy?'blocked':'read'} onRetry={()=>void load()} returnPath={href('studio/earnings')}/>} {busy&&<p role="status">{t('Loading earnings records…','正在載入收益紀錄…')}</p>}
