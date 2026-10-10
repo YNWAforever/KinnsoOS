@@ -3,15 +3,19 @@ import assert from 'node:assert/strict';
 import {campaignCommand} from '../lib/merchants/campaigns.ts';
 import {workspaceHarness,tick} from './helpers/workspace-harness.mjs';
 import {readFile} from 'node:fs/promises';import {createContext,runInContext} from 'node:vm';import {transform} from 'esbuild';
-const discoveryModule={exports:{}};
+const discoveryModule={exports:{}},repositoryCalls=[];
 const discoverySource=await readFile(new URL('../lib/merchants/creator-discovery.ts',import.meta.url),'utf8').catch(e=>{if(e.code==='ENOENT')return '';throw e;});
-if(discoverySource){const compiled=await transform(discoverySource,{loader:'ts',format:'cjs'});runInContext(compiled.code,createContext({module:discoveryModule,exports:discoveryModule.exports,URLSearchParams,require:()=>({})}));}
+if(discoverySource){const compiled=await transform(discoverySource,{loader:'ts',format:'cjs'});runInContext(compiled.code,createContext({module:discoveryModule,exports:discoveryModule.exports,URLSearchParams,require:()=>({request:(...args)=>{repositoryCalls.push(args);return Promise.resolve({ok:true,data:{}});}})}));}
 const discovery=discoveryModule.exports;
 const id='11111111-1111-4111-8111-111111111111',creatorId='22222222-2222-4222-8222-222222222222',updatedAt='2026-10-10T12:00:00.123456Z';
 test('discovery query rejects duplicated, unknown, oversized and malformed filters before IO',()=>{
  assert.equal(typeof discovery.discoveryQuery,'function');
  assert.deepEqual(JSON.parse(JSON.stringify(discovery.discoveryQuery(new URLSearchParams('q=city&savedOnly=true')))),{q:'city',savedOnly:true});
  for(const q of ['q=a&q=b','q='+('a'.repeat(101)),'savedOnly=yes','savedOnly=true&savedOnly=false','after=','userId='+id,'after='+('a'.repeat(1501))])assert.throws(()=>discovery.discoveryQuery(new URLSearchParams(q)),/INVALID/);
+});
+test('actual discovery repository omits cleared optional cursors from reload and post-write queries',async()=>{
+ await discovery.merchantCreators.list(id,{q:'city',after:undefined,campaignsAfter:undefined,savedOnly:false});const url=new URL(repositoryCalls.at(-1)[0],'https://local.test');
+ assert.equal(url.searchParams.has('after'),false);assert.equal(url.searchParams.has('campaignsAfter'),false);assert.equal(url.searchParams.get('savedOnly'),'false');assert.equal(url.searchParams.get('q'),'city');
 });
 test('saved/private-note and invite commands retain authored input and exact CAS state',()=>{
  for(const type of ['saveCreator','unsaveCreator'])assert.deepEqual(campaignCommand({type,id:creatorId,reason:'Owner shortlist'}),{type,id:creatorId,reason:'Owner shortlist'});

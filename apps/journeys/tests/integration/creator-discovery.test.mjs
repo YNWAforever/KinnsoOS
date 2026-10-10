@@ -1,4 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {fixture,admin} from './local-fixtures.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {spawnSync} from 'node:child_process';import {fixture,admin} from './local-fixtures.mjs';import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
+function sql(text){const target=verifyTestTarget();const r=spawnSync('docker',['exec','-i',target.dbContainer,'psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],{input:text,encoding:'utf8',windowsHide:true});assert.equal(r.status,0,r.stderr);}
 const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
 async function setup(){const f=await fixture(),owner=await f.actor(),foreign=await f.actor(),authors=[];
  for(let i=0;i<6;i++){const a=await f.actor(true);await ok(admin.from('creators').update({handle:'synthetic-discovery-'+randomUUID(),display_name:'Synthetic public author '+i,bio:'Synthetic public biography',public_profile:{niches:['City'],languages:['en'],audience_geos:['HK'],platforms:[{platform:'instagram',private_token:'DO_NOT_RETURN'}],email:'DO_NOT_RETURN',privateEvidence:'DO_NOT_RETURN'}}).eq('id',a.id));authors.push(a);}
@@ -21,6 +22,7 @@ test('discovery allowlists public active attributes, retains owner-only saved no
 test('native invite receipt replay charges once, keeps full creator brief and rejects foreign/stale/inactive/duplicate targets',async()=>{const x=await setup();try{
  const requestId=randomUUID(),command=x.invite(x.authors[0]),first=await ok(x.command(command,requestId));assert.deepEqual(await ok(x.command(command,requestId)),first);
  const receipt=await ok(x.owner.client.rpc('get_kinnso_merchant_creator_receipt',{p_merchant_id:x.merchantId,p_request_id:requestId}));assert.deepEqual(receipt.result,first);assert.equal((await ok(x.list())).quota.used,1);
+ assert.equal((await ok(admin.from('notifications').select('id').eq('creator_id',x.authors[0].id).eq('entity_id',x.mission.id).eq('notification_type','collaboration.invited'))).length,1);
  assert.equal((await x.command({...command,creatorId:x.authors[1].id},requestId)).error?.message,'idempotency_conflict');
  assert.equal((await x.command(command)).error?.message,'already_participant');
  assert.equal((await x.command({...x.invite(x.authors[1]),expectedUpdatedAt:'2000-01-01T00:00:00Z'})).error?.message,'revision_conflict');
@@ -42,3 +44,10 @@ test('direct owner insertion cannot evade the mature monthly quota with an earli
  const attempt=await x.owner.client.from('mission_participants').insert({mission_id:x.mission.id,creator_id:x.authors[4].id,status:'invited',source:'merchant_invite',created_at:'2000-01-01T00:00:00Z'});
  assert.equal(attempt.error?.message,'invite_quota_exceeded');assert.equal((await ok(admin.from('mission_participants').select('id').eq('mission_id',x.mission.id))).length,3);
  }finally{await x.cleanup();}});
+test('an invitation inbox failure rolls back participant, quota and receipt together',async()=>{const x=await setup();const requestId=randomUUID();let fault=false;try{
+ sql(`create function public.synthetic_discovery_inbox_fault()returns trigger language plpgsql set search_path='' as $$begin if new.entity_id='${x.mission.id}'::uuid then raise exception 'synthetic_inbox_failure';end if;return new;end$$;create trigger synthetic_discovery_inbox_fault before insert on public.notifications for each row execute function public.synthetic_discovery_inbox_fault();`);fault=true;
+ const failed=await x.command(x.invite(x.authors[0]),requestId);assert.equal(failed.error?.message,'synthetic_inbox_failure');
+ assert.equal((await ok(admin.from('mission_participants').select('id').eq('mission_id',x.mission.id))).length,0);assert.equal((await ok(x.list())).quota.used,0);assert.equal((await ok(x.owner.client.rpc('get_kinnso_merchant_creator_receipt',{p_merchant_id:x.merchantId,p_request_id:requestId}))).result,null);
+ sql('drop trigger synthetic_discovery_inbox_fault on public.notifications;drop function public.synthetic_discovery_inbox_fault();');fault=false;
+ await ok(x.command(x.invite(x.authors[0]),requestId));assert.equal((await ok(x.list())).quota.used,1);
+ }finally{if(fault)sql('drop trigger synthetic_discovery_inbox_fault on public.notifications;drop function public.synthetic_discovery_inbox_fault();');await x.cleanup();}});
