@@ -163,3 +163,45 @@ test('actual crawler CLI writes aggregate evidence for public success and sitema
     rmSync(directory, { recursive: true, force: true });
   }
 });
+
+
+test('zero-page sitemap cannot satisfy successful evidence and preserves failure counts', () => {
+  const empty = receipt('sitemap', { checked: 0, failureCount: 0, targetOrigin: origin });
+  assert.equal(empty.code, 1);
+  assert.equal(empty.value.reportStatus, 'EMPTY');
+  assert.deepEqual(empty.value.counts, { checkedUrls: 0, failures: 0 });
+  const failed = receipt('sitemap', { checked: 0, failureCount: 1, targetOrigin: origin }, 'failure');
+  assert.equal(failed.code, 0);
+  assert.equal(failed.value.executionOutcome, 'failure');
+  assert.deepEqual(failed.value.counts, { checkedUrls: 0, failures: 1 });
+});
+
+for (const [label, body] of [['empty-urlset', '<urlset/>'], ['non-sitemap-html', '<!doctype html><html><h1>Unavailable</h1></html>']]) {
+  test(`actual zero-page sitemap from ${label} cannot satisfy receipt success`, async () => {
+    const directory = mkdtempSync(path.join(tmpdir(), 'kinnso-nightly-empty-'));
+    const server = createServer((_request, response) => {
+      response.setHeader('Content-Type', label === 'empty-urlset' ? 'application/xml' : 'text/html');
+      response.end(body);
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    try {
+      const target = `http://127.0.0.1:${server.address().port}`, output = path.join(directory, 'crawl.json');
+      const { execFile } = await import('node:child_process');
+      const { promisify } = await import('node:util');
+      const run = await promisify(execFile)(process.execPath, ['--experimental-strip-types', path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, env: { ...process.env, BASE_URL: target, KINNSO_CRAWL_REPORT: output, GITHUB_RUN_ID: '42', GITHUB_RUN_ATTEMPT: '2' } });
+      assert.match(run.stdout, /Checked 0 sitemap URLs/);
+      const aggregate = JSON.parse(readFileSync(output, 'utf8'));
+      assert.deepEqual(aggregate, { checked: 0, failureCount: 0, targetOrigin: target, sourceRevision: source, runId: '42', runAttempt: '2' });
+      // Receipt unit control substitutes the allowed origin; it claims no remote crawl.
+      const result = receipt('sitemap', { ...aggregate, targetOrigin: origin });
+      assert.equal(result.code, 1);
+      assert.equal(result.value.reportStatus, 'EMPTY');
+      assert.deepEqual(result.value.counts, { checkedUrls: 0, failures: 0 });
+    } finally {
+      await new Promise(resolve => server.close(resolve));
+      assert.equal(path.dirname(directory), path.resolve(tmpdir()));
+      assert.ok(path.basename(directory).startsWith('kinnso-nightly-empty-'));
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+}

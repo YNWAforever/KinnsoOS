@@ -34,7 +34,7 @@ function main() {
         }
       } else if (integer(report?.checked) && integer(report?.failureCount) && report.targetOrigin === target && report.sourceRevision === source && report.runId === process.env.GITHUB_RUN_ID && report.runAttempt === process.env.GITHUB_RUN_ATTEMPT) {
         counts = { checkedUrls: report.checked, failures: report.failureCount };
-        reportStatus = 'VALID';
+        reportStatus = report.checked === 0 ? 'EMPTY' : 'VALID';
       }
     } catch { /* Never copy parse errors or report contents into the safe receipt. */ }
   }
