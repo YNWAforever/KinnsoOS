@@ -52,7 +52,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   if(!pending.current){if(!command)return;try{pending.current={command:campaignCommand(command),requestId:crypto.randomUUID()};}catch{setError('INVALID');return;}}
   const request=pending.current,own=scope.current,wasUnknown=unknown;running.current=true;setBusy(true);setMessage('');
   if(wasUnknown){
-   const saved=await merchantCampaigns.list(merchantId,query.current);if(own!==scope.current)return;
+   const saved=await merchantCampaigns.list(merchantId,{campaignId:query.current.campaignId});if(own!==scope.current)return;
    if(!saved.ok){running.current=false;setBusy(false);reference.current=saved.requestId;setError(saved.code);deny(saved.code);return;}
   }
   const result=await merchantCampaigns.command(merchantId,request.command,request.requestId);if(own!==scope.current)return;
@@ -61,7 +61,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   pending.current=null;setUnknown(false);setError('');setMessage(t('Saved on the server.','已儲存至伺服器。'));
   if(['createDraft','updateDraft'].includes(request.command.type))resetEditor();
   const campaignId=['createDraft','updateDraft','publish','close'].includes(request.command.type)?request.command.id:query.current.campaignId;
-  await load({...query.current,campaignId,participantsAfter:undefined,submissionsAfter:undefined});
+  await load({...query.current,after:undefined,campaignId,participantsAfter:undefined,submissionsAfter:undefined,branchesAfter:undefined});
   if(own===scope.current)await onChanged();
  }
  function save(publish:boolean){
@@ -76,7 +76,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}
   <h2>{t('Create coupon promotion brief','建立優惠推廣簡報')}</h2>
   <p>{t('Save a draft, describe the work creators should deliver, then publish when the brief is ready. Published terms stay fixed; closing stops new applications while accepted creators can finish their work.','先儲存草稿，說明創作者需要提交的作品，準備好後再發布。發布後條款會鎖定；關閉只停止新申請，已接受的創作者仍可完成作品。')}</p>
-  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load(query.current,true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load({...query.current,after:undefined},true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
   {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
   {message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>

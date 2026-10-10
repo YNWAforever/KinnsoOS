@@ -9,14 +9,14 @@ create function kinnso_internal.collaboration_list_rows(p_scope text,p_actor uui
 returns table(id uuid,created_at timestamptz,due_at timestamptz,list_state text)
 language sql stable security definer set search_path='' as $$
  select m.id,m.created_at,
-  (select min(l.due_at) from public.mission_milestones l where l.mission_id=m.id and l.due_at is not null and
-   (p_scope='merchant' and not exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='active')
+  (select min(l.due_at) from public.mission_milestones l where l.mission_id=m.id and l.due_at is not null and m.status in ('published','paused') and
+   (p_scope='merchant' and not exists(select 1 from public.mission_participants a where a.mission_id=m.id)
     or exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='active' and (p_scope='merchant' or a.creator_id=p_actor)
      and (l.repeatable and (m.max_receipts_per_creator is null or (select count(*) from public.mission_milestone_submissions s where s.mission_participant_id=a.id and s.mission_milestone_id=l.id and s.status='approved')<m.max_receipts_per_creator) or not l.repeatable and not exists(select 1 from public.mission_milestone_submissions s where s.mission_participant_id=a.id and s.mission_milestone_id=l.id and s.status='approved')))
     or p_scope='available')),
-  case when (p_scope='merchant' and m.status in ('published','paused') or p_scope='mine' and p.status='active') and exists
+  case when (p_scope='merchant' and m.status in ('published','paused') or p_scope='mine' and p.status='active' and m.status in ('published','paused')) and exists
    (select 1 from public.mission_milestone_submissions s join public.mission_participants a on a.id=s.mission_participant_id where a.mission_id=m.id and (p_scope='merchant' or a.creator_id=p_actor) and s.status='revision_requested') then 'revision_requested'
-   when (p_scope='merchant' and m.status in ('published','paused') or p_scope='mine' and p.status='active') and exists
+   when (p_scope='merchant' and m.status in ('published','paused') or p_scope='mine' and p.status='active' and m.status in ('published','paused')) and exists
    (select 1 from public.mission_milestone_submissions s join public.mission_participants a on a.id=s.mission_participant_id where a.mission_id=m.id and (p_scope='merchant' or a.creator_id=p_actor) and s.status='submitted') then 'submitted'
    when p_scope='merchant' and m.status in ('published','paused') and exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='applied') then 'applied'
    else case when p_scope='mine' then p.status else m.status end end
@@ -27,6 +27,17 @@ language sql stable security definer set search_path='' as $$
    or m.mission_source='travelpayouts' and exists(select 1 from public.affiliate_network_programs a where a.id=m.affiliate_network_program_id and a.status='active'));
 $$;
 revoke all on function kinnso_internal.collaboration_list_rows(text,uuid,uuid) from public,anon,authenticated,service_role;
+
+create function kinnso_internal.collaboration_matches_status(p_scope text,p_actor uuid,p_mission uuid,p_status text)returns boolean
+language sql stable security definer set search_path='' as $$
+ select case when p_status in ('submitted','revision_requested') then m.status in ('published','paused') and exists(
+  select 1 from public.mission_milestone_submissions s join public.mission_participants a on a.id=s.mission_participant_id
+  where a.mission_id=m.id and a.status='active' and (p_scope='merchant' or a.creator_id=p_actor) and s.status=p_status)
+ when p_scope='merchant' and p_status='applied' then m.status in ('published','paused') and exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='applied')
+ else case when p_scope='mine' then exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.creator_id=p_actor and a.status=p_status)else m.status=p_status end end
+ from public.missions m where m.id=p_mission;
+$$;
+revoke all on function kinnso_internal.collaboration_matches_status(text,uuid,uuid,text)from public,anon,authenticated,service_role;
 
 create function kinnso_internal.collaboration_list_page(p_scope text,p_actor uuid,p_merchant uuid,p_query jsonb)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
@@ -43,11 +54,11 @@ declare q text:=btrim(coalesce(p_query->>'q',''));state text:=coalesce(p_query->
   exception when others then raise exception 'invalid_cursor';end;
   if anchor->>'binding' is distinct from binding or anchor->>'v' is distinct from '1' then raise exception 'invalid_cursor';end if;
   select r.created_at,r.due_at,r.list_state into anchor_created,anchor_due,anchor_state from kinnso_internal.collaboration_list_rows(p_scope,p_actor,p_merchant)r join public.missions m on m.id=r.id
-   where r.id=anchor_id and (state='' or r.list_state=state) and (q='' or position(lower(q) in lower(m.title||' '||coalesce(m.summary,'')))>0);
+   where r.id=anchor_id and (state='' or kinnso_internal.collaboration_matches_status(p_scope,p_actor,r.id,state)) and (q='' or position(lower(q) in lower(m.title||' '||coalesce(m.summary,'')))>0);
   if not found or anchor->>'createdAt' is distinct from to_jsonb(anchor_created)#>>'{}' or anchor->>'dueAt' is distinct from to_jsonb(anchor_due)#>>'{}' or anchor->>'state' is distinct from anchor_state then raise exception 'invalid_cursor';end if;
  end if;
  with rows as materialized(select r.* from kinnso_internal.collaboration_list_rows(p_scope,p_actor,p_merchant)r join public.missions m on m.id=r.id
-  where (state='' or r.list_state=state) and (q='' or position(lower(q) in lower(m.title||' '||coalesce(m.summary,'')))>0)), bounded as (
+  where (state='' or kinnso_internal.collaboration_matches_status(p_scope,p_actor,r.id,state)) and (q='' or position(lower(q) in lower(m.title||' '||coalesce(m.summary,'')))>0)), bounded as (
   select *,row_number()over(order by case when ordering='recent' then created_at end desc,case when ordering='deadline' then due_at end asc nulls last,case when ordering='recent' then id end desc,case when ordering='deadline' then id end asc)n from rows
   where anchor_id is null or ordering='recent' and (created_at,id)<(anchor_created,anchor_id)
    or ordering='deadline' and (anchor_due is not null and (due_at>anchor_due or due_at is null or due_at=anchor_due and id>anchor_id) or anchor_due is null and due_at is null and id>anchor_id)

@@ -30,9 +30,10 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
    if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setDetail(null);return;}
    setDetail(previous=>after&&previous?{...r.data,submissions:[...previous.submissions,...r.data.submissions].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index)}:r.data);
   }else{
-   const r=await creatorMissions.list(nextScope,after,nextQuery);if(own!==generation.current)return;setBusy(false);
+   const {after:restoredCursor,...currentQuery}=nextQuery;applied.current=currentQuery;
+   const r=await creatorMissions.list(nextScope,after,currentQuery);if(own!==generation.current)return;setBusy(false);
    if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setItems(null);return;}
-   const {after:oldCursor,...currentQuery}=nextQuery;applied.current=currentQuery;writeListLocation({...nextQuery,...after?{after}:{}},nextScope);
+   writeListLocation({...nextQuery,...after?{after}:{}},nextScope);
    setItems(previous=>after?[...(previous??[]),...r.data.items].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index):r.data.items);setCursor(r.data.nextCursor);
   }
  }

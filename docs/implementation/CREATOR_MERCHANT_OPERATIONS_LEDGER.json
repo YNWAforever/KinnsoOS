@@ -1249,7 +1249,11 @@
     "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
     "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
     "P10: native list API uses v1 scope/filter/order-bound cursors; raw UUID and v0 cursors are rejected with refresh required. Mature UUID RPCs remain unchanged as the explicit legacy interface. Cost if wrong: an already-open pre-upgrade native page must refresh once.",
-    "P10 draft creation-time guard has current GREEN and was written after its test, but missing required fixture summary blocked a valid draft-specific pre-implementation RED; do not claim that RED. Automatic approval review rejected temporary guard removal for a pushed test checkpoint; retained guard and used safe fixture correction instead."
+    "P10 draft creation-time guard has current GREEN and was written after its test, but missing required fixture summary blocked a valid draft-specific pre-implementation RED; do not claim that RED. Automatic approval review rejected temporary guard removal for a pushed test checkpoint; retained guard and used safe fixture correction instead.",
+    "P10 Ruling: workload filters use independent current active-participant EXISTS predicates, while a single priority badge remains display-only; lifecycle filters use underlying state. Cost if wrong: additional query cost or status semantics require a scoped correction; P16 measurement still required.",
+    "P10 Ruling: merchant unfinished deadline fallback is only a nonterminal campaign with no participant history; finished/cancelled work has no unfinished deadline. Cost if wrong: a historical cancelled-only campaign may need a separately defined future-work label.",
+    "P10 review bounded rulings: hosted/production requires designated release gates; final CI pending exact candidate; real-device/assistive technology NOT_RUN under P17; production EXPLAIN/performance under P16; cross-page snapshot consistency is explicitly unavailable; preserved legacy UUID RPCs remain compatible while native older bookmarks require Refresh. Costs: hosted/device/scale findings can still block release, and stale bookmarks need one refresh.",
+    "P10 minor (deferred): malformed URL skips local invalidation subscription; actual Workbench actor key and MerchantWorkspace invalidation clear/remount this private workspace. Cost if those parent protections change: local lifecycle handling must be corrected. No current cross-account disclosure established."
   ],
   "tasks": [
     {
@@ -1809,11 +1813,11 @@
         "U03",
         "U04"
       ],
-      "code_status": "IMPLEMENTED_CI_AND_REVIEW_PENDING",
-      "ci_status": "REPEATABLE_FIX_CI_PENDING",
+      "code_status": "FINAL_REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
+      "ci_status": "CURRENT_FIX_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "a3af83f0114fd1012287d49e9b49e20494524ed9",
+      "source_sha": "21f51583fb767b76884dd0328dc56f9c817150e2",
       "evidence": [
         {
           "source_sha": "81b4dbbbc785e5d0bd6c1e78faf8b9be0a879bd4",
@@ -1846,6 +1850,14 @@
           "result": "437unitPASS;71integration70PASS_1FAIL_0SKIP. Repeatable milestone lost nextDueAt after first approved receipt below cap2: valid RED. Draft creation-time denial and allowed owned title edit PASS. Previous supplemental checkpoint fixture omitted summary: assertions NOT_REACHED, not behavior RED. Guard retained; temporary guard-removal commit/push rejected by automatic approval review and not retried. Local TypeScript/build/source pack PASS at unchanged candidate application code.",
           "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38094168084; .superpowers/sdd/2026-10-11-creator-merchant-query/p10-a3-failed.log",
           "observed_at": "2026-10-10T23:18:53.916517+00:00"
+        },
+        {
+          "source_sha": "21f51583fb767b76884dd0328dc56f9c817150e2",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Four Important final review regressions, one fix pass",
+          "result": "439unit437PASS_2FAIL_0SKIP;73integration71PASS_2FAIL_0SKIP. Actual stale URL refresh replayed cursor; unknown merchant acknowledgement blocked retry; submitted mixed-state merchant filter returned0 expected1; completed participant regained historical deadline. All valid RED. Original repeatable receipt cap test now PASS. Candidate439unitPASS_0FAIL_0SKIP; typecheck/build/source pack PASS. Fresh review completed; four fixes applied; current DB/browser whole CI pending.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095133707; .superpowers/sdd/2026-10-11-creator-merchant-query/review-fix-unit.log; review-fix-build.log",
+          "observed_at": "2026-10-10T23:38:18.920565+00:00"
         }
       ],
       "blockers": [

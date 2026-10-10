@@ -37,3 +37,5 @@ P10 source-only candidate on `9150a79`: `20261010230000_kinnso_collaboration_lis
 P10 revised source-only candidate: SQL SHA-256 `ab1e0eaf634f179ebba8830cdd5b5a06e9254ce4d12ec68adfd9b0a2b74018aa`; preserves existing `immutable_campaign_terms` denial for published creation-time edits and extends creation-time immutability to drafts. Initial owned query and repeatable milestone checks are pending; no hosted execution.
 
 P10 repeatable deadline fix source-only hash: `c1ce4581f6e4c4482c354a0d81d6dd60abef38bb1377b233fe7f84f1b8531bb1`. Hosted SQL NOT_EXECUTED; cap2 owned-CI RED observed; matching GREEN pending.
+
+P10 final review fix source-only migration SHA256 `c020a1c7d9c8d5fd1b91459405b2e4645bea20ca0b4aa12efda3882e3bcefb16`; NOT_EXECUTED on hosted DB. Fresh review Important fixes have valid RED; final GREEN remains pending.
