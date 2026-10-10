@@ -1274,7 +1274,7 @@
         "U06"
       ],
       "code_status": "VERIFIED",
-      "ci_status": "NOT_RUN",
+      "ci_status": "PENDING_CURRENT_HEAD",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "fdd100237bf251cfcfa3b6905e914384f115c76f",
@@ -1289,7 +1289,8 @@
         }
       ],
       "blockers": [],
-      "next_action": "Rebind continuation review/CI/deployment after each new head; preserve parent release blocker."
+      "next_action": "Rebind continuation review/CI/deployment after each new head; preserve parent release blocker.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {
       "id": "P02",
@@ -1298,7 +1299,7 @@
       ],
       "references": [],
       "code_status": "LOCAL_VERIFIED",
-      "ci_status": "NOT_RUN",
+      "ci_status": "PENDING_CURRENT_HEAD",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "057ffe9fde3a1fffa2dd2ec50c78333ba49eed0e",
@@ -1323,7 +1324,8 @@
       "blockers": [
         "BLOCKED_CONFIG_VALUE_RELATIONS: connector env listing 403; CLI metadata succeeds, preview required settings absent from current project list. Effective deployment values, Auth, actor and schema not checked."
       ],
-      "next_action": "Bind committed source and CI; designate staging before config or schema changes."
+      "next_action": "Bind committed source and CI; designate staging before config or schema changes.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {
       "id": "P03",
@@ -1354,10 +1356,10 @@
         "N18"
       ],
       "code_status": "LOCAL_VERIFIED",
-      "ci_status": "NOT_RUN",
+      "ci_status": "PENDING_CURRENT_HEAD",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
+      "source_sha": "220990b0ce65251813a85c5e6b7eee6021b59d72",
       "evidence": [
         {
           "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
@@ -1366,12 +1368,21 @@
           "result": "7 behavioral RED then GREEN; 2 supplemental baseline regressions RED then GREEN; unit414_PASS_0_FAIL_0_SKIP; browser8_PASS; typecheck_PASS; build_PASS; root_tooling72_PASS; source_package6_collected_1_Windows_symlink_SKIP",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/42d897e-unit.log; 42d897e-browser.log; p03-build-nojunction.log; p03-root-tooling-escalated.log; committed tests/e2e/u06-workspace-service-state.spec.ts",
           "observed_at": "2026-10-10T20:58:12.331182+00:00"
+        },
+        {
+          "source_sha": "220990b0ce65251813a85c5e6b7eee6021b59d72",
+          "environment": "local_isolated",
+          "scenario": "independent P01-P03 review and fixes; conflict comparison retains moderator reason, merchant feedback/branch buffers",
+          "result": "2_P2_RED_to_GREEN; related28_PASS; fullunit416_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS; no_critical_or_deferred_minor_findings",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p03-review-red.log; p03-review-green.log; p03-review-unit.log; p03-review-build.log",
+          "observed_at": "2026-10-10T21:02:55.593429+00:00"
         }
       ],
       "blockers": [
         "HOSTED_UAT_NOT_RUN: staging target, approved synthetic actors and recovery packet not designated; local component browser fixture is not connected or hosted acceptance."
       ],
-      "next_action": "Complete current-head independent review and owned CI; hosted acceptance waits for designated staging."
+      "next_action": "Complete current-head independent review and owned CI; hosted acceptance waits for designated staging.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
     },
     {
       "id": "P04",
