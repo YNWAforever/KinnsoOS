@@ -32,3 +32,13 @@ test('refresh after URL restoration starts a new read without replaying the old 
  assert.equal(calls[0][0],'mine');assert.equal(calls[0][1],'v1.YWJj');
  h.find('button','Refresh collaborations').props.onClick();await tick();h.render();assert.equal(calls.at(-1)[1],undefined);assert.equal(calls.at(-1)[2].after,undefined);assert.equal(calls.at(-1)[2].q,'City');
 });
+
+test('refresh recovers when an initially restored cursor is invalid',async()=>{
+ const calls=[];const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{list:async(...args)=>{calls.push(args);return calls.length===1?{ok:false,code:'INVALID'}:{ok:true,data:{items:[],nextCursor:null}};}}},{search:'?scope=mine&q=City&after=v1.YWJj'});
+ h.find('button','Refresh collaborations').props.onClick();await tick();h.render();assert.equal(calls.at(-1)[1],undefined);assert.equal(calls.at(-1)[2].after,undefined);assert.equal(calls.at(-1)[2].q,'City');
+});
+test('unknown merchant write reconciles fresh detail without a stale list cursor or filter',async()=>{
+ const reads=[],writes=[],directory={items:[{id,title:'Campaign',summary:'Owned',status:'draft',missionType:'coupon_affiliate',updatedAt:'2026-01-01T00:00:00.000Z'}],nextCursor:null,summary:{published:0},branches:[],detail:null};let lost=false;
+ const h=await workspaceHarness('MerchantCampaigns',{merchantCampaigns:{list:async(_id,q)=>{reads.push(q);return lost&&q.after?{ok:false,code:'INVALID'}:{ok:true,data:directory};},command:async(...args)=>{writes.push(args);if(!lost){lost=true;return{ok:false,code:'UNAVAILABLE'};}return{ok:true,data:{id}};}}},{search:'?q=Campaign&after=v1.YWJj'});
+ h.field('Brief title').props.onChange({target:{value:'New draft'}});h.render();h.elements().find(n=>n.type==='form').props.onSubmit({preventDefault(){},nativeEvent:{submitter:{getAttribute:()=> 'draft'}}});await tick();h.render();assert.match(h.text(),/result is not confirmed/);h.find('button','Retry promotion request').props.onClick();await tick();h.render();assert.equal(writes.length,2);assert.deepEqual(writes[1],writes[0]);assert.equal(reads[2].after,undefined);assert.equal(reads[2].q,undefined);
+});
