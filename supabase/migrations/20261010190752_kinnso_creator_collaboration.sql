@@ -76,7 +76,7 @@ returns jsonb language sql stable security definer set search_path='' as $$
   'paidFeeAmount',m.paid_fee_amount::text,'paidFeeCurrency',m.paid_fee_currency,
   'creatorRate',m.creator_commission_rate::text,'startsAt',m.starts_at,'endsAt',m.ends_at,
   'participant',case when p.id is null then null else jsonb_build_object('id',p.id,'status',p.status,
-    'source',p.source,'applicationNote',p.application_note,'updatedAt',p.updated_at) end)
+    'source',p.source,'applicationNote',p.application_note,'merchantReviewNote',p.merchant_review_note,'updatedAt',p.updated_at) end)
  from public.missions m left join public.merchant_profiles merchant on merchant.id=m.merchant_profile_id
  left join public.mission_participants p on p.mission_id=m.id and p.creator_id=p_actor
  where m.id=p_mission_id;

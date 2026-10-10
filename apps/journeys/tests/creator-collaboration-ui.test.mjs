@@ -54,6 +54,16 @@ test('authored coupon campaigns ask for an application while mature immediate-jo
  assert.ok(h.find('button','Send application'));assert.equal(h.find('button','Join collaboration'),undefined);
 });
 
+test('creator sees the merchant application explanation after rejection and approval',async()=>{
+ for(const [status,note] of [['rejected','We need a route with accessible transport.'],['active','Your original route fits this brief.']]){
+  const dto=detail();dto.participant={id,status,updatedAt:stamp,applicationNote:'My original route proposal.',merchantReviewNote:note};dto.joinAvailable=false;
+  const h=await harness({get:async()=>({ok:true,data:dto})});
+  assert.match(h.text(),/Application review:/);assert.ok(h.text().includes(note));assert.ok(h.text().includes(dto.participant.applicationNote));
+ }
+ const dto=detail();dto.participant={id,status:'applied',updatedAt:stamp,merchantReviewNote:null};
+ const pending=await harness({get:async()=>({ok:true,data:dto})});assert.doesNotMatch(pending.text(),/Application review:/);
+});
+
 test('earnings show exact separate-currency totals and distinguish tracked volume from payout records',async()=>{
  const pages={settled:{section:'settled',totals:[{currency:'HKD',pending:'9999999999.99',paid:'0.10'},{currency:'USD',pending:'1.20',paid:'0.00'}],items:[],nextCursor:null},tracked:{section:'tracked',totals:[],items:[{id,kind:'affiliate',title:'Tracked campaign',amount:'750.00',currency:'USD',status:'processing'}],nextCursor:null}};
  const h=await harness({get:async section=>({ok:true,data:pages[section]})},'CreatorEarningsWorkspace');

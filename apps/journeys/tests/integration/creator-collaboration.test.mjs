@@ -126,6 +126,27 @@ test('native application decisions and invitations notify only their creator onc
  }finally{if(channelInstalled)sql(`delete from kinnso_internal.delivery_channels where provider='${provider}';`);await s.cleanup();}
 });
 
+test('application detail and lists expose only the current creator merchant review explanation',async()=>{
+ const s=await setup();try{
+  const m=await s.mission({kinnso_requires_application:true});
+  const cases=[[s.creator,'approve','Your original route fits this brief.','Private approval rationale'],[s.other,'reject','We need a route with accessible transport.','Private rejection rationale']];
+  for(const[actor,action,note,reason]of cases){
+   const joined=await ok(s.command(actor,m.id,{type:'join',applicationNote:'An authored proposal.'}));
+   assert.equal((await s.detail(actor,m.id)).participant.merchantReviewNote,null);
+   await ok(s.owner.client.rpc('apply_kinnso_merchant_campaign_command',{p_merchant_id:s.merchant,p_request_id:randomUUID(),p_command:{type:'reviewApplication',id:joined.id,expectedUpdatedAt:joined.updatedAt,action,note,reason}}));
+  }
+  for(const[actor,action,note,reason]of cases){
+   const own=await s.detail(actor,m.id),list=await ok(actor.client.rpc('list_kinnso_creator_missions',{p_scope:'mine'}));
+   assert.equal(own.participant.status,action==='approve'?'active':'rejected');assert.equal(own.participant.merchantReviewNote,note);
+   assert.equal(list.items.find(row=>row.id===m.id).participant.merchantReviewNote,note);
+   const foreign=cases.find(row=>row[0].id!==actor.id)[2];
+   assert.equal(JSON.stringify({own,list}).includes(foreign),false);assert.equal(JSON.stringify({own,list}).includes(reason),false);
+  }
+  const unjoined=await s.f.actor(true),publicDetail=await s.detail(unjoined,m.id);assert.equal(publicDetail.participant,null);
+  for(const[,,note]of cases)assert.equal(JSON.stringify(publicDetail).includes(note),false);
+ }finally{await s.cleanup();}
+});
+
 test('repeatable receipt requests replay once and cap enforcement also covers revision resubmission',async()=>{
  const s=await setup();try{
   const m=await s.mission({mission_type:'receipt_cashback',max_receipts_per_creator:1,paid_fee_amount:0,paid_fee_currency:'HKD'});

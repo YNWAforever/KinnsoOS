@@ -85,6 +85,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
     {detail.participant?.status==='invited'&&<div><p>{t('Review the brief before accepting this invitation.','接受邀請前請先核對合作簡介。')}</p><button className="k-btn primary" disabled={locked||!detail.acceptAvailable} onClick={()=>send({type:'acceptInvite',expectedUpdatedAt:detail.participant!.updatedAt})}>{t('Accept invitation','接受邀請')}</button></div>}
     {detail.participant&&['applied','invited'].includes(detail.participant.status)&&<button className="k-btn" disabled={locked} onClick={()=>send({type:'withdrawApplication',expectedUpdatedAt:detail.participant!.updatedAt})}>{detail.participant.status==='invited'?t('Decline invitation','婉拒邀請'):t('Withdraw application','撤回申請')}</button>}
     {detail.participant?.applicationNote&&<p>{t('Your application: ','你的申請：')}{detail.participant.applicationNote}</p>}
+    {detail.participant?.merchantReviewNote&&<p><strong>{t('Application review: ','申請審核意見：')}</strong>{detail.participant.merchantReviewNote}</p>}
     {detail.participant?.status==='active'&&detail.couponCode&&<p>{t('Campaign coupon code: ','合作優惠碼：')}<strong>{detail.couponCode}</strong></p>}
     {detail.participant?.status==='active'&&evidenceUrl(detail.couponUrl)&&<a href={detail.couponUrl} target="_blank" rel="noopener noreferrer">{t('Open merchant offer','開啟商戶優惠')}</a>}
     {detail.partnerLinks.map(link=>evidenceUrl(link.url)&&<p key={link.id}><a href={link.url} target="_blank" rel="noopener noreferrer">{t('Your existing partner link','你現有的合作連結')}</a></p>)}

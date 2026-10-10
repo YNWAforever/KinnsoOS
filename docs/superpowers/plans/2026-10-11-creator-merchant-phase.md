@@ -27,32 +27,32 @@ Cross-company/actor isolation; delayed response after account change; duplicate 
 
 Files: new `lib/merchants/onboarding.ts`, `app/api/merchant/application/route.ts`, `app/api/merchant/profile/route.ts`, `app/travel/MerchantOnboarding.tsx`, `MerchantProfile.tsx`; CLI-generated onboarding migration and unit/integration tests.
 Interfaces: GET own application history/status; POST immutable application with requestId; GET owner profile; PUT allowed profile fields with expectedUpdatedAt/requestId. Owner profile and onboarding slots integrate through MerchantWorkspace.
-- [ ] Write failing bounded-validation and real-route tests; run RED.
-- [ ] Add actor-scoped, idempotent pending application and owner-only CAS profile RPCs, BFF and bilingual forms.
+- [x] Write failing bounded-validation and real-route tests; run RED.
+- [x] Add actor-scoped, idempotent pending application and owner-only CAS profile RPCs, BFF and bilingual forms.
 - [ ] Verify duplicate/retry, bad URL/privilege-field injection, rejected reapplication and forbidden company access.
-- [ ] Native ops review component/API reuses existing moderated approval RPC; record unknown decision resolution and reason.
+- [x] Native ops review component/API reuses existing moderated approval RPC; record unknown decision resolution and reason.
 
 ## CM2 Creator collaborations and historical earnings (creator scope)
 
 Files: new CreatorMissionsWorkspace, CreatorEarningsWorkspace, creator repository/BFF, CLI-generated collaboration migration and tests.
 Interfaces: list available/mine bounded20+1, UUID detail, join/acceptInvite/withdrawApplication/submitEvidence with actor-derived ownership and timestamps; bounded earnings sections with decimal strings and currency grouping.
-- [ ] RED for scope/CAS/URL/request validation and real handlers.
-- [ ] Implement native browse/apply/evidence/resubmission/feedback and earnings (tracked/settled/payouts remain distinct).
+- [x] RED for scope/CAS/URL/request validation and real handlers.
+- [x] Implement native browse/apply/evidence/resubmission/feedback and earnings (tracked/settled/payouts remain distinct).
 - [ ] Verify no self-join to owned merchant, no cross-creator data, paused existing work, duplicate request and unauthorized earning reads.
 
 ## CM3 Merchant campaign lifecycle (merchant scope)
 
 Files: MerchantWorkspace, new MerchantCampaigns/repository/BFF, CLI-generated lifecycle migration and tests.
 Interfaces: bounded campaigns/detail and company counts; createDraft/updateDraft/publish/close/reviewApplication/reviewSubmission/setBranch commands. Existing team/invitations/redemption contract preserved. Owner-only submission review reuses mature audit/settlement rules.
-- [ ] RED for draft/publish validation, CAS, review and branch ownership.
-- [ ] Implement complete draft→publish→paused lifecycle, authored milestones, human review feedback, branch rename/archive and role-aware navigation.
+- [x] RED for draft/publish validation, CAS, review and branch ownership.
+- [x] Implement complete draft→publish→paused lifecycle, authored milestones, human review feedback, branch rename/archive and role-aware navigation.
 - [ ] Verify publish prerequisites, stale edit, exactly-once effects and paused accepted work; cannot expand marketing role into submission approval.
 
 ## CM4 Integration, verification and handoff (root)
 
 Files: Workbench/routes, notification entityLink, CSS, source manifest, end-to-end test and phase evidence/ledger.
-- [ ] Wire real creator/merchant routes and native inbox links; preserve explicit demo paths and guide editor.
-- [ ] Connect ops intake review and merchant onboarding/profile slots; keyboard/mobile styles, loading/error/empty/unknown states.
+- [x] Wire real creator/merchant routes and native inbox links; preserve explicit demo paths and guide editor.
+- [x] Connect ops intake review and merchant onboarding/profile slots; keyboard/mobile styles, loading/error/empty/unknown states.
 - [ ] Exercise merchant pending→moderator approval→draft→publish→creator apply→merchant approval→evidence→revision→approval→paused→history.
 - [ ] Run unit/build/typecheck/package tests, root impacted checks and existing connected CI at exact branch head. Record DB/browser/environment limitations separately.
 - [ ] Fresh review of combined diff, fix important issues, push isolated feature branch and create cohesive draft PR with migration/rollback/run evidence. No main merge or production SQL implied.
@@ -60,3 +60,7 @@ Files: Workbench/routes, notification entityLink, CSS, source manifest, end-to-e
 ## Environment and status
 
 No local Docker/owned Supabase stack is available at baseline. Do not bypass ownership checks; use existing Linux connected CI for full migrations/integration/browser verification. Public live creator/merchant pages are inspected anonymously; signed-in hosted acceptance remains separate. Preserve same-view screenshots and successful test receipts where possible.
+
+## Review and verification checkpoint
+
+Independent review resolved campaign SQL variable ambiguity, the browser evidence relationship query, and missing creator application feedback. Reviewer found no remaining material blocker in the final feedback diff; release remains gated on isolated CI. Local396/396 unit tests, typecheck, production build and six packaging checks passed. PR55 contains the implementation; latest main PR54 diagnostics were integrated without conflict.

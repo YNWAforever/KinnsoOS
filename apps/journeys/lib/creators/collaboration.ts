@@ -3,7 +3,7 @@ import {request} from '../trips/repository';
 export type MissionScope = 'available' | 'mine';
 export type Participation = {
  id: string; status: 'invited'|'applied'|'rejected'|'active'|'completed'|'cancelled';
- source: string; applicationNote: string|null; updatedAt: string;
+ source: string; applicationNote: string|null; merchantReviewNote: string|null; updatedAt: string;
 };
 export type CreatorMission = {
  id:string; title:string; summary:string; merchantName:string|null;

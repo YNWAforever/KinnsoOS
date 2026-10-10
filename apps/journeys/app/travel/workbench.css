@@ -4356,6 +4356,8 @@ body:has(.k-app) {
 
 .k-merchant .k-card {
   margin-block: 24px;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .k-collab-nav {
   display: flex;

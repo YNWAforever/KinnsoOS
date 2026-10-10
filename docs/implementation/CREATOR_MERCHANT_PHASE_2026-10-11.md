@@ -1,6 +1,6 @@
 # Creator and merchant collaboration phase
 
-Baseline: `fa918c6d2c89f681071b29ac606bfbd8a24e9d0e` (main / PR53).
+Baseline: `fa918c6d2c89f681071b29ac606bfbd8a24e9d0e` (main / PR53). Latest main PR54 (`ad2c8ce`) was subsequently integrated; its diagnostics and prior audit ledger updates are retained.
 Branch: `codex/creator-merchant-phase-20261011`.
 Scope: the user's October11 request for one cohesive creator/merchant development phase, building on the existing Journeys layout and mature backend.
 
@@ -33,7 +33,7 @@ The existing guide editor/publication, team directory/invitations, branch-scoped
 ## Verification evidence
 
 - Baseline: 356 unit tests, all passed.
-- Latest local phase run: 395 unit tests passed, zero failures/skips (before final independent review fixes).
+- Latest local phase run: 396 unit tests passed, zero failures/skips (including application feedback regression).
 - Local production build and TypeScript checks passed.
 - Corresponding-source packaging: six tests passed. All new native source/test paths are in the reviewed manifest.
 - New guarded integration suites: creator collaborations; merchant campaigns; merchant intake/profile; moderator application review.
@@ -41,7 +41,7 @@ The existing guide editor/publication, team directory/invitations, branch-scoped
 - Local environment has no owned Docker/Supabase stack. The ownership guard remains unchanged; real SQL/browser verification must use the repository's isolated connected CI. This is an execution limitation, not a passing DB claim.
 - Public live site was inspected anonymously. Authenticated hosted acceptance and hosted migrations are separate from isolated synthetic acceptance.
 
-Exact CI run IDs, commit SHA and final review disposition will be appended after results arrive.
+At `c6c09331ef663d198483c68965760c155080ba2c`, Journeys CI run38079916798 has passed its verify job and full migration startup; integration/browser execution is in progress. The final feedback/mobile fix will be verified on its own final commit. Independent code review found no remaining material blocker after correcting the campaign SQL binding, browser relationship query and creator application feedback gap.
 
 ## Migration and release handoff
 
