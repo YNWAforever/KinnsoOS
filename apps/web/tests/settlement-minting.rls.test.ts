@@ -253,12 +253,8 @@ d('r10.1 settlement minting', () => {
          select id from public.mission_participants where creator_id in ('${creatorC}', '${creatorD}')
        );
       delete from public.mission_participants where creator_id in ('${creatorC}', '${creatorD}');
-      delete from public.mission_milestones
-       where mission_id in (
-         select id from public.missions
-          where merchant_profile_id = '${merchantProfileId}'
-             or created_by_ops_member_id = '${opsMemberId}'
-       );
+      -- Delete the owned parent so its FK cascade removes sealed milestone terms.
+      -- Direct milestone deletion must remain forbidden while a published parent exists.
       delete from public.missions
        where merchant_profile_id = '${merchantProfileId}'
           or created_by_ops_member_id = '${opsMemberId}';
