@@ -258,6 +258,10 @@ jobs:
         run: pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts
         id: booking_off
 
+      - name: Collect Booking OFF Next manifest metadata
+        if: always() && (steps.booking_off.outcome == 'success' || steps.booking_off.outcome == 'failure')
+        run: node scripts/collect-next-manifest-evidence.mjs --phase booking-off --outcome '${{ steps.booking_off.outcome }}'
+
       - name: Preserve Booking OFF browser evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always() && (steps.booking_off.outcome == 'success' || steps.booking_off.outcome == 'failure')
@@ -266,6 +270,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+            evidence/next-manifests-booking-off.json
 
       - name: Export service-role env for the profile enquiries journey
         # playwright.profile-enquiries.config.ts reads apps/web/.env.test, which only the
@@ -305,6 +310,10 @@ jobs:
         run: pnpm --filter @kinnso/e2e e2e --config playwright.profile-enquiries.config.ts
         id: profile_enquiries
 
+      - name: Collect profile enquiries Next manifest metadata
+        if: always() && (steps.profile_enquiries.outcome == 'success' || steps.profile_enquiries.outcome == 'failure')
+        run: node scripts/collect-next-manifest-evidence.mjs --phase profile-enquiries --outcome '${{ steps.profile_enquiries.outcome }}'
+
       - name: Preserve profile enquiries browser evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always() && (steps.profile_enquiries.outcome == 'success' || steps.profile_enquiries.outcome == 'failure')
@@ -313,6 +322,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+            evidence/next-manifests-profile-enquiries.json
 
       # Deliberately last of the test steps: it is the only one that depends on a
       # repository secret, and its config refuses to load without STRIPE_SECRET_KEY.
@@ -362,6 +372,10 @@ jobs:
         run: pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts
         id: booking_on
 
+      - name: Collect Booking ON fixture Next manifest metadata
+        if: always() && (steps.booking_on.outcome == 'success' || steps.booking_on.outcome == 'failure')
+        run: node scripts/collect-next-manifest-evidence.mjs --phase booking-on --outcome '${{ steps.booking_on.outcome }}'
+
       - name: Preserve Booking ON browser evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always() && (steps.booking_on.outcome == 'success' || steps.booking_on.outcome == 'failure')
@@ -370,6 +384,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+            evidence/next-manifests-booking-on.json
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
