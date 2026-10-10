@@ -20,9 +20,14 @@ test('real public creator SSR and hydration show bounded published guides; withd
     const page=await context.newPage();
     for(const locale of ['en','zh-HK']) {
      const response=await page.goto(`/${locale}/c/${handle}`);expect(response?.status()).toBe(200);
-     await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(page.locator('article p')).toHaveText(bio);
+     await expect(page.locator('html')).toHaveAttribute('lang',locale);
+     const profile=page.getByRole('article',{name:locale==='en'?'Public creator profile':'創作者公開檔案',exact:true});
+     await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();await expect(profile.locator('h1')).toHaveAttribute('lang','');
+     await expect(profile.locator('p')).toHaveText(bio);await expect(profile.locator('p')).toHaveAttribute('lang','');
+     await expect(profile.locator('h2')).toHaveText(locale==='en'?'Published guides':'已發布攻略');
+     expect(await profile.locator('h2').evaluate(node=>node.closest('[lang]')?.getAttribute('lang'))).toBe(locale);
      const links=page.locator('article li a');await expect(links).toHaveCount(6);
-     for(let index=0;index<6;index++){await expect(links.nth(index)).toHaveText(guides[index].title);await expect(links.nth(index)).toHaveAttribute('href',`/${locale}/g/${guides[index].id}`);}
+     for(let index=0;index<6;index++){await expect(links.nth(index)).toHaveText(guides[index].title);await expect(links.nth(index)).toHaveAttribute('lang','');await expect(links.nth(index)).toHaveAttribute('href',`/${locale}/g/${guides[index].id}`);}
      const original=`https://remix-kinnso-web.vercel.app/${locale==='en'?'en':'zh-hk'}/c/${handle}`;
      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',original);
      await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content','profile');

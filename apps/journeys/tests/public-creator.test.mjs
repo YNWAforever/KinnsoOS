@@ -1,9 +1,31 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {transform} from 'esbuild';
+import {renderToStaticMarkup} from 'react-dom/server';
 const subject=await import('../lib/seo/public-creator.ts');
 const env={KINNSO_SUPABASE_URL:'https://approved.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://approved.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://approved.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
 const id='e1c2820d-25e5-9795-54b5-637be546e04a';
 const row={id,handle:'real-creator',display_name:'Public name',bio:'Public bio',privateDna:'NEVER'};
+
+const compiled=await transform(await readFile(new URL('../lib/seo/PublicCreatorContent.tsx',import.meta.url),'utf8'),{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
+const component={exports:{}};
+new Function('require','module','exports',compiled.code)(createRequire(import.meta.url),component,component.exports);
+for(const locale of ['en','zh-HK'])test('public creator SSR separates unknown authored language from localized navigation: '+locale,()=>{
+ const creator={id,handle:row.handle,name:'作者原名',bio:'Original bio <script>unsafe()</script>\nSecond line',guides:[{id,title:'Original guide title'}],hasMore:true};
+ const html=renderToStaticMarkup(component.exports.PublicCreatorContent({creator,locale}));
+ assert.match(html,/<h1 lang="">作者原名<\/h1>/);
+ assert.match(html,/<p lang=""[^>]*>Original bio &lt;script&gt;unsafe\(\)&lt;\/script&gt;\nSecond line<\/p>/);
+ assert.match(html,new RegExp('<a[^>]*lang=""[^>]*href="/'+locale+'/g/'+id+'"[^>]*>Original guide title</a>|<a[^>]*href="/'+locale+'/g/'+id+'"[^>]*lang=""[^>]*>Original guide title</a>'));
+ assert.ok(html.includes('<h2>'+(locale==='en'?'Published guides':'已發布攻略')+'</h2>'));
+ assert.ok(html.includes('aria-label="'+(locale==='en'?'Public creator profile':'創作者公開檔案')+'"'));
+ assert.ok(html.includes('>'+(locale==='en'?'View more on original profile':'在原站檔案查看更多')+'</a>'));
+ assert.ok(!html.includes('<script>'));
+ const empty=renderToStaticMarkup(component.exports.PublicCreatorContent({creator:{...creator,bio:'',guides:[],hasMore:false},locale}));
+ assert.ok(empty.includes('<p>'+(locale==='en'?'No published guides yet.':'尚未有已發布攻略。')+'</p>'));
+ assert.ok(empty.includes('>'+(locale==='en'?'View original profile':'查看原站檔案')+'</a>'));
+});
 test('creator reads bind handle, public projection and bounded published guides without actor credentials',async()=>{
  assert.equal(typeof subject.readPublicCreator,'function');let calls=0;
  const dto=await subject.readPublicCreator('real-creator',env,async(input,options)=>{
