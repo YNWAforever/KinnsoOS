@@ -15,7 +15,7 @@ function scalar(source: string, key: string, indent = 8) {
   return matches.length === 1 ? matches[0][1].replace(/\s+#.*$/, '') : undefined
 }
 
-function phaseEvidenceContract(source: string, [name, id, artifact, phase]: typeof surfaces[number]) {
+function phaseEvidenceContract(source: string, [name, id, artifact, phase]: readonly [string, string, string, string]) {
   const steps = [...source.matchAll(/^ {6}- name: (.+)\n([\s\S]*?)(?=^ {6}- (?:name:|uses:)|(?![\s\S]))/gm)]
     .map(match => ({ name: match[1], source: match[0] }))
   const index = steps.findIndex(step => step.name === name)

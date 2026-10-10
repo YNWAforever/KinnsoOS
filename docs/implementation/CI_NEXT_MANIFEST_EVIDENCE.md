@@ -51,6 +51,11 @@ collector and matching upload, retaining failure/skip guards and exact receipt
 paths. All 15 artifact contracts, including 12 mutation controls, pass with the
 26 existing product-state contracts. The initial scalar parser's three failures
 on inline action-pin comments are retained separately.
+Root typecheck at review `0c8424a` also exposed Vitest's per-column tuple
+widening (`TS2345`), before root browser tests ran. The helper now accepts a
+readonly four-string tuple; runtime phase pairing checks are unchanged. The
+actual test file has a separate pinned-compiler RED/GREEN control. Journeys
+typecheck does not establish the web test project's typecheck result.
 The initial sandbox Git-fixture setup error and the initial eight lint errors
 remain historical failures; neither is counted as the functional RED result.
 
