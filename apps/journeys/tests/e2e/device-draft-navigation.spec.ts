@@ -71,3 +71,41 @@ test('uncancelable cross-document Back has the native warning; save then Back pr
  page.once('dialog',async dialog=>{type=dialog.type();await dialog.dismiss()});await page.goBack({timeout:1500}).catch(()=>{});expect(type).toBe('beforeunload');await expect(page).toHaveURL('http://127.0.0.1:3495/en/g/'+guideId);await expect(page.getByRole('textbox',{name:'Draft private note',exact:true})).toHaveValue('Keep this cross-document note');
  await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');await page.goBack();await page.waitForURL('**/en/explore');expect((await copies(page))[0].days[0].stops[0].travellerNote).toBe('Keep this cross-document note');
 });
+
+for(const labels of [
+ {locale:'en',plan:'Plan as a device-only draft',saved:'Device draft saved.',remove:'Delete this device draft',title:'Delete device copy?',confirm:'Delete device copy',deleted:'This device copy was deleted.',find:'Find saved device drafts',stop:'Draft stop title'},
+ {locale:'zh-HK',plan:'以裝置草稿規劃',saved:'裝置草稿已保存',remove:'刪除此裝置草稿',title:'刪除此裝置副本？',confirm:'刪除裝置副本',deleted:'此裝置副本已刪除',find:'尋找已保存的裝置草稿',stop:'草稿站點名稱'},
+])test('Escape respects an in-flight device deletion and ordinary cancellation ('+labels.locale+')',async({page})=>{
+ await page.goto('/'+labels.locale+'/g/'+guideId);
+ await page.getByRole('button',{name:labels.plan,exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText(labels.saved);
+ const first=(await copies(page))[0];
+ await page.reload();await page.getByRole('button',{name:labels.plan,exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText(labels.saved);
+ const second=(await copies(page)).find(row=>row.id!==first.id)!;
+ const opener=page.getByRole('button',{name:labels.remove,exact:true}),dialog=page.getByRole('dialog',{name:labels.title,exact:true});
+ await opener.click();await expect(dialog).toBeVisible();await page.keyboard.press('Escape');await expect(dialog).not.toBeVisible();await expect(opener).toBeFocused();expect(await copies(page)).toHaveLength(2);
+ await opener.click();
+ // Keep the real IndexedDB transaction and its committed bytes. Only hold
+ // acknowledgement to exercise the owner's existing busy close guard.
+ await page.evaluate(target=>{
+  const proto=IDBObjectStore.prototype,original=proto.delete;
+  proto.delete=function(...args:Parameters<IDBObjectStore['delete']>){
+   const request=original.apply(this,args),tx=this.transaction;
+   if(args[0]===target)queueMicrotask(()=>{const completed=tx.oncomplete;tx.oncomplete=function(event){(window as any).heldDeleteAck=true;(window as any).releaseDeleteAck=()=>completed?.call(tx,event);};});
+   return request;
+  };
+  (window as any).restoreDelete=()=>{proto.delete=original;};
+ },second.id);
+ try{
+  await dialog.getByRole('button',{name:labels.confirm,exact:true}).click();
+  await expect.poll(()=>page.evaluate(()=>(window as any).heldDeleteAck===true)).toBe(true);
+  await expect(dialog.getByRole('button',{name:labels.confirm,exact:true})).toBeDisabled();
+  expect((await copies(page)).map(row=>row.id)).toEqual([first.id]);
+  await page.keyboard.press('Escape');await expect(dialog).toBeVisible();
+  await dialog.getByRole('button',{name:'Close / 關閉',exact:true}).click();await expect(dialog).toBeVisible();
+ }finally{
+  await page.evaluate(()=>{(window as any).restoreDelete?.();(window as any).releaseDeleteAck?.();});
+ }
+ await expect(dialog).not.toBeVisible();await expect(page.getByTestId('guest-save-state')).toContainText(labels.deleted);
+ expect((await copies(page)).map(row=>row.id)).toEqual([first.id]);
+ await page.reload();await page.getByRole('button',{name:labels.find,exact:true}).click();await page.locator('[data-draft-id="'+first.id+'"]').click();await expect(page.getByLabel(labels.stop,{exact:true})).toHaveValue('Authored stop');
+});

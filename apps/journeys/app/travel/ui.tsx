@@ -83,7 +83,7 @@ export function Modal({
     <dialog
       className="k-modal"
       ref={ref}
-      onCancel={onClose}
+      onCancel={event=>{event.preventDefault();onClose();}}
       onKeyDown={event=>{
         if(event.key!=='Tab')return;
         const controls=[...event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length>0);
