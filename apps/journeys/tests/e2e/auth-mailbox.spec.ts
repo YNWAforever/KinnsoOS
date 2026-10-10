@@ -54,7 +54,7 @@ for(const locale of ['en','zh-HK'] as const){
   const task=await sourceTask(locale),email=`synthetic-mailbox-signup-${randomUUID()}@example.test`,password=`Signup!${randomUUID()}`;
   pendingEmails.push(email);
   await page.goto(`/${locale}/sign-in?next=`+encodeURIComponent(task.next));
-  await page.getByRole('link',{name:zh?'建立帳戶':'Create account',exact:true}).click();
+  await page.getByRole('link',{name:zh?'建立帳戶':'Create an account',exact:true}).click();
   await expect(page.getByRole('heading',{name:zh?'建立 Kinnso 帳戶':'Create your Kinnso account',exact:true})).toBeVisible();
   const deviceId='synthetic-mailbox-device-'+randomUUID();await keepDeviceCopy(page,deviceId,task.guide);
   await page.getByLabel(zh?'電郵':'Email',{exact:true}).fill(email);
@@ -66,7 +66,7 @@ for(const locale of ['en','zh-HK'] as const){
   try{await page.getByRole('button',{name:zh?'建立帳戶':'Create account',exact:true}).click();await posted;await expect(page.getByRole('button',{name:zh?'請稍候…':'Please wait…',exact:true})).toBeDisabled();}finally{release()}
   await expect.poll(()=>new URL(page.url()).searchParams.get('sent')).toBe('1');
   await expect(page.getByRole('status')).toContainText(zh?'郵件送達尚未確認':'Delivery has not been confirmed');
-  expect((await page.request.get('/api/session')).status()).toBe(401);
+  const anonymous=await page.request.get('/api/session');expect(anonymous.status()).toBe(200);expect((await anonymous.json()).data).toBeNull();
   const client=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_ANON_KEY!,{auth:{persistSession:false}});
   const before=await client.auth.signInWithPassword({email,password});expect(Boolean(before.error)).toBe(true);
   const link=await readCapturedConfirmation(email,{locale,flow:'sign-up',next:task.next});
@@ -98,10 +98,22 @@ for(const locale of ['en','zh-HK'] as const){
   const client=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_ANON_KEY!,{auth:{persistSession:false}});
   expect(Boolean((await client.auth.signInWithPassword({email,password})).error)).toBe(true);
   expect(Boolean((await client.auth.signInWithPassword({email,password:changed})).error)).toBe(false);await client.auth.signOut();
-  await followCapturedLink(page,link);await expect.poll(()=>new URL(page.url()).pathname===`/${locale}/forgot-password`).toBe(true);
-  await expect(page.getByLabel(zh?'新密碼':'New password',{exact:true})).toHaveCount(0);
   const fresh=await browser.newContext({baseURL:'http://127.0.0.1:3495'});
-  try{const reopened=await fresh.newPage();await reopened.goto(`/${locale}/sign-in?next=`+encodeURIComponent(task.next));await reopened.getByLabel(zh?'電郵':'Email',{exact:true}).fill(email);await reopened.getByLabel(zh?'密碼':'Password',{exact:true}).fill(changed);await reopened.getByRole('button',{name:zh?'登入':'Sign in',exact:true}).click();await atTask(reopened,task.next);expect(await sessionId(reopened)).toBe(id);await expect(reopened.getByRole('heading',{name:task.title,exact:true})).toBeVisible();}finally{await fresh.close()}
+  try{
+   const reopened=await fresh.newPage();await reopened.goto(`/${locale}/sign-in`);
+   expect((await (await reopened.request.get('/api/session')).json()).data).toBeNull();
+   // Prove Auth itself rejects the consumed token, independent of session and PKCE guards.
+   const verification=reopened.waitForResponse(response=>{const url=new URL(response.url());return url.origin==='http://127.0.0.1:58421'&&url.pathname==='/auth/v1/verify';});
+   await followCapturedLink(reopened,link);const rejected=await verification;
+   expect([302,303].includes(rejected.status())).toBe(true);
+   let failure:URL;try{failure=new URL(rejected.headers().location);}catch{throw Error('Auth reuse rejection redirect missing');}
+   const errorCode=failure.searchParams.get('error_code')??new URLSearchParams(failure.hash.slice(1)).get('error_code');
+   expect(errorCode).toBe('otp_expired');expect(failure.searchParams.has('code')).toBe(false);
+   await expect.poll(()=>new URL(reopened.url()).pathname===`/${locale}/forgot-password`).toBe(true);
+   await expect(reopened.getByLabel(zh?'新密碼':'New password',{exact:true})).toHaveCount(0);
+   expect((await (await reopened.request.get('/api/session')).json()).data).toBeNull();
+   await reopened.goto(`/${locale}/sign-in?next=`+encodeURIComponent(task.next));await reopened.getByLabel(zh?'電郵':'Email',{exact:true}).fill(email);await reopened.getByLabel(zh?'密碼':'Password',{exact:true}).fill(changed);await reopened.getByRole('button',{name:zh?'登入':'Sign in',exact:true}).click();await atTask(reopened,task.next);expect(await sessionId(reopened)).toBe(id);await expect(reopened.getByRole('heading',{name:task.title,exact:true})).toBeVisible();
+  }finally{await fresh.close()}
   console.log('LOCAL_MAILBOX_FLOW_PASS recovery:'+locale);
  });
 }
