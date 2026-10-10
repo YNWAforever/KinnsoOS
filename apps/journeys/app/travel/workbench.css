@@ -4354,6 +4354,25 @@ body:has(.k-app) {
 .os-stop {padding:20px;margin-block:16px;max-width:680px}
 .os-stop input[type=checkbox]{width:20px;height:20px;padding:0}
 
+.k-merchant > h1 {
+  overflow-wrap: anywhere;
+}
+.k-merchant-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 16px;
+}
+.k-merchant-nav a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
 .k-merchant .k-card {
   margin-block: 24px;
   min-width: 0;

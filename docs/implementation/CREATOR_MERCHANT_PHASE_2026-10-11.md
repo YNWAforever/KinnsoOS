@@ -10,16 +10,16 @@ Merchant application → moderated approval → owner company profile → author
 
 The existing guide editor/publication, team directory/invitations, branch-scoped redemption, operations queue and reconciliation continue to work. Native creator routes and inbox links no longer hand these collaboration flows back to the old development site. Earnings show recorded data per currency; they do not initiate payments or offer withdrawals.
 
-| Task | Depends on | Implementation and acceptance | Current status |
+| Task | Depends on | Implementation and acceptance | Verification checkpoint |
 | --- | --- | --- | --- |
-| CM1 intake | Existing moderator application contract | Pending application only; duplicate/lost-response retry retains identity; review records reason; approval creates one active company | Implemented; unit/API/component verified; DB/browser pending CI |
-| CM1 owner profile | Approved active merchant | Owner-only contact fields, bounded HTTPS URLs, immutable ownership/tier/status, full timestamp compare-and-swap | Implemented; unit/API verified; DB/browser pending CI |
-| CM2 creator collaborations | CM3 published mission | Bounded available/mine views, eligible application/invite response, private evidence, feedback/resubmission, no self-review | Implemented; unit/API/component verified; DB/browser pending CI |
-| CM2 earnings | Existing settlement and payout records | Exact decimal strings, independent currencies, separate tracked/settled/payout categories, stable typed cursors, no write endpoint | Implemented; unit/API/component verified; DB/browser pending CI |
-| CM3 campaign lifecycle | Active merchant role | Draft/edit/publish/close, authored milestones, immutable published terms, version-conflict recovery, approval before native content work | Implemented; unit/API/component verified; DB/browser pending CI |
-| CM3 review and branches | Campaign participants; owner role | Written decisions, zero fixed-fee coupon review, no payment creation, human creator names, archived branch history retained | Implemented; unit/API verified; DB/browser pending CI |
-| CM4 integration | CM1–CM3 | Native routes/navigation, inbox links, 320px layouts, immutable unknown retry, real three-role end-to-end case | Wired; browser pending CI |
-| CM4 release evidence | Exact branch CI + review | Source package rebuild, migrations, integration, browser, independent review | In progress; no hosted migration or main merge |
+| CM1 intake | Existing moderator application contract | Pending application only; duplicate/lost-response retry retains identity; review records reason; approval creates one active company | Implemented; unit/API/component and isolated DB verified; browser follow-up in PR55 |
+| CM1 owner profile | Approved active merchant | Owner-only contact fields, bounded HTTPS URLs, immutable ownership/tier/status, full timestamp compare-and-swap | Implemented; unit/API and isolated DB verified; browser follow-up in PR55 |
+| CM2 creator collaborations | CM3 published mission | Bounded available/mine views, eligible application/invite response, private evidence, feedback/resubmission, no self-review | Implemented; unit/API/component and isolated DB verified; browser follow-up in PR55 |
+| CM2 earnings | Existing settlement and payout records | Exact decimal strings, independent currencies, separate tracked/settled/payout categories, stable typed cursors, no write endpoint | Implemented; unit/API/component and isolated DB verified; browser follow-up in PR55 |
+| CM3 campaign lifecycle | Active merchant role | Draft/edit/publish/close, authored milestones, immutable published terms, version-conflict recovery, approval before native content work | Implemented; unit/API/component and isolated DB verified; browser follow-up in PR55 |
+| CM3 review and branches | Campaign participants; owner role | Written decisions, zero fixed-fee coupon review, no payment creation, human creator names, archived branch history retained | Implemented; unit/API and isolated DB verified; browser follow-up in PR55 |
+| CM4 integration | CM1–CM3 | Native routes/navigation, inbox links, 320px layouts, immutable unknown retry, real three-role end-to-end case | Wired; browser regressions under verification in PR55 |
+| CM4 release evidence | Exact branch CI + review | Source package rebuild, migrations, integration, browser, independent review | Code review complete; final CI tracked in PR55; hosted release pending |
 
 ## Compatibility decisions
 
@@ -38,10 +38,12 @@ The existing guide editor/publication, team directory/invitations, branch-scoped
 - Corresponding-source packaging: six tests passed. All new native source/test paths are in the reviewed manifest.
 - New guarded integration suites: creator collaborations; merchant campaigns; merchant intake/profile; moderator application review.
 - New connected browser case: `u03-u04-collaboration.spec.ts`; existing U04 cases updated for authored milestones and written review feedback.
-- Local environment has no owned Docker/Supabase stack. The ownership guard remains unchanged; real SQL/browser verification must use the repository's isolated connected CI. This is an execution limitation, not a passing DB claim.
+- Local environment has no owned Docker/Supabase stack. The ownership guard remains unchanged. Fresh migration startup and all 56 integration tests passed in the repository's isolated Linux CI at `21fa952`; zero failures/skips.
 - Public live site was inspected anonymously. Authenticated hosted acceptance and hosted migrations are separate from isolated synthetic acceptance.
 
-At `c6c09331ef663d198483c68965760c155080ba2c`, Journeys CI run38079916798 has passed its verify job and full migration startup; integration/browser execution is in progress. The final feedback/mobile fix will be verified on its own final commit. Independent code review found no remaining material blocker after correcting the campaign SQL binding, browser relationship query and creator application feedback gap.
+Checkpoint at `21fa952`: Journeys run38080407272 passed source rebuild/unit/typecheck, fresh migrations, all 56 integration cases and bilingual local Auth-mailbox tests. Its connected browser suite recorded 105 passes and three failures: an application-test read before POST acknowledgement, a 320px enlarged-English layout overflow, and ops copy in the public bundle. Root CI quality passed at this commit; the earlier `c6c0933` root CI run38079913972 completed all jobs successfully.
+
+The follow-up waits for the actual creator POST acknowledgement and retains database assertions; moves the entire ops page wrapper into its dynamic module; and wraps merchant navigation and long headings. Isolated actual-component/CSS rendering reproduced the navigation/heading overflow and verified reflow at 320/640/1280px and doubled text. The existing N14 layout thresholds remain unchanged and now attach geometry on failure. Independent code review approved the application/bundle fixes. Final exact-code CI status and run links are maintained in [PR55](https://github.com/YNWAforever/KinnsoOS/pull/55); this checkpoint does not claim that an in-progress run has passed.
 
 ## Migration and release handoff
 
