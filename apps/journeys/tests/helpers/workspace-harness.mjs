@@ -31,6 +31,12 @@ export async function taskComponentModule(jsx){
  }}));return module.exports;
 }
 
+export async function listFilterModule(jsx){
+ const helpers=await import('../../lib/collaboration/list-query.ts');
+ const source=await transform(await readFile(new URL('../../app/travel/CollaborationListFilters.tsx',import.meta.url),'utf8'),{loader:'tsx',format:'cjs',jsx:'automatic'});
+ const module={exports:{}};runInContext(source.code,createContext({module,exports:module.exports,require:name=>{if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name.endsWith('/collaboration/list-query'))return helpers;throw Error(name);}}));return module.exports;
+}
+
 /** Executes actual component handlers; only session/network/framework boundaries are doubles. */
 export async function workspaceHarness(name,ports={},initial={}) {
   const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=0;

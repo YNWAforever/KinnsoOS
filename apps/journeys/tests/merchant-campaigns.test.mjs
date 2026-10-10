@@ -1,4 +1,5 @@
-import {serviceStateModule,taskComponentModule} from './helpers/workspace-harness.mjs';
+import {serviceStateModule,taskComponentModule,listFilterModule} from './helpers/workspace-harness.mjs';
+import * as listQueries from '../lib/collaboration/list-query.ts';
 import {campaignTasks} from '../lib/collaboration/tasks.ts';
 import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
 import {test} from 'node:test';
@@ -47,8 +48,8 @@ test('campaign BFF rejects duplicated scope and unsafe writes before RPC, preser
  const source=await readFile(new URL('../app/api/merchant/campaigns/route.ts',import.meta.url),'utf8');
  const compiled=await transform(source,{loader:'ts',format:'cjs'}),module={exports:{}},calls=[];let fail=false,throws=false;
  const validation=await import('../lib/api/validation.ts');
- runInContext(compiled.code,createContext({module,exports:module.exports,URL,require:name=>{
-  if(name.endsWith('/validation'))return validation;if(name.endsWith('/campaigns'))return helpers;
+ runInContext(compiled.code,createContext({module,exports:module.exports,URL,URLSearchParams,require:name=>{
+  if(name.endsWith('/collaboration/list-query'))return listQueries;if(name.endsWith('/validation'))return validation;if(name.endsWith('/campaigns'))return helpers;
   if(name.endsWith('/server'))return{apiContext:async()=>({client:{rpc:async(...args)=>{calls.push(args);if(throws)throw Error('Connection failed after commit');return fail?{error:{message:'forbidden'}}:{data:{items:[]}};}}}),boundedBody:request=>request.json(),failure:(code,status)=>Response.json({ok:false,code},{status}),reply:body=>Response.json(body),backendFailure:()=>Response.json({ok:false,code:'FORBIDDEN'},{status:403})};throw Error(name);
  }}));
  for(const query of ['id='+id+'&id='+id,'id='+id+'&userId='+id,'id='+id+'&participantsAfter='+id,'id='+id+'&after='])assert.equal((await module.exports.GET(new Request('https://local.test/api/merchant/campaigns?'+query))).status,400);
@@ -68,10 +69,10 @@ async function uiHarness(port){
  const props={actorId:'actor-A',merchantId:id,refreshKey:0,locked:false,onLockChange:()=>{},onChanged:async()=>{},onDenied:port.denied??(()=>{})};
  const react={useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
  const jsx=(type,props)=>typeof type==='function'&&type.name==='WorkspaceServiceState'?type(props):({type,props});let uuidIndex=1;
- const service=await serviceStateModule(jsx);
+ const service=await serviceStateModule(jsx);const filters=await listFilterModule(jsx);
  const taskComponent=await taskComponentModule(jsx);
  runInContext(compiled.code,createContext({module,exports:module.exports,URL,URLSearchParams,Date,window:{location:{search:''},addEventListener:(name,callback)=>{if(name==='beforeunload')unload=callback;},removeEventListener:()=>{}},crypto:{randomUUID:()=>`11111111-1111-4111-8111-${String(uuidIndex++).padStart(12,'0')}`},require:name=>{
-  if(name==='./WorkspaceServiceState')return service;if(name==='./CollaborationTasks')return taskComponent;if(name.endsWith('/collaboration/tasks'))return{campaignTasks};if(name.endsWith('/campaign-schedule'))return{scheduleDate};if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
+  if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='./CollaborationTasks')return taskComponent;if(name.endsWith('/collaboration/tasks'))return{campaignTasks};if(name.endsWith('/campaign-schedule'))return{scheduleDate};if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
  }}));
  function render(){for(let n=0;n<10;n++){cursor=0;changed=false;tree=module.exports.MerchantCampaigns(props);for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;}return tree;}
  function elements(node){if(arguments.length===0)node=tree;return!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}

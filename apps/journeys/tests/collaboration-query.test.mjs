@@ -10,7 +10,7 @@ test('collaboration query validates scope-specific states and bounded literal se
  assert.equal(typeof helpers.collaborationListQuery,'function');
  assert.deepEqual(helpers.collaborationListQuery(new URLSearchParams('q= city &status=revision_requested&sort=deadline'),'mine'),{q:'city',status:'revision_requested',sort:'deadline'});
  for(const [search,scope] of [['q='+ 'x'.repeat(101),'mine'],['q=a&q=b','merchant'],['status=draft','mine'],['status=active','available'],['sort=amount','merchant'],['actorId='+id,'mine'],['after=','mine'],['after='+id,'merchant']])assert.throws(()=>helpers.collaborationListQuery(new URLSearchParams(search),scope),/INVALID/);
- assert.equal(helpers.collaborationListQuery(new URLSearchParams('after=v0.'+id),'mine').after,'v0.'+id);
+ assert.throws(()=>helpers.collaborationListQuery(new URLSearchParams('after=v0.'+id),'mine'),/INVALID/);
 });
 test('filter changes clear list and detail cursors without discarding authored input',()=>{
  assert.equal(typeof helpers.changeListFilter,'function');
@@ -26,4 +26,9 @@ test('actual list BFFs send validated filter objects to fresh actor-scoped query
 test('creator list filters use server queries, clear old cursor and distinguish filtered empty state',async()=>{
  const calls=[];const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{list:async(...args)=>{calls.push(args);return{ok:true,data:{items:[],nextCursor:null}}}}});
  assert.ok(h.field('Search collaborations'));h.field('Search collaborations').props.onChange({target:{value:'City'}});h.render();h.find('button','Search collaborations').props.onClick();await tick();h.render();assert.equal(calls.at(-1)[2].q,'City');assert.equal(calls.at(-1)[2].after,undefined);assert.match(h.text(),/No collaborations match these filters/);
+});
+test('refresh after URL restoration starts a new read without replaying the old cursor',async()=>{
+ const calls=[];const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{list:async(...args)=>{calls.push(args);return{ok:true,data:{items:[],nextCursor:null}}}}},{search:'?scope=mine&q=City&after=v1.YWJj'});
+ assert.equal(calls[0][0],'mine');assert.equal(calls[0][1],'v1.YWJj');
+ h.find('button','Refresh collaborations').props.onClick();await tick();h.render();assert.equal(calls.at(-1)[1],undefined);assert.equal(calls.at(-1)[2].after,undefined);assert.equal(calls.at(-1)[2].q,'City');
 });

@@ -1247,7 +1247,8 @@
   },
   "rulings": [
     "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
-    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed."
+    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
+    "P10: native list API uses v1 scope/filter/order-bound cursors; raw UUID and v0 cursors are rejected with refresh required. Mature UUID RPCs remain unchanged as the explicit legacy interface. Cost if wrong: an already-open pre-upgrade native page must refresh once."
   ],
   "tasks": [
     {
@@ -1807,14 +1808,41 @@
         "U03",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_CI_AND_REVIEW_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "9150a79a973869d66d4211002d196a11dc6a960b",
+      "evidence": [
+        {
+          "source_sha": "81b4dbbbc785e5d0bd6c1e78faf8b9be0a879bd4",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Test-first list query baseline",
+          "result": "436unit432PASS_4newFAIL_0SKIP;68integration65existingPASS_3newFAIL_0SKIP (new query RPCs absent).",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092915404",
+          "observed_at": "2026-10-10T23:02:46.861337+00:00"
+        },
+        {
+          "source_sha": "uncommitted_candidate_on_9150a79",
+          "environment": "local_isolated",
+          "scenario": "Native query/URL/filter implementation",
+          "result": "437unitPASS_0FAIL_0SKIP and TypeScript PASS. Four initial unit tests RED to GREEN; URL restoration refresh independently RED to GREEN. Initial build refused cross-worktree dependency junction; replaced only verified junction with own lockfile install; fresh build pending. New repeatable receipt completion and native EN/zh-HK stories pending CI.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-query/p10-unit-green.log; p10-url-red.log; p10-types.log",
+          "observed_at": "2026-10-10T23:02:46.861351+00:00"
+        },
+        {
+          "source_sha": "9150a79a973869d66d4211002d196a11dc6a960b",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Published creation-time control audit",
+          "result": "65/69 integration PASS. Published edit rejected by existing immutable_campaign_terms; mismatched expected error is not a new immutability gap. Added separate unpublished draft test and retained the mature published denial.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38093358873",
+          "observed_at": "2026-10-10T23:09:43.799671+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: staging/Auth/recovery actors not supplied."
+      ],
+      "next_action": "Verify current query SQL and native browser stories in owned CI; repeatable receipt completion control must be proven before acceptance; then whole-batch review."
     },
     {
       "id": "P11",

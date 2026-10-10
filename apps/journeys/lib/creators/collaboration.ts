@@ -1,4 +1,5 @@
 import {request} from '../trips/repository';
+import type {CollaborationListQuery} from '../collaboration/list-query';
 
 export type MissionScope = 'available' | 'mine';
 export type Participation = {
@@ -6,6 +7,7 @@ export type Participation = {
  source: string; applicationNote: string|null; merchantReviewNote: string|null; updatedAt: string;
 };
 export type CreatorMission = {
+ createdAt?:string;nextDueAt?:string|null;listState?:string;
  id:string; title:string; summary:string; merchantName:string|null;
  missionType:'coupon_affiliate'|'hybrid'|'paid'|'receipt_cashback'; missionSource:string;
  status:string; visibility:string; minTier:string|null; eligible:boolean; joinAvailable:boolean;
@@ -30,7 +32,7 @@ export type CreatorMissionCommand =
  | {type:'submitEvidence';milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofUrls:string[];notes:string};
 export type MissionCommandReceipt = {id:string;status:string;updatedAt:string};
 export const creatorMissions = {
- list:(scope:MissionScope='available',after?:string)=>request<{items:CreatorMission[];nextCursor:string|null}>('/api/creator/missions?'+new URLSearchParams({scope,...after?{after}:{}})),
+ list:(scope:MissionScope='available',after?:string,query:CollaborationListQuery={})=>request<{items:CreatorMission[];nextCursor:string|null}>('/api/creator/missions?'+new URLSearchParams({scope,...Object.fromEntries(Object.entries(query).filter(([,v])=>v!==undefined)),...after?{after}:{}})),
  get:(id:string,after?:string)=>request<CreatorMissionDetail>('/api/creator/missions/'+encodeURIComponent(id)+(after?'?after='+encodeURIComponent(after):'')),
  command:(id:string,command:CreatorMissionCommand,requestId:string)=>request<MissionCommandReceipt>('/api/creator/missions/'+encodeURIComponent(id),'POST',{command,requestId}),
 };

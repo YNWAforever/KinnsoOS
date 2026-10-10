@@ -1,11 +1,14 @@
 import {apiContext,backendFailure,boundedBody,failure,reply} from '../../../../lib/api/server';
 import {object,uuid} from '../../../../lib/api/validation';
+import {collaborationListQuery} from '../../../../lib/collaboration/list-query';
 import {campaignCommand} from '../../../../lib/merchants/campaigns';
 export async function GET(request:Request){
  const ctx=await apiContext(request,'merchant');if(ctx.response)return ctx.response;
- const query=new URL(request.url).searchParams,allowed=['id','after','campaignId','participantsAfter','submissionsAfter','branchesAfter'];
- if([...query.keys()].some(key=>!allowed.includes(key)||query.getAll(key).length!==1)||!uuid(query.get('id'))||allowed.slice(1).some(key=>query.has(key)&&!uuid(query.get(key)))||(!query.has('campaignId')&&(query.has('participantsAfter')||query.has('submissionsAfter'))))return failure('INVALID',400);
- try{const r=await ctx.client.rpc('get_kinnso_merchant_campaigns',{p_merchant_id:query.get('id'),p_after:query.get('after'),p_campaign_id:query.get('campaignId'),p_participant_after:query.get('participantsAfter'),p_submission_after:query.get('submissionsAfter'),p_branch_after:query.get('branchesAfter')});return r.error?backendFailure(r.error):reply({ok:true,data:r.data});}catch{return failure('UNAVAILABLE',503);}
+ const query=new URL(request.url).searchParams,detailKeys=['id','campaignId','participantsAfter','submissionsAfter','branchesAfter'];
+ if(detailKeys.some(key=>query.getAll(key).length>1||query.has(key)&&!uuid(query.get(key)))||!uuid(query.get('id'))||(!query.has('campaignId')&&(query.has('participantsAfter')||query.has('submissionsAfter'))))return failure('INVALID',400);
+ const listParams=new URLSearchParams(query);for(const key of detailKeys)listParams.delete(key);
+ let filter;try{filter=collaborationListQuery(listParams,'merchant');}catch{return failure('INVALID',400);}
+ try{const r=await ctx.client.rpc('query_kinnso_merchant_campaigns',{p_merchant_id:query.get('id'),p_query:filter,p_campaign_id:query.get('campaignId'),p_participant_after:query.get('participantsAfter'),p_submission_after:query.get('submissionsAfter'),p_branch_after:query.get('branchesAfter')});return r.error?backendFailure(r.error):reply({ok:true,data:r.data});}catch{return failure('UNAVAILABLE',503);}
 }
 export async function POST(request:Request){
  const ctx=await apiContext(request,'merchant',true);if(ctx.response)return ctx.response;
