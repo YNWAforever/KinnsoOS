@@ -46,7 +46,8 @@
         "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
         "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
         "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
-        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN."
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN.",
+        "N01/N18 diagnostic increment integrated with main02cac8b: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP. Initial web0-test setup failure from missing.env.test retained; known approved loopback URL supplied only for the read-only workflow tests, no DB call/fixture or disabled setup guard. Diagnostic source/config blobs unchanged; Journeys app tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2 matches verified main02. All18tasks/53mappings retained. Current integrated-head root/Journeys CI/configured review and formal U06 remain separate pending gates; underlying historical JSON cause still UNCONFIRMED. CI_NEXT_MANIFEST_EVIDENCE.md."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
@@ -98,6 +99,17 @@
           "merge_status": "not_merged",
           "environment_status": "new_exact_head_CI_required",
           "acceptance_status": "formal_not_run"
+        },
+        {
+          "code_sha": "7150c144a2952fbce3a2cc7b274e83cdb7d10ef0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_diagnostic_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native45tooling15web_contract_PASS_noDB",
+          "acceptance_status": "diagnostic_only_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "evidence": "CI_NEXT_MANIFEST_EVIDENCE.md"
         }
       ]
     },
@@ -245,12 +257,22 @@
         22
       ],
       "tests": [
-        "Preserved PR20-22 repair/account-isolation regressions pass within exact012841d complete connected browser72; synthetic local evidence only."
+        "Preserved PR20-22 repair/account-isolation regressions pass within exact012841d complete connected browser72; synthetic local evidence only.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "Formal signed-in and physical-device acceptance not run."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N05",
@@ -842,14 +864,24 @@
         "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
         "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred.",
         "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open.",
-        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate."
+        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n06-delete-undo-focus-20261009"
+      "source_ref": "codex/n06-delete-undo-focus-20261009",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N15",
@@ -893,14 +925,24 @@
         "Final SQL d89dde56367df4b142b7a66e53858e1711a98a73ffd52353b87d8ae0d54aa896 atomic injected failure restores both functions/constraint/ACL/owner/search_path/tableRLS before exact isolated applyPASS. Prior candidate/results preserved; no production application or provider activation.",
         "Exact clean22213ec on merged main255:333unit/41integration/80browser PASS,0fail/skip; build/typecheck PASS. Native source-package5PASS/1symlink-permissionSKIP; latest review-head Linux6/rebuild/type/root/Journeys/Vercel gates remain required.",
         "Full current suite retains actual media reference/retention/claim-finalize race/late upload replay/cleanup/cancel/weak-network assertions. Isolated fixture evidence does not establish hosted scheduler or mailbox acceptance.",
-        "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN."
+        "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "New candidate SQL requires fresh scoped production metadata/consistent backup/isolated restore and specific authorization; prior SQL approvals do not cover it.",
         "Scheduler owner/token and retention policy, approved provider/sender/mailbox and uncertain-send reconciliation owner/procedure remain external gates. No email/cron activation or named hosted acceptance."
       ],
       "rollback": "Revert source code with exact pending completion material preserved; retain no-resend claim boundary and accepted SQL states. Any SQL reversal requires separately reviewed data-aware correction or demonstrated restore; never resend uncertain/historical events.",
-      "review_branch": "codex/n15-notification-acceptance-20261008"
+      "review_branch": "codex/n15-notification-acceptance-20261008",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N16",
@@ -1113,7 +1155,8 @@
         "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
         "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
         "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
-        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN."
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN.",
+        "N01/N18 diagnostic increment integrated with main02cac8b: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP. Initial web0-test setup failure from missing.env.test retained; known approved loopback URL supplied only for the read-only workflow tests, no DB call/fixture or disabled setup guard. Diagnostic source/config blobs unchanged; Journeys app tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2 matches verified main02. All18tasks/53mappings retained. Current integrated-head root/Journeys CI/configured review and formal U06 remain separate pending gates; underlying historical JSON cause still UNCONFIRMED. CI_NEXT_MANIFEST_EVIDENCE.md."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1174,6 +1217,17 @@
           "merge_status": "not_merged",
           "environment_status": "new_exact_head_CI_required",
           "acceptance_status": "formal_not_run"
+        },
+        {
+          "code_sha": "7150c144a2952fbce3a2cc7b274e83cdb7d10ef0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_diagnostic_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native45tooling15web_contract_PASS_noDB",
+          "acceptance_status": "diagnostic_only_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "evidence": "CI_NEXT_MANIFEST_EVIDENCE.md"
         }
       ]
     }

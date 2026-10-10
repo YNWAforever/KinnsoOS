@@ -65,3 +65,5 @@ the current head before integration. Formal U06 remains a separate gate.
 
 Rollback: revert this workflow/collector increment. Keep historical failure
 artifacts and existing browser evidence; no production settings or data change.
+
+Latest-main integration: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP against main02cac8b. The first web invocation discovered zero tests because shared setup lacked.env.test; the corrected read-only invocation supplied the approved loopback URL without credentials, DB calls or disabling setup. Existing diagnostic source/config blobs and PR52 media changes are preserved, together with all18tasks/53mappings. Journeys app subtree equals verified main02. Fresh current-head CI/configured review are required; diagnostic receipts and later success do not establish the historical JSON cause or formal U06 acceptance. No production mutation.
