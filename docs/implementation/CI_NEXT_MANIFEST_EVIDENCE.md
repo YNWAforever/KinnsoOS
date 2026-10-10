@@ -45,6 +45,12 @@ collector exists (2 RED), then verify 11 behaviors, including bounded reads,
 linked-path refusal, source/run binding, redaction and exclusive receipts.
 An additional artifact-layout regression reproduced a shifted common root
 (1 RED); its correction and the existing controls pass as 12 diagnostic tests.
+The configured review also identified the existing contract's immediate-upload
+assumption (3 RED). Its replacement accepts only the ordered suite, matching
+collector and matching upload, retaining failure/skip guards and exact receipt
+paths. All 15 artifact contracts, including 12 mutation controls, pass with the
+26 existing product-state contracts. The initial scalar parser's three failures
+on inline action-pin comments are retained separately.
 The initial sandbox Git-fixture setup error and the initial eight lint errors
 remain historical failures; neither is counted as the functional RED result.
 
