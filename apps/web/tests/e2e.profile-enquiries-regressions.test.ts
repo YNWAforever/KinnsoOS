@@ -59,13 +59,17 @@ describe('profile enquiries Playwright isolation', () => {
     const configModule = await importDedicatedConfig(safeEnv)
     const config = configModule.default as unknown as {
       testMatch: string
-      webServer: { reuseExistingServer: boolean }
+      webServer: { reuseExistingServer: boolean; stdout?: string; stderr?: string }
     }
 
     expect(config.testMatch).toBe('profile-enquiries.spec.ts')
     expect('profile-enquiries.spec.ts').toMatch(config.testMatch)
     expect('journey.spec.ts').not.toMatch(config.testMatch)
     expect(config.webServer.reuseExistingServer).toBe(false)
+    // A browser 404 cannot distinguish routing, compilation and a missing DB row.
+    // Keep the owned server's request/compile diagnostics in the CI log as well.
+    expect(config.webServer.stdout).toBe('pipe')
+    expect(config.webServer.stderr).toBe('pipe')
   })
 
   it('derives the cleanup bucket with the exact keyed and domain-separated HMAC', () => {
