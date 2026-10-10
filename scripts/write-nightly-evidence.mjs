@@ -32,7 +32,7 @@ function main() {
             reportStatus = total === 0 ? 'EMPTY' : 'VALID';
           }
         }
-      } else if (integer(report?.checked) && integer(report?.failureCount) && report.targetOrigin === target) {
+      } else if (integer(report?.checked) && integer(report?.failureCount) && report.targetOrigin === target && report.sourceRevision === source && report.runId === process.env.GITHUB_RUN_ID && report.runAttempt === process.env.GITHUB_RUN_ATTEMPT) {
         counts = { checkedUrls: report.checked, failures: report.failureCount };
         reportStatus = 'VALID';
       }

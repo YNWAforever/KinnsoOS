@@ -35,6 +35,7 @@ function receipt(surface, report, outcome = 'success', overrides = {}) {
         ...report.config?.metadata,
       } },
     };
+    if (surface === 'sitemap' && report && typeof report === 'object') report = { sourceRevision: source, runId: '42', runAttempt: '2', ...report };
     if (report !== undefined) writeFileSync(input, typeof report === 'string' ? report : JSON.stringify(report));
     const run = spawnSync(process.execPath, [writer, '--surface', surface, '--report', input, '--output', output, '--outcome', outcome, '--target', origin], {
       cwd: root, encoding: 'utf8', env: { ...process.env, GITHUB_SHA: source, GITHUB_RUN_ID: '42', GITHUB_RUN_ATTEMPT: '2', GITHUB_EVENT_NAME: 'schedule', ...overrides },
@@ -117,6 +118,13 @@ for (const metadata of [{ runId: '41' }, { runAttempt: '1' }]) test('report from
   assert.equal(result.value.reportStatus, 'INVALID');
 });
 
+for (const binding of [{ sourceRevision: 'f'.repeat(40) }, { runId: '41' }, { runAttempt: '1' }]) test('sitemap counts must belong to the actual checkout, run and attempt', () => {
+  const result = receipt('sitemap', { checked: 2, failureCount: 0, targetOrigin: origin, ...binding });
+  assert.equal(result.code, 1);
+  assert.equal(result.value.reportStatus, 'INVALID');
+  assert.equal(result.value.counts, null);
+});
+
 test('an empty funnel report and contradictory successful result cannot satisfy evidence', () => {
   const empty = receipt('funnel', { stats: { expected: 0, unexpected: 0, flaky: 0, skipped: 0 } });
   assert.equal(empty.code, 1);
@@ -140,14 +148,14 @@ test('actual crawler CLI writes aggregate evidence for public success and sitema
     const target = `http://127.0.0.1:${server.address().port}`, output = path.join(directory, 'crawl.json');
     const { execFile } = await import('node:child_process');
     const { promisify } = await import('node:util');
-    await assert.rejects(promisify(execFile)(process.execPath, ['--experimental-strip-types', path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, env: { ...process.env, BASE_URL: target, KINNSO_CRAWL_REPORT: output } }), error => error.code === 1);
+    await assert.rejects(promisify(execFile)(process.execPath, ['--experimental-strip-types', path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, env: { ...process.env, BASE_URL: target, KINNSO_CRAWL_REPORT: output, GITHUB_RUN_ID: '42', GITHUB_RUN_ATTEMPT: '2' } }), error => error.code === 1);
     assert.ok(existsSync(output), 'a failed actual crawl still must retain aggregate evidence');
-    assert.deepEqual(JSON.parse(readFileSync(output, 'utf8')), { checked: 2, failureCount: 1, targetOrigin: target });
+    assert.deepEqual(JSON.parse(readFileSync(output, 'utf8')), { checked: 2, failureCount: 1, targetOrigin: target, sourceRevision: source, runId: '42', runAttempt: '2' });
     failing = false;
     const successOutput = path.join(directory, 'success.json');
-    const positive = await promisify(execFile)(process.execPath, ['--experimental-strip-types', path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, env: { ...process.env, BASE_URL: target, KINNSO_CRAWL_REPORT: successOutput } });
+    const positive = await promisify(execFile)(process.execPath, ['--experimental-strip-types', path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, env: { ...process.env, BASE_URL: target, KINNSO_CRAWL_REPORT: successOutput, GITHUB_RUN_ID: '42', GITHUB_RUN_ATTEMPT: '2' } });
     assert.match(positive.stdout, /Checked 2 sitemap URLs/);
-    assert.deepEqual(JSON.parse(readFileSync(successOutput, 'utf8')), { checked: 2, failureCount: 0, targetOrigin: target });
+    assert.deepEqual(JSON.parse(readFileSync(successOutput, 'utf8')), { checked: 2, failureCount: 0, targetOrigin: target, sourceRevision: source, runId: '42', runAttempt: '2' });
   } finally {
     await new Promise(resolve => server.close(resolve));
     assert.equal(path.dirname(directory), path.resolve(tmpdir()));

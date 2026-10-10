@@ -1,5 +1,6 @@
 import { pathToFileURL } from 'node:url'
 import { writeFile } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
 
 const DEFAULT_BASE_URL = 'https://remix-kinnso-web.vercel.app'
 const LOC_PATTERN = /<loc\b[^>]*>([\s\S]*?)<\/loc>/gi
@@ -247,6 +248,9 @@ async function runCli(): Promise<void> {
       checked: result.checked,
       failureCount: result.failures.length,
       targetOrigin: new URL(process.env.BASE_URL ?? DEFAULT_BASE_URL).origin,
+      sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+      runId: process.env.GITHUB_RUN_ID ?? 'NOT_CHECKED',
+      runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? 'NOT_CHECKED',
     }) + '\n', { flag: 'wx' })
   }
   console.log(`Checked ${result.checked} sitemap URLs`)
