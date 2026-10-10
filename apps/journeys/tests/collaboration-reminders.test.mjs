@@ -18,3 +18,8 @@ test('inbox names existing decisions and both deadline reminders without inventi
  assert.equal(typeof lib.collaborationNotice,'function');for(const kind of ['collaboration.due_soon','collaboration.overdue','collaboration.invited','submission.revision_requested','submission.approved']){assert.notEqual(lib.collaborationNotice(kind,'en'),kind);assert.notEqual(lib.collaborationNotice(kind,'zh-HK'),kind);}
  assert.equal(lib.collaborationNotice('unrecognized.event','en'),'unrecognized.event');
 });
+
+test('the job yields incomplete before its wall-clock budget, keeping the current page resumable',async()=>{
+ let clock=0,emits=0;const port={due:async()=>({items:[candidate,{...candidate,milestoneId:'next'}],nextCursor:null}),emit:async()=>{emits++;clock+=10;return{emitted:true};}};
+ const result=await lib.runCollaborationReminders(now,port,{limit:2,maxPages:2,budgetMs:5,clock:()=>clock});assert.equal(result.completed,false);assert.equal(emits,1);assert.equal(result.nextCursor,null);
+});

@@ -1247,7 +1247,10 @@
   },
   "rulings": [
     "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
-    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed."
+    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
+    "P11 Ruling: service-only scan uses participant/milestone UUID tuple cursor; emitted facts are excluded, so a bounded partial or crashed job may restart cold and safely progress. Cost if wrong: additional rescan cost; no actor-facing cursor or private evidence is exposed.",
+    "P11 Ruling: a scan hitting page/time budget records incomplete as job failure and returns retryable 503, preserving last success; it does not claim full success from partial work. Cost if wrong: busy periods may surface repeated job alerts until backlog is drained.",
+    "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence."
   ],
   "tasks": [
     {
@@ -1777,11 +1780,11 @@
         "U03",
         "U04"
       ],
-      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
-      "ci_status": "CURRENT_FIX_PENDING",
+      "code_status": "VERIFIED_OWNED_CI",
+      "ci_status": "PASS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "b0d5e05039b48e1f6f5f807eeb2607d6f8f92396",
+      "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
       "evidence": [
         {
           "source_sha": "ded8dd03f28ec466bb39bc1be12a65a5228483f8",
@@ -1838,13 +1841,20 @@
           "result": "Selector test8PASS_1FAIL before fix,9PASS after; full441unitPASS_0FAIL_0SKIP, TypeScriptPASS. Added explicit select accessible name; only invited creator RLS fixture activated, existing owned/foreign assertions retained. Browser and root CI pending.",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-label-unit.log",
           "observed_at": "2026-10-10T23:18:49.162541+00:00"
+        },
+        {
+          "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 current whole regression",
+          "result": "441unit_72integration_126browser_4mailbox_PASS_0FAIL_0SKIP;typecheck/build/source extraction rebuildPASS; testedmerge0da35a34e1d42847fd6e4004e538a82df445d89d tree57b9b246b1fd8b2f7c25fb7ec9ae4f48a695fed9 equals current head tree; root quality/image/E2EPASS. PR59 ready for review; unmerged; hosted AuthUATNOT_RUN.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38094594052; root38094594072",
+          "observed_at": "2026-10-10T23:45:08.461705+00:00"
         }
       ],
       "blockers": [
-        "CURRENT_CI_PENDING: owner discovery/private notes/CAS/receipts/quota/inbox/browser require current whole-batch regression.",
-        "HOSTED_UAT_NOT_RUN: staging target/actor/recovery packet absent."
+        "HOSTED_UAT_NOT_RUN: designated target/actors/recovery packet absent."
       ],
-      "next_action": "Verify current committed review fix CI, owner role/browser regressions and exact merge source; continue independent P10."
+      "next_action": "Review stack in dependency order; obtain designated staging packet; continue P10-P17 isolated tasks."
     },
     {
       "id": "P10",
@@ -1912,14 +1922,26 @@
         "U04",
         "U05"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_CI_AND_REVIEW_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
+      "evidence": [
+        {
+          "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reminder baseline after required fixture fields were supplied",
+          "result": "72existingintegrationPASS_3newFAIL_0SKIP; two reminder cases reach missing due RPC; distinct scheduled health row absent. Earlier7ff6632/b9aa8ba two cases NOT_REACHED due mandatory milestone description/participant source; those failures are not reminder RED. Unit3newFAIL before interface; now local445unitPASS_0FAIL_0SKIP, typecheck/build/source packPASS. Bounded runtime independent RED to GREEN. Six current DB cases and two new native EN/zh-HK browser stories pending.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095349058; .superpowers/sdd/2026-10-11-creator-merchant-reminders/unit-candidate.log; build-candidate.log",
+          "observed_at": "2026-10-10T23:45:08.461721+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_SCHEDULE_NOT_ENABLED: no designated environment, named owner, token/config/recovery packet or schedule authorization.",
+        "CURRENT_CI_AND_REVIEW_PENDING: service-only reminder transaction and native inbox links require matching whole regression and fresh review."
+      ],
+      "next_action": "Verify exact current reminder CI and fresh review; retain hosted job registration and provider delivery as separate gates."
     },
     {
       "id": "P12",
