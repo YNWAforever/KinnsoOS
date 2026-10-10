@@ -420,11 +420,11 @@
       ],
       "owner_role": "Frontend",
       "status": "partial",
-      "code_status": "reviewable_navigation_and_single_copy_deletion",
-      "merge_status": "PR26_merged",
-      "environment_status": "ownership_verified_localhost",
-      "acceptance_status": "local_synthetic_not_hosted_human",
-      "source_sha": "039b97dff1e7bcaddf6f9a2a0fedb5465d391b5e",
+      "code_status": "modal_cancel_owner_guard_increment_reviewable; previous_controls_preserved",
+      "merge_status": "prior_increments_merged; modal_cancel_review_branch",
+      "environment_status": "clean339unit_build_type_PASS; local_navigation13PASS; full_connected_96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; exact_head_CI_required",
+      "acceptance_status": "scoped_local_keyboard_and_persistence_verified; hosted_named_physical_AT_NOT_RUN",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/26"
       ],
@@ -433,13 +433,49 @@
         "Full connected browser67 PASS, including Auth/creator/U01/U02/U04/U05/U06 and navigation11.",
         "Windows source package5 PASS/1 platform SKIP.",
         "Actual cancelable Back/Forward and uncancelable cross-document native warning separately verified.",
-        "Main7873961 tree equals tested039b97d; Linux67/browser and28/integration PASS."
+        "Main7873961 tree equals tested039b97d; Linux67/browser and28/integration PASS.",
+        "N08/N14 modal cancellation code 77adb31ab10fbb5ce975f49bee3da60f951a314d: two English/Traditional Chinese actual-browser busy Escape RED -> GREEN. Native IndexedDB committed deletion and delayed acknowledgement are real; ordinary cancellation/focus, busy close refusal, selected-copy-only deletion and other-copy reload checked. All13 navigation cases PASS0FAIL0SKIP on owned isolated local fixture target; full connected 96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; clean339unit/build/typecheck PASS. Windows source packaging5PASS1 permissionSKIP retained. Four cancelled-navigation stream messages also appear in previous actual-main CI and are retained, not counted as assertions or acceptance. Exact review-head Journeys/root/Linux packaging and configured review required; hosted human/device/AT acceptance NOT_RUN.",
+        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic.",
+        "PR47 fresh main integration 1e2f807482e4cee708e235dea713da64b8db957d incorporates merged PR48/main513b8c871f2551fb0989718017fdc73c2e5dc311 booking fixture readiness. Existing modal and real device-navigation test bytes equal original code77adb31. Current clean339unit/build/typecheck and13device-navigationPASS0FAIL0SKIP; both source evidence additions and53 original mappings preserved. Earlier PR47 rootPR attempts1/2 fixture404 failures remain FAIL; current new-head PUSH/PR CI and configured review required before merge. Formal hosted named-role/physical acceptance NOT_RUN.",
+        "N08/N14 busy-cancel increment integrated with main02cac8b: native348unit/build/typecheck PASS; Windows source-package6discovered/5PASS/1symlink-permissionSKIP. Existing ui.tsx and real device-navigation browser blobs equal previous80de622; PR52 media changes inherited without alteration. All18tasks/53mappings and both historical insertions/test arrays preserved by guarded three-way merge. Current integrated-source Linux connected/owner-denial/role gates and configured review required; native DB/browser not rerun pending scoped local fixture reconciliation. Formal physical/AT/hosted acceptance NOT_RUN. DEVICE_DRAFT_NAVIGATION.md."
       ],
       "blockers": [
         "Hosted human acceptance and physical iOS/Android/older-browser evidence absent.",
         "Cross-document traversal uses native warning; only confirmed saved copies recover after process termination."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "source_ref": "codex/n08-modal-busy-cancel-20261009",
+      "source_increments": [
+        {
+          "code_sha": "1e2f807482e4cee708e235dea713da64b8db957d",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "code_status": "existing_modal_fix_verified_on_new_main",
+          "merge_status": "PR47_not_merged",
+          "environment_status": "owned_local_Journeys_API58421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "new_head_pending"
+        },
+        {
+          "code_sha": "80de62286e7452fbd7a07df37304be00897c3cb9",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_busy_cancel_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native348unit_build_type_package_verified_noDBfixture",
+          "acceptance_status": "hosted_physical_AT_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_source",
+          "evidence": "DEVICE_DRAFT_NAVIGATION.md"
+        }
+      ],
+      "latest_green_merge_delivery": {
+        "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+        "pr": 47,
+        "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+        "code": "merged_busy_modal_cancel_fix",
+        "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+        "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+        "acceptance": "formal_hosted_physical_AT_NOT_RUN"
+      }
     },
     {
       "task_id": "N09",
@@ -813,11 +849,11 @@
       ],
       "owner_role": "QA + Accessibility",
       "status": "partial",
-      "code_status": "creator_delete_undo_focus_increment_reviewable; existing_previous_controls_preserved",
-      "merge_status": "prior_increments_merged; deletion_focus_review_branch",
-      "environment_status": "clean_code339unit_build_type_PASS; local_creator19PASS; exact_head_CI_required",
-      "acceptance_status": "scoped_local_keyboard_verified; hosted_named_roles_physical_AT_NOT_RUN",
-      "source_sha": "f9c62f8f2446d2a7af1a90cc1d125579be823f71",
+      "code_status": "modal_cancel_owner_guard_increment_reviewable; previous_controls_preserved",
+      "merge_status": "prior_increments_merged; modal_cancel_review_branch",
+      "environment_status": "clean339unit_build_type_PASS; local_navigation13PASS; full_connected_96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; exact_head_CI_required",
+      "acceptance_status": "scoped_local_keyboard_and_persistence_verified; hosted_named_physical_AT_NOT_RUN",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d",
       "prs": [
         "https://github.com/YNWAforever/KinnsoOS/pull/27"
       ],
@@ -832,14 +868,18 @@
         "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred.",
         "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open.",
         "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate.",
-        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md.",
+        "N08/N14 modal cancellation code 77adb31ab10fbb5ce975f49bee3da60f951a314d: two English/Traditional Chinese actual-browser busy Escape RED -> GREEN. Native IndexedDB committed deletion and delayed acknowledgement are real; ordinary cancellation/focus, busy close refusal, selected-copy-only deletion and other-copy reload checked. All13 navigation cases PASS0FAIL0SKIP on owned isolated local fixture target; full connected 96PASS2FAIL0SKIP_RETAINED; corrected_existing_CI_profile_diagnostic5PASS0FAIL0SKIP; exact_head_full_CI_PENDING; clean339unit/build/typecheck PASS. Windows source packaging5PASS1 permissionSKIP retained. Four cancelled-navigation stream messages also appear in previous actual-main CI and are retained, not counted as assertions or acceptance. Exact review-head Journeys/root/Linux packaging and configured review required; hosted human/device/AT acceptance NOT_RUN.",
+        "Initial full local run retained96PASS2FAIL0SKIP: Agent source origin was absent from the local process while existing CI config supplies it, causing canonical_origin_missing; creator English stop-focus setup exceeded its5s heading assertion although its final snapshot contains that heading. Corrected existing CI profile diagnostic: Agent and all four bilingual day/stop deletion-Undo controls5PASS0FAIL0SKIP at unchanged code77adb31. No product change, relaxed assertion or automatic retry was used; creator setup cause remains unconfirmed. Fresh full exact-head CI is the merge gate, not this diagnostic.",
+        "PR47 fresh main integration 1e2f807482e4cee708e235dea713da64b8db957d incorporates merged PR48/main513b8c871f2551fb0989718017fdc73c2e5dc311 booking fixture readiness. Existing modal and real device-navigation test bytes equal original code77adb31. Current clean339unit/build/typecheck and13device-navigationPASS0FAIL0SKIP; both source evidence additions and53 original mappings preserved. Earlier PR47 rootPR attempts1/2 fixture404 failures remain FAIL; current new-head PUSH/PR CI and configured review required before merge. Formal hosted named-role/physical acceptance NOT_RUN.",
+        "N08/N14 busy-cancel increment integrated with main02cac8b: native348unit/build/typecheck PASS; Windows source-package6discovered/5PASS/1symlink-permissionSKIP. Existing ui.tsx and real device-navigation browser blobs equal previous80de622; PR52 media changes inherited without alteration. All18tasks/53mappings and both historical insertions/test arrays preserved by guarded three-way merge. Current integrated-source Linux connected/owner-denial/role gates and configured review required; native DB/browser not rerun pending scoped local fixture reconciliation. Formal physical/AT/hosted acceptance NOT_RUN. DEVICE_DRAFT_NAVIGATION.md."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n06-delete-undo-focus-20261009",
+      "source_ref": "codex/n08-modal-busy-cancel-20261009",
       "current_upload_lifetime_increment": {
         "source_ref": "codex/n15-photo-upload-lifetime-20261010",
         "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
@@ -848,6 +888,37 @@
         "environment_status": "owned_local_Auth_Storage_RPC_verified",
         "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
         "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      },
+      "source_increments": [
+        {
+          "code_sha": "1e2f807482e4cee708e235dea713da64b8db957d",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "code_status": "existing_modal_fix_verified_on_new_main",
+          "merge_status": "PR47_not_merged",
+          "environment_status": "owned_local_Journeys_API58421",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "new_head_pending"
+        },
+        {
+          "code_sha": "80de62286e7452fbd7a07df37304be00897c3cb9",
+          "review_branch": "codex/n08-modal-busy-cancel-20261009",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_busy_cancel_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native348unit_build_type_package_verified_noDBfixture",
+          "acceptance_status": "hosted_physical_AT_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_source",
+          "evidence": "DEVICE_DRAFT_NAVIGATION.md"
+        }
+      ],
+      "latest_green_merge_delivery": {
+        "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+        "pr": 47,
+        "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+        "code": "merged_busy_modal_cancel_fix",
+        "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+        "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+        "acceptance": "formal_hosted_physical_AT_NOT_RUN"
       }
     },
     {
@@ -1176,9 +1247,30 @@
           "unchanged_journeys_tree": "fb5564f05227f67c1488a2da4ecb43cdf7a82da2",
           "evidence": "NIGHTLY_READONLY_EVIDENCE.md"
         }
-      ]
+      ],
+      "latest_review_branch_integrations": {
+        "49": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "ed59514b6ea46d59caa01c65f06576ae9138fc00",
+          "branch": "codex/n18-nightly-evidence-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        }
+      }
     }
   ],
   "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
-  "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5"
+  "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5",
+  "latest_green_merge_main": {
+    "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+    "pr": 47,
+    "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+    "code": "merged_busy_modal_cancel_fix",
+    "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+    "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+    "acceptance": "formal_hosted_physical_AT_NOT_RUN"
+  }
 }
