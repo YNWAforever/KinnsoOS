@@ -55,7 +55,7 @@ const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspac
 const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
 const MerchantOnboarding = dynamic(() => import('./MerchantOnboarding').then(mod => mod.MerchantOnboarding), {loading: RoleWorkspaceLoading});
 const MerchantProfile = dynamic(() => import('./MerchantProfile').then(mod => mod.MerchantProfile), {loading: RoleWorkspaceLoading});
-const MerchantApplicationReview = dynamic(() => import('./MerchantApplicationReview').then(mod => mod.MerchantApplicationReview), {loading: RoleWorkspaceLoading});
+const MerchantApplicationReviewPage = dynamic(() => import('./MerchantApplicationReview').then(mod => mod.MerchantApplicationReviewPage), {loading: RoleWorkspaceLoading});
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
@@ -654,7 +654,7 @@ export function Workbench({
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
-    else if(path==='ops/merchants')content=<section className="k-page k-merchant"><h1>{t('Merchant onboarding review','商戶加入審批')}</h1><Link className="k-btn" href={href('ops')}>{t('Operations queue','營運待辦')}</Link><MerchantApplicationReview key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/></section>;
+    else if(path==='ops/merchants')content=<MerchantApplicationReviewPage key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
     else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;

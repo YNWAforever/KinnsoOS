@@ -17,7 +17,7 @@ async function harness(port={},session=storage(),initial={}){
  const jsx=(type,props)=>({type,props}),module={exports:{}};
  const request=async(url,method='GET',body)=>{calls.push({url,method,body});return method==='POST'?(port.write?.(body)??{ok:true,data:{...row,status:body.action==='approve'?'approved':'rejected',decidedAt:'2026-10-10T13:00:00Z',decisionReason:body.reason}}):url.includes('?id=')?(port.current?.()??{ok:true,data:row}):(port.list?.(url)??{ok:true,data:{applications:[row],nextCursor:null}});};
  runInContext(compiled.code,createContext({module,exports:module.exports,URLSearchParams,window:{sessionStorage:session},require:name=>{
-  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en})};
+  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
   if(name==='../../lib/trips/repository')return{request};if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};
   if(name==='../../lib/merchants/application-review')return review;throw Error('Unexpected dependency '+name);
  }}));

@@ -1,4 +1,5 @@
 'use client';
+import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {request} from '../../lib/trips/repository';
@@ -7,6 +8,11 @@ import {applicationWebsite,clearApplicationReviewMarker,merchantApplicationDecis
 
 const endpoint='/api/ops/merchant-applications';
 type Pending=ApplicationReviewMarker;
+
+export function MerchantApplicationReviewPage(props:{actorId:string|null;enabled:boolean}){
+ const{t,href}=useApp();
+ return <section className="k-page k-merchant"><h1>{t('Merchant onboarding review','商戶加入審批')}</h1><Link className="k-btn" href={href('ops')}>{t('Operations queue','營運待辦')}</Link><MerchantApplicationReview {...props}/></section>;
+}
 
 export function MerchantApplicationReview({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const{t}=useApp();
