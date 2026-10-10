@@ -37,6 +37,8 @@ export default defineConfig({
     command: `pnpm --filter web exec next dev --hostname 127.0.0.1 --port ${port}`,
     url: local.baseURL,
     reuseExistingServer: false,
+    stdout: 'pipe',
+    stderr: 'pipe',
     env: {
       ...process.env,
       NEXT_PUBLIC_SUPABASE_URL: local.supabaseUrl,

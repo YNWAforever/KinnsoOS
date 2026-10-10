@@ -156,7 +156,7 @@ end $$;
 
 create function public.get_kinnso_merchant_campaigns(p_merchant_id uuid,p_after uuid default null,p_campaign_id uuid default null,p_participant_after uuid default null,p_submission_after uuid default null,p_branch_after uuid default null) returns jsonb
 language plpgsql security definer set search_path='' as $$
-declare actor uuid:=kinnso_internal.actor();role_name text;items jsonb;cursor uuid;detail jsonb;mission public.missions;participants jsonb;participant_cursor uuid;submissions jsonb;submission_cursor uuid;summary jsonb;branches jsonb;branch_cursor uuid;
+declare actor uuid:=kinnso_internal.actor();role_name text;items jsonb;cursor uuid;detail jsonb;mission public.missions;participants jsonb;participant_cursor uuid;submissions jsonb;submission_cursor uuid;company_summary jsonb;branches jsonb;branch_cursor uuid;
 begin
  role_name:=kinnso_internal.merchant_role(p_merchant_id,actor,null,array['owner','marketing']);
  if p_after is not null and not exists(select 1 from public.missions where id=p_after and merchant_profile_id=p_merchant_id) then raise exception 'invalid_cursor';end if;
@@ -168,8 +168,8 @@ begin
  end if;
  with bounded as(select b.*,row_number()over(order by id)n from kinnso_internal.merchant_branches b where merchant_id=p_merchant_id and role_name='owner' and (p_branch_after is null or id>p_branch_after)order by id limit 51)
  select coalesce(jsonb_agg(jsonb_build_object('id',id,'name',name,'active',active)order by id)filter(where n<=50),'[]'),case when count(*)>50 then (array_agg(id order by id))[50] else null end into branches,branch_cursor from bounded;
- with bounded as(select m.*,row_number()over(order by id)n from public.missions m where merchant_profile_id=p_merchant_id and (p_after is null or id>p_after) order by id limit 21)
- select coalesce(jsonb_agg(jsonb_build_object('id',id,'title',title,'summary',summary,'status',status,'missionType',mission_type,'updatedAt',updated_at)order by id)filter(where n<=20),'[]'),case when count(*)>20 then (array_agg(id order by id))[20] else null end into items,cursor from bounded;
+ with bounded as(select m.*,row_number()over(order by m.id)n from public.missions m where m.merchant_profile_id=p_merchant_id and (p_after is null or m.id>p_after) order by m.id limit 21)
+ select coalesce(jsonb_agg(jsonb_build_object('id',b.id,'title',b.title,'summary',b.summary,'status',b.status,'missionType',b.mission_type,'updatedAt',b.updated_at)order by b.id)filter(where b.n<=20),'[]'),case when count(*)>20 then (array_agg(b.id order by b.id))[20] else null end into items,cursor from bounded b;
  if p_campaign_id is not null then
   select * into mission from public.missions where id=p_campaign_id and merchant_profile_id=p_merchant_id;
   if not found then raise exception 'forbidden';end if;
@@ -187,8 +187,8 @@ begin
   'applications',(select count(*) from public.mission_participants p join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and p.status='applied'),
   'activeCreators',(select count(distinct p.creator_id) from public.mission_participants p join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and p.status='active'),
   'submitted',(select count(*) from public.mission_milestone_submissions s join public.mission_participants p on p.id=s.mission_participant_id join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and s.status='submitted'),
-  'approved',(select count(*) from public.mission_milestone_submissions s join public.mission_participants p on p.id=s.mission_participant_id join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and s.status='approved')) into summary from public.missions where merchant_profile_id=p_merchant_id;
- return jsonb_build_object('merchantId',p_merchant_id,'role',role_name,'items',items,'nextCursor',cursor,'detail',detail,'summary',summary,
+  'approved',(select count(*) from public.mission_milestone_submissions s join public.mission_participants p on p.id=s.mission_participant_id join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and s.status='approved')) into company_summary from public.missions where merchant_profile_id=p_merchant_id;
+ return jsonb_build_object('merchantId',p_merchant_id,'role',role_name,'items',items,'nextCursor',cursor,'detail',detail,'summary',company_summary,
   'branches',branches,'branchesNextCursor',branch_cursor);
 end $$;
 revoke all on function public.apply_kinnso_merchant_campaign_command(uuid,uuid,jsonb),public.get_kinnso_merchant_campaigns(uuid,uuid,uuid,uuid,uuid,uuid) from public,anon,authenticated,service_role;

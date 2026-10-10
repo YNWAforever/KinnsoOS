@@ -21,7 +21,9 @@ test('campaign drafts publish atomically, freeze terms, close applications and e
   assert.equal((await x.command({...draft,id:randomUUID(),publish:true})).error?.message,'invalid_brief');
   assert.equal((await x.command({...draft,id:randomUUID(),input:{...x.input,paidFee:99}})).error?.message,'invalid_command');
   assert.equal((await x.read(id,x.outsider)).error?.message,'forbidden');assert.ok((await anonymous.rpc('get_kinnso_merchant_campaigns',{p_merchant_id:x.merchantId})).error);
-  const fresh=await ok(x.read(id));assert.equal(fresh.detail.canEdit,true);assert.equal(fresh.summary.draft,1);
+  const fresh=await ok(x.read(id));assert.equal(fresh.detail.canEdit,true);
+  assert.equal(fresh.items[0].summary,x.input.summary);assert.equal(fresh.detail.summary,x.input.summary);
+  assert.deepEqual(fresh.summary,{draft:1,published:0,closed:0,applications:0,activeCreators:0,submitted:0,approved:0});
   const update={type:'updateDraft',id,expectedUpdatedAt:fresh.detail.updatedAt,input:x.input,reason:'Complete the draft'};
   const changed=await ok(x.command(update,x.marketing));assert.notEqual(changed.updatedAt,fresh.detail.updatedAt);
   assert.equal((await x.command(update)).error?.message,'revision_conflict');
