@@ -12,7 +12,6 @@ export function entityLink(item:InboxItem,locale:'en'|'zh-HK'){
  if(!/^[0-9a-f-]{36}$/i.test(item.entityId))return null;
  if(item.entityType==='support_case')return `/${locale}/support`;
  if(item.entityType==='place_report')return `/${locale}/reports`;
- const oldLocale=locale==='zh-HK'?'zh-hk':'en';
  const path=item.entityType==='mission'?`studio/missions/${item.entityId}`:item.entityType==='mission_settlement'||item.entityType==='payout_batch'?'studio/earnings':null;
- return path?`https://remix-kinnso-web.vercel.app/${oldLocale}/${path}`:null;
+ return path?`/${locale}/${path}`:null;
 }

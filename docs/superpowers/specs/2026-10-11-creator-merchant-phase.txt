@@ -1,0 +1,6 @@
+KinnsoOS creator/merchant phase, 2026-10-11 HK
+Current baseline fa918c6d2c89f681071b29ac606bfbd8a24e9d0e (#53); 356 baseline unit tests pass.
+Scope: creator collaboration and historical earnings; merchant coupon campaign draft-edit-publish-pause with application/submission review and branch edit; merchant self-service application + owner profile; shared routing/nav/inbox + integration evidence.
+Preserve prior N mappings; whole phase requested supersedes old first-three-only PR split. Additive isolated development only; no current deployment or production SQL authorization inferred.
+Three independently owned code scopes via dispatching-parallel-agents. Root owns shared UI/navigation/css/source manifest + onboarding/profile + integration.
+No Docker/owned DB is available locally; do not bypass verifyTestTarget. SQL and connected-browser verification will use existing owned CI stack; bounded PGlite adapter can supplement but not replace migration/DB evidence.

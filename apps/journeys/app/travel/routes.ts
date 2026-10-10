@@ -24,6 +24,7 @@ const pages = new Set([
   "studio/adventures",
   "studio/guides",
   "studio/earnings",
+  "studio/inbox",
   "studio/missions",
   "studio/offers",
   "studio/receipts",
@@ -36,6 +37,7 @@ const pages = new Set([
   "ops/reports",
   "ops/support",
   "ops/monitoring",
+  "ops/merchants",
   "me",
   "settings",
   "demo-lab",
@@ -79,6 +81,7 @@ const retained = new Set([
   "legal/payment-handling",
 ]);
 export function isKnownRoute(path: string) {
+  if(/^studio\/missions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return true;
   if(path==='merchant/invitation')return true;
   if (
     /^(articles\/[^/]+(?:\/[^/]+)?|sessions\/[^/]+|m\/[^/]+)$/.test(path) &&
