@@ -62,14 +62,14 @@ test('public search is bounded with scope/filter/version cursors, while mature f
  assert.equal((await x.list(x.owner,{q:'Other query',after:first.nextCursor})).error?.message,'invalid_cursor');assert.equal((await x.list(x.owner,{q:prefix,savedOnly:true,after:first.nextCursor})).error?.message,'invalid_cursor');
  await ok(admin.from('creators').update({status:'suspended'}).eq('id',first.items.at(-1).id));assert.equal((await x.list(x.owner,{q:prefix,after:first.nextCursor})).error?.message,'invalid_cursor');
  }finally{await x.cleanup();}});
-test('true foreign campaign IDs, accepted re-invites and revoked owner receipt/replay retain exact denials with owned controls',async()=>{const x=await setup();let foreignMerchant='';try{
+test('true foreign campaign IDs, accepted re-invites and revoked owner receipt/replay retain exact denials with owned controls',async()=>{const x=await setup();const successor=await x.f.actor();let foreignMerchant='';try{
  foreignMerchant=(await ok(admin.from('merchant_profiles').insert({user_id:x.foreign.id,company_name:'Synthetic foreign company',contact_email:'synthetic@example.test'}).select('id').single())).id;
  const foreignMission=await ok(admin.from('missions').insert({merchant_profile_id:foreignMerchant,title:'Synthetic foreign campaign',summary:'Foreign owner brief',mission_source:'merchant',mission_type:'coupon_affiliate',status:'published'}).select('id,updated_at').single());
  assert.equal((await x.command({...x.invite(x.authors[0]),id:foreignMission.id,expectedUpdatedAt:foreignMission.updated_at})).error?.message,'forbidden');
  await ok(x.command(x.invite(x.authors[0])));await ok(x.authors[0].client.rpc('accept_mission_invite',{p_mission_id:x.mission.id}));assert.equal((await x.command(x.invite(x.authors[0]))).error?.message,'already_participant');assert.equal((await ok(x.list())).quota.used,1);
  const requestId=randomUUID(),command={type:'saveCreator',id:x.authors[1].id,reason:'Owner shortlist'};await ok(x.command(command,requestId));
- await ok(admin.from('merchant_profiles').update({user_id:x.foreign.id}).eq('id',x.merchantId));
+ await ok(admin.from('merchant_profiles').update({user_id:successor.id}).eq('id',x.merchantId));
  assert.equal((await x.command(command,requestId)).error?.message,'forbidden');assert.equal((await x.command({type:'unsaveCreator',id:x.authors[1].id,reason:'Revoked owner attempt'})).error?.message,'forbidden');
  assert.equal((await x.owner.client.rpc('get_kinnso_merchant_creator_receipt',{p_merchant_id:x.merchantId,p_request_id:requestId})).error?.message,'forbidden');assert.equal((await x.owner.client.from('merchant_saved_creators').select('*').eq('merchant_id',x.merchantId)).data.length,0);
- assert.equal((await ok(x.list(x.foreign,{savedOnly:true}))).items.length,1);await ok(x.foreign.client.rpc('apply_kinnso_merchant_campaign_command',{p_merchant_id:x.merchantId,p_request_id:requestId,p_command:command}));assert.ok((await ok(x.foreign.client.rpc('get_kinnso_merchant_creator_receipt',{p_merchant_id:x.merchantId,p_request_id:requestId}))).result);
+ assert.equal((await ok(x.list(successor,{savedOnly:true}))).items.length,1);await ok(successor.client.rpc('apply_kinnso_merchant_campaign_command',{p_merchant_id:x.merchantId,p_request_id:requestId,p_command:command}));assert.ok((await ok(successor.client.rpc('get_kinnso_merchant_creator_receipt',{p_merchant_id:x.merchantId,p_request_id:requestId}))).result);
  }finally{if(foreignMerchant)await ok(admin.from('merchant_profiles').delete().eq('id',foreignMerchant));await x.cleanup();}});

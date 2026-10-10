@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-10T22:10:50.029443+00:00",
+  "observed_at": "2026-10-10T22:39:33.840198+00:00",
   "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
   "baseline": {
     "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
@@ -1696,11 +1696,11 @@
         "U03",
         "U04"
       ],
-      "code_status": "LOCAL_VERIFIED_CI_PENDING",
-      "ci_status": "ROOT_CI_FAILED_CLEANUP_FIX_PENDING",
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2",
+      "source_sha": "a0c43bf168dbfa643a52549cb33418903224d69a",
       "evidence": [
         {
           "source_sha": "aeaae511b0b9a8d9c68de03b901a65319d559db7",
@@ -1733,13 +1733,20 @@
           "result": "ROOT_FAIL_afterAll_direct_milestone_cleanup; all eight settlement assertions PASS; owned parent cascade cleanup correction requires new CI; E2E SKIPPED",
           "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38090289725",
           "observed_at": "2026-10-10T22:20:13.930764+00:00"
+        },
+        {
+          "source_sha": "a0c43bf168dbfa643a52549cb33418903224d69a",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Full post-review schedule and legacy compatibility regression",
+          "result": "432unit_65integration_124browser_4isolatedSMTP_PASS_0FAIL_0SKIP; rootquality_scan_E2E_SUCCESS; testedmerge3cdb241fcb2b5c1ac55d90cb9f8952c55a3c2c38 exactheadtree6955bad524dec2bccebc69a896d7e62023d09c48; build_types_sourcepack_rebuild_PASS",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38091049065; https://github.com/YNWAforever/KinnsoOS/actions/runs/38091049181",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
         }
       ],
       "blockers": [
-        "CURRENT_OWNED_CI_PENDING: schedule/policy/history/receipt and legacy finance tests must pass at current source.",
         "HOSTED_UAT_NOT_RUN: designated target, actors, schema/config and recovery packet absent."
       ],
-      "next_action": "Verify current owned CI and legacy root CI, then start P09/P10 isolated discovery/paging. Hosted SQL remains an unselected packet.",
+      "next_action": "Review PR58 dependency stack; continue isolated P09 and P10; prepare designated staging packet.",
       "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/58"
     },
     {
@@ -1770,14 +1777,58 @@
         "U03",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "ec3b30b37060f8c8500e8f2153b1e936b39c3f23",
+      "evidence": [
+        {
+          "source_sha": "ded8dd03f28ec466bb39bc1be12a65a5228483f8",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 unchanged-database test-first discovery and invitation quota baseline",
+          "result": "65existingintegrationPASS_4newFAIL_0SKIP; independent backdated direct owner invitation succeeded despite exhausted quota; new source manifest omission also FAILED and corrected; mailbox4PASS; no hosted target",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38091491015",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
+        },
+        {
+          "source_sha": "344b0b79ef13c1a8260b87f18ae9c57a917f87da",
+          "environment": "local_isolated",
+          "scenario": "Initial discovery owner UI, allowlisted query, private notes and unknown-result reconcile",
+          "result": "438unitPASS_0FAIL_0SKIP; TypeScript and production build PASS at matching application code; corresponding source tests5PASS_1WindowsSKIP; fresh review found optional-cursor serialization and invitation inbox atomicity gaps; review still IN_PROGRESS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-unit.log; p09-build.log",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
+        },
+        {
+          "source_sha": "61ae97b495d621996fa3fc081ac93aed6d9f6a01",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh review regression checkpoint",
+          "result": "439unit:438PASS_1serializationFAIL;70integration:66PASS_4FAIL_0SKIP; notification assertions NOT_REACHED because fixture used pre-seal RETURNING timestamp; exact self-approval forbidden contract regressed; fresh fixture/CAS and contract correction checkpoint ec3b30b pending",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092089343",
+          "observed_at": "2026-10-10T22:47:29.687146+00:00"
+        },
+        {
+          "source_sha": "uncommitted_candidate_on_ec3b30b",
+          "environment": "local_isolated",
+          "scenario": "Review fix pass",
+          "result": "440unitPASS_0FAIL_0SKIP; TypeScript and production build/source pack PASS. Query serialization omits undefined; creator load-more preserves paged campaign selection. Inbox mandatory single-event transaction implemented but valid RED and current DB GREEN still pending. Added bounded scope/filter/stale-anchor and revoked-owner/true foreign campaign controls.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-review-unit.log; p09-review-build.log",
+          "observed_at": "2026-10-10T22:47:29.687156+00:00"
+        },
+        {
+          "source_sha": "ec3b30b37060f8c8500e8f2153b1e936b39c3f23",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reachable review RED checkpoint",
+          "result": "440unit438PASS_2FAIL_0SKIP;72integration69PASS_3FAIL_0SKIP. Native invitation returned success without inbox event (expected1 actual0); scoped notification fault did not abort invitation (expected synthetic_inbox_failure actual success). Both are valid inbox RED. Third failure is owned fixture successor already owning foreign company, violating mature one-company-per-owner unique key; corrected with distinct fresh successor. Remaining quota, cross-filter/stale anchors and exact self-approval contract PASS.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092631635",
+          "observed_at": "2026-10-10T22:51:06.680218+00:00"
+        }
+      ],
+      "blockers": [
+        "CURRENT_CI_PENDING: owner discovery/private notes/CAS/receipts/quota/inbox/browser require current whole-batch regression.",
+        "HOSTED_UAT_NOT_RUN: staging target/actor/recovery packet absent."
+      ],
+      "next_action": "Verify current committed review fix CI, owner role/browser regressions and exact merge source; continue independent P10."
     },
     {
       "id": "P10",

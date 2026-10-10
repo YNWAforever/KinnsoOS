@@ -113,6 +113,29 @@ end $$;
 revoke all on function public.get_kinnso_merchant_creators(uuid,jsonb),public.get_kinnso_merchant_creator_receipt(uuid,uuid) from public,anon,authenticated,service_role;
 grant execute on function public.get_kinnso_merchant_creators(uuid,jsonb),public.get_kinnso_merchant_creator_receipt(uuid,uuid) to authenticated;
 
+-- A successful invitation includes its one inbox event in the same transaction.
+-- Keep the mature application decision notification contract in its existing branch.
+create or replace function kinnso_internal.notify_content_campaign_participant() returns trigger
+language plpgsql security definer set search_path='' as $$
+declare mission public.missions;event_type text;begin
+ select * into mission from public.missions where id=new.mission_id;
+ if tg_op='INSERT' and new.status='invited' and new.source='merchant_invite' then
+  insert into public.notifications(creator_id,notification_type,entity_type,entity_id,payload)
+   values(new.creator_id,'collaboration.invited','mission',new.mission_id,jsonb_build_object('mission_title',mission.title));
+  return new;
+ end if;
+ if not mission.kinnso_requires_application then return new;end if;
+ if tg_op='UPDATE' and old.status='applied' and new.status in ('active','rejected') then
+  event_type:=case when new.status='active' then 'collaboration.application_approved' else 'collaboration.application_rejected' end;
+ end if;
+ if event_type is null then return new;end if;
+ begin
+  insert into public.notifications(creator_id,notification_type,entity_type,entity_id,payload)
+   values(new.creator_id,event_type,'mission',new.mission_id,jsonb_build_object('mission_title',mission.title));
+ exception when others then null;end;
+ return new;
+end $$;
+
 create or replace function public.apply_kinnso_merchant_campaign_command(p_merchant_id uuid,p_request_id uuid,p_command jsonb) returns jsonb
 language plpgsql security definer set search_path='' as $$
 declare actor uuid:=kinnso_internal.actor();role_name text;kind text:=p_command->>'type';entity uuid;digest text;prior kinnso_internal.workspace_requests;result jsonb;

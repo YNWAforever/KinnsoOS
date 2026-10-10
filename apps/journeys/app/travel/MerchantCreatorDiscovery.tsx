@@ -14,7 +14,7 @@ export function MerchantCreatorDiscovery({actorId,merchantId,refreshKey=0,locked
  function denied(code:string){if(['AUTH_REQUIRED','FORBIDDEN'].includes(code)){clear();setError(code);onDenied(code);}}
  async function load(next:DiscoveryQuery=query.current,append=false){if(!live.current)return;const own=++generation.current;setLoading(true);const result=await merchantCreators.list(merchantId,next);if(own!==generation.current||!live.current)return;setLoading(false);
   if(!result.ok){reference.current=result.requestId;setError(result.code);setData(null);denied(result.code);return;}
-  query.current=next;setError('');setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items.filter(c=>!old.items.some(p=>p.id===c.id))]}:result.data);
+  query.current=next;setError('');setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items.filter(c=>!old.items.some(p=>p.id===c.id))],campaigns:old.campaigns.map(c=>result.data.campaigns.find(fresh=>fresh.id===c.id)??c),campaignsNextCursor:old.campaignsNextCursor}:result.data);
  }
  useEffect(()=>{if(!actorId){clear();return;}live.current=true;setValid(true);setData(null);setNotes({});setQ('');setSavedOnly(false);setCampaignId('');setError('');setMessage('');setBusy(false);setUnknown(false);pending.current=null;running.current=false;query.current={};void load({});return()=>{generation.current++;};},[actorId,merchantId]);
  useEffect(()=>subscribeAccountInvalidation(()=>clear()),[]);

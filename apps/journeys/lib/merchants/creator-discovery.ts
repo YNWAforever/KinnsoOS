@@ -13,7 +13,7 @@ export function discoveryQuery(params:URLSearchParams):DiscoveryQuery {
  return out;
 }
 export const merchantCreators={
- list:(merchantId:string,query:DiscoveryQuery={})=>request<DiscoveryDirectory>('/api/merchant/creators?'+new URLSearchParams([['id',merchantId],...Object.entries(query).map(([k,v])=>[k,String(v)])])),
+ list:(merchantId:string,query:DiscoveryQuery={})=>request<DiscoveryDirectory>('/api/merchant/creators?'+new URLSearchParams([['id',merchantId],...Object.entries(query).filter(([,v])=>v!==undefined).map(([k,v])=>[k,String(v)])])),
  command:(merchantId:string,command:CampaignCommand,requestId:string)=>request<DiscoveryReceipt>('/api/merchant/creators','POST',{merchantId,command,requestId}),
  receipt:(merchantId:string,requestId:string)=>request<{result:DiscoveryReceipt|null}>('/api/merchant/creators?'+new URLSearchParams({id:merchantId,requestId})),
 };
