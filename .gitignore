@@ -46,3 +46,7 @@ coverage/
 **/test-results/
 **/playwright-report/
 !.env.example
+
+.ci-evidence/
+
+apps/e2e/nightly-funnel.json

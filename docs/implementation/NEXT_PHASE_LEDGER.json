@@ -42,7 +42,9 @@
         "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
         "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI.",
         "Main84217b2 Git tree equals tested65a81a0; current-head mandatory checks and43 browser/27 integration artifacts verified before merge.",
-        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
+        "N01/N18 nightly evidence source 2d0d9381845b577024f4d86b05d0edf4cc165d3f: legacy nightly38010991911 succeeded with0 artifacts. 24 source/target/run/attempt/count/skip controls GREEN after true RED; clean root tooling57PASS, Journeys339unit/build/typecheckPASS, existing sitemap/artifact15PASS in explicit unit mode, actual loopback intercepted funnel2PASS0FAIL0SKIP0FLAKY. Parsed original workflow target/schedule/concurrency/permissions/pins/setup/test selection/bookingFalse preserved. Safe aggregate sitemap receipt excludes raw URLs/bodies; missing or contradictory successful evidence fails. Current review-head Linux CI/configured review pending; new hosted nightly NOT_RUN, deployed runtime source NOT_CHECKED, formal roles/U06 NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N01/N18 configured P2 finding4236746985 on84e7750: fixed at 4beae1aaa34737684b7598a4e7450a0d55b62156. Three true product RED for zero-page/empty-urlset/non-sitemap HTML -> all27 evidence contracts GREEN. Clean60tooling/339Journeysunit/build/typecheckPASS0FAIL0SKIP. Zero-page sitemap is EMPTY and cannot pass successful evidence; raw zero/failure counts retained. Original root push38031718457 failed profile enquiries with Next dev JSON parse error; cause UNCONFIRMED, failed artifact retained. Original root PR38031735425 succeeded but cannot prove new head. Final current-head CI/configured review pending, hosted nightly/formal roles NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
@@ -57,6 +59,24 @@
           "environment_status": "owned_local_root_kinnso_v3_API54421",
           "acceptance_status": "formal_not_run",
           "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "2d0d9381845b577024f4d86b05d0edf4cc165d3f",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "locally_verified_nightly_readonly_evidence_increment",
+          "merge_status": "not_merged",
+          "environment_status": "clean_source_local_tooling_and_loopback_intercepted_HTML",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "4beae1aaa34737684b7598a4e7450a0d55b62156",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "configured_review_finding_fixed_with_3_true_RED_and_27_GREEN",
+          "merge_status": "not_merged",
+          "environment_status": "clean_local60tooling339unit_build_typecheck_PASS",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending_new_push"
         }
       ]
     },
@@ -1246,7 +1266,10 @@
         "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
         "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN.",
         "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md.",
-        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
+        "N01/N18 nightly evidence source 2d0d9381845b577024f4d86b05d0edf4cc165d3f: legacy nightly38010991911 succeeded with0 artifacts. 24 source/target/run/attempt/count/skip controls GREEN after true RED; clean root tooling57PASS, Journeys339unit/build/typecheckPASS, existing sitemap/artifact15PASS in explicit unit mode, actual loopback intercepted funnel2PASS0FAIL0SKIP0FLAKY. Parsed original workflow target/schedule/concurrency/permissions/pins/setup/test selection/bookingFalse preserved. Safe aggregate sitemap receipt excludes raw URLs/bodies; missing or contradictory successful evidence fails. Current review-head Linux CI/configured review pending; new hosted nightly NOT_RUN, deployed runtime source NOT_CHECKED, formal roles/U06 NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N01/N18 configured P2 finding4236746985 on84e7750: fixed at 4beae1aaa34737684b7598a4e7450a0d55b62156. Three true product RED for zero-page/empty-urlset/non-sitemap HTML -> all27 evidence contracts GREEN. Clean60tooling/339Journeysunit/build/typecheckPASS0FAIL0SKIP. Zero-page sitemap is EMPTY and cannot pass successful evidence; raw zero/failure counts retained. Original root push38031718457 failed profile enquiries with Next dev JSON parse error; cause UNCONFIRMED, failed artifact retained. Original root PR38031735425 succeeded but cannot prove new head. Final current-head CI/configured review pending, hosted nightly/formal roles NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N18 integrated with main02cac8b while retaining all prior nightly source/config blobs and PR52 media changes: complete native60tooling PASS0FAIL0SKIP. Journeys application tree equals exact verified main02 tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2; no new app behavior. All18tasks/53mappings preserved. Fresh integrated-head root/Journeys CI and configured review required; hosted scheduled nightly and formal U06/roles remain NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1270,8 +1293,50 @@
           "environment_status": "owned_local_root_kinnso_v3_API54421",
           "acceptance_status": "formal_not_run",
           "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "2d0d9381845b577024f4d86b05d0edf4cc165d3f",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "locally_verified_nightly_readonly_evidence_increment",
+          "merge_status": "not_merged",
+          "environment_status": "clean_source_local_tooling_and_loopback_intercepted_HTML",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "4beae1aaa34737684b7598a4e7450a0d55b62156",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "configured_review_finding_fixed_with_3_true_RED_and_27_GREEN",
+          "merge_status": "not_merged",
+          "environment_status": "clean_local60tooling339unit_build_typecheck_PASS",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending_new_push"
+        },
+        {
+          "code_sha": "1e871553822acd1b08e562014c6530ce16490e2d",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "prior_N18_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_integration_only_not_main",
+          "environment_status": "native60tooling_verified_no_DB_or_nightly_dispatch",
+          "acceptance_status": "hosted_scheduled_nightly_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "unchanged_journeys_tree": "fb5564f05227f67c1488a2da4ecb43cdf7a82da2",
+          "evidence": "NIGHTLY_READONLY_EVIDENCE.md"
         }
-      ]
+      ],
+      "latest_review_branch_integrations": {
+        "49": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "ed59514b6ea46d59caa01c65f06576ae9138fc00",
+          "branch": "codex/n18-nightly-evidence-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        }
+      }
     }
   ],
   "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
