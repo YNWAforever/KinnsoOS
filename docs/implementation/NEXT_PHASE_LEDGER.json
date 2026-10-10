@@ -204,12 +204,22 @@
         22
       ],
       "tests": [
-        "Preserved PR20-22 repair/account-isolation regressions pass within exact012841d complete connected browser72; synthetic local evidence only."
+        "Preserved PR20-22 repair/account-isolation regressions pass within exact012841d complete connected browser72; synthetic local evidence only.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "Formal signed-in and physical-device acceptance not run."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N05",
@@ -801,14 +811,24 @@
         "Exact clean source76114b6998818f274a2213a4c962761aec44ce71: actual two-direction browser RED→GREEN; keyboard locale switch/back/forward keep same document, route/query and original author wording; SSR initial language correct. Full333unit/41integration/84browser PASS,0fail0skip; build/typePASS; Windows package5PASS/1symlink-permissionSKIP. Final review-head Linux/root/Journeys/Vercel CI is separate; physical AT and named hosted UAT NOT_RUN.",
         "PR39 observed merged093 after exact5d required checks/artifacts green; whole tested/reviewed/main tree23bbb equal. Actual integrated093333/41/82 plus root/Linux/public316-file proof recorded separately; author/device/language acceptance not inferred.",
         "N13 authored-language c81725b:4actual missing-lang RED->4clean-code browser GREEN, both UI locales/history/keyboard/original text and localized fallback/action hint; clean339unit/build/typePASS and Windows5PASS1SKIP. Initial native run also had2local API fixture BLOCKED before SSR assertions, not PASS; Linux current review full connected and6package/extracted-source gates PENDING. Source318 unchanged. AUTHORED_LANGUAGE_ACCEPTANCE.md; actual author locale/real content/hosted roles/physical AT remain open.",
-        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate."
+        "N06/N14 creator deletion-focus source f9c62f8f2446d2a7af1a90cc1d125579be823f71: four actual-browser focus RED -> four GREEN; all17 creator cases plus2 delayed-choice cases PASS against owned isolated local API127.0.0.1:58421, process-local existing CI capability profile only. Clean339unit/build/typecheck PASS; Windows source-package5PASS1 permissionSKIP retained. Original source offsets, duplicate stop identity, save/reload, autosave/publication conflicts and Undo survive. Exact review-head Linux CI and configured review required; hosted creator/mail/content/physical/AT acceptance NOT_RUN; approved SQL/provider/env gates remain separate.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "Physical iOS Safari/Android, 200% text, NVDA and VoiceOver versioned acceptance NOT_RUN.",
         "Synthetic viewport checks cannot close physical-device/human acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/n06-delete-undo-focus-20261009"
+      "source_ref": "codex/n06-delete-undo-focus-20261009",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N15",
@@ -852,14 +872,24 @@
         "Final SQL d89dde56367df4b142b7a66e53858e1711a98a73ffd52353b87d8ae0d54aa896 atomic injected failure restores both functions/constraint/ACL/owner/search_path/tableRLS before exact isolated applyPASS. Prior candidate/results preserved; no production application or provider activation.",
         "Exact clean22213ec on merged main255:333unit/41integration/80browser PASS,0fail/skip; build/typecheck PASS. Native source-package5PASS/1symlink-permissionSKIP; latest review-head Linux6/rebuild/type/root/Journeys/Vercel gates remain required.",
         "Full current suite retains actual media reference/retention/claim-finalize race/late upload replay/cleanup/cancel/weak-network assertions. Isolated fixture evidence does not establish hosted scheduler or mailbox acceptance.",
-        "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN."
+        "PR36 exact3275907 push/PR artifacts:333unit/41integration/80browser PASS0fail0skip, clean tested215b tree equals merged218; Linux package6/extracted build/typecheck PASS; root quality/e2e/image green. Canonical main218 public316/10 PASS; formal delivery/SQL NOT_RUN.",
+        "N15 upload-lifetime/resume increment on codex/n15-photo-upload-lifetime-20261010 based on main513b8c8: native348unit and10real isolated browser PASS0FAIL0SKIP; existing same-account/foreign-denial/RPC persistence controls. Windows package permission skip retained; current-source Linux CI/configured review/merge/runtime/hosted acceptance remain separate gates. PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md."
       ],
       "blockers": [
         "New candidate SQL requires fresh scoped production metadata/consistent backup/isolated restore and specific authorization; prior SQL approvals do not cover it.",
         "Scheduler owner/token and retention policy, approved provider/sender/mailbox and uncertain-send reconciliation owner/procedure remain external gates. No email/cron activation or named hosted acceptance."
       ],
       "rollback": "Revert source code with exact pending completion material preserved; retain no-resend claim boundary and accepted SQL states. Any SQL reversal requires separately reviewed data-aware correction or demonstrated restore; never resend uncertain/historical events.",
-      "review_branch": "codex/n15-notification-acceptance-20261008"
+      "review_branch": "codex/n15-notification-acceptance-20261008",
+      "current_upload_lifetime_increment": {
+        "source_ref": "codex/n15-photo-upload-lifetime-20261010",
+        "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+        "code_status": "implemented_native_verified",
+        "merge_status": "not_merged_current_source_ci_and_review_required",
+        "environment_status": "owned_local_Auth_Storage_RPC_verified",
+        "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
+        "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
+      }
     },
     {
       "task_id": "N16",
