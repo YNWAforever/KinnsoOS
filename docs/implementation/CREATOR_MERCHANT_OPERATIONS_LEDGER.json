@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-10T20:36:17.229774+00:00",
+  "observed_at": "2026-10-11T04:36:17.229774+08:00",
   "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
   "baseline": {
     "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
@@ -1273,14 +1273,23 @@
         "N18",
         "U06"
       ],
-      "code_status": "IN_PROGRESS",
+      "code_status": "VERIFIED",
       "ci_status": "NOT_RUN",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
-      "evidence": [],
+      "source_sha": "fdd100237bf251cfcfa3b6905e914384f115c76f",
+      "evidence": [
+        {
+          "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+          "environment": "local_isolated",
+          "scenario": "Baseline Journeys unit",
+          "result": "PASS_396_FAIL_0_SKIP_0",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/baseline-unit.log",
+          "observed_at": "2026-10-10T20:40:51.2740524Z"
+        }
+      ],
       "blockers": [],
-      "next_action": "Complete baseline and provenance validation."
+      "next_action": "Rebind continuation review/CI/deployment after each new head; preserve parent release blocker."
     },
     {
       "id": "P02",
@@ -1288,14 +1297,25 @@
         "P01"
       ],
       "references": [],
-      "code_status": "NOT_STARTED",
+      "code_status": "LOCAL_VERIFIED",
       "ci_status": "NOT_RUN",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "evidence": [
+        {
+          "source_sha": "fdd100237bf251cfcfa3b6905e914384f115c76f",
+          "environment": "local_isolated_working_tree",
+          "scenario": "readiness RED to GREEN, capabilities, full unit, typecheck",
+          "result": "9_RED_then_18_GREEN_full_unit_405_PASS_typecheck_PASS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p02-red.log; p02-green.log; p02-unit.log",
+          "observed_at": "2026-10-10T20:40:51.2740524Z"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_CONFIG_VALUE_RELATIONS: connector env listing 403; CLI metadata succeeds, preview required settings absent from current project list. Effective deployment values, Auth, actor and schema not checked."
+      ],
+      "next_action": "Bind committed source and CI; designate staging before config or schema changes."
     },
     {
       "id": "P03",
