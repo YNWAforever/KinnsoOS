@@ -45,7 +45,8 @@
         "Main84217b2 Git tree equals tested65a81a0; current-head mandatory checks and43 browser/27 integration artifacts verified before merge.",
         "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
         "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
-        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md."
+        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
@@ -88,6 +89,15 @@
             "source_fix": "LOCAL_VERIFIED_3RED_TO41GREEN",
             "current_review": "NOT_RUN"
           }
+        },
+        {
+          "code_sha": "6453bb204556eb1487618d69b87a322d90943a4b",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "scoped_compiler_and_41_contracts_verified",
+          "local_typecheck_scope": "actual_ci_artifact_test_only; Journeys broader verification at5013f49",
+          "merge_status": "not_merged",
+          "environment_status": "new_exact_head_CI_required",
+          "acceptance_status": "formal_not_run"
         }
       ]
     },
@@ -1102,7 +1112,8 @@
         "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md.",
         "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
         "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
-        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md."
+        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1154,6 +1165,15 @@
             "source_fix": "LOCAL_VERIFIED_3RED_TO41GREEN",
             "current_review": "NOT_RUN"
           }
+        },
+        {
+          "code_sha": "6453bb204556eb1487618d69b87a322d90943a4b",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "scoped_compiler_and_41_contracts_verified",
+          "local_typecheck_scope": "actual_ci_artifact_test_only; Journeys broader verification at5013f49",
+          "merge_status": "not_merged",
+          "environment_status": "new_exact_head_CI_required",
+          "acceptance_status": "formal_not_run"
         }
       ]
     }
