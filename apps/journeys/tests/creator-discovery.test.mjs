@@ -39,3 +39,11 @@ test('unknown discovery writes reconcile a receipt before replaying the unchange
  h.find('button','Retry the same request').props.onClick();await tick();h.render();
  assert.deepEqual(events.map(x=>x[0]),['write','receipt','write']);assert.deepEqual(events[2],events[0]);
 });
+test('owner workspace connects discovery and its pending lock protects company switching',async()=>{
+ for(const role of ['owner','marketing','clerk']){
+  const memberships=[{merchantId:id,name:'Owner company',role,branchIds:[]},{merchantId:creatorId,name:'Other company',role,branchIds:[]}];
+  const h=await workspaceHarness('MerchantWorkspace',{request:async url=>url==='/api/merchant'?{ok:true,data:memberships}:{ok:true,data:{merchantId:id,role,missions:[],applications:[],outcomes:[],branches:[],moneyCapability:'historical_records_only'}}},{shallow:true});await tick();h.render();
+  const child=h.elements().find(n=>n.type==='MerchantCreatorDiscovery');assert.equal(Boolean(child),role==='owner');
+  if(child){assert.equal(child.props.merchantId,id);assert.equal(child.props.actorId,'actor-A');child.props.onLockChange(true);h.render();assert.equal(h.find('select','Company').props.disabled,true);}
+ }
+});

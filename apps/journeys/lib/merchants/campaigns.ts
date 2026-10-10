@@ -2,6 +2,9 @@
 import {campaignSchedule,type CampaignSchedule} from './campaign-schedule.ts';
 export type CampaignInput=CampaignSchedule&{title:string;summary:string;couponCode:string;couponUrl:string;affiliateRate:number|null;kinnsoRate:number|null;creatorRate:number|null;requirements:string[];deliverables:string[];milestones:{id:string;title:string;description:string;dueAt:string|null}[]};
 export type CampaignCommand=
+ |{type:'saveCreator'|'unsaveCreator';id:string;reason:string}
+ |{type:'setSavedNote';id:string;note:string;expectedUpdatedAt:string;reason:string}
+ |{type:'inviteCreator';id:string;creatorId:string;expectedUpdatedAt:string;reason:string}
  |{type:'createDraft';id:string;input:CampaignInput;publish:boolean;reason:string}
  |{type:'updateDraft';id:string;expectedUpdatedAt:string;input:CampaignInput;reason:string}
  |{type:'publish'|'close';id:string;expectedUpdatedAt:string;reason:string}
@@ -23,9 +26,12 @@ function input(v:unknown,publish:boolean){const d=record(v,['title','summary','c
  return d;
 }
 export function campaignCommand(value:unknown):CampaignCommand {
- const c=record(value,['type','id','input','publish','expectedUpdatedAt','action','note','feedback','reason','expectedActive','expectedName','name','active']);
+ const c=record(value,['type','id','input','publish','expectedUpdatedAt','action','note','feedback','reason','expectedActive','expectedName','name','active','creatorId']);
  if(!uuid(c.id)||!string(c.reason,2000,true))throw Error('INVALID');
  switch(c.type){
+ case 'saveCreator':case 'unsaveCreator':record(c,['type','id','reason']);break;
+ case 'setSavedNote':record(c,['type','id','note','expectedUpdatedAt','reason']);if(!timestamp(c.expectedUpdatedAt)||!string(c.note,2000))throw Error('INVALID');break;
+ case 'inviteCreator':record(c,['type','id','creatorId','expectedUpdatedAt','reason']);if(!uuid(c.creatorId)||!timestamp(c.expectedUpdatedAt))throw Error('INVALID');break;
  case 'createDraft':record(c,['type','id','input','publish','reason']);if(typeof c.publish!=='boolean')throw Error('INVALID');input(c.input,c.publish);break;
  case 'updateDraft':record(c,['type','id','input','expectedUpdatedAt','reason']);input(c.input,false);if(!timestamp(c.expectedUpdatedAt))throw Error('INVALID');break;
  case 'publish':case 'close':record(c,['type','id','expectedUpdatedAt','reason']);if(!timestamp(c.expectedUpdatedAt))throw Error('INVALID');break;

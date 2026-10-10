@@ -36,11 +36,12 @@ export async function workspaceHarness(name,ports={},initial={}) {
   const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=0;
   const props={actorId:'actor-A',enabled:true,path:'studio/missions',merchantId:'11111111-1111-4111-8111-111111111111',refreshKey:0,locked:false,onDenied:()=>{},onLockChange:()=>{},onChanged:async()=>{},...initial};
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
-  const jsx=(type,props)=>typeof type==='function'?type(props):({type,props});
+  const jsx=(type,props)=>typeof type==='function'?(initial.shallow?{type:type.name,props}:type(props)):({type,props});
   const snippets={ui:`export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:path=>'/'+globalThis.__locale+'/'+path});`,
     drafts:'export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);',
     creator:'export const creatorMissions=globalThis.__ports.creatorMissions; export const creatorEarnings=globalThis.__ports.creatorEarnings;',
     campaigns:'export const merchantCampaigns=globalThis.__ports.merchantCampaigns;',
+    discovery:'export const merchantCreators=globalThis.__ports.merchantCreators;',
     onboarding:'export const merchantOnboarding=globalThis.__ports.merchantOnboarding;',
     repository:'export const request=(...args)=>globalThis.__ports.request(...args);',
     missing:'export const WorkspaceServiceState=()=>null;'};
@@ -51,6 +52,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';
       else if(args.path.endsWith('/creators/collaboration'))path='creator';
       else if(args.path.endsWith('/merchants/campaign-repository'))path='campaigns';
+      else if(args.path.endsWith('/merchants/creator-discovery'))path='discovery';
       else if(args.path.endsWith('/merchants/onboarding'))path='onboarding';
       else if(args.path.endsWith('/trips/repository'))path='repository';
       else if(args.path==='./WorkspaceServiceState'&&!existsSync(servicePath))path='missing';
