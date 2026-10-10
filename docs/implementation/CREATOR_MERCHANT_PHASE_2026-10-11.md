@@ -60,3 +60,13 @@ Rollback should disable entry to the new workflows and revert the application de
 ## Prior audit mapping
 
 This extends N06 creator work, N09 end-to-end acceptance, N11 merchant administration, and N17 recorded financial visibility. Earlier evidence and unapproved finance/hosted gates in `NEXT_PHASE_LEDGER.json` remain historical and must not be overwritten as completed by local unit results. This phase's release status is tracked in this document and the PR.
+
+## Operations continuation: observed 2026-10-11 Hong Kong
+
+Read-only GitHub verification confirms main `ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8` and PR55 OPEN at `097b505d5e4b79948101877f98f331d27813e8af`. Journeys run38081449970 and root CI run38081449892 both completed successfully on that exact PR source; all listed jobs succeeded. This is parent-branch evidence, not validation of the operations continuation.
+
+Vercel deployment metadata binds the PR preview to `097b505` and the production alias to main `ad2c8ce`; both report READY. Configuration, Auth, authoritative roles, RPC/schema and signed-in hosted acceptance remain separate gates. Production has not received PR55. The preview's historical 503 requires a fresh probe and safe configuration diagnosis before its cause can be asserted.
+
+The current-head review is COMMENTED with an unresolved P1: a legacy/direct table update can bypass immutable published campaign terms enforced only by the RPC. This is a release blocker to be covered by the P08 table-boundary work; it is not resolved by green CI.
+
+The continuation starts from the exact PR55 head, with stacked base `codex/creator-merchant-phase-20261011`, retaining its onboarding, applications, campaign, submission/revision and read-only earnings implementations. The new [operations ledger](CREATOR_MERCHANT_OPERATIONS_LEDGER.json) preserves historical requirement IDs and records code, CI, staging and release independently. No hosted SQL, capability activation, role mutation or formal release is authorized by this appendix.

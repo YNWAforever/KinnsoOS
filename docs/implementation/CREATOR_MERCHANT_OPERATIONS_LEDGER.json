@@ -1,0 +1,1953 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-10T20:36:17.229774+00:00",
+  "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
+  "baseline": {
+    "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
+    "parent_pr": 55,
+    "parent_state": "OPEN",
+    "parent_head_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+    "stacked_base": "codex/creator-merchant-phase-20261011",
+    "preview": {
+      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+      "state": "READY",
+      "role_acceptance": "NOT_RUN",
+      "api_status": "RECHECK_PENDING"
+    },
+    "production": {
+      "source_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
+      "state": "READY",
+      "role_acceptance": "NOT_RUN"
+    },
+    "ci": [
+      {
+        "run": 38081449970,
+        "workflow": "Journeys",
+        "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+        "result": "SUCCESS"
+      },
+      {
+        "run": 38081449892,
+        "workflow": "CI",
+        "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+        "result": "SUCCESS"
+      }
+    ],
+    "review": {
+      "state": "COMMENTED",
+      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+      "unresolved": [
+        "P1: published campaign terms can bypass RPC through legacy/direct table updates; table-boundary guard required before release."
+      ]
+    }
+  },
+  "evidence_rule": "Each evidence item binds source SHA, environment, scenario, result, run/artifact and observation time. READY metadata/config exits do not prove schema/auth/roles/release.",
+  "reference_registry": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "A12",
+    "A13",
+    "A14",
+    "A15",
+    "A16",
+    "A17",
+    "A18",
+    "A19",
+    "A20",
+    "G01",
+    "G02",
+    "G03",
+    "G04",
+    "G05",
+    "G06",
+    "G07",
+    "G08",
+    "G09",
+    "G10",
+    "G11",
+    "G12",
+    "G13",
+    "G14",
+    "G15",
+    "G16",
+    "G17",
+    "G18",
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08",
+    "N09",
+    "N10",
+    "N11",
+    "N12",
+    "N13",
+    "N14",
+    "N15",
+    "N16",
+    "N17",
+    "N18",
+    "U01",
+    "U02",
+    "U03",
+    "U04",
+    "U05",
+    "U06"
+  ],
+  "historical_requirements": [
+    {
+      "id": "A01",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N14",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A02",
+      "operations": [
+        "P01",
+        "P17"
+      ],
+      "legacy_N": [
+        "N02",
+        "N03",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A03",
+      "operations": [
+        "P03",
+        "P05",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N08",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A04",
+      "operations": [
+        "P03",
+        "P15"
+      ],
+      "legacy_N": [
+        "N03",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A05",
+      "operations": [
+        "P07",
+        "P17"
+      ],
+      "legacy_N": [
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A06",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A07",
+      "operations": [
+        "P03",
+        "P10",
+        "P14"
+      ],
+      "legacy_N": [
+        "N01",
+        "N07",
+        "N09",
+        "N12",
+        "N13"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A08",
+      "operations": [
+        "P09",
+        "P10",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A09",
+      "operations": [
+        "P07",
+        "P10",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N12",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A10",
+      "operations": [
+        "P14",
+        "P15",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N12",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A11",
+      "operations": [
+        "P07",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A12",
+      "operations": [
+        "P07",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N13",
+        "N14"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A13",
+      "operations": [
+        "P03",
+        "P05",
+        "P09"
+      ],
+      "legacy_N": [
+        "N01",
+        "N05",
+        "N09",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A14",
+      "operations": [],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N15",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A15",
+      "operations": [
+        "P01",
+        "P06",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N12",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A16",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N01",
+        "N09",
+        "N13",
+        "N14",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A17",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N08",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A18",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N07",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A19",
+      "operations": [
+        "P07",
+        "P16"
+      ],
+      "legacy_N": [
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A20",
+      "operations": [
+        "P03",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N07",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G01",
+      "operations": [
+        "P01",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G02",
+      "operations": [
+        "P01",
+        "P09",
+        "P14",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G03",
+      "operations": [
+        "P04",
+        "P05",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N09",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G04",
+      "operations": [
+        "P05",
+        "P07"
+      ],
+      "legacy_N": [
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G05",
+      "operations": [
+        "P05",
+        "P17"
+      ],
+      "legacy_N": [
+        "N04",
+        "N05",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G06",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G07",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G08",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N04",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G09",
+      "operations": [
+        "P12",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G10",
+      "operations": [
+        "P07",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N14",
+        "N15",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G11",
+      "operations": [
+        "P05",
+        "P07",
+        "P09",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N11",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G12",
+      "operations": [
+        "P12",
+        "P14",
+        "P15"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N11",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G13",
+      "operations": [
+        "P03",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N12",
+        "N15",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G14",
+      "operations": [
+        "P07",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N15"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G15",
+      "operations": [
+        "P13",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G16",
+      "operations": [],
+      "legacy_N": [
+        "N09",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G17",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G18",
+      "operations": [
+        "P11",
+        "P14",
+        "P16",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U01",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N07",
+        "N08",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U02",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U03",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U04",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P14",
+        "P15",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N11",
+        "N14",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U05",
+      "operations": [
+        "P05",
+        "P11",
+        "P12",
+        "P15",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N14",
+        "N15",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U06",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    }
+  ],
+  "historical_tasks": [
+    {
+      "id": "N01",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P14",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3"
+    },
+    {
+      "id": "N02",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P09",
+        "P14",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "verified_done",
+      "source_sha": "093c93799fa93c4e297f917fba311d9bb12d1952"
+    },
+    {
+      "id": "N03",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f"
+    },
+    {
+      "id": "N04",
+      "operations": [
+        "P03",
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "historical_status": "code_merged",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f"
+    },
+    {
+      "id": "N05",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "b7c383994dbce28a6f373e5fac984552d0240675"
+    },
+    {
+      "id": "N06",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "f9c62f8f2446d2a7af1a90cc1d125579be823f71"
+    },
+    {
+      "id": "N07",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720"
+    },
+    {
+      "id": "N08",
+      "operations": [
+        "P03",
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d"
+    },
+    {
+      "id": "N09",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720"
+    },
+    {
+      "id": "N10",
+      "operations": [
+        "P05",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "6f68aae72776f872be9b1483dd21c05711366714"
+    },
+    {
+      "id": "N11",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P14",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "e1977805202748ea9a93c477e2812783885133b5"
+    },
+    {
+      "id": "N12",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "4a5df3b5d783d7fded486730119ff7a521176c69"
+    },
+    {
+      "id": "N13",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "c81725bdde9e35edd09a2f45b55e5b4e9c5a21d2"
+    },
+    {
+      "id": "N14",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d"
+    },
+    {
+      "id": "N15",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "22213ec06572323eee229477b669d350b5517eb3"
+    },
+    {
+      "id": "N16",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "0ab943cc5d1952a353b7d0d4ad0e03cc7260ea3d"
+    },
+    {
+      "id": "N17",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "9ebeb68128beec2a2bdfe7d65aea48354985100c"
+    },
+    {
+      "id": "N18",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "416f94e8e315e0c19b7d9a1e38d5fd5da38c9650"
+    }
+  ],
+  "preserved_history_sha256": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "af18b38adc76db424ddeaf3185a0bd45ba87fbc114065f4abfb37326afeac363",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "rulings": [
+    "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
+    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed."
+  ],
+  "tasks": [
+    {
+      "id": "P01",
+      "dependencies": [],
+      "references": [
+        "A01",
+        "A02",
+        "A15",
+        "G01",
+        "G02",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "IN_PROGRESS",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Complete baseline and provenance validation."
+    },
+    {
+      "id": "P02",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P03",
+      "dependencies": [
+        "P02"
+      ],
+      "references": [
+        "A03",
+        "A04",
+        "A07",
+        "A13",
+        "A20",
+        "G13",
+        "N01",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P04",
+      "dependencies": [
+        "P01",
+        "P02"
+      ],
+      "references": [
+        "A01",
+        "G03",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P05",
+      "dependencies": [
+        "P03",
+        "P04"
+      ],
+      "references": [
+        "A01",
+        "A03",
+        "A13",
+        "A17",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G11",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U03",
+        "U04",
+        "U05",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P06",
+      "dependencies": [
+        "P05"
+      ],
+      "references": [
+        "A01",
+        "A15",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P07",
+      "dependencies": [
+        "P01",
+        "P03"
+      ],
+      "references": [
+        "A05",
+        "A09",
+        "A11",
+        "A12",
+        "A19",
+        "G04",
+        "G10",
+        "G11",
+        "G14",
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P08",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "U03",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P09",
+      "dependencies": [
+        "P08"
+      ],
+      "references": [
+        "A08",
+        "A13",
+        "G02",
+        "G11",
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P10",
+      "dependencies": [
+        "P07"
+      ],
+      "references": [
+        "A07",
+        "A08",
+        "A09",
+        "G14",
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P11",
+      "dependencies": [
+        "P08",
+        "P09"
+      ],
+      "references": [
+        "A11",
+        "G13",
+        "G14",
+        "G18",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P12",
+      "dependencies": [
+        "P03",
+        "P07"
+      ],
+      "references": [
+        "A11",
+        "G09",
+        "G12",
+        "G13",
+        "G14",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P13",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [
+        "A03",
+        "A06",
+        "A17",
+        "A18",
+        "A20",
+        "G06",
+        "G07",
+        "G09",
+        "G10",
+        "G15",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U03"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_CONTENT: no author-approved three-guide pilot supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P14",
+      "dependencies": [
+        "P09",
+        "P10"
+      ],
+      "references": [
+        "A07",
+        "A10",
+        "G02",
+        "G12",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "N18",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P15",
+      "dependencies": [
+        "P01",
+        "P12"
+      ],
+      "references": [
+        "A04",
+        "A10",
+        "G12",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P16",
+      "dependencies": [
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "references": [
+        "A08",
+        "A09",
+        "A10",
+        "A19",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P17",
+      "dependencies": [
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "references": [
+        "A02",
+        "A05",
+        "A12",
+        "A16",
+        "A17",
+        "A20",
+        "G03",
+        "G05",
+        "G06",
+        "G08",
+        "G11",
+        "G15",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P18",
+      "dependencies": [
+        "P04",
+        "P05",
+        "P06",
+        "P11",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17"
+      ],
+      "references": [
+        "A01",
+        "A15",
+        "G01",
+        "G02",
+        "G15",
+        "G17",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U05",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    }
+  ]
+}
