@@ -37,3 +37,28 @@ test('legacy direct join, owner invite and invitation acceptance all obey server
   assert.equal((await ok(admin.from('mission_participants').select('status').eq('id',invitationId).single())).status,'invited');
  }finally{await x.cleanup();}
 });
+
+test('schedule dates round-trip across roles, v1 drafts preserve dates, and expired accepted work retains proof and revision rights',async()=>{
+ const x=await setup();try{
+  const id=randomUUID(),cutoff=new Date(Date.now()+7000).toISOString();
+  const input={...x.input,applicationOpensAt:'2000-01-01T00:00:00+08:00',applicationClosesAt:cutoff,scheduleTimeZone:'Asia/Hong_Kong',milestones:[{...x.input.milestones[0],dueAt:'2000-01-01T00:00:00Z'}]};
+  const draft=await ok(x.command({type:'createDraft',id,input,publish:false,reason:'Author UTC schedule'}));
+  // A prior native client must not silently erase a schedule it cannot edit.
+  const edited=await ok(x.command({type:'updateDraft',id,input:{...x.input,milestones:input.milestones},expectedUpdatedAt:draft.updatedAt,reason:'Old client title edit'}));
+  const owner=await ok(x.owner.client.rpc('get_kinnso_merchant_campaigns',{p_merchant_id:x.merchantId,p_campaign_id:id}));
+  assert.equal(Date.parse(owner.detail.applicationOpensAt),Date.parse(input.applicationOpensAt));assert.equal(Date.parse(owner.detail.applicationClosesAt),Date.parse(cutoff));assert.equal(owner.detail.scheduleTimeZone,'Asia/Hong_Kong');
+  await ok(x.command({type:'publish',id,expectedUpdatedAt:edited.updatedAt,reason:'Confirm complete scheduled draft'}));
+  const read=await ok(x.creator.client.rpc('get_kinnso_creator_mission',{p_mission_id:id}));assert.equal(read.scheduleTimeZone,owner.detail.scheduleTimeZone);assert.equal(read.applicationOpensAt,owner.detail.applicationOpensAt);assert.equal(read.applicationClosesAt,owner.detail.applicationClosesAt);
+  const joined=await ok(x.creator.client.rpc('apply_kinnso_creator_mission_command',{p_mission_id:id,p_request_id:randomUUID(),p_command:{type:'join'}}));
+  await ok(x.command({type:'reviewApplication',id:joined.id,expectedUpdatedAt:joined.updatedAt,action:'approve',note:'Original proposal accepted',reason:'Confirm accepted work'}));
+  await new Promise(resolve=>setTimeout(resolve,Math.max(0,Date.parse(cutoff)-Date.now()+150)));
+  const final=await ok(x.creator.client.rpc('get_kinnso_creator_mission',{p_mission_id:id}));assert.equal(final.evidenceAvailable,true);assert.equal(final.participant.status,'active');
+  const payload={type:'submitEvidence',milestoneId:x.input.milestones[0].id,submissionId:null,expectedUpdatedAt:null,proofUrls:['https://example.test/original-guide'],notes:'Original accepted work after recruitment cutoff'};
+  const requestId=randomUUID(),proof=await ok(x.creator.client.rpc('apply_kinnso_creator_mission_command',{p_mission_id:id,p_request_id:requestId,p_command:payload}));
+  assert.deepEqual(await ok(x.creator.client.rpc('apply_kinnso_creator_mission_command',{p_mission_id:id,p_request_id:requestId,p_command:payload})),proof);
+  const closed=await ok(x.owner.client.rpc('get_kinnso_merchant_campaigns',{p_merchant_id:x.merchantId,p_campaign_id:id}));await ok(x.command({type:'close',id,expectedUpdatedAt:closed.detail.updatedAt,reason:'Close expired recruitment'}));
+  const revision=await ok(x.command({type:'reviewSubmission',id:proof.id,expectedUpdatedAt:proof.updatedAt,action:'request_revision',feedback:'Add one original source',reason:'Source clarification'}));
+  await ok(x.creator.client.rpc('apply_kinnso_creator_mission_command',{p_mission_id:id,p_request_id:randomUUID(),p_command:{...payload,submissionId:proof.id,expectedUpdatedAt:revision.updatedAt,notes:'Original source added'}}));
+  assert.equal((await ok(admin.from('mission_settlements').select('id').eq('mission_id',id))).length,0);
+ }finally{await x.cleanup();}
+});

@@ -6,6 +6,7 @@ import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {creatorMissions,type CreatorMission,type CreatorMissionDetail,type CreatorMissionCommand,type Evidence,type MissionScope} from '../../lib/creators/collaboration';
 import {evidenceUrl} from '../../lib/creators/collaboration-validation';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 type EvidenceForm={milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofText:string;notes:string};
 export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;actorId:string|null;enabled:boolean}){
@@ -82,7 +83,8 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   {detail&&<>
    <Link href={href('studio/missions')}>{t('All collaborations','所有合作')}</Link>
    <article className="k-card"><p className="k-eyebrow">{detail.merchantName??detail.missionSource}</p><p>{detail.summary}</p><p>{status(detail.status)}{detail.participant&&' · '+status(detail.participant.status)}</p>
-    {detail.endsAt&&<p>{t('Applications close: ','申請截止：')}<time dateTime={detail.endsAt}>{new Date(detail.endsAt).toLocaleDateString(locale)}</time></p>}
+    {(detail.applicationOpensAt??detail.startsAt)&&<p>{t('Applications open: ','申請開始：')}<time dateTime={(detail.applicationOpensAt??detail.startsAt)!}>{scheduleDate((detail.applicationOpensAt??detail.startsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}
+    {(detail.applicationClosesAt??detail.endsAt)&&<p>{t('Applications close: ','申請截止：')}<time dateTime={(detail.applicationClosesAt??detail.endsAt)!}>{scheduleDate((detail.applicationClosesAt??detail.endsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}
     {detail.paidFeeAmount!==null&&<p>{t('Published fee: ','公布費用：')}{detail.paidFeeCurrency??t('Currency unspecified','未註明貨幣')} {detail.paidFeeAmount}</p>}
     {detail.missionType==='coupon_affiliate'&&<p>{t('Content approval has no fixed fee. Any commission depends on separately recorded eligible activity.','內容核准不設固定酬金。佣金取決於另行記錄的合資格活動。')}</p>}
     {detail.requirements.length>0&&<><h2>{t('Requirements','合作要求')}</h2><ul>{detail.requirements.map((row,i)=><li key={i}>{row}</li>)}</ul></>}
@@ -101,7 +103,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
    <p>{t('Evidence links are reviewed by the merchant or Kinnso team. Submitting a link does not automatically verify or approve the work.','商戶或 Kinnso 團隊會審核證明連結。提交連結不會自動驗證或核准作品。')}</p>
    {detail.milestones.length===0&&<p>{t('This brief has no content milestones.','此合作簡介沒有內容里程碑。')}</p>}
    {detail.milestonesTruncated&&<p>{t('This campaign has more milestones than this view can show. Contact support for the complete brief.','此合作的里程碑超出本頁顯示範圍，請聯絡客服取得完整簡介。')}</p>}
-   {detail.milestones.map(milestone=><article className="k-card" key={milestone.id}><h3>{milestone.title}</h3><p>{milestone.description}</p>{milestone.dueAt&&<p>{t('Due: ','期限：')}<time dateTime={milestone.dueAt}>{new Date(milestone.dueAt).toLocaleDateString(locale)}</time></p>}{milestone.repeatable&&detail.maxReceipts!==null&&<p>{t('Maximum submitted or approved receipts: ','已提交或核准收據上限：')}{detail.maxReceipts}</p>}
+   {detail.milestones.map(milestone=><article className="k-card" key={milestone.id}><h3>{milestone.title}</h3><p>{milestone.description}</p>{milestone.dueAt&&<p>{t('Due: ','期限：')}<time dateTime={milestone.dueAt}>{scheduleDate(milestone.dueAt,detail.scheduleTimeZone??'UTC',locale)}</time>{Date.parse(milestone.dueAt)<Date.now()&&' · '+t('Past the stated deadline; accepted work can still be submitted or revised.','已過列明期限；已接受的工作仍可提交或修改。')}</p>}{milestone.repeatable&&detail.maxReceipts!==null&&<p>{t('Maximum submitted or approved receipts: ','已提交或核准收據上限：')}{detail.maxReceipts}</p>}
     {detail.evidenceAvailable&&(milestone.repeatable||!detail.submissions.some(s=>s.milestoneId===milestone.id))&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id)}>{milestone.repeatable?t('Prepare new receipt','準備新收據'):t('Prepare evidence','準備證明')}</button>}
     {detail.submissions.filter(s=>s.milestoneId===milestone.id).map(submission=><div key={submission.id}><h4>{status(submission.status)}</h4>{submission.notes&&<p>{submission.notes}</p>}{submission.proofUrls.map((url,i)=>evidenceUrl(url)?<p key={i}><a href={url} target="_blank" rel="noopener noreferrer">{t('Evidence link ','證明連結 ')}{i+1}</a></p>:<p key={i}>{url}</p>)}{submission.merchantFeedback&&<p><strong>{t('Reviewer feedback: ','審核意見：')}</strong>{submission.merchantFeedback}</p>}{submission.reviews.length>0&&<details><summary>{t('Review history','審核紀錄')}</summary>{submission.reviews.map(review=><p key={review.id}>{status(review.action==='request_revision'?'revision_requested':review.action==='approve'?'approved':'rejected')} · {review.reason} <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString(locale)}</time></p>)}</details>}{detail.evidenceAvailable&&['pending','submitted','revision_requested'].includes(submission.status)&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id,submission)}>{t('Edit and resubmit evidence','修改並重新提交證明')}</button>}</div>)}
    </article>)}

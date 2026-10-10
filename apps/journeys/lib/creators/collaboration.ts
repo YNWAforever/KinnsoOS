@@ -11,7 +11,7 @@ export type CreatorMission = {
  status:string; visibility:string; minTier:string|null; eligible:boolean; joinAvailable:boolean;
  acceptAvailable:boolean; evidenceAvailable:boolean; requiresApplication:boolean;
  paidFeeAmount:string|null; paidFeeCurrency:string|null; creatorRate:string|null;
- startsAt:string|null; endsAt:string|null; participant:Participation|null;
+ startsAt:string|null; endsAt:string|null; applicationOpensAt:string|null;applicationClosesAt:string|null;scheduleTimeZone:string;participant:Participation|null;
 };
 export type Evidence = {
  id:string; milestoneId:string; status:'pending'|'submitted'|'revision_requested'|'approved'|'rejected';

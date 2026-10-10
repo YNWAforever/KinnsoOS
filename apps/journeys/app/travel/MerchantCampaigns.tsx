@@ -8,8 +8,9 @@ import {parseCommissionPercent} from '../../lib/merchants/access';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {CollaborationTasks} from './CollaborationTasks';
 import {campaignTasks} from '../../lib/collaboration/tasks';
+import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
-function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[]};}
+function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[],applicationOpensAt:null,applicationClosesAt:null,scheduleTimeZone:'UTC'};}
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
  const {t,locale}=useApp();
  const [data,setData]=useState<CampaignDirectory|null>(null),[loading,setLoading]=useState(true),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
@@ -65,7 +66,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   if(editing)void send({type:'updateDraft',id:editing.id,expectedUpdatedAt:editing.updatedAt,input,reason:t('Merchant saved an edited promotion draft','商戶儲存已修改的推廣草稿')});
   else void send({type:'createDraft',id:crypto.randomUUID(),input,publish,reason:publish?t('Merchant confirmed publication of the authored brief','商戶確認發布已填寫的推廣簡報'):t('Merchant saved an authored promotion draft','商戶儲存推廣草稿')});
  }
- function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing(detail);setDraft(input);setRates(nextRates);setMessage('');}
+ function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones,applicationOpensAt:detail.applicationOpensAt??null,applicationClosesAt:detail.applicationClosesAt??null,scheduleTimeZone:detail.scheduleTimeZone??'UTC'};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing(detail);setDraft(input);setRates(nextRates);setMessage('');}
  if(!valid)return <WorkspaceServiceState locale={locale} code={error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}
@@ -75,6 +76,12 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
   {message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>
+   <fieldset disabled={blocked}><legend>{t('Application window','申請時段')}</legend>
+    <p>{t('Times below use UTC. The selected display zone appears with the saved dates. Published dates stay fixed.','以下時間使用 UTC，儲存後會按所選時區顯示日期。發布後日期會鎖定。')}</p>
+    <label>{t('Applications open (UTC, optional)','申請開始（UTC，選填）')}<input type="datetime-local" value={draft.applicationOpensAt?new Date(draft.applicationOpensAt).toISOString().slice(0,16):''} onChange={e=>setDraft({...draft,applicationOpensAt:e.target.value?e.target.value+':00Z':null})}/></label>
+    <label>{t('Applications close (UTC, optional)','申請截止（UTC，選填）')}<input type="datetime-local" value={draft.applicationClosesAt?new Date(draft.applicationClosesAt).toISOString().slice(0,16):''} onChange={e=>setDraft({...draft,applicationClosesAt:e.target.value?e.target.value+':00Z':null})}/></label>
+    <label>{t('Display time zone','顯示時區')}<select value={draft.scheduleTimeZone} onChange={e=>setDraft({...draft,scheduleTimeZone:e.target.value})}>{['UTC','Asia/Hong_Kong','Asia/Tokyo','Europe/London','America/New_York','America/Los_Angeles',...['UTC','Asia/Hong_Kong','Asia/Tokyo','Europe/London','America/New_York','America/Los_Angeles'].includes(draft.scheduleTimeZone)?[]:[draft.scheduleTimeZone]].map(zone=><option key={zone} value={zone}>{zone}</option>)}</select></label>
+   </fieldset>
    {editing&&<p>{t('Editing saved draft','修改已儲存草稿')}: {editing.title}</p>}
    {editing&&data?.detail?.id===editing.id&&data.detail.updatedAt!==editing.updatedAt&&<div role="alert"><p>{t('A newer saved version is shown in the promotion details below. Compare it with your draft before replacing it.','下方推廣詳情顯示較新的已儲存版本。請先與你的草稿比較再決定取代。')}</p><button className="k-btn" type="button" disabled={blocked||!data.detail.canEdit} onClick={()=>setEditing(data.detail)}>{t('Keep my draft against this latest version','使用此最新版本保留我的草稿')}</button></div>}
    <label>{t('Brief title','簡報標題')}<input required maxLength={120} disabled={blocked} value={draft.title} onChange={e=>setDraft({...draft,title:e.target.value})}/></label>
@@ -107,6 +114,8 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
    {data.nextCursor&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({after:data.nextCursor!});}}>{t('Next promotions','下一頁推廣')}</button>}
    {query.current.after&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({});}}>{t('First promotions','第一頁推廣')}</button>}
    {data.detail&&<section className="k-card"><h3>{t('Promotion details','推廣詳情')} · {data.detail.title}</h3><p>{status(data.detail.status)}</p>
+    {data.detail.applicationOpensAt&&<p>{t('Applications open: ','申請開始：')}<time dateTime={data.detail.applicationOpensAt}>{scheduleDate(data.detail.applicationOpensAt,data.detail.scheduleTimeZone,locale)}</time></p>}
+    {data.detail.applicationClosesAt&&<p>{t('Applications close: ','申請截止：')}<time dateTime={data.detail.applicationClosesAt}>{scheduleDate(data.detail.applicationClosesAt,data.detail.scheduleTimeZone,locale)}</time></p>}
     <p>{data.detail.requiresApplication?t('Creators apply before they can submit work. Review each proposal below.','創作者必須先申請才可提交作品，請在下方審核各項提案。'):t('This promotion keeps its existing creator joining rules.','此推廣沿用原有的創作者參與規則。')}</p>
     <p>{data.detail.summary}</p><p>{t('Coupon code','優惠碼')}: {data.detail.couponCode||t('Not supplied','未提供')}</p>{campaignLink(data.detail.couponUrl)&&<p><a href={data.detail.couponUrl} target="_blank" rel="noreferrer noopener">{t('Open coupon page','開啟優惠網頁')}</a></p>}
     <p>{t('Recorded commission percentages: affiliate / platform / creator','已記錄佣金百分比：聯盟／平台／創作者')} · {[data.detail.affiliateRate,data.detail.kinnsoRate,data.detail.creatorRate].map(value=>value===null?t('Not supplied','未提供'):String(value)+'%').join(' / ')}</p>

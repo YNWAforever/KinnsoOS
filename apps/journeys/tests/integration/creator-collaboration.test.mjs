@@ -11,8 +11,9 @@ async function setup(){
  const f=await fixture(),creator=await f.actor(true),other=await f.actor(true),owner=await f.actor(true);
  const merchant=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic collaboration merchant',contact_email:'synthetic@example.test'}).select('id').single())).id;
  async function mission(patch={}){
-  const row=await ok(admin.from('missions').insert({merchant_profile_id:merchant,title:'Synthetic authored campaign',summary:'Local isolated collaboration contract',mission_source:'merchant',mission_type:'coupon_affiliate',visibility:'open',status:'published',...patch}).select('id').single());
+  const row=await ok(admin.from('missions').insert({merchant_profile_id:merchant,title:'Synthetic authored campaign',summary:'Local isolated collaboration contract',mission_source:'merchant',mission_type:'coupon_affiliate',visibility:'open',...patch,status:'draft'}).select('id').single());
   const milestone=patch.mission_type==='receipt_cashback'?(await ok(admin.from('mission_milestones').select('id').eq('mission_id',row.id).single())).id:(await ok(admin.from('mission_milestones').insert({mission_id:row.id,title:'Author one original route',description:'Provide a link to your authored work.'}).select('id').single())).id;
+  await ok(admin.from('missions').update({status:patch.status??'published'}).eq('id',row.id));
   return{id:row.id,milestone};
  }
  const command=(actor,id,payload,requestId=randomUUID())=>actor.client.rpc('apply_kinnso_creator_mission_command',{p_mission_id:id,p_request_id:requestId,p_command:payload});

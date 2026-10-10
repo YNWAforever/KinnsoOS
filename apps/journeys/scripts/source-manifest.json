@@ -178,6 +178,7 @@
     "lib/merchants/access.ts",
     "lib/merchants/application-review.ts",
     "lib/merchants/campaign-repository.ts",
+    "lib/merchants/campaign-schedule.ts",
     "lib/merchants/campaigns.ts",
     "lib/merchants/invitations.ts",
     "lib/merchants/onboarding-validation.ts",
