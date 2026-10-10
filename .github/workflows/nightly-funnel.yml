@@ -21,6 +21,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @kinnso/e2e exec playwright install --with-deps chromium
       - name: Production guide-to-experience smoke
+        id: readonly_check
         # Remote specs are read-only navigation; the fixture spec uses intercepted HTML.
         # BOOKING_LIVE stays false so the
         # funnel stops short of Stripe. That is what earns this the remote-target opt-in
@@ -29,14 +30,25 @@ jobs:
           E2E_BASE_URL: https://remix-kinnso-web.vercel.app
           E2E_ALLOW_REMOTE_TARGET: '1'
           BOOKING_LIVE: 'false'
-        run: pnpm --filter @kinnso/e2e e2e funnel-smoke funnel-fixture notfound
+          PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/apps/e2e/nightly-funnel.json
+        run: pnpm --filter @kinnso/e2e e2e funnel-smoke funnel-fixture notfound --reporter=list,html,json
+      - name: Record read-only evidence
+        if: always()
+        run: >-
+          node scripts/write-nightly-evidence.mjs --surface funnel
+          --report apps/e2e/nightly-funnel.json
+          --output .ci-evidence/nightly-funnel/receipt.json
+          --outcome '${{ steps.readonly_check.outcome }}'
+          --target https://remix-kinnso-web.vercel.app
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: failure()
+        if: always()
         with:
           name: nightly-funnel-artifacts
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+            apps/e2e/nightly-funnel.json
+            .ci-evidence/nightly-funnel/
   production-sitemap:
     runs-on: ubuntu-latest
     steps:
@@ -48,6 +60,24 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Crawl every sitemap URL independently of funnel
+        id: readonly_check
         env:
           BASE_URL: https://remix-kinnso-web.vercel.app
-        run: node --experimental-strip-types scripts/crawl-sitemap.ts
+          KINNSO_CRAWL_REPORT: ${{ github.workspace }}/.ci-evidence/nightly-sitemap/report.json
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-evidence/nightly-sitemap
+          node --experimental-strip-types scripts/crawl-sitemap.ts
+      - name: Record read-only evidence
+        if: always()
+        run: >-
+          node scripts/write-nightly-evidence.mjs --surface sitemap
+          --report .ci-evidence/nightly-sitemap/report.json
+          --output .ci-evidence/nightly-sitemap/receipt.json
+          --outcome '${{ steps.readonly_check.outcome }}'
+          --target https://remix-kinnso-web.vercel.app
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: nightly-sitemap-artifacts
+          path: .ci-evidence/nightly-sitemap/

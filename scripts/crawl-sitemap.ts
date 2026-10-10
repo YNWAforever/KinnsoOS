@@ -1,4 +1,5 @@
 import { pathToFileURL } from 'node:url'
+import { writeFile } from 'node:fs/promises'
 
 const DEFAULT_BASE_URL = 'https://remix-kinnso-web.vercel.app'
 const LOC_PATTERN = /<loc\b[^>]*>([\s\S]*?)<\/loc>/gi
@@ -240,6 +241,14 @@ export async function crawlSitemap({
 
 async function runCli(): Promise<void> {
   const result = await crawlSitemap({ baseUrl: process.env.BASE_URL ?? DEFAULT_BASE_URL })
+  if (process.env.KINNSO_CRAWL_REPORT) {
+    // Aggregate evidence only; URLs, bodies and transport details stay out of JSON.
+    await writeFile(process.env.KINNSO_CRAWL_REPORT, JSON.stringify({
+      checked: result.checked,
+      failureCount: result.failures.length,
+      targetOrigin: new URL(process.env.BASE_URL ?? DEFAULT_BASE_URL).origin,
+    }) + '\n', { flag: 'wx' })
+  }
   console.log(`Checked ${result.checked} sitemap URLs`)
   for (const failure of result.failures) {
     const detail = failure.status === undefined ? failure.error ?? 'Failed' : String(failure.status)
