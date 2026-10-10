@@ -12,7 +12,7 @@
       "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
       "state": "READY",
       "role_acceptance": "NOT_RUN",
-      "api_status": "RECHECK_PENDING"
+      "api_status": "503_UNAVAILABLE_REPRODUCED_CREATOR_AND_MERCHANT"
     },
     "production": {
       "source_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
@@ -1301,7 +1301,7 @@
       "ci_status": "NOT_RUN",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
+      "source_sha": "057ffe9fde3a1fffa2dd2ec50c78333ba49eed0e",
       "evidence": [
         {
           "source_sha": "fdd100237bf251cfcfa3b6905e914384f115c76f",
@@ -1310,6 +1310,14 @@
           "result": "9_RED_then_18_GREEN_full_unit_405_PASS_typecheck_PASS",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p02-red.log; p02-green.log; p02-unit.log",
           "observed_at": "2026-10-10T20:40:51.2740524Z"
+        },
+        {
+          "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+          "environment": "protected_pr_preview_read_only",
+          "scenario": "creator missions and merchant campaigns application responses; project env target metadata",
+          "result": "503_UNAVAILABLE_private_no_store; required project settings target production only; deployment value relationships/Auth/actor/schema unverified",
+          "run_artifact": "Vercel protected fetch 2026-10-10T20:41:44Z and 20:53:48Z; CLI project env metadata inspection; no values exported",
+          "observed_at": "2026-10-10T20:58:12.331182+00:00"
         }
       ],
       "blockers": [
@@ -1345,14 +1353,25 @@
         "N17",
         "N18"
       ],
-      "code_status": "NOT_STARTED",
+      "code_status": "LOCAL_VERIFIED",
       "ci_status": "NOT_RUN",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
+      "evidence": [
+        {
+          "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
+          "environment": "local_isolated",
+          "scenario": "P03 real component/handler recovery, EN/zh-HK Chromium component fixture, full unit, typecheck/build, root tooling, source packaging",
+          "result": "7 behavioral RED then GREEN; 2 supplemental baseline regressions RED then GREEN; unit414_PASS_0_FAIL_0_SKIP; browser8_PASS; typecheck_PASS; build_PASS; root_tooling72_PASS; source_package6_collected_1_Windows_symlink_SKIP",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/42d897e-unit.log; 42d897e-browser.log; p03-build-nojunction.log; p03-root-tooling-escalated.log; committed tests/e2e/u06-workspace-service-state.spec.ts",
+          "observed_at": "2026-10-10T20:58:12.331182+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: staging target, approved synthetic actors and recovery packet not designated; local component browser fixture is not connected or hosted acceptance."
+      ],
+      "next_action": "Complete current-head independent review and owned CI; hosted acceptance waits for designated staging."
     },
     {
       "id": "P04",
