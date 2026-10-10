@@ -57,12 +57,16 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Coupon code', { exact: true }).fill('U04PROMO');
     await page.getByLabel('Coupon URL', { exact: true }).fill('https://example.test/u04');
     for (const name of ['Affiliate commission rate (%)', 'Platform commission rate (%)', 'Creator commission rate (%)']) await page.getByLabel(name, { exact: true }).fill('0');
+    await page.getByRole('button', { name: 'Add milestone', exact: true }).click();
+    await page.getByLabel('Milestone title', { exact: true }).fill('Publish a city guide');
+    await page.getByLabel('Milestone instructions', { exact: true }).fill('Submit the public guide URL and original supporting notes.');
     await page.getByRole('button', { name: 'Publish promotion brief', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toBeVisible();
     const missions = await ok(admin.from('missions').select('id,status').eq('merchant_profile_id', companies[0]));
     expect(missions).toHaveLength(1); expect(missions[0].status).toBe('published');
     const application = await ok(admin.from('mission_participants').insert({ mission_id: missions[0].id, creator_id: creator.id, status: 'applied', source: 'open_join', application_note: 'Synthetic application for browser review' }).select('id').single());
     await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
+    await page.getByLabel('Application review feedback', { exact: true }).fill('Your original city guide proposal meets the promotion requirements.');
     await page.getByRole('button', { name: 'Approve application', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Approve application', exact: true })).toHaveCount(0);
     expect((await ok(admin.from('mission_participants').select('status').eq('id', application.id).single())).status).toBe('active');

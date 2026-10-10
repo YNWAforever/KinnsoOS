@@ -51,6 +51,11 @@ const CreatorWorkspace = dynamic(
   () => import('./CreatorWorkspace').then(mod => mod.CreatorWorkspace),
   {loading: RoleWorkspaceLoading},
 );
+const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspace').then(mod => mod.CreatorMissionsWorkspace), {loading: RoleWorkspaceLoading});
+const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
+const MerchantOnboarding = dynamic(() => import('./MerchantOnboarding').then(mod => mod.MerchantOnboarding), {loading: RoleWorkspaceLoading});
+const MerchantProfile = dynamic(() => import('./MerchantProfile').then(mod => mod.MerchantProfile), {loading: RoleWorkspaceLoading});
+const MerchantApplicationReview = dynamic(() => import('./MerchantApplicationReview').then(mod => mod.MerchantApplicationReview), {loading: RoleWorkspaceLoading});
 const TripEditor = dynamic(
   () => import("./editing").then((mod) => mod.TripEditor),
   {
@@ -642,17 +647,21 @@ export function Workbench({
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/earnings')content=<CreatorEarningsWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.agent===true}/>;
-    else if(path==='inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
+    else if(path==='inbox'||path==='studio/inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='ops/merchants')content=<section className="k-page k-merchant"><h1>{t('Merchant onboarding review','商戶加入審批')}</h1><Link className="k-btn" href={href('ops')}>{t('Operations queue','營運待辦')}</Link><MerchantApplicationReview key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/></section>;
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
     else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
-    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
+    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
+    if(path.startsWith('studio')&&!path.endsWith('/edit')&&path!=='studio/guides/new'&&path!=='studio/adventures/new')content=<><nav className="k-collab-nav" aria-label={t('Creator workspace navigation','創作者工作區導航')}>{[['studio','Guides','攻略'],['studio/opportunities','Find collaborations','尋找合作'],['studio/outcomes','My collaborations','我的合作'],['studio/earnings','Earnings records','收益紀錄'],['studio/inbox','Inbox','收件匣']].map(([p,en,zh])=><Link key={p} href={href(p)} aria-current={path===p?'page':undefined}>{t(en,zh)}</Link>)}</nav>{content}</>;
   }
   return (
     <AppContext.Provider

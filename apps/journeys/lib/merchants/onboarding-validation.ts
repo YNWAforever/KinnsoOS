@@ -1,0 +1,9 @@
+export type ApplicationInput={companyName:string;contactName:string;contactEmail:string;websiteUrl:string;pitch:string};
+export type ProfileInput=Omit<ApplicationInput,'pitch'>&{tagline:string;city:string;logoUrl:string};
+function shape(value:unknown,keys:string[]):Record<string,unknown>{if(!value||typeof value!=='object'||Array.isArray(value)||Object.keys(value).some(k=>!keys.includes(k)))throw Error('INVALID');return value as Record<string,unknown>;}
+function field(v:unknown,max:number,required=false){if(typeof v!=='string'||v.length>max||required&&!v.trim()||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(v))throw Error('INVALID');return v.trim();}
+function https(v:unknown){const text=field(v,2048);if(!text)return '';if(/\s/.test(text))throw Error('INVALID');try{const u=new URL(text);if(u.protocol!=='https:'||u.username||u.password||!u.hostname)throw Error('INVALID');}catch{throw Error('INVALID');}return text;}
+function contact(v:Record<string,unknown>){const contactEmail=field(v.contactEmail,254,true);if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(contactEmail))throw Error('INVALID');return {companyName:field(v.companyName,160,true),contactName:field(v.contactName,160),contactEmail,websiteUrl:https(v.websiteUrl)};}
+export function applicationInput(value:unknown):ApplicationInput{const v=shape(value,['companyName','contactName','contactEmail','websiteUrl','pitch']);return {...contact(v),pitch:field(v.pitch,4000)};}
+export function profileInput(value:unknown):ProfileInput{const v=shape(value,['companyName','contactName','contactEmail','websiteUrl','tagline','city','logoUrl']);return {...contact(v),tagline:field(v.tagline,160),city:field(v.city,120),logoUrl:https(v.logoUrl)};}
+export function timestamp(value:unknown):value is string{return typeof value==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)&&Number.isFinite(Date.parse(value));}
