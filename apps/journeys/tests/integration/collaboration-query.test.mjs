@@ -24,3 +24,7 @@ test('recent ordering survives concurrent updates and newer inserts; authenticat
  await ok(admin.from('missions').update({status:'paused'}).eq('id',x.ids[0]));await ok(admin.from('missions').insert({merchant_profile_id:x.merchant,title:x.prefix+' new',mission_source:'merchant',mission_type:'coupon_affiliate',status:'draft',created_at:'2031-01-01T00:00:00Z'}));
  const second=await ok(x.read('merchant',{q:x.prefix,after:first.nextCursor}));assert.equal(second.items.some(i=>first.items.some(j=>j.id===i.id)),false);assert.deepEqual(second.items.map(i=>i.id),[...x.ids].reverse().slice(20,40));
 }finally{await x.cleanup();}});
+test('direct authenticated creation-time edits are rejected independently of the list RPC',async()=>{const x=await setup();try{
+ const changed=await x.owner.client.from('missions').update({created_at:'2031-01-01T00:00:00Z'}).eq('id',x.ids[0]);assert.equal(changed.error?.message,'immutable_campaign_created_at');
+ const current=await ok(admin.from('missions').select('created_at').eq('id',x.ids[0]).single());assert.match(current.created_at,/2026-01-01/);
+}finally{await x.cleanup();}});
