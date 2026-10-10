@@ -109,3 +109,34 @@ test('moderator retry reconciles a terminal decision without sending another POS
  assert.deepEqual(events,['read']);assert.equal(writes,1);assert.match(h.text(),/Recorded decision: approved/);
  assert.equal(h.find('button','Retry original decision'),undefined);
 });
+
+test('moderator conflict comparison retains the authored reason and reads the latest selected application',async()=>{
+ const row={id:uuid,companyName:'Synthetic company',contactName:'Synthetic contact',contactEmail:'synthetic@example.test',websiteUrl:'',pitch:'Original pitch',status:'pending',createdAt:'2026-10-10T19:00:00Z',decidedAt:null,decisionReason:null};
+ const events=[];
+ const h=await workspaceHarness('MerchantApplicationReview',{request:async(url,method='GET')=>{
+  events.push([method,url]);
+  if(method==='POST')return{ok:false,code:'CONFLICT',retryable:false,requestId:uuid};
+  return url.includes('?id=')?{ok:true,data:{...row,pitch:'Latest submitted pitch'}}:{ok:true,data:{applications:[row],nextCursor:null}};
+ }},{path:'ops/merchants'});
+ h.find('select','Pending merchant application').props.onChange({target:{value:uuid}});h.render();
+ h.find('textarea','Decision reason').props.onChange({target:{value:'Authored reason for comparison'}});h.render();
+ h.find('button','Approve application').props.onClick();await tick();h.render();
+ assert.equal(h.find('textarea','Decision reason').props.value,'Authored reason for comparison');events.length=0;
+ h.find('button','Reload and compare').props.onClick();await tick();h.render();
+ assert.equal(h.find('textarea','Decision reason')?.props.value,'Authored reason for comparison');
+ assert.match(h.text(),/Latest submitted pitch/);assert.deepEqual(events,[['GET','/api/ops/merchant-applications?id='+uuid]]);
+});
+
+test('merchant conflict comparison retains review feedback and authored branch changes',async()=>{
+ const detail={...mission,updatedAt:'2026-10-10T19:00:00Z',requiresApplication:true,canEdit:false,canClose:false,canReviewSubmissions:false,participants:[{id:uuid,creatorId:'creator-B',creatorName:'Synthetic applicant',creatorHandle:'',status:'applied',note:'',reviewNote:null,updatedAt:'2026-10-10T19:00:00Z'}],participantsNextCursor:null,submissionsNextCursor:null,affiliateRate:null,kinnsoRate:null};
+ const directory={...empty,detail,branches:[{id:'22222222-2222-4222-8222-222222222222',name:'Central',active:true}],branchesNextCursor:null};
+ const h=await workspaceHarness('MerchantCampaigns',{merchantCampaigns:{list:async()=>({ok:true,data:directory}),command:async()=>({ok:false,code:'CONFLICT',retryable:false,requestId:uuid})}});
+ h.field('Application review feedback').props.onChange({target:{value:'Authored feedback'}});h.render();
+ h.field('Updated branch name').props.onChange({target:{value:'Authored branch rename'}});h.render();
+ h.field('Branch change reason').props.onChange({target:{value:'Authored branch reason'}});h.render();
+ h.find('button','Approve application').props.onClick();await tick();h.render();
+ h.find('button','Reload and compare').props.onClick();await tick();h.render();
+ assert.equal(h.field('Application review feedback').props.value,'Authored feedback');
+ assert.equal(h.field('Updated branch name').props.value,'Authored branch rename');
+ assert.equal(h.field('Branch change reason').props.value,'Authored branch reason');
+});

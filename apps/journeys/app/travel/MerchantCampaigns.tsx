@@ -23,12 +23,12 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  const date=(value:string|null)=>value?new Date(value).toLocaleDateString(locale==='en'?'en-GB':'zh-HK'):t('Not recorded','未記錄');
  function resetEditor(){const empty=blank();editorBaseline.current={input:JSON.stringify(empty),rates:['','',''].join('|')};setDraft(empty);setRates(['','','']);setEditing(null);}
  function deny(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){scope.current++;generation.current++;pending.current=null;running.current=false;setBusy(false);setUnknown(false);setData(null);resetEditor();setFeedback({});setBranchEdits({});setValid(false);onDenied(code);}}
- async function load(next:CampaignQuery=query.current){
+ async function load(next:CampaignQuery=query.current,keepInput=false){
   const own=++generation.current;setLoading(true);setError('');
   let result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;
   if(result.ok&&!next.campaignId&&result.data.items.length){next={...next,campaignId:result.data.items[0].id};result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;}
   setLoading(false);if(!result.ok){reference.current=result.requestId;setError(result.code);setData(null);deny(result.code);return;}
-  query.current=next;setData(result.data);setFeedback({});setBranchEdits({});
+  query.current=next;setData(result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
  }
  useEffect(()=>{
   scope.current++;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);query.current={};void load({});
@@ -66,7 +66,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   <h2>{t('Create coupon promotion brief','建立優惠推廣簡報')}</h2>
   <p>{t('Save a draft, describe the work creators should deliver, then publish when the brief is ready. Published terms stay fixed; closing stops new applications while accepted creators can finish their work.','先儲存草稿，說明創作者需要提交的作品，準備好後再發布。發布後條款會鎖定；關閉只停止新申請，已接受的創作者仍可完成作品。')}</p>
-  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load()} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load(query.current,true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
   {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
   {message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>

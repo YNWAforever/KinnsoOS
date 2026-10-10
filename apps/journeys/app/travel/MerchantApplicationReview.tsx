@@ -33,6 +33,17 @@ export function MerchantApplicationReview({actorId,enabled}:{actorId:string|null
   setLoading(false);if(!result.ok){reference.current=result.requestId;setError(result.code);if(['FORBIDDEN','AUTH_REQUIRED'].includes(result.code))deny(result.code);return;}
   setDirectory(result.data);
  }
+ async function compare(){
+  if(!selected||pending.current||working.current)return;
+  const id=selected.id,own=epoch.current,read=++reads.current;setLoading(true);setError('');
+  const result=await request<MerchantApplication>(endpoint+'?'+new URLSearchParams({id}));
+  if(own!==epoch.current||read!==reads.current)return;
+  setLoading(false);
+  if(!result.ok){reference.current=result.requestId;setError(result.code);if(['FORBIDDEN','AUTH_REQUIRED'].includes(result.code))deny(result.code);return;}
+  if(result.data.id!==id){setError('UNAVAILABLE');return;}
+  // The authored reason stays separate from the latest server details.
+  setSelected(result.data);if(result.data.status!=='pending')setReceipt(result.data.status);
+ }
  function complete(application:MerchantApplication){
   if(!pending.current||application.id!==pending.current.id||!['approved','rejected'].includes(application.status))return false;
   // Only a terminal server read releases an uncertain intent. A pending read cannot
@@ -104,7 +115,7 @@ export function MerchantApplicationReview({actorId,enabled}:{actorId:string|null
   <h2>{t('Merchant application review','商戶申請審核')}</h2>
   <p>{t('Review the submitted company details and write a decision reason. Approval creates an active merchant profile; rejection records the reason for the applicant.','請查看公司提交的資料並填寫決定原因。批准會建立有效的商戶檔案；拒絕會為申請人記錄原因。')}</p>
   {loading&&<p role="status">{t('Loading pending applications…','正在載入待審核申請…')}</p>}
-  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.id??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void decide():void load()} returnPath={`/${locale}/ops/merchants`} retryLabel={unknown?t('Retry original decision','重試原本決定'):undefined}/>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.id??reference.current} retryState={busy||loading?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void decide():selected?void compare():void load()} returnPath={`/${locale}/ops/merchants`} retryLabel={unknown?t('Retry original decision','重試原本決定'):undefined}/>}
   {error==='INVALID'&&<p>{t('Write a decision reason of 1 to 500 characters.','請填寫 1 至 500 字的決定原因。')}</p>}
   {receipt&&<p role="status">{t('Recorded decision: '+receipt,receipt==='approved'?'已記錄決定：批准':'已記錄決定：拒絕')}</p>}
   {unknown&&<div role="status"><p>{t('This decision is awaiting confirmation. Keep the original decision until a recorded outcome is available.','此決定正等待確認；請保留原本決定，直至取得已記錄的結果。')}</p><p>{t('The original decision and reason are kept privately in this browser tab until its recorded outcome is confirmed. Company contact details and the pitch are not kept.','本分頁會暫時保留原本決定及原因，直至確認已記錄的結果；不會保留公司聯絡資料及申請說明。')}</p><button className="k-btn" disabled={busy} onClick={()=>void reconcile()}>{t('Check decision status','核對決定狀態')}</button></div>}
@@ -120,7 +131,7 @@ export function MerchantApplicationReview({actorId,enabled}:{actorId:string|null
    {website?<a href={website} target="_blank" rel="noopener noreferrer">{t('Company website','公司網站')}</a>:<p>{t('No usable website address was provided.','未提供可用的網站地址。')}</p>}
    <h4>{t('Application pitch','申請說明')}</h4><p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{selected.pitch||t('No pitch was provided.','未提供申請說明。')}</p>
    <label>{t('Decision reason','決定原因')}<textarea aria-label={t('Decision reason','決定原因')} required maxLength={500} value={reason} disabled={locked} onChange={event=>setReason(event.target.value)} style={{display:'block',width:'100%',boxSizing:'border-box'}}/></label>
-   <div><button className="k-btn" type="button" disabled={locked||!reason.trim()} onClick={()=>void decide('approve')}>{t('Approve application','批准申請')}</button><button className="k-btn" type="button" disabled={locked||!reason.trim()} onClick={()=>void decide('reject')}>{t('Reject application','拒絕申請')}</button><button className="k-btn" type="button" disabled={locked} onClick={()=>{if(locked)return;setSelected(null);setReason('');setError('');}}>{t('Cancel review','取消審核')}</button></div>
+   <div><button className="k-btn" type="button" disabled={locked||selected.status!=='pending'||!reason.trim()} onClick={()=>void decide('approve')}>{t('Approve application','批准申請')}</button><button className="k-btn" type="button" disabled={locked||selected.status!=='pending'||!reason.trim()} onClick={()=>void decide('reject')}>{t('Reject application','拒絕申請')}</button><button className="k-btn" type="button" disabled={locked} onClick={()=>{if(locked)return;setSelected(null);setReason('');setError('');}}>{t('Cancel review','取消審核')}</button></div>
   </article>}
  </section>;
 }
