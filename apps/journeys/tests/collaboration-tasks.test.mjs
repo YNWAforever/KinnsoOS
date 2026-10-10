@@ -27,10 +27,10 @@ test('an active summary continues work without inventing a deadline or completed
 
 test('owner task actions include own campaign review; marketing never gets private evidence review',()=>{
  requireTasks();const directory={merchantId:id,role:'owner',items:[{id:milestoneId,title:'Own draft',status:'draft'}],detail:{id,title:'Own campaign',participants:[{id:milestoneId,status:'applied'}],submissions:[{id:milestoneId,status:'submitted',proofUrls:['private-proof']}],canReviewSubmissions:true}};
- const owner=tasks.campaignTasks(directory,'en');assert.ok(owner.some(a=>a.kind==='review-application'));assert.ok(owner.some(a=>a.kind==='review-delivery'));
+ const owner=tasks.campaignTasks(directory,'en','merchant-owner');assert.ok(owner.some(a=>a.kind==='review-application'));assert.ok(owner.some(a=>a.kind==='review-delivery'));
  assert.ok(owner.every(a=>a.href.startsWith('/en/merchant?company='+id+'&campaign=')));
- const marketing=tasks.campaignTasks({...directory,role:'marketing'},'en');assert.equal(marketing.some(a=>a.kind==='review-delivery'),false);
- assert.deepEqual(tasks.campaignTasks({...directory,role:'clerk'},'en'),[]);assert.deepEqual(tasks.campaignTasks({...directory,role:'finance'},'en'),[]);
+ const marketing=tasks.campaignTasks({...directory,role:'marketing'},'en','merchant-owner');assert.equal(marketing.some(a=>a.kind==='review-delivery'),false);
+ assert.deepEqual(tasks.campaignTasks({...directory,role:'clerk'},'en','merchant-owner'),[]);assert.deepEqual(tasks.campaignTasks({...directory,role:'finance'},'en','merchant-owner'),[]);
  assert.doesNotMatch(JSON.stringify(owner),/private-proof/);
 });
 
@@ -39,6 +39,14 @@ test('new and pending merchant accounts have setup or waiting actions without cl
  const pending=tasks.merchantSetupTasks({applications:[{id,status:'pending',companyName:'Own applicant',contactEmail:'private-contact'}],merchant:null},'zh-HK');
  assert.equal(pending[0].kind,'await-merchant-review');assert.equal(pending[0].href,'/zh-HK/merchant#merchant-onboarding');assert.doesNotMatch(JSON.stringify(pending),/private-contact/);
  const rejected=tasks.merchantSetupTasks({applications:[{id,status:'rejected',companyName:'Own applicant'}],merchant:null},'en');assert.equal(rejected[0].kind,'revise-merchant-application');
+});
+
+test('merchant task review excludes the current actor and retains another creator success control',()=>{
+ requireTasks();const actorId='55555555-5555-4555-8555-555555555555',other='66666666-6666-4666-8666-666666666666';
+ const directory={merchantId:id,role:'owner',items:[],detail:{id,title:'Own campaign',canReviewSubmissions:true,participants:[{id,creatorId:actorId,status:'applied'},{id:milestoneId,creatorId:other,status:'applied'}],submissions:[{id,creatorId:actorId,status:'submitted'},{id:milestoneId,creatorId:other,status:'submitted'}]}};
+ const actions=tasks.campaignTasks(directory,'en',actorId);
+ assert.deepEqual(actions.map(a=>[a.kind,a.entityId]),[['review-application',milestoneId],['review-delivery',milestoneId]]);
+ assert.deepEqual(tasks.campaignTasks({...directory,role:'marketing'},'en',actorId).map(a=>a.entityId),[milestoneId]);
 });
 
 test('creator overview uses bounded role-readable list data and clears it after account invalidation',async()=>{

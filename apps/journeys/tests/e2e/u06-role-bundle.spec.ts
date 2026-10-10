@@ -5,7 +5,8 @@ import {createClient} from '@supabase/supabase-js';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
 loadEnvFile('.env.test');
 const target = verifyTestTarget();
-const roleMarkers = ['Your next actions', 'Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', 'Source questions: read published sources and verification dates.', 'Drafts are private. Published versions can be adopted into traveller trips.'];
+const agentMarker = 'Source questions: read published sources and verification dates.';
+const roleMarkers = ['Your next actions', 'Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', agentMarker, 'Drafts are private. Published versions can be adopted into traveller trips.'];
 
 function downloadedScripts(page: Page) {
   const bodies: Promise<string>[] = [];
@@ -54,7 +55,7 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
     expect((await page.request.get('/api/trips')).status()).toBe(200);
     await page.route('**/_next/static/chunks/*.js', async route => {
       const response = await route.fetch();
-      if (!held && (await response.text()).includes(roleMarkers[4])) {
+      if (!held && (await response.text()).includes(agentMarker)) {
         held = true;
         await released;
       }

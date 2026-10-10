@@ -32,7 +32,7 @@ export function creatorTasks(items:CreatorTaskRecord[],locale:string):NextAction
  return ordered(actions);
 }
 
-export function campaignTasks(directory:CampaignDirectory,locale:string):NextAction[]{
+export function campaignTasks(directory:CampaignDirectory,locale:string,actorId:string):NextAction[]{
  if(!uuid(directory.merchantId)||!['owner','marketing'].includes(directory.role))return[];
  const actions:NextAction[]=[];
  const add=(kind:ActionKind,campaignId:string,entityId:string,title:string,priority:number)=>{
@@ -41,8 +41,8 @@ export function campaignTasks(directory:CampaignDirectory,locale:string):NextAct
  for(const item of directory.items)if(item.status==='draft')add('draft-campaign',item.id,item.id,item.title,1);
  const detail=directory.detail;
  if(detail){
-  for(const participant of detail.participants)if(participant.status==='applied')add('review-application',detail.id,participant.id,detail.title,0);
-  if(directory.role==='owner'&&detail.canReviewSubmissions)for(const submission of detail.submissions)if(submission.status==='submitted')add('review-delivery',detail.id,submission.id,detail.title,0);
+  for(const participant of detail.participants)if(actorId&&participant.creatorId!==actorId&&participant.status==='applied')add('review-application',detail.id,participant.id,detail.title,0);
+  if(directory.role==='owner'&&detail.canReviewSubmissions)for(const submission of detail.submissions)if(actorId&&submission.creatorId!==actorId&&submission.status==='submitted')add('review-delivery',detail.id,submission.id,detail.title,0);
  }
  return ordered(actions);
 }
