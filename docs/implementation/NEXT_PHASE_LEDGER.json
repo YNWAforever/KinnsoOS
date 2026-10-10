@@ -259,7 +259,38 @@
         "Named mailbox, confirmation/recovery delivery and hosted callback acceptance not provided.",
         "Configure the reviewed server-only recovery setting before runtime recovery acceptance; project-level names evidence is separate from shared/serving configuration."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "source_increments": [
+        {
+          "review_branch": "codex/n05-local-auth-mailbox-20261010",
+          "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+          "code_status": "locally_verified_mailbox_runner",
+          "merge_status": "not_merged",
+          "environment_status": "owned_fresh_Linux_CI_mailbox_pending",
+          "acceptance_status": "formal_hosted_mailbox_not_run",
+          "local_tests": {
+            "journeys_unit": {
+              "passed": 345,
+              "failed": 0,
+              "skipped": 0
+            },
+            "focused_contracts": {
+              "passed": 11,
+              "failed": 0,
+              "skipped": 0
+            },
+            "build": "PASS",
+            "typecheck": "PASS",
+            "source_package": {
+              "passed": 5,
+              "failed": 0,
+              "skipped": 1
+            }
+          },
+          "current_review_ci": "pending",
+          "evidence": "N05_AUTH_MAILBOX_CI.md"
+        }
+      ]
     },
     {
       "task_id": "N06",

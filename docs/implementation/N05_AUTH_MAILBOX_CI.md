@@ -1,0 +1,13 @@
+# N05 isolated SMTP capture evidence
+
+The existing account-entry suite tests auto-confirm signup and generated callback links. A separate `auth-mailbox` Journeys CI job now starts a fresh owned local Supabase profile with Mailpit and email confirmation enabled. The original connected profile and its eight account-entry tests remain unchanged.
+
+Four additional Chromium flows use the Journeys forms and actual Auth SMTP emails: signup and password recovery, each in English and Traditional Chinese. They return to an owned, published synthetic guide, verify the same identity, retain the device copy, and assert that server trips remain empty. Signup cannot authenticate before confirmation. Recovery rejects the old password and reused link, then verifies a fresh-browser login with the new password. Existing forged-link, account-switch and expiry controls remain in the original suite.
+
+The generated profile is CI-only and rejects external SMTP/send-email hooks. Before creating test environment input or running the suite, guards check the fixed local API, exact Mailpit origin, project-labelled running Auth/Mailpit containers, required confirmation and Auth's local SMTP target. No production provider, callback allowlist, flags, schema or application account implementation changes.
+
+`journeys-auth-mailbox-summary` contains only source identity, dirty-tree status, guarded local target, counts and delivery scope. PASS requires all four flow completion markers exactly once, four passes and zero skips. Trace, screenshots and video are disabled; raw emails, links, tokens, passwords and environment files are not uploaded. Captured messages must have exactly the expected synthetic recipient; links must bind the existing `/callback`, Auth origin, locale, flow and original task. No latest-message fallback or external relay is used.
+
+Before review: six new unit regressions failed for the missing contracts, then passed; a callback-path mismatch was also observed and corrected against the existing `authCallbackUrl` contract. Focused suite: 11 PASS. Full Journeys: 345 PASS / 0 FAIL / 0 SKIP; build and typecheck PASS. Windows source packaging: 5 PASS / 1 symlink-permission SKIP. Actual SMTP browser execution is pending current-head Linux CI; the existing Windows stack has no Mailpit and was not reset or reconfigured.
+
+These flows prove isolated synthetic SMTP capture only. Named hosted mailbox delivery, approved production recovery settings and formal U01/U03 acceptance remain BLOCKED/NOT_RUN. N05 overall remains partial. Revert this test/CI increment to remove the dedicated job; existing account flows and data remain intact.
