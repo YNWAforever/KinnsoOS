@@ -162,14 +162,21 @@ d('r10.1 settlement minting', () => {
       mission_source: 'merchant',
       mission_type: 'paid',
       visibility: 'open',
-      status: 'published',
+      status: 'draft',
       paid_fee_amount: 1200,
       paid_fee_currency: 'HKD',
-      published_at: new Date().toISOString(),
+      published_at: null,
     }).select('id').single()
     if (feeMission.error) throw feeMission.error
     feeMissionId = feeMission.data!.id
 
+    const milestones = await s.from('mission_milestones').insert([
+      { mission_id: feeMissionId, title: 'Milestone A', description: 'First deliverable', sort_order: 0 },
+      { mission_id: feeMissionId, title: 'Milestone B', description: 'Second deliverable', sort_order: 1 },
+    ]).select('id')
+    if (milestones.error) throw milestones.error
+    const publishedFee = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',feeMissionId)
+    if(publishedFee.error)throw publishedFee.error
     const feeParticipant = await s.from('mission_participants').insert({
       mission_id: feeMissionId, creator_id: creatorC, status: 'active', source: 'open_join',
     }).select('id').single()
@@ -182,11 +189,7 @@ d('r10.1 settlement minting', () => {
     if (feeSolo.error) throw feeSolo.error
     feeParticipantSolo = feeSolo.data!.id
 
-    const milestones = await s.from('mission_milestones').insert([
-      { mission_id: feeMissionId, title: 'Milestone A', description: 'First deliverable', sort_order: 0 },
-      { mission_id: feeMissionId, title: 'Milestone B', description: 'Second deliverable', sort_order: 1 },
-    ]).select('id')
-    if (milestones.error) throw milestones.error
+
 
     const subs = await s.from('mission_milestone_submissions').insert([
       { mission_milestone_id: milestones.data![0].id, mission_participant_id: feeParticipantId, status: 'submitted' },
@@ -206,23 +209,26 @@ d('r10.1 settlement minting', () => {
       mission_source: 'merchant',
       mission_type: 'coupon_affiliate',
       visibility: 'open',
-      status: 'published',
+      status: 'draft',
       coupon_code: 'MINTCPN',
       coupon_url: 'https://example.com/mint-cpn',
-      published_at: new Date().toISOString(),
+      published_at: null,
     }).select('id').single()
     if (coupon.error) throw coupon.error
 
+    const couponMilestone = await s.from('mission_milestones').insert({
+      mission_id: coupon.data!.id, title: 'Coupon Milestone', description: 'Proof', sort_order: 0,
+    }).select('id').single()
+    if (couponMilestone.error) throw couponMilestone.error
+    const publishedCoupon = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',coupon.data!.id)
+    if(publishedCoupon.error)throw publishedCoupon.error
     const couponParticipant = await s.from('mission_participants').insert({
       mission_id: coupon.data!.id, creator_id: creatorC, status: 'active', source: 'open_join',
     }).select('id').single()
     if (couponParticipant.error) throw couponParticipant.error
     couponParticipantId = couponParticipant.data!.id
 
-    const couponMilestone = await s.from('mission_milestones').insert({
-      mission_id: coupon.data!.id, title: 'Coupon Milestone', description: 'Proof', sort_order: 0,
-    }).select('id').single()
-    if (couponMilestone.error) throw couponMilestone.error
+
 
     const couponSub = await s.from('mission_milestone_submissions').insert({
       mission_milestone_id: couponMilestone.data!.id,

@@ -23,17 +23,39 @@ revoke all on function kinnso_internal.validate_campaign_schedule(jsonb) from pu
 
 create function kinnso_internal.guard_campaign_terms() returns trigger
 language plpgsql set search_path='' as $$ begin
+ if tg_op='DELETE' then
+  if old.kinnso_terms_locked and auth.uid() is not null then raise exception 'immutable_campaign_terms';end if;
+  return old;
+ end if;
+ -- The audited SECURITY DEFINER setter retains its operational policy contract.
+ -- Ordinary table writers (including an ops user's direct UPDATE) cannot opt in.
+ if ((tg_op='INSERT' and new.auto_approve_policy<>'off') or (tg_op='UPDATE' and new.auto_approve_policy is distinct from old.auto_approve_policy)) and auth.uid() is not null then
+  if current_user<>pg_catalog.pg_get_userbyid((select proowner from pg_catalog.pg_proc where oid='public.admin_set_mission_auto_approve_policy(uuid,text)'::pg_catalog.regprocedure)) or not public.is_active_ops_role('admin') then raise exception 'forbidden' using errcode='42501';end if;
+ end if;
  if tg_op='UPDATE' and old.kinnso_terms_locked then
-  if new.status='draft' or not new.kinnso_terms_locked or
+  if (new.status='draft' and old.status<>'draft') or not new.kinnso_terms_locked or
    (to_jsonb(new)-array['status','updated_at','auto_approve_policy']) is distinct from (to_jsonb(old)-array['status','updated_at','auto_approve_policy']) then raise exception 'immutable_campaign_terms';end if;
  end if;
- if new.mission_source='merchant' and (new.status<>'draft' or new.published_at is not null) then new.kinnso_terms_locked:=true;end if;
+ if tg_op='INSERT' then new.kinnso_terms_locked:=false;
+ elsif new.mission_source='merchant' and (new.status<>'draft' or new.published_at is not null) then new.kinnso_terms_locked:=true;end if;
  if new.starts_at is not null and new.ends_at is not null and new.starts_at>=new.ends_at then raise exception 'invalid_schedule';end if;
- if not exists(select 1 from pg_catalog.pg_timezone_names where name=new.kinnso_schedule_time_zone) then raise exception 'invalid_schedule';end if;
+ if (tg_op='INSERT' or new.kinnso_schedule_time_zone is distinct from old.kinnso_schedule_time_zone) and not exists(select 1 from pg_catalog.pg_timezone_names where name=new.kinnso_schedule_time_zone) then raise exception 'invalid_schedule';end if;
  return new;
 end $$;
 revoke all on function kinnso_internal.guard_campaign_terms() from public,anon,authenticated,service_role;
-create trigger kinnso_campaign_terms_guard before insert or update on public.missions for each row execute function kinnso_internal.guard_campaign_terms();
+create trigger kinnso_campaign_terms_guard before insert or update or delete on public.missions for each row execute function kinnso_internal.guard_campaign_terms();
+
+create function kinnso_internal.seal_inserted_campaign_terms() returns trigger
+language plpgsql security definer set search_path='' as $$ begin
+ -- AFTER INSERT triggers run by name: the mature create_repeatable_milestone
+ -- trigger authors receipt terms first. The campaign is sealed in this same
+ -- transaction, before any concurrent request can observe the published row.
+ if new.mission_source='merchant' and (new.status<>'draft' or new.published_at is not null) then
+  update public.missions set kinnso_terms_locked=true where id=new.id and not kinnso_terms_locked;
+ end if;return new;
+end $$;
+revoke all on function kinnso_internal.seal_inserted_campaign_terms() from public,anon,authenticated,service_role;
+create trigger kinnso_campaign_terms_seal after insert on public.missions for each row execute function kinnso_internal.seal_inserted_campaign_terms();
 
 create function kinnso_internal.guard_campaign_milestone_terms() returns trigger
 language plpgsql security definer set search_path='' as $$
@@ -142,7 +164,7 @@ begin
     if mission.status<>'published' then raise exception 'revision_conflict';end if;
     update public.missions set status='paused' where id=entity returning * into mission;
    else
-    if mission.status<>'draft' or exists(select 1 from public.mission_participants where mission_id=entity) then raise exception 'revision_conflict';end if;
+    if mission.status<>'draft' or mission.kinnso_terms_locked or exists(select 1 from public.mission_participants where mission_id=entity) then raise exception 'revision_conflict';end if;
     if kind='updateDraft' then body:=p_command->'input';perform kinnso_internal.validate_campaign_input(body,false);
     else
      body:=jsonb_build_object('title',mission.title,'summary',mission.summary,'couponCode',coalesce(mission.coupon_code,''),'couponUrl',coalesce(mission.coupon_url,''),'affiliateRate',mission.affiliate_commission_rate,'kinnsoRate',mission.kinnso_commission_rate,'creatorRate',mission.creator_commission_rate,'requirements',mission.requirements,'deliverables',mission.deliverables,
@@ -227,7 +249,7 @@ begin
   select coalesce(jsonb_agg(jsonb_build_object('id',id,'participantId',mission_participant_id,'creatorId',creator_id,'creatorName',display_name,'milestoneTitle',title,'status',status,'notes',notes,'proofUrls',proof_urls,'feedback',merchant_feedback,'submittedAt',submitted_at,'reviewedAt',reviewed_at,'updatedAt',updated_at)order by id)filter(where n<=50),'[]'),case when count(*)>50 then (array_agg(id order by id))[50] else null end into submissions,submission_cursor from bounded;
   detail:=jsonb_build_object('id',mission.id,'title',mission.title,'summary',mission.summary,'status',mission.status,'missionType',mission.mission_type,'requiresApplication',mission.kinnso_requires_application,'updatedAt',mission.updated_at,'applicationOpensAt',mission.starts_at,'applicationClosesAt',mission.ends_at,'scheduleTimeZone',mission.kinnso_schedule_time_zone,'couponCode',coalesce(mission.coupon_code,''),'couponUrl',coalesce(mission.coupon_url,''),'affiliateRate',mission.affiliate_commission_rate,'kinnsoRate',mission.kinnso_commission_rate,'creatorRate',mission.creator_commission_rate,'requirements',mission.requirements,'deliverables',mission.deliverables,
    'milestones',coalesce((select jsonb_agg(jsonb_build_object('id',id,'title',title,'description',description,'dueAt',due_at)order by sort_order,id)from public.mission_milestones where mission_id=mission.id),'[]'),
-   'participants',participants,'participantsNextCursor',participant_cursor,'submissions',submissions,'submissionsNextCursor',submission_cursor,'canEdit',mission.status='draft' and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0 and not exists(select 1 from public.mission_participants where mission_id=mission.id),'canClose',mission.status='published' and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0,'canReviewSubmissions',role_name='owner' and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0);
+   'participants',participants,'participantsNextCursor',participant_cursor,'submissions',submissions,'submissionsNextCursor',submission_cursor,'canEdit',mission.status='draft' and not mission.kinnso_terms_locked and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0 and not exists(select 1 from public.mission_participants where mission_id=mission.id),'canClose',mission.status='published' and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0,'canReviewSubmissions',role_name='owner' and mission.mission_source='merchant' and mission.mission_type='coupon_affiliate' and coalesce(mission.paid_fee_amount,0)=0);
  end if;
  select jsonb_build_object('draft',count(*)filter(where status='draft'),'published',count(*)filter(where status='published'),'closed',count(*)filter(where status in ('paused','completed','cancelled')),
   'applications',(select count(*) from public.mission_participants p join public.missions m on m.id=p.mission_id where m.merchant_profile_id=p_merchant_id and p.status='applied'),
@@ -402,6 +424,76 @@ begin
     where mission_id = p_mission_id and creator_id = auth.uid()
       and status = 'invited' and source = 'merchant_invite';
   if not found then raise exception 'no_invite'; end if;
+end $$;
+
+-- Preserve the mature admin gate, audit and privileges with current-session validation.
+create or replace function public.admin_set_mission_auto_approve_policy(p_mission_id uuid, p_policy text)
+returns void
+language plpgsql security definer set search_path = '' as $$
+begin
+  perform kinnso_internal.actor();
+  if not public.is_active_ops_role('admin') then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if p_policy not in ('off', 'verified_signal_only') then
+    raise exception 'bad_policy';
+  end if;
+
+  update public.missions set auto_approve_policy = p_policy, updated_at = now() where id = p_mission_id;
+  if not found then
+    raise exception 'not_found';
+  end if;
+
+  perform public.ops_audit_log_append('mission', p_mission_id, 'mission.auto_approve_policy', null,
+    jsonb_build_object('policy', p_policy));
+end;
+$$;
+
+
+-- Preserve the legacy command payload, digest, receipts and role boundary.
+create or replace function public.apply_kinnso_merchant_command(p_merchant_id uuid,p_request_id uuid,p_command jsonb) returns jsonb language plpgsql security definer set search_path='' as $$
+declare v_actor uuid:=kinnso_internal.actor();v_role text;v_digest text;v_prior kinnso_internal.workspace_requests;v_type text:=p_command->>'type';v_result jsonb;v_id uuid;v_branches uuid[];v_status text;v_mission public.missions;v_participant public.mission_participants;begin
+ v_role:=kinnso_internal.merchant_role(p_merchant_id,v_actor,null,case when v_type in ('createBrief','reviewApplication') then array['owner','marketing'] else array['owner'] end);
+ if p_request_id is null or octet_length(p_command::text)>65536 then raise exception 'invalid_command';end if;
+ perform pg_advisory_xact_lock(hashtextextended(v_actor::text||p_request_id::text,0));
+ v_digest:=kinnso_internal.request_digest(jsonb_build_array('merchant',p_merchant_id,p_command)::text);
+ select * into v_prior from kinnso_internal.workspace_requests where actor_id=v_actor and request_id=p_request_id;
+ if found then if v_prior.digest<>v_digest then raise exception 'idempotency_conflict';end if;return v_prior.result;end if;
+ if v_type='createBranch' then
+  perform kinnso_internal.keys(p_command,array['type','id','name','reason']);v_id:=(p_command->>'id')::uuid;
+  if v_id is null or jsonb_typeof(p_command->'name') is distinct from 'string' then raise exception 'invalid_command';end if;
+  insert into kinnso_internal.merchant_branches(id,merchant_id,name) values(v_id,p_merchant_id,p_command->>'name');v_result:=jsonb_build_object('id',v_id,'name',p_command->>'name');
+ elsif v_type='setMember' then
+  perform kinnso_internal.keys(p_command,array['type','userId','role','branchIds','active','reason']);v_id:=(p_command->>'userId')::uuid;
+  if v_id is null or p_command->>'role' is null or p_command->>'role' not in ('marketing','clerk','finance') or jsonb_typeof(p_command->'branchIds') is distinct from 'array' or jsonb_typeof(p_command->'active') is distinct from 'boolean' then raise exception 'invalid_command';end if;
+  select coalesce(array_agg(value::uuid),'{}') into v_branches from jsonb_array_elements_text(p_command->'branchIds');
+  if cardinality(v_branches)>100 or cardinality(v_branches)<>(select count(distinct x) from unnest(v_branches) x) or exists(select 1 from unnest(v_branches) x where not exists(select 1 from kinnso_internal.merchant_branches where id=x and merchant_id=p_merchant_id and active)) then raise exception 'invalid_branch';end if;
+  insert into kinnso_internal.merchant_members(merchant_id,user_id,role,branch_ids,active) values(p_merchant_id,v_id,p_command->>'role',v_branches,(p_command->>'active')::boolean) on conflict(merchant_id,user_id) do update set role=excluded.role,branch_ids=excluded.branch_ids,active=excluded.active,updated_at=now();
+  v_result:=jsonb_build_object('userId',v_id,'role',p_command->>'role','branchIds',p_command->'branchIds','active',p_command->'active');
+ elsif v_type='createBrief' then
+  perform kinnso_internal.keys(p_command,array['type','id','title','summary','couponCode','couponUrl','affiliateRate','kinnsoRate','creatorRate','publish','requirements','deliverables','reason']);v_id:=(p_command->>'id')::uuid;
+  if v_id is null or jsonb_typeof(p_command->'title') is distinct from 'string' or length(btrim(p_command->>'title')) not between 1 and 120 or jsonb_typeof(p_command->'summary') is distinct from 'string' or length(btrim(p_command->>'summary')) not between 1 and 5000 or jsonb_typeof(p_command->'couponCode') is distinct from 'string' or coalesce(btrim(p_command->>'couponCode'),'')='' or jsonb_typeof(p_command->'couponUrl') is distinct from 'string' or p_command->>'couponUrl' !~ '^https?://[^[:space:]]+$' or jsonb_typeof(p_command->'publish') is distinct from 'boolean' then raise exception 'invalid_brief';end if;
+  if jsonb_typeof(p_command->'affiliateRate') is distinct from 'number' or jsonb_typeof(p_command->'kinnsoRate') is distinct from 'number' or jsonb_typeof(p_command->'creatorRate') is distinct from 'number' or (p_command->>'affiliateRate')::numeric<0 or (p_command->>'kinnsoRate')::numeric<0 or (p_command->>'creatorRate')::numeric<0 then raise exception 'invalid_brief';end if;
+  if jsonb_typeof(p_command->'requirements') is distinct from 'array' or jsonb_typeof(p_command->'deliverables') is distinct from 'array' or exists(select 1 from jsonb_array_elements((p_command->'requirements')||(p_command->'deliverables')) value where jsonb_typeof(value)<>'string' or length(value#>>'{}')>1000) then raise exception 'invalid_brief';end if;
+  insert into public.missions(id,merchant_profile_id,title,summary,mission_type,mission_source,visibility,status,published_at,coupon_code,coupon_url,affiliate_commission_rate,kinnso_commission_rate,creator_commission_rate,requirements,deliverables)
+  values(v_id,p_merchant_id,p_command->>'title',p_command->>'summary','coupon_affiliate','merchant','open',case when (p_command->>'publish')::boolean then 'published' else 'draft' end,case when (p_command->>'publish')::boolean then now() else null end,p_command->>'couponCode',p_command->>'couponUrl',(p_command->>'affiliateRate')::numeric,(p_command->>'kinnsoRate')::numeric,(p_command->>'creatorRate')::numeric,array(select jsonb_array_elements_text(p_command->'requirements')),array(select jsonb_array_elements_text(p_command->'deliverables')));
+  v_result:=jsonb_build_object('id',v_id,'status',case when (p_command->>'publish')::boolean then 'published' else 'draft' end);
+ elsif v_type='reviewApplication' then
+  perform kinnso_internal.keys(p_command,array['type','id','expectedStatus','action','note','reason']);v_id:=(p_command->>'id')::uuid;
+  -- Read only the immutable identity, then take mission before participant,
+  -- matching the native command, admission trigger and legacy acceptance.
+  select * into v_participant from public.mission_participants where id=v_id;
+  select * into v_mission from public.missions where id=v_participant.mission_id and merchant_profile_id=p_merchant_id for update;
+  if not found then raise exception 'forbidden';end if;
+  select * into v_participant from public.mission_participants where id=v_id and mission_id=v_mission.id for update;
+  if not found then raise exception 'revision_conflict';end if;
+  if p_command->>'action' is null or p_command->>'action' not in ('approve','reject') or v_participant.status is distinct from p_command->>'expectedStatus' or v_participant.status not in ('applied','invited') then raise exception 'revision_conflict';end if;
+  v_status:=case p_command->>'action' when 'approve' then 'active' else 'rejected' end;
+  update public.mission_participants set status=v_status,merchant_review_note=p_command->>'note',approved_at=case when v_status='active' then now() else null end where id=v_id;
+  v_result:=jsonb_build_object('id',v_id,'status',v_status);
+ else raise exception 'invalid_command';end if;
+ insert into kinnso_internal.merchant_audit(merchant_id,actor_id,action,entity_id,reason) values(p_merchant_id,v_actor,v_type,v_id,coalesce(nullif(btrim(p_command->>'reason'),''),'Explicit merchant command'));
+ insert into kinnso_internal.workspace_requests values(v_actor,p_request_id,v_digest,v_result,now());return v_result;
 end $$;
 
 notify pgrst, 'reload schema';

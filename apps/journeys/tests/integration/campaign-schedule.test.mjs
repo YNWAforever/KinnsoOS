@@ -107,7 +107,7 @@ async function waitBlocked(holder,count=1){
  const stop=Date.now()+5000;while(Date.now()<stop){
   const sql=`WITH RECURSIVE waits(pid) AS (SELECT ${holder.pid} UNION SELECT a.pid FROM pg_catalog.pg_stat_activity a JOIN waits w ON w.pid=ANY(pg_catalog.pg_blocking_pids(a.pid))) SELECT count(*)-1 FROM waits;`;
   const result=spawnSync('docker',['exec','-i',process.env.KINNSO_TEST_DB_CONTAINER,'psql','-XqAt','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],{input:sql,encoding:'utf8',timeout:2000});assert.equal(result.status,0,result.stderr);
-  if(Number(result.stdout.trim())>=count)return;await new Promise(resolve=>setTimeout(resolve,25));
+  if(Number(result.stdout.trim())>=count)return;await new Promise(resolve=>setTimeout(resolve,100));
  }assert.fail('Authenticated requests must actually wait on the owned fixture lock');
 }
 

@@ -37,7 +37,7 @@ const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url')
 function clientFor(userId: string) {
   const header = b64({ alg: 'HS256', typ: 'JWT' })
   const payload = b64({
-    sub: userId, role: 'authenticated', aud: 'authenticated',
+    sub: userId, role: 'authenticated', aud: 'authenticated', session_id:userId, is_anonymous:false,
     exp: Math.floor(Date.now() / 1000) + 3600,
   })
   const sig = createHmac('sha256', jwtSecret).update(`${header}.${payload}`).digest('base64url')
@@ -79,13 +79,9 @@ d('r11.0/r11.1 mission review: admin_review_submission, mission_review_event_app
   // mission_milestone_submissions has a unique (mission_milestone_id, mission_participant_id)
   // constraint, so every test that seeds a fresh submission for participantA needs its own
   // milestone -- reusing milestoneId across tests hits that constraint on the second insert.
+  const authoredMilestones:string[]=[]
   async function freshMilestoneId(): Promise<string> {
-    const s = svc()
-    const milestone = await s.from('mission_milestones').insert({
-      mission_id: missionId, title: `Post proof ${Math.random().toString(36).slice(2)}`, description: 'Upload post proof',
-    }).select('id').single()
-    if (milestone.error) throw milestone.error
-    return milestone.data!.id
+    const id=authoredMilestones.shift();if(!id)throw new Error('Authored review fixture milestones exhausted');return id
   }
 
   beforeAll(async () => {
@@ -116,6 +112,7 @@ d('r11.0/r11.1 mission review: admin_review_submission, mission_review_event_app
 
       update public.creators set status = 'active' where id in ('${creatorA}', '${creatorB}');
       update public.creators set status = 'onboarding' where id = '${nonCreator}';
+      insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),now() from auth.users where id in ('${creatorA}','${creatorB}','${nonCreator}','${merchantUser}','${otherMerchantUser}','${opsAdminUser}','${opsOtherUser}') on conflict(id) do nothing;
     `)
 
     const s = svc()
@@ -164,9 +161,9 @@ d('r11.0/r11.1 mission review: admin_review_submission, mission_review_event_app
 
     const mission = await s.from('missions').insert({
       merchant_profile_id: merchantProfileId, mission_source: 'merchant', mission_type: 'coupon_affiliate',
-      visibility: 'open', status: 'published', title: `R11 Review Test Mission ${runId}`,
+      visibility: 'open', status: 'draft', title: `R11 Review Test Mission ${runId}`,
       summary: 'Mission used to prove admin_review_submission and mission_review_events on a live stack',
-      coupon_code: `R11REV${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-review', published_at: new Date().toISOString(),
+      coupon_code: `R11REV${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-review', published_at: null,
     }).select('id').single()
     if (mission.error) throw mission.error
     missionId = mission.data!.id
@@ -176,6 +173,11 @@ d('r11.0/r11.1 mission review: admin_review_submission, mission_review_event_app
     }).select('id').single()
     if (milestone.error) throw milestone.error
     milestoneId = milestone.data!.id
+    const authored=await s.from('mission_milestones').insert(Array.from({length:8},(_,i)=>({mission_id:missionId,title:'Review proof '+i,description:'Upload post proof'}))).select('id')
+    if(authored.error)throw authored.error;authoredMilestones.push(...authored.data!.map(row=>row.id))
+    const publishedmissionId = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',missionId)
+    if (publishedmissionId.error) throw publishedmissionId.error
+
 
     const participantA = await s.from('mission_participants').insert({
       mission_id: missionId, creator_id: creatorA, status: 'active', source: 'open_join',
