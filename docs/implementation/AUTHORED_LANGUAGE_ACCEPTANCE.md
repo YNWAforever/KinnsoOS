@@ -11,3 +11,11 @@ The initial six-case native run additionally contains two BLOCKED fixture tests:
 The cream/green layout, original text/credits, JSON-LD, Auth, public projection, private/no-store, draft recovery, ownership, aggregate revisions, atomic/idempotent commands and server filters remain intact. No schema, flags, provider or production fixture changes accompany this PR.
 
 Current review-head Root/Journeys, Linux6-package/extracted-source rebuild and configured independent review are required before the existing green-only merge authority can be used. Named hosted U01/U03, real rights-reviewed structured content, actual iOS/Android/200% text/NVDA/VoiceOver and production account acceptance remain NOT_RUN. Revert this PR to restore the old rendering; no database/configuration rollback is required.
+
+## Public creator profile continuation
+
+N13/N14 remain PARTIAL. This increment starts from main `b0447021e27274c9fba0a15f34f311ee0f01e374`. The existing public creator DTO also has no authored-language metadata, but its original name, biography and guide titles inherited the interface language. These three authored fields now carry `lang=""`. Localized headings, empty-state text and navigation retain the interface language. Original wording, escaping, legacy canonical links, anonymous public projection and private/noindex boundaries remain intact.
+
+Two actual component SSR regressions failed for the missing boundary and then passed in English and Traditional Chinese. The existing creator browser test now checks the document language, original-text boundaries and localized heading inheritance with JavaScript both disabled and enabled, alongside its existing six-guide bound, unpublished/private exclusion, links, withdrawal and suspended-profile checks. The local isolated Supabase container was absent, so that connected browser run is BLOCKED locally; current-head Linux CI must verify it. Source CI and synthetic fixtures do not establish real authored-language metadata, screen-reader pronunciation, real device acceptance or formal hosted U03.
+
+There is no schema, configuration, provider or dependency-version change. Rollback is to revert this rendering increment; preserve profiles, published versions, traveller copies and drafts. Exact-source validation and merge/runtime evidence are recorded separately from the historical results above.
