@@ -35,14 +35,21 @@
       "acceptance_status": "partial",
       "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3",
       "prs": [
-        "https://github.com/YNWAforever/KinnsoOS/pull/23"
+        "https://github.com/YNWAforever/KinnsoOS/pull/23",
+        "https://github.com/YNWAforever/KinnsoOS/pull/50"
       ],
       "tests": [
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
         "Windows source-package: 5 PASS / 1 symlink-permission SKIP.",
         "Initial local profile: browser 32 PASS / 11 FAIL; corrected owned-test capability profile passes in CI.",
         "Main84217b2 Git tree equals tested65a81a0; current-head mandatory checks and43 browser/27 integration artifacts verified before merge.",
-        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
+        "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN.",
+        "N01/N18 diagnostic increment integrated with main02cac8b: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP. Initial web0-test setup failure from missing.env.test retained; known approved loopback URL supplied only for the read-only workflow tests, no DB call/fixture or disabled setup guard. Diagnostic source/config blobs unchanged; Journeys app tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2 matches verified main02. All18tasks/53mappings retained. Current integrated-head root/Journeys CI/configured review and formal U06 remain separate pending gates; underlying historical JSON cause still UNCONFIRMED. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 nightly evidence source 2d0d9381845b577024f4d86b05d0edf4cc165d3f: legacy nightly38010991911 succeeded with0 artifacts. 24 source/target/run/attempt/count/skip controls GREEN after true RED; clean root tooling57PASS, Journeys339unit/build/typecheckPASS, existing sitemap/artifact15PASS in explicit unit mode, actual loopback intercepted funnel2PASS0FAIL0SKIP0FLAKY. Parsed original workflow target/schedule/concurrency/permissions/pins/setup/test selection/bookingFalse preserved. Safe aggregate sitemap receipt excludes raw URLs/bodies; missing or contradictory successful evidence fails. Current review-head Linux CI/configured review pending; new hosted nightly NOT_RUN, deployed runtime source NOT_CHECKED, formal roles/U06 NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N01/N18 configured P2 finding4236746985 on84e7750: fixed at 4beae1aaa34737684b7598a4e7450a0d55b62156. Three true product RED for zero-page/empty-urlset/non-sitemap HTML -> all27 evidence contracts GREEN. Clean60tooling/339Journeysunit/build/typecheckPASS0FAIL0SKIP. Zero-page sitemap is EMPTY and cannot pass successful evidence; raw zero/failure counts retained. Original root push38031718457 failed profile enquiries with Next dev JSON parse error; cause UNCONFIRMED, failed artifact retained. Original root PR38031735425 succeeded but cannot prove new head. Final current-head CI/configured review pending, hosted nightly/formal roles NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md."
       ],
       "blockers": [
         "Hosted schema, provider configuration and role acceptance not observed."
@@ -57,8 +64,86 @@
           "environment_status": "owned_local_root_kinnso_v3_API54421",
           "acceptance_status": "formal_not_run",
           "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "548da7952b84964672fe437634389831de730670",
+          "candidate_base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "code_status": "locally_verified_ci_failure_diagnostic_increment",
+          "merge_status": "not_merged",
+          "environment_status": "local_metadata_only_no_DB_or_provider_access",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "pending",
+          "evidence_document": "docs/implementation/CI_NEXT_MANIFEST_EVIDENCE.md",
+          "underlying_failure": "HISTORICAL_UNCONFIRMED_NOT_FIXED_BY_DIAGNOSTICS"
+        },
+        {
+          "code_sha": "5013f4911d4882e034fce389c2f1b7c8f0eceae0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "clean_local_verified_metadata_diagnostics_and_configured_P1_fix",
+          "merge_status": "not_merged",
+          "environment_status": "local_verified_no_hosted_acceptance",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "required_at_new_review_head",
+          "evidence_document": "docs/implementation/CI_NEXT_MANIFEST_EVIDENCE.md",
+          "configured_finding": {
+            "id": 4237118424,
+            "source_fix": "LOCAL_VERIFIED_3RED_TO41GREEN",
+            "current_review": "NOT_RUN"
+          }
+        },
+        {
+          "code_sha": "6453bb204556eb1487618d69b87a322d90943a4b",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "scoped_compiler_and_41_contracts_verified",
+          "local_typecheck_scope": "actual_ci_artifact_test_only; Journeys broader verification at5013f49",
+          "merge_status": "not_merged",
+          "environment_status": "new_exact_head_CI_required",
+          "acceptance_status": "formal_not_run"
+        },
+        {
+          "code_sha": "7150c144a2952fbce3a2cc7b274e83cdb7d10ef0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_diagnostic_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native45tooling15web_contract_PASS_noDB",
+          "acceptance_status": "diagnostic_only_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "evidence": "CI_NEXT_MANIFEST_EVIDENCE.md"
+        },
+        {
+          "code_sha": "2d0d9381845b577024f4d86b05d0edf4cc165d3f",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "locally_verified_nightly_readonly_evidence_increment",
+          "merge_status": "not_merged",
+          "environment_status": "clean_source_local_tooling_and_loopback_intercepted_HTML",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "4beae1aaa34737684b7598a4e7450a0d55b62156",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "configured_review_finding_fixed_with_3_true_RED_and_27_GREEN",
+          "merge_status": "not_merged",
+          "environment_status": "clean_local60tooling339unit_build_typecheck_PASS",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending_new_push"
         }
-      ]
+      ],
+      "latest_review_branch_integrations": {
+        "50": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "d1aba9eb63c520b4fadf6630ee018650305541a6",
+          "branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        }
+      }
     },
     {
       "task_id": "N02",
@@ -262,14 +347,91 @@
         "Candidate full browser 51 PASS; approved callback alias adjustment retested separately.",
         "Native build/typecheck PASS; sandbox native-path build blocked, retained separately.",
         "Names-only Vercel CLI production metadata at2026-10-07T22:03:51.186Z: seven project settings; KINNSO_AUTH_RECOVERY_SECRET absent from that list. No values saved or settings changed; serving/shared configuration not verified.",
-        "Main31ec051 tree equals testedb7c3839; Linux connected51/browser and27/integration artifact trees match actual review head."
+        "Main31ec051 tree equals testedb7c3839; Linux connected51/browser and27/integration artifact trees match actual review head.",
+        "N05 integrated with main02cac8b (PR52 upload lifetime retained): native354unit PASS0FAIL0SKIP; build/typecheck PASS; Windows source-package5PASS1symlink-permissionSKIP. Native integration operator-cancelled after15 observed passing cases, no full41-case claim. Source manifest325 and all18tasks/53mappings retained; current integrated-head Linux CI/configured review remain required; hosted mailbox/role/device acceptance NOT_RUN. N05_AUTH_MAILBOX_CI.md."
       ],
       "blockers": [
         "Production recovery-secret/provider configuration and candidate deployment unverified.",
         "Named mailbox, confirmation/recovery delivery and hosted callback acceptance not provided.",
         "Configure the reviewed server-only recovery setting before runtime recovery acceptance; project-level names evidence is separate from shared/serving configuration."
       ],
-      "rollback": "Revert the task PR; preserve existing data."
+      "rollback": "Revert the task PR; preserve existing data.",
+      "source_increments": [
+        {
+          "review_branch": "codex/n05-local-auth-mailbox-20261010",
+          "base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+          "code_status": "locally_verified_mailbox_runner",
+          "merge_status": "not_merged",
+          "environment_status": "owned_fresh_Linux_CI_mailbox_pending",
+          "acceptance_status": "formal_hosted_mailbox_not_run",
+          "local_tests": {
+            "journeys_unit": {
+              "passed": 345,
+              "failed": 0,
+              "skipped": 0
+            },
+            "focused_contracts": {
+              "passed": 11,
+              "failed": 0,
+              "skipped": 0
+            },
+            "build": "PASS",
+            "typecheck": "PASS",
+            "source_package": {
+              "passed": 5,
+              "failed": 0,
+              "skipped": 1
+            }
+          },
+          "current_review_ci": "pending",
+          "evidence": "N05_AUTH_MAILBOX_CI.md"
+        },
+        {
+          "review_branch": "codex/n05-local-auth-mailbox-20261010",
+          "base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "retained_previous_head": "dc583d07933bff81fd9a62c1c32c195b4e7512e6",
+          "code_status": "existing_N05_preserved_main02_integrated",
+          "merge_status": "review_branch_integration_only_not_main",
+          "environment_status": "native_unit_build_type_package_verified_integration_incomplete",
+          "acceptance_status": "hosted_named_mailbox_roles_NOT_RUN",
+          "local_tests": {
+            "unit": {
+              "passed": 354,
+              "failed": 0,
+              "skipped": 0
+            },
+            "build": "PASS_exit0",
+            "typecheck": "PASS_exit0",
+            "windowsPackage": {
+              "discovered": 6,
+              "passed": 5,
+              "failed": 0,
+              "skipped": 1
+            },
+            "integration": {
+              "result": "operator_cancelled_incomplete",
+              "observedPassed": 15,
+              "completeSuite": "NOT_VERIFIED",
+              "log": "N05_MAIN02_NATIVE_integration.log"
+            },
+            "initialPackageCommand": "INVALID_SETUP_wrong_discovery_directory_retained"
+          },
+          "current_review_ci": "PENDING_current_integrated_head",
+          "evidence": "N05_AUTH_MAILBOX_CI.md"
+        }
+      ],
+      "latest_review_branch_integrations": {
+        "51": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "9032f5cffbb222ef59def9b880aefffa585772cf",
+          "branch": "codex/n05-local-auth-mailbox-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        }
+      }
     },
     {
       "task_id": "N06",
@@ -446,7 +608,16 @@
           "current_review_ci": "PENDING_integrated_source",
           "evidence": "DEVICE_DRAFT_NAVIGATION.md"
         }
-      ]
+      ],
+      "latest_green_merge_delivery": {
+        "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+        "pr": 47,
+        "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+        "code": "merged_busy_modal_cancel_fix",
+        "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+        "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+        "acceptance": "formal_hosted_physical_AT_NOT_RUN"
+      }
     },
     {
       "task_id": "N09",
@@ -881,7 +1052,16 @@
           "current_review_ci": "PENDING_integrated_source",
           "evidence": "DEVICE_DRAFT_NAVIGATION.md"
         }
-      ]
+      ],
+      "latest_green_merge_delivery": {
+        "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+        "pr": 47,
+        "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+        "code": "merged_busy_modal_cancel_fix",
+        "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+        "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+        "acceptance": "formal_hosted_physical_AT_NOT_RUN"
+      }
     },
     {
       "task_id": "N15",
@@ -1128,7 +1308,8 @@
         "https://github.com/YNWAforever/KinnsoOS/pull/28",
         "https://github.com/YNWAforever/KinnsoOS/pull/29",
         "https://github.com/YNWAforever/KinnsoOS/pull/41",
-        "https://github.com/YNWAforever/KinnsoOS/pull/42"
+        "https://github.com/YNWAforever/KinnsoOS/pull/42",
+        "https://github.com/YNWAforever/KinnsoOS/pull/50"
       ],
       "tests": [
         "Exact-head Linux CI: unit 290 / integration 27 / browser 43 PASS; artifacts retain SHA, target and counts.",
@@ -1151,7 +1332,14 @@
         "Correction code7afab2e856d8500bf4e2f78c8dcc8b4851c4f360: actual component8PASS2RED then10GREEN; clean339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Preserve moved-item focus when its initiating control becomes disabled, while yielding to an explicitly chosen field. Local connected remains BLOCKED_WINDOWS_RESERVED_58421; current-head CI required.",
         "N18 source6c2c728b4cb1561086d3b1bcf897703c989e1d05: actual data-URL-only pinned Playwright replay retained first intentional failure/configured retry trace in pre-next-surface snapshot; later shared report lost it. Three workflow cases RED then29 focused contracts GREEN at clean source, unchanged product-state tests and parsed full YAML semantics PASS. Separate exact-head Linux artifact verification still required; local connected BLOCKED; hosted/formal acceptance NOT_RUN.",
         "Deployment-scope code416f94e8e315e0c19b7d9a1e38d5fd5da38c9650: native initial16 missing-CLI RED then16GREEN; boundary review17PASS3FAIL then20GREEN. Clean20scope/339unit/build/typecheckPASS,0unitfail/skip; Windows package5PASS1symlink-permissionSKIP. Original readonly/cutover workflow bytes unchanged; parsed YAML PASS. Independent metadata records selection/reason and explicit runtime NOT_RUN; changed guard fails UNKNOWN_POLICY. Exact-head Linux and hosted metadata pending; DEPLOYMENT_SCOPE_ACCEPTANCE.md.",
-        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md."
+        "N01/N18 booking readiness source 3964a9780b970e6e17c4cdde86aa28effba7b1b2: true2RED/1PASS then3GREEN; current clean scoped20PASS1intentionalSKIP0FAIL0FLAKY; initial clean18PASS2FAIL1SKIP retained with API projection3true. Temporary app diagnostics restored exactly; concurrency cause unconfirmed. Clean339Journeysunit/build/typePASS, e2e typePASS after2typing errors, tooling33PASS. Root/Journeys exact-review CI and configured review pending; source-only readiness gap fixed, intermittent404 cause open, merge/runtime/formal U06 NOT_RUN. CI_BOOKING_FIXTURE_READINESS.md.",
+        "N01/N18 Next manifest diagnostics source 548da7952b84964672fe437634389831de730670: historical root push38031718457 profile-enquiries JSON parse failure retained; underlying input/cause UNCONFIRMED. 2 true RED -> 11 diagnostic controls PASS, clean44tooling/339Journeysunit/26existingCIcontracts PASS0FAIL0SKIP; build/typePASS; Windows source-package5PASS1permissionSKIP. Parsed original YAML semantics preserved except3 phase-bound collectors and artifact paths. Metadata-only fixed24paths/bounded reads; no content or parser error text; actual Git/run binding. Current-head CI/configured review pending, merge/runtime/formalU06 NOT_RUN; CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 final code 5013f4911d4882e034fce389c2f1b7c8f0eceae0: original local common-root regression1RED corrected, current12diagnostic controls included in clean45toolingPASS0FAIL0SKIP. ConfiguredP1 4237118424 reproduced3artifact-contractFAIL then strict15artifact+26productstate=41GREEN; initial scalar comment parser38PASS3FAIL retained. Clean339Journeysunit/build/typePASS; Windows source-package5PASS1permissionSKIP. Original reviewe7fbc40 rootPUSH38039802344/PR38039866934 qualityFAIL/e2eSKIPPED retained; not finalhead evidence. Current configured review and CI required; historical profileJSON causeUNCONFIRMED; merge/runtime/formalU06 NOT_RUN. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 PR50 tuple correction source 6453bb204556eb1487618d69b87a322d90943a4b: current0c8424a root PUSH38041213938/PR38041216503 typecheck TS2345 FAILURE, browserNOT_RUN/noartifacts retained. Actual test pinned compiler exit2 RED -> exit0 GREEN;41 runtime contracts PASS. Readonly4stringtuple accepts Vitest column unions without changing runtime checks. Local broader45tooling/339unit/Journeysbuild/type/package5PASS1SKIP were at5013f49; runtime app/code unchanged. Full root/Journeys CI at new review head and configured review required; formal/runtimeNOT_RUN.",
+        "N01/N18 diagnostic increment integrated with main02cac8b: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP. Initial web0-test setup failure from missing.env.test retained; known approved loopback URL supplied only for the read-only workflow tests, no DB call/fixture or disabled setup guard. Diagnostic source/config blobs unchanged; Journeys app tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2 matches verified main02. All18tasks/53mappings retained. Current integrated-head root/Journeys CI/configured review and formal U06 remain separate pending gates; underlying historical JSON cause still UNCONFIRMED. CI_NEXT_MANIFEST_EVIDENCE.md.",
+        "N01/N18 nightly evidence source 2d0d9381845b577024f4d86b05d0edf4cc165d3f: legacy nightly38010991911 succeeded with0 artifacts. 24 source/target/run/attempt/count/skip controls GREEN after true RED; clean root tooling57PASS, Journeys339unit/build/typecheckPASS, existing sitemap/artifact15PASS in explicit unit mode, actual loopback intercepted funnel2PASS0FAIL0SKIP0FLAKY. Parsed original workflow target/schedule/concurrency/permissions/pins/setup/test selection/bookingFalse preserved. Safe aggregate sitemap receipt excludes raw URLs/bodies; missing or contradictory successful evidence fails. Current review-head Linux CI/configured review pending; new hosted nightly NOT_RUN, deployed runtime source NOT_CHECKED, formal roles/U06 NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N01/N18 configured P2 finding4236746985 on84e7750: fixed at 4beae1aaa34737684b7598a4e7450a0d55b62156. Three true product RED for zero-page/empty-urlset/non-sitemap HTML -> all27 evidence contracts GREEN. Clean60tooling/339Journeysunit/build/typecheckPASS0FAIL0SKIP. Zero-page sitemap is EMPTY and cannot pass successful evidence; raw zero/failure counts retained. Original root push38031718457 failed profile enquiries with Next dev JSON parse error; cause UNCONFIRMED, failed artifact retained. Original root PR38031735425 succeeded but cannot prove new head. Final current-head CI/configured review pending, hosted nightly/formal roles NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md.",
+        "N18 integrated with main02cac8b while retaining all prior nightly source/config blobs and PR52 media changes: complete native60tooling PASS0FAIL0SKIP. Journeys application tree equals exact verified main02 tree fb5564f05227f67c1488a2da4ecb43cdf7a82da2; no new app behavior. All18tasks/53mappings preserved. Fresh integrated-head root/Journeys CI and configured review required; hosted scheduled nightly and formal U06/roles remain NOT_RUN. NIGHTLY_READONLY_EVIDENCE.md."
       ],
       "blockers": [
         "Original404/setup and cancelled attempts retained; causal layer unconfirmed.",
@@ -1175,10 +1363,119 @@
           "environment_status": "owned_local_root_kinnso_v3_API54421",
           "acceptance_status": "formal_not_run",
           "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "548da7952b84964672fe437634389831de730670",
+          "candidate_base_sha": "513b8c871f2551fb0989718017fdc73c2e5dc311",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "code_status": "locally_verified_ci_failure_diagnostic_increment",
+          "merge_status": "not_merged",
+          "environment_status": "local_metadata_only_no_DB_or_provider_access",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "pending",
+          "evidence_document": "docs/implementation/CI_NEXT_MANIFEST_EVIDENCE.md",
+          "underlying_failure": "HISTORICAL_UNCONFIRMED_NOT_FIXED_BY_DIAGNOSTICS"
+        },
+        {
+          "code_sha": "5013f4911d4882e034fce389c2f1b7c8f0eceae0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "clean_local_verified_metadata_diagnostics_and_configured_P1_fix",
+          "merge_status": "not_merged",
+          "environment_status": "local_verified_no_hosted_acceptance",
+          "acceptance_status": "formal_not_run",
+          "current_review_ci": "required_at_new_review_head",
+          "evidence_document": "docs/implementation/CI_NEXT_MANIFEST_EVIDENCE.md",
+          "configured_finding": {
+            "id": 4237118424,
+            "source_fix": "LOCAL_VERIFIED_3RED_TO41GREEN",
+            "current_review": "NOT_RUN"
+          }
+        },
+        {
+          "code_sha": "6453bb204556eb1487618d69b87a322d90943a4b",
+          "pr": "https://github.com/YNWAforever/KinnsoOS/pull/50",
+          "code_status": "scoped_compiler_and_41_contracts_verified",
+          "local_typecheck_scope": "actual_ci_artifact_test_only; Journeys broader verification at5013f49",
+          "merge_status": "not_merged",
+          "environment_status": "new_exact_head_CI_required",
+          "acceptance_status": "formal_not_run"
+        },
+        {
+          "code_sha": "7150c144a2952fbce3a2cc7b274e83cdb7d10ef0",
+          "review_branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "existing_diagnostic_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_only_not_main",
+          "environment_status": "native45tooling15web_contract_PASS_noDB",
+          "acceptance_status": "diagnostic_only_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "evidence": "CI_NEXT_MANIFEST_EVIDENCE.md"
+        },
+        {
+          "code_sha": "2d0d9381845b577024f4d86b05d0edf4cc165d3f",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "locally_verified_nightly_readonly_evidence_increment",
+          "merge_status": "not_merged",
+          "environment_status": "clean_source_local_tooling_and_loopback_intercepted_HTML",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending"
+        },
+        {
+          "code_sha": "4beae1aaa34737684b7598a4e7450a0d55b62156",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "code_status": "configured_review_finding_fixed_with_3_true_RED_and_27_GREEN",
+          "merge_status": "not_merged",
+          "environment_status": "clean_local60tooling339unit_build_typecheck_PASS",
+          "acceptance_status": "hosted_nightly_and_formal_roles_not_run",
+          "current_review_ci": "pending_new_push"
+        },
+        {
+          "code_sha": "1e871553822acd1b08e562014c6530ce16490e2d",
+          "review_branch": "codex/n18-nightly-evidence-20261010",
+          "integration_base_sha": "02cac8b2b1bfc9d26fa26052946e25e3a9e8d8bb",
+          "code_status": "prior_N18_source_blobs_preserved_main02_integrated",
+          "merge_status": "review_branch_integration_only_not_main",
+          "environment_status": "native60tooling_verified_no_DB_or_nightly_dispatch",
+          "acceptance_status": "hosted_scheduled_nightly_formal_U06_NOT_RUN",
+          "current_review_ci": "PENDING_integrated_head",
+          "unchanged_journeys_tree": "fb5564f05227f67c1488a2da4ecb43cdf7a82da2",
+          "evidence": "NIGHTLY_READONLY_EVIDENCE.md"
         }
-      ]
+      ],
+      "latest_review_branch_integrations": {
+        "50": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "d1aba9eb63c520b4fadf6630ee018650305541a6",
+          "branch": "codex/n01-ci-parse-diagnostics-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        },
+        "49": {
+          "base_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+          "prior_review_head": "ed59514b6ea46d59caa01c65f06576ae9138fc00",
+          "branch": "codex/n18-nightly-evidence-20261010",
+          "code": "prior_increment_retained_new_main_integrated",
+          "ci": "new_head_PENDING_until_actual_artifacts",
+          "merge": "OPEN",
+          "runtime": "candidate_NOT_VERIFIED",
+          "acceptance": "formal_NOT_RUN"
+        }
+      }
     }
   ],
   "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",
-  "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5"
+  "integration_base_sha": "2551fd1e4658ad7cc710f94fd68b3041540b5fd5",
+  "latest_green_merge_main": {
+    "main_sha": "5052d1c06a00dc95fbad828cff3d49c7c301d937",
+    "pr": 47,
+    "review_head": "28f052d1e252f99194a91cb5fa20674982f8dfd9",
+    "code": "merged_busy_modal_cancel_fix",
+    "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
+    "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
+    "acceptance": "formal_hosted_physical_AT_NOT_RUN"
+  }
 }

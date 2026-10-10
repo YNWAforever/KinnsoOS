@@ -86,3 +86,38 @@ jobs:
         with:
           name: journeys-connected-local-results
           path: apps/journeys/evidence/connected-browser/
+  auth-mailbox:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+        with:
+          version: 2.107.0
+      - name: Prepare a fresh local confirmation and SMTP capture profile
+        run: node scripts/prepare-connected-ci.mjs config-mailbox
+      - name: Start owned local Auth and Mailpit without application seeds
+        run: supabase start --workdir ../../.local-private/connected-ci-stack
+      - name: Verify local SMTP ownership and required confirmation
+        run: node scripts/prepare-connected-ci.mjs env-mailbox
+      - run: npm run build
+      - name: Install Chromium and system dependencies
+        timeout-minutes: 15
+        run: npm exec playwright install -- --with-deps chromium
+      - name: Actual local signup and recovery emails in both languages
+        run: node scripts/ci-evidence.mjs auth-mailbox
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        if: always()
+        with:
+          name: journeys-auth-mailbox-summary
+          path: apps/journeys/evidence/ci/auth-mailbox.json
+          if-no-files-found: warn

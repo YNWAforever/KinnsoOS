@@ -23,3 +23,17 @@ test('browser counts are actual results, opposing capability skips stay separate
  assert.deepEqual(report.counts,{passed:43,failed:0,skipped:1,cancelled:0,todo:0});
  assert.equal(report.result,'PASS');assert.throws(()=>evidence.summarizeCheck('browser',0,'43 passed (2.8m)','old-head'));
 });
+
+test('mailbox delivery evidence requires all four actual local flow completions and retains no mail or token', () => {
+ const flows = ['sign-up:en', 'recovery:en', 'sign-up:zh-HK', 'recovery:zh-HK'];
+ const output = flows.map(flow => 'LOCAL_MAILBOX_FLOW_PASS ' + flow).join('\n') + '\n  4 passed (21s)\nSECRET_TOKEN_MUST_NOT_LEAK';
+ const report = evidence.summarizeCheck('auth-mailbox', 0, output, 'd'.repeat(40));
+ assert.equal(report.result, 'PASS');
+ assert.equal(report.mailboxDeliveryAcceptance, 'isolated_smtp_capture_only');
+ assert.equal(report.signedInProductionAcceptance, 'NOT_RUN');
+ assert.equal(JSON.stringify(report).includes('SECRET_TOKEN_MUST_NOT_LEAK'), false);
+ for (const incomplete of [output.replace('LOCAL_MAILBOX_FLOW_PASS recovery:en', ''), output + '\nLOCAL_MAILBOX_FLOW_PASS sign-up:en', output.replace('4 passed', '3 passed')]) {
+  assert.equal(evidence.summarizeCheck('auth-mailbox', 0, incomplete, 'd'.repeat(40)).result, 'INVALID_EVIDENCE');
+ }
+ assert.equal(evidence.summarizeCheck('auth-mailbox', 1, output, 'd'.repeat(40)).result, 'FAIL');
+});

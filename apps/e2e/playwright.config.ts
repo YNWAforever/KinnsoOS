@@ -6,6 +6,15 @@ import { resolveE2EBaseURL } from './e2e-target'
 const baseURL = resolveE2EBaseURL(process.env)
 
 export default defineConfig({
+  // Reporter evidence uses the resolved target, never a caller-supplied label.
+  metadata: {
+    targetOrigin: new URL(baseURL).origin,
+    sourceRevision: process.env.GITHUB_SHA ?? 'NOT_CHECKED',
+    runId: process.env.GITHUB_RUN_ID ?? 'NOT_CHECKED',
+    runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? 'NOT_CHECKED',
+    bookingLive: process.env.BOOKING_LIVE === 'true',
+    remoteReadOnlyOptIn: process.env.E2E_ALLOW_REMOTE_TARGET === '1',
+  },
   testDir: './specs',
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
