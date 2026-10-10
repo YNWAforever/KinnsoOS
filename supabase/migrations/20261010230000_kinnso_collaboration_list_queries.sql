@@ -12,7 +12,7 @@ language sql stable security definer set search_path='' as $$
   (select min(l.due_at) from public.mission_milestones l where l.mission_id=m.id and l.due_at is not null and
    (p_scope='merchant' and not exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='active')
     or exists(select 1 from public.mission_participants a where a.mission_id=m.id and a.status='active' and (p_scope='merchant' or a.creator_id=p_actor)
-     and not exists(select 1 from public.mission_milestone_submissions s where s.mission_participant_id=a.id and s.mission_milestone_id=l.id and s.status='approved'))
+     and (l.repeatable and (m.max_receipts_per_creator is null or (select count(*) from public.mission_milestone_submissions s where s.mission_participant_id=a.id and s.mission_milestone_id=l.id and s.status='approved')<m.max_receipts_per_creator) or not l.repeatable and not exists(select 1 from public.mission_milestone_submissions s where s.mission_participant_id=a.id and s.mission_milestone_id=l.id and s.status='approved')))
     or p_scope='available')),
   case when (p_scope='merchant' and m.status in ('published','paused') or p_scope='mine' and p.status='active') and exists
    (select 1 from public.mission_milestone_submissions s join public.mission_participants a on a.id=s.mission_participant_id where a.mission_id=m.id and (p_scope='merchant' or a.creator_id=p_actor) and s.status='revision_requested') then 'revision_requested'

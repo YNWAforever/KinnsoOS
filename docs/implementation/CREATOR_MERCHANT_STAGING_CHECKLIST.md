@@ -35,3 +35,5 @@ P08 source-only inventory at `0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2`: `202610
 P10 source-only candidate on `9150a79`: `20261010230000_kinnso_collaboration_list_queries.sql` SHA-256 `7a23f9d1c6fa23d804b722def03982b9157dd41209717edc1ef0905ba30c4c4e`, hosted **NOT_EXECUTED**. Adds immutable native creation ordering and two fresh-actor query RPCs; preserves mature legacy RPCs and does not add indexes. Reconcile dependent source and live schema/grants before selecting any hosted delta; current isolated CI is pending.
 
 P10 revised source-only candidate: SQL SHA-256 `ab1e0eaf634f179ebba8830cdd5b5a06e9254ce4d12ec68adfd9b0a2b74018aa`; preserves existing `immutable_campaign_terms` denial for published creation-time edits and extends creation-time immutability to drafts. Initial owned query and repeatable milestone checks are pending; no hosted execution.
+
+P10 repeatable deadline fix source-only hash: `c1ce4581f6e4c4482c354a0d81d6dd60abef38bb1377b233fe7f84f1b8531bb1`. Hosted SQL NOT_EXECUTED; cap2 owned-CI RED observed; matching GREEN pending.
