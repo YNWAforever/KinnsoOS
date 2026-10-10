@@ -60,3 +60,11 @@ test('loading another creator page retains a selected campaign from its separate
  h.find('button','Load more creators').props.onClick();await tick();h.render();
  assert.ok(h.elements().some(n=>n.type==='option'&&n.props.value===creatorId));assert.equal(h.find('button','Invite to selected campaign').props.disabled,false);
 });
+
+test('campaign selector keeps an explicit control name independent of its option text',async()=>{
+ const data={items:[],nextCursor:null,quota:{limit:3,used:0,remaining:3},campaigns:[{id,title:'Synthetic invitation',updatedAt}],campaignsNextCursor:null};
+ const h=await workspaceHarness('MerchantCreatorDiscovery',{merchantCreators:{list:async()=>({ok:true,data})}});
+ const selector=h.elements().find(n=>n.type==='select');assert.ok(selector);
+ assert.equal(selector.props['aria-label'],'Published campaign');
+ selector.props.onChange({target:{value:id}});h.render();assert.equal(h.elements().find(n=>n.type==='select').props.value,id);
+});

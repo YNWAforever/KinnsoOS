@@ -1778,10 +1778,10 @@
         "U04"
       ],
       "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "ci_status": "CURRENT_FIX_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "ec3b30b37060f8c8500e8f2153b1e936b39c3f23",
+      "source_sha": "b0d5e05039b48e1f6f5f807eeb2607d6f8f92396",
       "evidence": [
         {
           "source_sha": "ded8dd03f28ec466bb39bc1be12a65a5228483f8",
@@ -1822,6 +1822,22 @@
           "result": "440unit438PASS_2FAIL_0SKIP;72integration69PASS_3FAIL_0SKIP. Native invitation returned success without inbox event (expected1 actual0); scoped notification fault did not abort invitation (expected synthetic_inbox_failure actual success). Both are valid inbox RED. Third failure is owned fixture successor already owning foreign company, violating mature one-company-per-owner unique key; corrected with distinct fresh successor. Remaining quota, cross-filter/stale anchors and exact self-approval contract PASS.",
           "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092631635",
           "observed_at": "2026-10-10T22:51:06.680218+00:00"
+        },
+        {
+          "source_sha": "b0d5e05039b48e1f6f5f807eeb2607d6f8f92396",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 current regression and native browser checkpoint",
+          "result": "440unitPASS;72integrationPASS; browser124PASS_2FAIL_0SKIP at exact implicit-label locator before invitation reconcile/acceptance. Root3270PASS_1FAIL: old direct-invite RLS fixture creator was draft. No hosted acceptance. CI attempt1 port collision was environment-blocked, attempt2 reached these checks.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092961617; root38092961701",
+          "observed_at": "2026-10-10T23:18:49.162530+00:00"
+        },
+        {
+          "source_sha": "candidate_on_b0d5e05",
+          "environment": "local_isolated",
+          "scenario": "Explicit selector label and active invitation fixture",
+          "result": "Selector test8PASS_1FAIL before fix,9PASS after; full441unitPASS_0FAIL_0SKIP, TypeScriptPASS. Added explicit select accessible name; only invited creator RLS fixture activated, existing owned/foreign assertions retained. Browser and root CI pending.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-label-unit.log",
+          "observed_at": "2026-10-10T23:18:49.162541+00:00"
         }
       ],
       "blockers": [
