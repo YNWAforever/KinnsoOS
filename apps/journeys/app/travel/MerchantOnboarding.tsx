@@ -7,6 +7,8 @@ import {merchantOnboarding,type MerchantOnboarding as Onboarding} from '../../li
 import {applicationInput,type ApplicationInput} from '../../lib/merchants/onboarding-validation';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {CollaborationTasks} from './CollaborationTasks';
+import {merchantSetupTasks} from '../../lib/collaboration/tasks';
 const blank:ApplicationInput={companyName:'',contactName:'',contactEmail:'',websiteUrl:'',pitch:''};
 export function MerchantOnboarding({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const {t,locale}=useApp(),router=useRouter();
@@ -32,7 +34,8 @@ export function MerchantOnboarding({actorId,enabled}:{actorId:string|null;enable
  }
  if(!actorId||!enabled||!valid)return <WorkspaceServiceState locale={locale} code={!enabled?'UNAVAILABLE':error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
  const open=data?.applications.find(a=>a.status==='pending');
- return <section className="k-card k-collab-card" aria-labelledby="merchant-onboarding-title"><p className="k-eyebrow">{t('BECOME A PARTNER','成為合作商戶')}</p><h2 id="merchant-onboarding-title">{t('Apply as a merchant','申請成為商戶')}</h2>
+ return <section id="merchant-onboarding" className="k-card k-collab-card" aria-labelledby="merchant-onboarding-title"><p className="k-eyebrow">{t('BECOME A PARTNER','成為合作商戶')}</p><h2 id="merchant-onboarding-title">{t('Apply as a merchant','申請成為商戶')}</h2>
+  {data&&<CollaborationTasks locale={locale} actions={merchantSetupTasks(data,locale)} disabled={busy||unknown}/>}
   <p>{t('Tell us about your business and proposed collaboration. Your application is reviewed before company access is created.','介紹你的業務及合作構想；我們審批申請後，才會開通公司工作區。')}</p>
   {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void submit():void refresh()} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry same application','重試同一申請'):undefined}/>}
   {error==='INVALID'&&<p>{t('Check your contact details and use complete HTTPS links.','請核對聯絡資料，並填寫完整 HTTPS 連結。')}</p>}

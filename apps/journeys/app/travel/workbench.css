@@ -4479,3 +4479,8 @@ body:has(.k-app) {
     width: 100%;
   }
 }
+.k-collaboration-tasks { min-width: 0; }
+.k-collaboration-tasks ul { padding-inline-start: 1.1rem; }
+.k-collaboration-tasks li { margin-block: .7rem; overflow-wrap: anywhere; }
+.k-collaboration-tasks .k-btn { max-width: 100%; white-space: normal; text-align: start; }
+.k-collaboration-tasks section { border-top: 1px solid var(--border, #ddd); padding-top: .5rem; margin-top: .8rem; }

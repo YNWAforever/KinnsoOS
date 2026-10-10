@@ -5,7 +5,7 @@ import {createClient} from '@supabase/supabase-js';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
 loadEnvFile('.env.test');
 const target = verifyTestTarget();
-const roleMarkers = ['Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', 'Source questions: read published sources and verification dates.', 'Drafts are private. Published versions can be adopted into traveller trips.'];
+const roleMarkers = ['Your next actions', 'Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', 'Source questions: read published sources and verification dates.', 'Drafts are private. Published versions can be adopted into traveller trips.'];
 
 function downloadedScripts(page: Page) {
   const bodies: Promise<string>[] = [];
