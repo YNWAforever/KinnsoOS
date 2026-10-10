@@ -67,3 +67,16 @@ Rollback: revert this workflow/collector increment. Keep historical failure
 artifacts and existing browser evidence; no production settings or data change.
 
 Latest-main integration: native45tooling and15workflow-artifact contracts PASS0FAIL0SKIP against main02cac8b. The first web invocation discovered zero tests because shared setup lacked.env.test; the corrected read-only invocation supplied the approved loopback URL without credentials, DB calls or disabling setup. Existing diagnostic source/config blobs and PR52 media changes are preserved, together with all18tasks/53mappings. Journeys app subtree equals verified main02. Fresh current-head CI/configured review are required; diagnostic receipts and later success do not establish the historical JSON cause or formal U06 acceptance. No production mutation.
+
+The main `fa918c6` root run `38073934984` failed in profile enquiries:
+the anonymous fixture projection succeeded, then the creator request returned
+404 on both attempts. Booking ON did not run. The dedicated profile server
+previously omitted stdout from the CI log, so its compilation and request
+diagnostics were unavailable. Pipe both owned-server streams, as the existing
+Booking runner already does. The real imported-config regression was 8 PASS /
+1 RED before the two options, then 9 PASS. Loopback guards, fresh-server
+ownership, retries, browser assertions and artifact retention stay in effect.
+The native full journey is blocked by the absent owned local DB; exact-head
+isolated CI must exercise it. This adds diagnostic visibility; it does not
+establish the 404 cause or formal U06 acceptance. Keep the failed main run even
+if a later run passes. Rollback: revert the two stream options and assertions.

@@ -1464,6 +1464,16 @@
           "runtime": "candidate_NOT_VERIFIED",
           "acceptance": "formal_NOT_RUN"
         }
+      },
+      "profile_enquiries_diagnostics_increment": {
+        "base_sha": "fa918c6d2c89f681071b29ac606bfbd8a24e9d0e",
+        "code_status": "owned_Next_stdout_stderr_piped_to_existing_CI_log",
+        "merge_status": "NOT_MERGED",
+        "environment_status": "native_config9PASS; full_local_browser_BLOCKED_missing_owned_DB; exact_head_CI_REQUIRED",
+        "acceptance_status": "404_root_cause_UNCONFIRMED; formal_U06_NOT_RUN",
+        "retained_failure_run": 38073934984,
+        "tests": "Baseline9PASS; actual imported config8PASS1RED; minimal logging config9PASS",
+        "rollback": "Revert the two stream options and associated assertions; retain failure evidence."
       }
     }
   ],
