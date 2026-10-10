@@ -10,7 +10,9 @@ are separate observations and do not repair that historical failure.
 The root CI now collects an independent snapshot immediately after each
 executed Booking OFF, profile enquiries and Booking ON fixture suite, before
 the next suite starts. Each existing browser artifact includes its own
-`evidence/next-manifests-<phase>.json`. Collection and upload run after both
+`next-manifest-evidence/next-manifests-<phase>.json`. Local output lives under
+`apps/e2e/next-manifest-evidence`, keeping the existing artifact common root
+and browser report paths. Collection and upload run after both
 success and failure. A skipped suite creates no executed-suite artifact.
 Existing test commands, retries, local targets, fixture guards and Booking ON
 conditions are unchanged; a failed browser step still fails the job.
@@ -41,6 +43,8 @@ keeps `runtimeAcceptance=NOT_RUN_DIAGNOSTIC_ONLY`.
 Local controls reproduce an invalid JSON input and missing output before the
 collector exists (2 RED), then verify 11 behaviors, including bounded reads,
 linked-path refusal, source/run binding, redaction and exclusive receipts.
+An additional artifact-layout regression reproduced a shifted common root
+(1 RED); its correction and the existing controls pass as 12 diagnostic tests.
 The initial sandbox Git-fixture setup error and the initial eight lint errors
 remain historical failures; neither is counted as the functional RED result.
 

@@ -270,7 +270,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
-            evidence/next-manifests-booking-off.json
+            apps/e2e/next-manifest-evidence/next-manifests-booking-off.json
 
       - name: Export service-role env for the profile enquiries journey
         # playwright.profile-enquiries.config.ts reads apps/web/.env.test, which only the
@@ -322,7 +322,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
-            evidence/next-manifests-profile-enquiries.json
+            apps/e2e/next-manifest-evidence/next-manifests-profile-enquiries.json
 
       # Deliberately last of the test steps: it is the only one that depends on a
       # repository secret, and its config refuses to load without STRIPE_SECRET_KEY.
@@ -384,7 +384,7 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
-            evidence/next-manifests-booking-on.json
+            apps/e2e/next-manifest-evidence/next-manifests-booking-on.json
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()

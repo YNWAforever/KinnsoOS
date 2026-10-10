@@ -91,12 +91,15 @@ function main() {
     runtimeAcceptance: 'NOT_RUN_DIAGNOSTIC_ONLY',
     limitation: 'After Playwright exits; transient writes may be missed. JSON validity does not prove browser, Auth, DB or runtime acceptance.',
   };
-  const directory = join(root, 'evidence');
-  try {
-    if (!lstatSync(directory).isDirectory() || lstatSync(directory).isSymbolicLink()) throw new Error('output');
-  } catch (error) {
-    if (error.code !== 'ENOENT') throw error;
-    mkdirSync(directory);
+  let directory = root;
+  for (const part of ['apps', 'e2e', 'next-manifest-evidence']) {
+    directory = join(directory, part);
+    try {
+      if (!lstatSync(directory).isDirectory() || lstatSync(directory).isSymbolicLink()) throw new Error('output');
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error;
+      mkdirSync(directory);
+    }
   }
   writeFileSync(join(directory, `next-manifests-${phase}.json`), `${JSON.stringify(report, null, 2)}\n`, { flag: 'wx' });
   console.log(`Collected ${phase} manifest metadata: ${snapshotStatus}`);

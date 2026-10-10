@@ -9,11 +9,25 @@ import test from 'node:test';
 const script = resolve('scripts/collect-next-manifest-evidence.mjs');
 const canary = 'PRIVATE_MANIFEST_VALUE_MUST_NEVER_BE_EMITTED';
 
+test('diagnostic uploads preserve the existing browser artifact root', () => {
+  const workflow = readFileSync('.github/workflows/ci.yml', 'utf8').replaceAll('\r\n', '\n');
+  for (const label of ['Booking OFF', 'profile enquiries', 'Booking ON']) {
+    const start = workflow.indexOf(`      - name: Preserve ${label} browser evidence\n`);
+    assert.ok(start >= 0);
+    const end = workflow.indexOf('\n      - ', start + 1);
+    const block = workflow.slice(start, end === -1 ? undefined : end);
+    const paths = block.match(/          path: \|\n((?:            .+\n)+)/)?.[1].trim().split('\n').map((line) => line.trim());
+    assert.equal(paths?.length, 3);
+    assert.ok(paths.every((path) => path.startsWith('apps/e2e/')),
+      `${label}: a root-level metadata path moves the upload action's common ancestor and breaks existing browser artifact readers`);
+  }
+});
+
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), 'kinnso-manifest-evidence-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   execFileSync('git', ['init', '--quiet', root]);
-  writeFileSync(join(root, '.gitignore'), 'apps/web/.next/\nevidence/\n');
+  writeFileSync(join(root, '.gitignore'), 'apps/web/.next/\napps/e2e/next-manifest-evidence/\n');
   execFileSync('git', ['add', '.gitignore'], { cwd: root });
   execFileSync('git', ['-c', 'user.name=Local Test', '-c', 'user.email=local@example.test', 'commit', '--quiet', '-m', 'fixture'], { cwd: root });
   const sha = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
@@ -36,7 +50,7 @@ function collect({ root, sha }, outcome = 'failure', overrides = {}) {
 }
 
 function receipt(root) {
-  return JSON.parse(readFileSync(join(root, 'evidence/next-manifests-profile-enquiries.json'), 'utf8'));
+  return JSON.parse(readFileSync(join(root, 'apps/e2e/next-manifest-evidence/next-manifests-profile-enquiries.json'), 'utf8'));
 }
 
 test('failed suite retains malformed and valid manifest metadata without private values', (t) => {
@@ -129,21 +143,21 @@ test('stale workflow SHA is rejected before reading manifests or creating eviden
   manifest(f.root, 'routes-manifest.json', canary);
   const result = collect(f, 'failure', { GITHUB_SHA: 'f'.repeat(40) });
   assert.equal(result.status, 1);
-  assert.equal(existsSync(join(f.root, 'evidence')), false);
+  assert.equal(existsSync(join(f.root, 'apps/e2e/next-manifest-evidence')), false);
   assert.equal((result.stdout + result.stderr).includes(canary), false);
 });
 
 test('invalid run binding is rejected', (t) => {
   const f = fixture(t);
   assert.equal(collect(f, 'failure', { GITHUB_RUN_ATTEMPT: '0' }).status, 1);
-  assert.equal(existsSync(join(f.root, 'evidence')), false);
+  assert.equal(existsSync(join(f.root, 'apps/e2e/next-manifest-evidence')), false);
 });
 
 test('an existing receipt is retained instead of overwritten by a second invocation', (t) => {
   const f = fixture(t);
   manifest(f.root, 'routes-manifest.json', '{}');
   assert.equal(collect(f).status, 0);
-  const file = join(f.root, 'evidence/next-manifests-profile-enquiries.json');
+  const file = join(f.root, 'apps/e2e/next-manifest-evidence/next-manifests-profile-enquiries.json');
   const first = readFileSync(file, 'utf8');
   manifest(f.root, 'routes-manifest.json', canary);
   assert.equal(collect(f).status, 1);
@@ -154,7 +168,8 @@ test('a linked output directory is rejected without writing outside evidence', (
   const f = fixture(t);
   const outside = join(f.root, 'outside-evidence');
   mkdirSync(outside);
-  symlinkSync(outside, join(f.root, 'evidence'), process.platform === 'win32' ? 'junction' : 'dir');
+  mkdirSync(join(f.root, 'apps/e2e'), { recursive: true });
+  symlinkSync(outside, join(f.root, 'apps/e2e/next-manifest-evidence'), process.platform === 'win32' ? 'junction' : 'dir');
   assert.equal(collect(f).status, 1);
   assert.equal(existsSync(join(outside, 'next-manifests-profile-enquiries.json')), false);
 });
