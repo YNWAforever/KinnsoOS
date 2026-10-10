@@ -45,6 +45,7 @@ packages/db/types.ts
 coverage/
 **/test-results/
 **/playwright-report/
+**/next-manifest-evidence/
 !.env.example
 
 .ci-evidence/
