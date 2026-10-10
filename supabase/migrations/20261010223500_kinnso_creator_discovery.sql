@@ -22,7 +22,7 @@ declare actor uuid;merchant uuid;quota jsonb;begin
  if auth.uid() is null then return new;end if;
  actor:=kinnso_internal.actor();
  if tg_op='UPDATE' then
-  if new.source is distinct from old.source or new.created_at is distinct from old.created_at then raise exception 'invalid_invite_attribution';end if;return new;
+  if new.source is distinct from old.source or new.created_at is distinct from old.created_at then if actor=new.creator_id then raise exception 'forbidden';end if;raise exception 'invalid_invite_attribution';end if;return new;
  end if;
  select merchant_profile_id into merchant from public.missions where id=new.mission_id;
  if new.status='invited' and new.source<>'merchant_invite' then raise exception 'invalid_invite_attribution';end if;

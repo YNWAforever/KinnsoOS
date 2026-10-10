@@ -51,3 +51,12 @@ test('owner workspace connects discovery and its pending lock protects company s
   if(child){assert.equal(child.props.merchantId,id);assert.equal(child.props.actorId,'actor-A');child.props.onLockChange(true);h.render();assert.equal(h.find('select','Company').props.disabled,true);}
  }
 });
+test('loading another creator page retains a selected campaign from its separately loaded second page',async()=>{
+ const campaign={id,title:'First campaign',updatedAt},second={id:creatorId,title:'Second campaign',updatedAt};
+ const item={id:creatorId,handle:'city-author',name:'City author',bio:'Original',niches:[],languages:[],audienceGeos:[],platforms:[],guideCount:0,lastGuideAt:null,saved:false,note:null,savedUpdatedAt:null};
+ const data={items:[item],nextCursor:'creator-page-two',quota:{limit:3,used:0,remaining:3,periodStart:updatedAt},campaigns:[campaign],campaignsNextCursor:'campaign-page-two'};
+ const h=await workspaceHarness('MerchantCreatorDiscovery',{merchantCreators:{list:async(_id,query)=>({ok:true,data:query?.campaignsAfter?{...data,campaigns:[second],campaignsNextCursor:null}:query?.after?{...data,items:[],nextCursor:null}:data})}});
+ await h.find('button','More campaigns').props.onClick();h.render();h.field('Published campaign').props.onChange({target:{value:creatorId}});h.render();
+ h.find('button','Load more creators').props.onClick();await tick();h.render();
+ assert.ok(h.elements().some(n=>n.type==='option'&&n.props.value===creatorId));assert.equal(h.find('button','Invite to selected campaign').props.disabled,false);
+});
