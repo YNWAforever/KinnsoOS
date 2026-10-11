@@ -389,6 +389,7 @@
     "tests/merchant-application-review-ui.test.mjs",
     "tests/merchant-application-review.test.mjs",
     "tests/merchant-campaigns.test.mjs",
+    "tests/merchant-company-location.test.mjs",
     "tests/merchant-insights.test.mjs",
     "tests/merchant-invitation-ui.test.mjs",
     "tests/merchant-onboarding.test.mjs",

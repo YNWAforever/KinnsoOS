@@ -62,6 +62,7 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Milestone instructions', { exact: true }).fill('Submit the public guide URL and original supporting notes.');
     await page.getByRole('button', { name: 'Publish promotion brief', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toBeVisible();
+    await expect.poll(() => new URL(page.url()).searchParams.get('company')).toBe(companies[0]);
     const missions = await ok(admin.from('missions').select('id,status').eq('merchant_profile_id', companies[0]));
     expect(missions).toHaveLength(1); expect(missions[0].status).toBe('published');
     const application = await ok(admin.from('mission_participants').insert({ mission_id: missions[0].id, creator_id: creator.id, status: 'applied', source: 'open_join', application_note: 'Synthetic application for browser review' }).select('id').single());
@@ -76,6 +77,8 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Coupon code', { exact: true }).fill('DRAFT_A');
     await page.getByLabel('Company', { exact: true }).selectOption(companies[1]);
     await expect(page.getByLabel('Brief title', { exact: true })).toHaveValue('');
+    await expect.poll(() => new URL(page.url()).searchParams.get('company')).toBe(companies[1]);
+    await expect.poll(() => new URL(page.url()).searchParams.has('campaign')).toBe(false);
     await expect(page.getByLabel('Brief description', { exact: true })).toHaveValue('');
     await expect(page.getByLabel('Coupon code', { exact: true })).toHaveValue('');
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toHaveCount(0);

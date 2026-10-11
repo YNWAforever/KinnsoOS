@@ -11,12 +11,12 @@ import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {CollaborationTasks} from './CollaborationTasks';
 import {campaignTasks} from '../../lib/collaboration/tasks';
 import {CollaborationListFilters} from './CollaborationListFilters';
-import {changeListFilter,readListLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
+import {changeListFilter,readListLocation,sameCompanyLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
 import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[],applicationOpensAt:null,applicationClosesAt:null,scheduleTimeZone:'UTC'};}
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
- const {t,locale}=useApp();const entryQuery=useSearchParams(),requestedCampaign=entryQuery.getAll('campaign').length===1&&(!entryQuery.has('company')||entryQuery.get('company')===merchantId)?entryQuery.get('campaign'):null;const routeCampaign=requestedCampaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedCampaign)?requestedCampaign:null;
+ const {t,locale}=useApp();const entryQuery=useSearchParams(),requestedCampaign=entryQuery.getAll('campaign').length===1&&sameCompanyLocation(entryQuery,merchantId)?entryQuery.get('campaign'):null;const routeCampaign=requestedCampaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedCampaign)?requestedCampaign:null;
  const [data,setData]=useState<CampaignDirectory|null>(null),[loading,setLoading]=useState(true),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [draft,setDraft]=useState<CampaignInput>(blank),[rates,setRates]=useState(['','','']),[editing,setEditing]=useState<Pick<CampaignDetail,'id'|'title'|'updatedAt'>|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
  const [filters,setFilters]=useState<CollaborationListQuery>({});
@@ -37,13 +37,13 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   let result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;
   if(result.ok&&!next.campaignId&&result.data.items.length){next={...next,campaignId:result.data.items[0].id};result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;}
   setLoading(false);if(!result.ok){reference.current=result.requestId;setError(result.code);setData(null);deny(result.code);return;}
-  query.current=next;writeListLocation(next);setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items].filter((row,index,all)=>all.findIndex(i=>i.id===row.id)===index)}:result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
+  query.current=next;writeListLocation(next,undefined,merchantId);setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items].filter((row,index,all)=>all.findIndex(i=>i.id===row.id)===index)}:result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
  }
  useEffect(()=>{
   scope.current++;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);
   const entry=new URLSearchParams(window.location.search),campaign=entry.get('campaign');
-  let filter:CollaborationListQuery={};try{filter=readListLocation('merchant');}catch{setError('INVALID');setLoading(false);return;}setFilters(filter);
-  query.current=entry.getAll('campaign').length===1&&(!entry.has('company')||entry.get('company')===merchantId)&&campaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaign)?{...filter,campaignId:campaign}:{...filter};void load();
+  let filter:CollaborationListQuery={};try{filter=readListLocation('merchant',merchantId);}catch{setError('INVALID');setLoading(false);return;}setFilters(filter);
+  query.current=entry.getAll('campaign').length===1&&sameCompanyLocation(entry,merchantId)&&campaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaign)?{...filter,campaignId:campaign}:{...filter};void load();
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){scope.current++;generation.current++;setValid(false);setData(null);setFilters({});resetEditor();setFeedback({});setBranchEdits({});pending.current=null;running.current=false;setBusy(false);setUnknown(false);}});
   return()=>{scope.current++;generation.current++;unsubscribe();};
  },[actorId,merchantId]);

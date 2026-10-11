@@ -77,13 +77,14 @@ export async function workspaceHarness(name,ports={},initial={}) {
     if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return'a';if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
+  if(initial.recordLocation)context.window.history={replaceState(_state,_title,path){const url=new URL(path,'https://owned.test');context.window.location.pathname=url.pathname;context.window.location.search=url.search;}};
   runInContext(compiled.outputFiles[0].text,context);
   function render(){for(let n=0;n<15;n++){cursor=0;changed=false;tree=module.exports[name](props);for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;}return tree;}
   function elements(node){if(arguments.length===0)node=tree;return!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
   function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
   const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||text(x)===label));
   const field=label=>{const row=elements().find(x=>x.type==='label'&&[x.props.children].flat(Infinity).includes(label));return row&&elements(row).find(x=>['input','textarea','select'].includes(x.type));};
-  render();for(let n=0;n<4;n++){await tick();render();}return{props,render,find,field,elements,text,events,navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
+  render();for(let n=0;n<4;n++){await tick();render();}return{props,render,find,field,elements,text,events,location:()=>new URLSearchParams(context.window.location.search),navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
 }
 
 /** Legacy component suites execute the same recovery hook; persistence remains a device boundary. */

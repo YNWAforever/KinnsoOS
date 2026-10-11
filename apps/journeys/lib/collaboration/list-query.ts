@@ -9,16 +9,19 @@ export function collaborationListQuery(params:URLSearchParams,scope:Collaboratio
  return{...q?{q}:{},...status?{status}:{},...after?{after}:{},...sort?{sort:sort as 'recent'|'deadline'}:{}};
 }
 export function changeListFilter(_previous:CollaborationListQuery,next:CollaborationListQuery):CollaborationListQuery{return{...next.q?{q:next.q.trim()}:{},...next.status?{status:next.status}:{},sort:next.sort??'recent'};}
-export function readListLocation(scope:CollaborationListScope):CollaborationListQuery{
+export function sameCompanyLocation(params:Pick<URLSearchParams,'getAll'>,merchantId:string){const companies=params.getAll('company');return companies.length===0||companies.length===1&&companies[0]===merchantId;}
+export function readListLocation(scope:CollaborationListScope,merchantId?:string):CollaborationListQuery{
  if(typeof window==='undefined')return {};
  const selected=new URLSearchParams();const params=new URLSearchParams(window.location.search);
  for(const key of ['q','status','sort','after'])for(const value of params.getAll(key))selected.append(key,value);
+ if(scope==='merchant'&&merchantId&&!sameCompanyLocation(params,merchantId))selected.delete('after');
  return collaborationListQuery(selected,scope);
 }
-export function writeListLocation(query:CollaborationListQuery&{campaignId?:string},scope?:'mine'|'available'){
+export function writeListLocation(query:CollaborationListQuery&{campaignId?:string},scope?:'mine'|'available',merchantId?:string){
  if(typeof window==='undefined')return;
  const params=new URLSearchParams(window.location.search);for(const key of ['q','status','sort','after'])params.delete(key);
  for(const [key,value]of Object.entries(query))if(['q','status','sort','after'].includes(key)&&value)params.set(key,value);
+ if(merchantId){params.set('company',merchantId);params.delete('campaign');}
  if(query.campaignId)params.set('campaign',query.campaignId);
  if(scope)params.set('scope',scope);
  window.history?.replaceState(null,'',window.location.pathname+(params.size?'?'+params:''));

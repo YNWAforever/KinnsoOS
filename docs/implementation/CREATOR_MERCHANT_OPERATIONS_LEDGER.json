@@ -3166,6 +3166,86 @@
       "cause": "Both retained DOM snapshots contain the correct owned selected combobox and Matching totals after actual GET retry. Exact getByLabel includes populated option text and stops matching. Actual local locked Chromium probe confirms exact-label0 versus exact-role1 for both locales. Minimum test locator changes to accessible combobox name; product unchanged.",
       "current_source_native": "PENDING_AFTER_TEST_CORRECTION",
       "review": "One source review at84e9,0 Critical/Important/Minor; no re-review or new native PASS claimed."
+    },
+    "current_source_checkpoint": {
+      "source_sha": "4f3bd8c705f60c1e16ffcb194fa23b8dbb779134",
+      "tested_merge": "5a449306a470e7eca7356ad1108c468114b18321",
+      "observed_at": "2026-10-11T14:58:29.82062+08:00",
+      "pr_run": 38117764755,
+      "push_run": 38117762713,
+      "unit": {
+        "pass": 531,
+        "fail": 0,
+        "skip": 0
+      },
+      "integration": {
+        "pass": 94,
+        "fail": 0,
+        "skip": 0
+      },
+      "native_pr": {
+        "pass": 138,
+        "fail": 0,
+        "skip": 0
+      },
+      "native_push": {
+        "pass": 137,
+        "fail": 1,
+        "skip": 0
+      },
+      "finance_locale_cases": "PASS_BOTH_RUNS",
+      "push_failure": "Existing U04 company switching carries unscoped old campaign into new company; selected B/FORBIDDEN in retained DOM. No source or U04 test diff from PR67. Separate failing-test continuation repairs this defect.",
+      "root": "PR/push all jobs SUCCESS; OFF184+1 named mode SKIP/profile1/ON3+1 named mode SKIP",
+      "source_package": "Current Linux6PASS0SKIP; extraction rebuild PASS; current Windows419entries/418files/all hashes match/dirty=false",
+      "performance": "PR45/48nav6/8interaction24/24reads; push43/48nav6/8interaction24/24reads; both960/960latency24groups72warmups and both owned cleanup PASS. Both browser INCOMPLETE, no pooling.",
+      "staging": "NOT_RUN_BLOCKED_TARGET",
+      "production": "NOT_RELEASED"
     }
+  },
+  "merchant_company_route_continuation": {
+    "parent_pr": 68,
+    "parent_sha": "4f3bd8c705f60c1e16ffcb194fa23b8dbb779134",
+    "branch": "codex/merchant-company-route-20261011",
+    "references": [
+      "P03",
+      "P10",
+      "P17",
+      "U04"
+    ],
+    "observed_at": "2026-10-11T14:58:29.82062+08:00",
+    "source_status": "Implemented; fresh review/current-source CI pending",
+    "local_tests": {
+      "red": {
+        "pass": 1,
+        "fail": 5
+      },
+      "focused": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit": {
+        "pass": 537,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "source_package": "5 PASS/1 named host symlink-permission SKIP; Linux current-source CI pending"
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Create a separate continuation from PR68 verified4f3 equal-tree PR138PASS, retaining its independent push137PASS1FAIL and incomplete lab. Bind only successfully authorized merchant list locations to the current company; remove previous selected campaign on empty success, and drop opaque cursors and campaign selectors when the explicit company differs or is duplicated. Preserve legacy unscoped first-entry links, same-company cursors, creator location behavior and authored scope recovery.",
+        "cost_if_wrong": "A route hint could otherwise become accidental authority or erase intended filters. The URL is only a selection hint; fresh actor/RPC/RLS remains authoritative, existing generation/account invalidation and all command/requestId/reconcile/receipt contracts remain unchanged."
+      },
+      {
+        "decision": "Confirm the retained U04 failure with actual compiled component EN/zh-HK tests plus query contract tests: baseline1PASS5FAIL ->6PASS; current full537PASS0FAIL0SKIP/typecheck PASS. Add opt-in browser-history observation to the existing harness and retain every U04 command/denial/cleanup assertion, adding exact company/empty-campaign URL checks. New-head actual native execution is still required.",
+        "cost_if_wrong": "An emulated history boundary may miss Next router scheduling or real RPC behavior; source review, actual locked-Chromium CI and current native/source-package gates remain independent."
+      }
+    ],
+    "next_action": "Fresh review and exact-source native/source/root/lab evidence; never waive parent U04 failure or point reset/cleanup at hosted target."
   }
 }
