@@ -5,6 +5,7 @@ import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {merchantCampaigns,type CampaignDirectory,type CampaignDetail,type CampaignQuery} from '../../lib/merchants/campaign-repository';
 import {campaignCommand,campaignLink,type CampaignCommand,type CampaignInput} from '../../lib/merchants/campaigns';
 import {parseCommissionPercent} from '../../lib/merchants/access';
+import {WorkspaceServiceState} from './WorkspaceServiceState';
 
 function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[]};}
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
@@ -14,19 +15,20 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  const [feedback,setFeedback]=useState<Record<string,string>>({}),[branchEdits,setBranchEdits]=useState<Record<string,{name:string;reason:string}>>({});
  const generation=useRef(0),scope=useRef(0),running=useRef(false),pending=useRef<{command:CampaignCommand;requestId:string}|null>(null),query=useRef<CampaignQuery>({});
  const editorBaseline=useRef({input:JSON.stringify(blank()),rates:['','',''].join('|')});
+ const reference=useRef<string|undefined>(undefined);
  const blocked=locked||busy||unknown||!valid;
  const dirty=JSON.stringify(draft)!==editorBaseline.current.input||rates.join('|')!==editorBaseline.current.rates;
  const labels:Record<string,[string,string]>={draft:['Draft','草稿'],published:['Open for applications','接受申請中'],paused:['Closed to new applications','已停止接受新申請'],completed:['Completed','已完成'],cancelled:['Cancelled','已取消'],applied:['Awaiting review','等待審核'],invited:['Invitation awaiting creator response','等待創作者回覆邀請'],active:['Accepted','已接受'],submitted:['Submitted for review','已提交審核'],pending:['Not submitted','尚未提交'],approved:['Approved','已批准'],rejected:['Rejected','已拒絕'],revision_requested:['Revision requested','需要修改']};
  const status=(value:string)=>labels[value]?t(...labels[value]):t('Recorded state','已記錄狀態');
  const date=(value:string|null)=>value?new Date(value).toLocaleDateString(locale==='en'?'en-GB':'zh-HK'):t('Not recorded','未記錄');
  function resetEditor(){const empty=blank();editorBaseline.current={input:JSON.stringify(empty),rates:['','',''].join('|')};setDraft(empty);setRates(['','','']);setEditing(null);}
- function deny(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){scope.current++;generation.current++;setData(null);resetEditor();setFeedback({});setBranchEdits({});setValid(false);onDenied(code);}}
- async function load(next:CampaignQuery=query.current){
+ function deny(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){scope.current++;generation.current++;pending.current=null;running.current=false;setBusy(false);setUnknown(false);setData(null);resetEditor();setFeedback({});setBranchEdits({});setValid(false);onDenied(code);}}
+ async function load(next:CampaignQuery=query.current,keepInput=false){
   const own=++generation.current;setLoading(true);setError('');
   let result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;
   if(result.ok&&!next.campaignId&&result.data.items.length){next={...next,campaignId:result.data.items[0].id};result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;}
-  setLoading(false);if(!result.ok){setError(result.code);setData(null);deny(result.code);return;}
-  query.current=next;setData(result.data);setFeedback({});setBranchEdits({});
+  setLoading(false);if(!result.ok){reference.current=result.requestId;setError(result.code);setData(null);deny(result.code);return;}
+  query.current=next;setData(result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
  }
  useEffect(()=>{
   scope.current++;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);query.current={};void load({});
@@ -39,10 +41,14 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  async function send(command?:CampaignCommand){
   if(running.current||!valid)return;
   if(!pending.current){if(!command)return;try{pending.current={command:campaignCommand(command),requestId:crypto.randomUUID()};}catch{setError('INVALID');return;}}
-  const request=pending.current,own=scope.current;running.current=true;setBusy(true);setMessage('');
+  const request=pending.current,own=scope.current,wasUnknown=unknown;running.current=true;setBusy(true);setMessage('');
+  if(wasUnknown){
+   const saved=await merchantCampaigns.list(merchantId,query.current);if(own!==scope.current)return;
+   if(!saved.ok){running.current=false;setBusy(false);reference.current=saved.requestId;setError(saved.code);deny(saved.code);return;}
+  }
   const result=await merchantCampaigns.command(merchantId,request.command,request.requestId);if(own!==scope.current)return;
   running.current=false;setBusy(false);
-  if(!result.ok){setError(result.code);setUnknown(result.code==='UNAVAILABLE');if(result.code!=='UNAVAILABLE')pending.current=null;deny(result.code);return;}
+  if(!result.ok){reference.current=result.requestId;setError(result.code);setUnknown(wasUnknown||result.code==='UNAVAILABLE');if(!wasUnknown&&result.code!=='UNAVAILABLE')pending.current=null;deny(result.code);return;}
   pending.current=null;setUnknown(false);setError('');setMessage(t('Saved on the server.','已儲存至伺服器。'));
   if(['createDraft','updateDraft'].includes(request.command.type))resetEditor();
   const campaignId=['createDraft','updateDraft','publish','close'].includes(request.command.type)?request.command.id:query.current.campaignId;
@@ -56,12 +62,13 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   else void send({type:'createDraft',id:crypto.randomUUID(),input,publish,reason:publish?t('Merchant confirmed publication of the authored brief','商戶確認發布已填寫的推廣簡報'):t('Merchant saved an authored promotion draft','商戶儲存推廣草稿')});
  }
  function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing(detail);setDraft(input);setRates(nextRates);setMessage('');}
- if(!valid)return null;
+ if(!valid)return <WorkspaceServiceState locale={locale} code={error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   <h2>{t('Create coupon promotion brief','建立優惠推廣簡報')}</h2>
   <p>{t('Save a draft, describe the work creators should deliver, then publish when the brief is ready. Published terms stay fixed; closing stops new applications while accepted creators can finish their work.','先儲存草稿，說明創作者需要提交的作品，準備好後再發布。發布後條款會鎖定；關閉只停止新申請，已接受的創作者仍可完成作品。')}</p>
-  {error&&<p role="alert">{error==='CONFLICT'?t('This record changed. Reload the promotion to review the latest version before trying again. Your draft remains below.','紀錄已變更。請重新載入推廣並核對最新版本後再試；你的草稿仍保留於下方。'):error==='INVALID'?t('Check the entered details. Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','請核對資料。發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。'):t('Promotion services could not complete the request. Please retry.','推廣服務未能完成請求，請重試。')}</p>}
-  {message&&<p role="status">{message}</p>}{unknown&&<button className="k-btn" disabled={busy} onClick={()=>void send()}>{t('Retry promotion request','重試推廣請求')}</button>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load(query.current,true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
+  {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
+  {message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>
    {editing&&<p>{t('Editing saved draft','修改已儲存草稿')}: {editing.title}</p>}
    {editing&&data?.detail?.id===editing.id&&data.detail.updatedAt!==editing.updatedAt&&<div role="alert"><p>{t('A newer saved version is shown in the promotion details below. Compare it with your draft before replacing it.','下方推廣詳情顯示較新的已儲存版本。請先與你的草稿比較再決定取代。')}</p><button className="k-btn" type="button" disabled={blocked||!data.detail.canEdit} onClick={()=>setEditing(data.detail)}>{t('Keep my draft against this latest version','使用此最新版本保留我的草稿')}</button></div>}

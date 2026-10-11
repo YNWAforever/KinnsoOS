@@ -60,3 +60,31 @@ Rollback should disable entry to the new workflows and revert the application de
 ## Prior audit mapping
 
 This extends N06 creator work, N09 end-to-end acceptance, N11 merchant administration, and N17 recorded financial visibility. Earlier evidence and unapproved finance/hosted gates in `NEXT_PHASE_LEDGER.json` remain historical and must not be overwritten as completed by local unit results. This phase's release status is tracked in this document and the PR.
+
+## Operations continuation: observed 2026-10-11 Hong Kong
+
+Read-only GitHub verification confirms main `ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8` and PR55 OPEN at `097b505d5e4b79948101877f98f331d27813e8af`. Journeys run38081449970 and root CI run38081449892 both completed successfully on that exact PR source; all listed jobs succeeded. This is parent-branch evidence, not validation of the operations continuation.
+
+Vercel deployment metadata binds the PR preview to `097b505` and the production alias to main `ad2c8ce`; both report READY. Configuration, Auth, authoritative roles, RPC/schema and signed-in hosted acceptance remain separate gates. Production has not received PR55. The preview's historical 503 requires a fresh probe and safe configuration diagnosis before its cause can be asserted.
+
+The current-head review is COMMENTED with an unresolved P1: a legacy/direct table update can bypass immutable published campaign terms enforced only by the RPC. This is a release blocker to be covered by the P08 table-boundary work; it is not resolved by green CI.
+
+The continuation starts from the exact PR55 head, with stacked base `codex/creator-merchant-phase-20261011`, retaining its onboarding, applications, campaign, submission/revision and read-only earnings implementations. The new [operations ledger](CREATOR_MERCHANT_OPERATIONS_LEDGER.json) preserves historical requirement IDs and records code, CI, staging and release independently. No hosted SQL, capability activation, role mutation or formal release is authorized by this appendix.
+
+### P01–P03 local implementation checkpoint
+
+Source `42d897edcd6aad3cad1c05347255a6656fc51540` adds a pure operator-local configuration readiness report and visible bilingual workspace recovery states. A 503 stays distinct from an empty list; 401 provides a safe return to the actual task; 403 clears denied private results. An uncertain write keeps its original intent, reads server state before replaying the same request, and stays locked after a later conflict. Moderator recovery stops after a terminal saved decision. Public API error contracts are unchanged.
+
+P02 produced nine failing readiness cases before implementation, then nine passes plus the nine existing capability cases. P03 produced seven behavioral failures before implementation; two supplemental onboarding/moderator cases also failed against the recorded pre-fix source and passed with the fix. The committed checkpoint passed 414 unit cases with zero failures/skips, TypeScript and production build. Eight Chromium **component fixture** cases passed in EN/zh-HK, including keyboard actions and 320px/200% text. They render the real service-state component without Auth or DB. Full owned-stack collaboration browser/integration results must come from this continuation's CI. Root tooling passed 72 cases; local source-package checks collected six cases with one named Windows symlink privilege skip, which Linux CI must cover.
+
+Read-only protected application probes on the parent preview returned `503 UNAVAILABLE` for creator missions (20:41:44 UTC) and merchant campaigns (20:53:48 UTC, 2026-10-10), both `private, no-store`. Anonymous fetches that redirected to Vercel login HTML are excluded from application evidence. Current project metadata lists the required settings only for production; no preview-target settings were listed. The connector's configuration list was forbidden, so CLI metadata was used without exporting values. This narrows the configuration investigation; effective deployment value relationships, Auth, actor and schema remain unverified. No setting, flag or schema was changed, and the preview 503 is not declared fixed.
+
+The next gates are current-source independent review and owned CI, then the designated staging/recovery/role packet. The parent published-term table-update review remains a P08 release blocker. Production is still on main `ad2c8ce` and signed-in production acceptance is NOT_RUN.
+
+Independent batch-A review found two P2 input-loss paths in the new conflict recovery actions. Both were reproduced as failing real-handler tests and fixed at `220990b0ce65251813a85c5e6b7eee6021b59d72`: moderator comparison reads the selected application while keeping its authored reason, and merchant comparison preserves review feedback and branch edits while refreshing server data. Related tests passed 28/28, full units 416/416 (no skips), and production build including TypeScript passed. There were no critical or deferred minor findings. [PR56](https://github.com/YNWAforever/KinnsoOS/pull/56) is stacked on PR55; current-head owned CI is pending, and these local results do not close staging/production gates.
+
+### Batch A current-source follow-up
+
+Exact-head Journeys push run38086127125 passed at `ed339ad7ebe2ef4f24dee75dbcb21ed781acc347`: 416 unit, 56 integration, 116 browser and four isolated Auth-mailbox cases, zero failures/skips. The 116 browser cases combine the existing 108 owned-flow cases with eight real-component fixtures; they do not establish hosted UAT. Linux source-package checks and extracted-source rebuild passed. PR run38086129398 tested merge `a6df909` whose tree equals the exact branch tree; root PR CI38086129467 succeeded.
+
+A subsequent real-component regression found that disabled creator services with a signed-out actor offered login before service unavailability. The test failed before the correction at `036be6772c6a718c9e44b3f03bbd9d2b968fc7cf`, then full units passed 417/417 without skips and production build including TypeScript passed. The two services now report unavailability without a read or login loop when disabled. The new current head needs fresh owned CI; the prior green run remains historical. Staging and production role acceptance remain NOT_RUN.
