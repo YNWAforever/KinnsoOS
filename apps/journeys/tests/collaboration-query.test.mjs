@@ -45,3 +45,5 @@ test('unknown merchant write reconciles fresh detail without a stale list cursor
 
 
 test('a native same-company campaign deep link reads the selected owned detail after client navigation',async()=>{const reads=[],other='22222222-2222-4222-8222-222222222222';const h=await workspaceHarness('MerchantCampaigns',{merchantCampaigns:{list:async(_id,q)=>{reads.push(q);return{ok:true,data:{items:[],nextCursor:null,summary:{},branches:[],role:'owner',detail:null}};}}},{search:'?company='+id+'&campaign='+id});assert.equal(reads[0].campaignId,id);h.navigate('?company='+id+'&campaign='+other);await tick();h.render();assert.equal(reads.at(-1).campaignId,other);});
+
+test('list selectors expose exact localized accessible names independent of option text',async()=>{for(const locale of ['en','zh-HK']){const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{list:async()=>({ok:true,data:{items:[],nextCursor:null}})}},{locale,search:'?scope=mine'});for(const label of locale==='en'?['List status','List order']:['清單狀態','清單排序'])assert.equal(h.field(label)?.props['aria-label'],label);}});

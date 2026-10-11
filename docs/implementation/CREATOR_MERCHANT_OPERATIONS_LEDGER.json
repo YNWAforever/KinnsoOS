@@ -1934,6 +1934,12 @@
           "scenario": "Current query SQL GREEN and native URL navigation regression",
           "result": "CI38095730340:439unitPASS_73DBPASS_123browserPASS3FAIL_4mailboxPASS; two P10 URL assertions inspected before async read completed, changed to await actual URL condition; existing zh-HK same-page campaign task failed. Added actual component native query navigation regression:7PASS1FAIL old campaign remains selected. Implemented reactive authorized same-company campaign selection and URL detail synchronization, retaining pending/dirty input; current440unitPASS_0FAIL_0SKIP, exact candidate CI pending.",
           "observed_at": "2026-10-11T00:03:16.877701+00:00"
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "ae8a116380ccff47aa9464af236ae7ab7d0169e4",
+          "scenario": "Exact EN/zh-HK list selector accessible names independent of nested option text",
+          "result": "RED: eight existing cases pass; new exact localized aria-label case fails. CI38097159580 two browser cases fail at exact List status selector. Fix adds explicit labels to status/order controls without changing filters."
         }
       ],
       "blockers": [
