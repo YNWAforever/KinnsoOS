@@ -66,7 +66,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
   }}]});
   const session=new Map();const module={exports:{}};
   const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',reload(){}},addEventListener(){},removeEventListener(){},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
-    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}})};
+    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
   runInContext(compiled.outputFiles[0].text,context);
@@ -75,5 +75,5 @@ export async function workspaceHarness(name,ports={},initial={}) {
   function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
   const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||text(x)===label));
   const field=label=>{const row=elements().find(x=>x.type==='label'&&[x.props.children].flat(Infinity).includes(label));return row&&elements(row).find(x=>['input','textarea','select'].includes(x.type));};
-  render();await tick();render();return{props,render,find,field,elements,text,events,invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
+  render();await tick();render();return{props,render,find,field,elements,text,events,navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
 }

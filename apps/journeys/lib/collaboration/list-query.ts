@@ -15,10 +15,11 @@ export function readListLocation(scope:CollaborationListScope):CollaborationList
  for(const key of ['q','status','sort','after'])for(const value of params.getAll(key))selected.append(key,value);
  return collaborationListQuery(selected,scope);
 }
-export function writeListLocation(query:CollaborationListQuery,scope?:'mine'|'available'){
+export function writeListLocation(query:CollaborationListQuery&{campaignId?:string},scope?:'mine'|'available'){
  if(typeof window==='undefined')return;
  const params=new URLSearchParams(window.location.search);for(const key of ['q','status','sort','after'])params.delete(key);
  for(const [key,value]of Object.entries(query))if(['q','status','sort','after'].includes(key)&&value)params.set(key,value);
+ if(query.campaignId)params.set('campaign',query.campaignId);
  if(scope)params.set('scope',scope);
  window.history?.replaceState(null,'',window.location.pathname+(params.size?'?'+params:''));
 }

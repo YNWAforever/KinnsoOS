@@ -1,4 +1,5 @@
 'use client';
+import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -14,7 +15,7 @@ import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[],applicationOpensAt:null,applicationClosesAt:null,scheduleTimeZone:'UTC'};}
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
- const {t,locale}=useApp();
+ const {t,locale}=useApp();const entryQuery=useSearchParams(),requestedCampaign=entryQuery.getAll('campaign').length===1&&(!entryQuery.has('company')||entryQuery.get('company')===merchantId)?entryQuery.get('campaign'):null;const routeCampaign=requestedCampaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedCampaign)?requestedCampaign:null;
  const [data,setData]=useState<CampaignDirectory|null>(null),[loading,setLoading]=useState(true),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [draft,setDraft]=useState<CampaignInput>(blank),[rates,setRates]=useState(['','','']),[editing,setEditing]=useState<CampaignDetail|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
  const [filters,setFilters]=useState<CollaborationListQuery>({});
@@ -44,6 +45,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){scope.current++;generation.current++;setValid(false);setData(null);setFilters({});resetEditor();setFeedback({});setBranchEdits({});pending.current=null;running.current=false;setBusy(false);setUnknown(false);}});
   return()=>{scope.current++;generation.current++;unsubscribe();};
  },[actorId,merchantId]);
+ useEffect(()=>{if(!routeCampaign||routeCampaign===query.current.campaignId)return;if(pending.current||dirty){setError('CONFLICT');return;}void load({...query.current,campaignId:routeCampaign,participantsAfter:undefined,submissionsAfter:undefined});},[routeCampaign]);
  useEffect(()=>{if(refreshKey>0&&!pending.current)void load();},[refreshKey]);
  useEffect(()=>{onLockChange(busy||unknown);return()=>onLockChange(false);},[busy,unknown,onLockChange]);
  useEffect(()=>{const prevent=(event:BeforeUnloadEvent)=>{if(valid&&(dirty||busy||unknown)){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[valid,dirty,busy,unknown]);
