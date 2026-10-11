@@ -423,7 +423,10 @@
     "tests/workspace-loading.test.mjs",
     "tests/e2e/u16-workspace-loading-layout.spec.ts",
     "scripts/verify-source-inputs.mjs",
-    "tests/source-inputs.test.mjs"
+    "tests/source-inputs.test.mjs",
+    "tests/e2e/u16-merchant-panel-bundle.spec.ts",
+    "tests/e2e/u16-merchant-native-bundle.spec.ts",
+    "app/travel/loadMerchantTool.tsx"
   ],
   "version": 1,
   "repositoryFiles": {

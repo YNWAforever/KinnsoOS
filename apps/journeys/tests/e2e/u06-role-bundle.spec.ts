@@ -129,6 +129,46 @@ test('U06 deferred role panels retain server headings, language, private cache a
   }
   await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
   const javascript = await scripts();
-  for (const marker of roleMarkers)
+  for (const marker of roleMarkers.filter(marker => !['Your next actions', 'Invite a company colleague'].includes(marker)))
     expect(javascript.includes(marker), `Selected role route must load ${marker}`).toBe(true);
+  expect(javascript.includes('Invite a company colleague')).toBe(false);
+});
+
+
+for(const locale of ['en','zh-HK'])test(`P17 ${locale}: actual Next failed owner chunk retries without losing a sibling draft or committed unknown receipt`,async({page,baseURL})=>{
+ test.setTimeout(90000);expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+ const admin=createClient(target.apiOrigin,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
+ const email=`synthetic-tool-recovery-${randomUUID()}@example.test`,password=`Synthetic!${randomUUID()}`;
+ let actorId='',merchantId='',release!:()=>void,allow=false,held=0;const gate=new Promise<void>(resolve=>{release=resolve;});const writes:any[]=[];
+ const label=(en:string,zh:string)=>locale==='en'?en:zh;
+ try{
+  const created=await admin.auth.admin.createUser({email,password,email_confirm:true});expect(created.error).toBeNull();actorId=created.data.user!.id;
+  const company=await admin.from('merchant_profiles').insert({user_id:actorId,company_name:'Owned chunk recovery company',contact_email:email}).select('id').single();expect(company.error).toBeNull();merchantId=company.data!.id;
+  await page.goto(`/${locale}/sign-in?next=/${locale}/me`);await page.getByLabel(label('Email','電郵'),{exact:true}).fill(email);await page.getByLabel(label('Password','密碼'),{exact:true}).fill(password);await page.getByRole('button',{name:label('Sign in','登入'),exact:true}).click();await page.waitForURL(url=>url.pathname===`/${locale}/me`);
+  await page.route('**/_next/static/chunks/*.js',async route=>{
+   const response=await route.fetch();const body=await response.text();
+   if(!allow&&body.includes('Historical acceptance timestamps are missing')){held++;await gate;if(!allow){await route.fulfill({status:503,contentType:'text/javascript',body:'Owned unavailable chunk'});return;}}
+   await route.fulfill({response});
+  });
+  await page.route('**/api/merchant',async route=>{
+   if(route.request().method()!=='POST'){await route.continue();return;}
+   writes.push(route.request().postDataJSON());const response=await route.fetch();expect(response.status()).toBe(200);
+   if(writes.length===1){await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'UNAVAILABLE'})});return;}
+   await route.fulfill({response});
+  });
+  await page.goto(`/${locale}/merchant`,{waitUntil:'domcontentloaded'});await expect.poll(()=>held).toBeGreaterThan(0);
+  const title=page.getByLabel(label('Brief title','簡報標題'),{exact:true});await expect(title).toBeEnabled();await title.fill('Owned sibling draft retained');
+  const branch=page.getByLabel(label('Branch name','分店名稱'),{exact:true});await branch.fill('Owned uncertain branch');await page.getByRole('button',{name:label('Create branch','建立分店'),exact:true}).click();
+  const commandRetry=page.getByRole('button',{name:label('Retry the same request','重試相同請求'),exact:true});await expect(commandRetry).toBeVisible();expect(writes).toHaveLength(1);
+  release();const toolRetry=page.getByRole('button',{name:label('Retry loading company tool','重試載入公司工具'),exact:true});await expect(toolRetry).toBeVisible();
+  await expect(branch).toHaveValue('Owned uncertain branch');await expect(title).toHaveValue('Owned sibling draft retained');
+  allow=true;await toolRetry.click();await expect(page.getByLabel(label('From date (UTC)','開始日期（UTC）'),{exact:true})).toBeVisible();await expect(toolRetry).toHaveCount(0);
+  expect(writes).toHaveLength(1);await expect(branch).toHaveValue('Owned uncertain branch');await expect(title).toHaveValue('Owned sibling draft retained');await expect(commandRetry).toBeVisible();
+  await commandRetry.click();await expect(commandRetry).toHaveCount(0);await expect(branch).toHaveValue('');expect(writes).toHaveLength(2);expect(writes[1]).toEqual(writes[0]);await expect(title).toHaveValue('Owned sibling draft retained');
+  const read=await page.request.get('/api/merchant?id='+merchantId);expect(read.status()).toBe(200);const result=await read.json();expect(result.data.branches.filter((row:any)=>row.name==='Owned uncertain branch')).toHaveLength(1);
+ }finally{
+  allow=true;release();await page.unrouteAll({behavior:'ignoreErrors'});
+  if(merchantId){const removed=await admin.from('merchant_profiles').delete().eq('id',merchantId);expect(removed.error).toBeNull();}
+  if(actorId){const removed=await admin.auth.admin.deleteUser(actorId);expect(removed.error).toBeNull();}
+ }
 });
