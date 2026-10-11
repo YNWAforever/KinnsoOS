@@ -2548,6 +2548,12 @@
           "scenario": "Focused measured-layout and collection-continuation follow-up",
           "result": "EN/zh actual component heading replacement2 valid assertion RED ->2 GREEN; full authorized title remains readable in its card and denial clears it. Actual collector continuation8 PASS1 valid RED ->9 GREEN; corrected fixture revalidated RED against frozen62bd source without removing guards. Collection failures remain failures, later pairs/interactions/backend reads proceed independently; pre-measurement actor mismatch remains fatal. Full suite/type/build/new candidate lab pending. Whole514 PASS0 FAIL0 SKIP, typecheck/build PASS. Local source package6 cases:5 PASS1 existing Windows symlink-creation SKIP (Host does not grant symlink creation; CI runs this case on Linux) after sandbox temp ACL errors; actual native source extraction gate remains required, no tooling failure is counted as behavioral RED.",
           "local_skip_correction": "The initial description of an opt-in extracted-build skip was inaccurate; actual source_package_test.py skip reason is Windows symlink creation unavailable.5 PASS1 SKIP is unchanged; no new skip was introduced."
+        },
+        {
+          "environment": "local-source",
+          "reviewed_source_sha": "1223bd02cc0007c5b85a132f9625ae0648dca915",
+          "scenario": "Single fresh focused P16 review and one fix pass",
+          "result": "Fresh read-only review0 Critical1 Important0 Minor: actual readiness still required the moved detail h1. Component-backed actual ready predicate2 PASS1 valid assertion RED ->3 GREEN including pending/denial negative controls. Strict full authorized article heading now matches h2; actor/origin checks unchanged. Focused12 PASS/full515 PASS0 FAIL0 SKIP/typecheck/build PASS. New-source owned CI and same-condition runtime measurements pending; previous39/48 and880/960 denominators preserved."
         }
       ],
       "blockers": [
@@ -2916,6 +2922,52 @@
       {
         "decision": "Bound the entire Lighthouse gather/audit call to60 seconds while preserving its45-second page-load setting,48 navigations/all interactions/backend reads/latency groups. Start a sample before collection and retain failed/null metrics/report on expiry; late results cannot backfill. Keep the bound in comparison conditions.",
         "cost_if_wrong": "A slower valid lab call may become an explicit INCOMPLETE sample; it never becomes PASS or silently lowers the denominator. Actual owned context shutdown, cleanup and artifacts still need CI proof; new-bound measurements cannot be compared blindly with old conditions. This evidence-runner repair does not change business-command retry or browser-story timeouts."
+      }
+    ]
+  },
+  "measured_performance_review": {
+    "base_sha": "62bd40959ce3200706bf2ebfc46b43758f8f9cca",
+    "reviewed_source_sha": "1223bd02cc0007c5b85a132f9625ae0648dca915",
+    "review_count": 1,
+    "fix_pass_count": 1,
+    "critical": 0,
+    "important": 1,
+    "minor": 0,
+    "finding": "I1 actual creator detail readiness requires removed h1",
+    "red": "Actual ready function and compiled component:2 PASS1 valid assertion FAIL",
+    "green": "Same3 PASS; focused12/full515/typecheck/build PASS; owned CI pending",
+    "rulings": [
+      {
+        "decision": "Keep exact authorized fixture title readiness and point it to the actual detail card h2; preserve pre-measurement actor mismatch fatal guard.",
+        "cost_if_wrong": "A future semantic heading change must update and test the actual readiness contract; generic page presence never grants measurement readiness."
+      },
+      {
+        "decision": "New-source native/root CI was declined by the reviewer; require actual exact-source results rather than extend parent65 success.",
+        "cost_if_wrong": "Local515 and parent511 are separate evidence and cannot certify this candidate until CI executes."
+      },
+      {
+        "decision": "Before/after CLS improvement was declined; retain six original0.16685243479704767 values and await matching new-source lab.",
+        "cost_if_wrong": "Component layout invariance does not prove measured improvement; no performance acceptance before current artifacts."
+      },
+      {
+        "decision": "Linux extraction and sixth source-packaging case remain native gates; Windows5 PASS1 symlink SKIP does not establish them.",
+        "cost_if_wrong": "Unsupported Windows symlink privileges are not enabled; Linux failure still blocks source acceptance."
+      },
+      {
+        "decision": "Merchant READ ONLY/shared-lock SQL incompatibility stays outside the measured-layout delta.",
+        "cost_if_wrong": "Both SQL groups remain incomplete and P16 full baseline cannot pass; mature shared authorization locks are retained."
+      },
+      {
+        "decision": "Hosted/production latency, mutations and release readiness remain unexecuted separate gates.",
+        "cost_if_wrong": "Owned synthetic measurements do not authorize migration, deployment, promotion, config or provider operations."
+      },
+      {
+        "decision": "Physical devices, accessibility, human acceptance and field CWV/SLO remain unverified.",
+        "cost_if_wrong": "Source/native automation does not establish physical-device or human acceptance and no production SLO is invented."
+      },
+      {
+        "decision": "Parent onboarding, collaboration and earnings contracts remain excluded from focused reimplementation/review.",
+        "cost_if_wrong": "Combined owned suites remain required to detect regressions; this focused review provides no separate new parent acceptance."
       }
     ]
   }

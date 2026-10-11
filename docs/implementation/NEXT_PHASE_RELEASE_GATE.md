@@ -37,3 +37,7 @@ The previously authorized Oct6 logical restore used network `none`, no public po
 5. Use a compatible forward schema repair or an explicitly reviewed, rehearsed restore when necessary. Never drop populated tables, clear receipts, reinstall old financial/notification functions, or restore over later writes without an approved data-preservation decision. Reverify share revocation and original-site availability. Application rollback, data restore and human acceptance are separate outcomes.
 
 The existing [release operations](RELEASE_OPERATIONS.md), [migration guards](../../scripts/MIGRATION_RELEASE.md), [notification contract](NOTIFICATION_ACCEPTANCE_CONTRACT.md) and [finance/agent evidence](FINANCE_AGENT_ACCEPTANCE.md) remain the detailed procedures. Correct this evidence-only increment by reverting its documentation commit; it changes no runtime, schema or provider configuration.
+
+### Focused measured P16 review correction
+
+One fresh review of62bd..1223 found an Important collector/component readiness mismatch. Actual ready predicate and compiled component produced2 PASS1 valid RED before the minimal full-title article h2 selector correction; same3 GREEN, focused12/full515 PASS0 FAIL0 SKIP, typecheck/build PASS. Pending and denied private reads remain not ready; actual actor/origin guards are retained. New-source native/root/Linux packaging and matching runtime CLS remain required. Parent62bd core511/94/136/4 and lab39/48 plus880/960 remain independent historical evidence; no staging/production acceptance or capability change.
