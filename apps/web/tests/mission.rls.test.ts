@@ -183,6 +183,10 @@ d('mission schema RLS', () => {
     merchantUserId = await createTestUser(merchantEmail)
     opsUserId = await createTestUser(opsEmail)
 
+    // Invitations use the mature active-creator contract on every writer.
+    const activeCreator = await svc.from('creators').update({ status: 'active' }).eq('id', creatorId)
+    expect(activeCreator.error).toBeNull()
+
     const merchant = await svc
       .from('merchant_profiles')
       .insert({ user_id: merchantUserId, company_name: 'Kinnso Test Merchant', contact_email: merchantEmail })
