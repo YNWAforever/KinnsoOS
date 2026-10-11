@@ -3551,5 +3551,14 @@
       "Physical iOS/Android/VoiceOver/NVDA NOT_RUN."
     ],
     "next_action": "One fresh whole-branch review and one TDD fix pass if required; publish draft continuation; inspect original exact-head Root/Journeys/full operations/extraction evidence before any acceptance claim."
+  },
+  "merchant_cold_review_fix_checkpoint": {
+    "reviewedSource": "8e603f5dbf7b1aa4d14809db8d3fefdb48cfe732",
+    "freshReview": "0Critical/1Important/1Minor; one TDD fix pass; no re-review",
+    "isolatedChunkFailure": "Import failure yields localized tool recovery instead of rejecting the shared route. Other tools, authored parent state and unknown immutable request remain mounted. Retry calls only the failed importer; stale completions are fenced at unmount.",
+    "redGreen": "4 actual owner component casesRED->GREEN; healthy campaign/branch draft and original command payload/requestId preserved, company/logout remove stale controls. Native installed Next successful chunk retry and committed unknown receipt are new owned-CI gates, not inferred from ESM module-cache semantics.",
+    "deferredMinor": "Original immediate refresh-retention assertion can finish before refresh settles. Future improvement should hold/release and await the refreshed responses.",
+    "performance": "Whole complete final-source original lab and final fixture bytes pending; no cold-LCP acceptance inferred.",
+    "release": "Staging BLOCKED_TARGET; physical/human/recovery NOT_RUN; source/CI/production remain separate."
   }
 }
