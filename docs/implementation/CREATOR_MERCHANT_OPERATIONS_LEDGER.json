@@ -3514,5 +3514,42 @@
     "intermediateCI": "38143497573/38143493501 operations FAIL before samples; retained independently; other original jobs not transferred to final head",
     "release": "Staging BLOCKED_TARGET; final code/CI evidence separate from production main be1ead3 and current role UAT NOT_RUN; no hosted operations or capability activation",
     "performance": "Current complete final-head lab still required; numerical thresholds remain unchanged and Merchant cold-LCP not declared resolved"
+  },
+  "merchant_cold_critical_path_checkpoint": {
+    "source_sha": "f36615c42c3867c6b9aeb929c4a17bb4283ccae8",
+    "baseline_sha": "2400da159281070c7b191fb76f71068c084f7840",
+    "dependency": "OPEN draft PR74; continuation stacks on codex/workspace-recovery-source-contract-20261011",
+    "code_status": "LOCAL_IMPLEMENTED_AND_VERIFIED",
+    "ci_status": "NEW_CANDIDATE_ORIGINAL_WORKFLOWS_PENDING",
+    "staging_status": "BLOCKED_TARGET",
+    "release_status": "NOT_RELEASED_BY_THIS_TASK; current observed main/production c5c73721c424f61121ce063c96fc9777e72b698c",
+    "behavior": "Five company tool implementations load only when existing fresh company data and role conditions render them. Owner/marketing gates, actor/company keys, locks, CAS/receipts and request payloads unchanged. Localized pending tool status. No flags or hosted writes.",
+    "evidence": [
+      {
+        "environment": "same-condition browser ESM fixture",
+        "source_sha": "f36615c42c3867c6b9aeb929c4a17bb4283ccae8",
+        "scenario": "Actual emitted JS before memberships/workspace resolve, role tool load, retained draft and pending-asset logout",
+        "result": "Baseline2RED: all5 tool sources already downloaded. Candidate4PASS0FAIL0SKIP. Uncompressed minified UTF-8 initial bytes293098->214275 in each EN/zh-HK run; not compressed Next transfer or LCP."
+      },
+      {
+        "environment": "actual installed Next16.3.8 production builds on local loopback",
+        "source_sha": "f36615c42c3867c6b9aeb929c4a17bb4283ccae8",
+        "scenario": "Anonymous Merchant heading/sign-in/private-no-store and deferred owner/campaign JS",
+        "result": "Retained baseline2400:2RED. Candidate:2PASS0FAIL0SKIP. No actor/HTTP doubles; signed-in/hosted acceptance NOT_RUN."
+      },
+      {
+        "environment": "isolated local",
+        "source_sha": "f36615c42c3867c6b9aeb929c4a17bb4283ccae8",
+        "scenario": "Complete Node and component/CSS regression",
+        "result": "552unit/54component PASS0FAIL0SKIP; production build/typecheck PASS. Extraction/native owned CI/full performance remains pending at this checkpoint."
+      }
+    ],
+    "blockers": [
+      "Complete exact candidate performance numeric gate not yet measured; baseline PR74 cold Merchant remains FAIL and is not pooled or waived.",
+      "Named staging target/config/roles/fixtures and scoped release/recovery packet absent.",
+      "Root prior initial404->500 JSON input/writer unresolved; retry and later valid manifest do not establish cause.",
+      "Physical iOS/Android/VoiceOver/NVDA NOT_RUN."
+    ],
+    "next_action": "One fresh whole-branch review and one TDD fix pass if required; publish draft continuation; inspect original exact-head Root/Journeys/full operations/extraction evidence before any acceptance claim."
   }
 }
