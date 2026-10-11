@@ -2137,11 +2137,11 @@
         "N18",
         "U04"
       ],
-      "code_status": "IMPLEMENTED_LOCAL_REVIEW_FIX",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "IMPLEMENTED_CI_FIXTURE_PENDING",
+      "ci_status": "FAILED_FIXTURE_SETUP",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "1cfe6f3d180e6e4d63441096872a2b3d8a3e7d4d",
+      "source_sha": "9f2350c9683030e52c4db279eecd03b979d588b5",
       "evidence": [
         {
           "environment": "isolated-local",
@@ -2168,12 +2168,19 @@
           "source_sha": "1cfe6f3d180e6e4d63441096872a2b3d8a3e7d4d",
           "scenario": "One fresh final review: live-user SQL denial passed through actual backend mapper and loaded report",
           "result": "Valid RED:7 existing cases pass, new behavior observes503 instead of401. Minimal fix uses mature unauthenticated contract; expected GREEN includesAUTH_REQUIRED/nonretryable and clearing prior report. First harness attempt hit bundled Next __dirname and is not behavioral RED."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "9f2350c9683030e52c4db279eecd03b979d588b5",
+          "run": 38099233449,
+          "scenario": "Complete current P14 candidate",
+          "result": "Verify build/type/source-package and mailbox passed; integration 83 PASS/1 FAIL/0 SKIP. The5001-row export fixture timed out inserting500-row batches before invoking its RPC, so browser job was not reached. Three other insights DB cases passed. Original failure retained; fixture batches reduced to100 without reducing5001 rows, export bounds or authorization assertions."
         }
       ],
       "blockers": [
         "BLOCKED_TARGET: designated staging configuration, test actors and recovery proof have not been supplied."
       ],
-      "next_action": "Run final candidate owned CI after one review fix pass; preserve original RED and any failures. No hosted migration or release acceptance claimed.",
+      "next_action": "Execute unchanged behavior assertions after smaller fixture batches; no hosted SQL, capacity or human acceptance.",
       "rulings": [
         {
           "decision": "Date range selects campaigns by immutable stored creation timestamp, while the selected campaigns current statuses and invitation/application/review records use separate definitions. Dates are UTC inclusive/exclusive and bounded to366 days.",
