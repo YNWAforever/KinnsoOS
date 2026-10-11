@@ -1,0 +1,36 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {readFile} from 'node:fs/promises';
+const hash=body=>createHash('sha256').update(body).digest('hex');
+const helper=await import('../scripts/verify-source-inputs.mjs').catch(e=>{if(e.code!=='ERR_MODULE_NOT_FOUND')throw e;return {};});
+for(const extracted of [false,true])test(`P16 mapped archive input hashes verify ${extracted?'internal extracted':'canonical repository'} bytes without a copied checkout file`,async t=>{
+ assert.equal(typeof helper.verifySourceInputs,'function');
+ const root=await mkdtemp(path.join(tmpdir(),'kinnso-source-input-'));t.after(()=>rm(root,{recursive:true,force:true}));
+ const app=path.join(root,'apps/journeys');await mkdir(app,{recursive:true});
+ const source='supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql',destination='tests/contracts/'+path.basename(source),sql='-- Synthetic approved bytes, never executed';
+ const manifest={version:1,files:['scripts/source-manifest.json'],repositoryFiles:{[destination]:source}};
+ const bytes=JSON.stringify(manifest);await mkdir(path.join(app,'scripts'));await writeFile(path.join(app,'scripts/source-manifest.json'),bytes);
+ const selected=extracted?path.join(app,destination):path.join(root,source);await mkdir(path.dirname(selected),{recursive:true});await writeFile(selected,sql);
+ const foreign=extracted?path.join(root,source):path.join(app,destination);await mkdir(path.dirname(foreign),{recursive:true});await writeFile(foreign,'-- Wrong alternative must not be read');
+ if(extracted)await writeFile(path.join(app,'SOURCE_METADATA.json'),'{}');
+ const metadata={sha256:{'scripts/source-manifest.json':hash(bytes),[destination]:hash(sql)}};
+ await helper.verifySourceInputs(app,metadata);
+ await writeFile(selected,'-- Modified SQL');await assert.rejects(()=>helper.verifySourceInputs(app,metadata),/Build source differs/);
+ await rm(selected);await assert.rejects(()=>helper.verifySourceInputs(app,metadata));
+});
+for(const filename of ['run.mjs','run-latency.mjs'])test(`P16 actual ${filename} source guard verifies mapped canonical bytes before collection`,async t=>{
+ const root=await mkdtemp(path.join(tmpdir(),'kinnso-source-guard-'));assert.ok(root.startsWith(path.join(tmpdir(),'kinnso-source-guard-')));t.after(()=>rm(root,{recursive:true,force:true}));
+ const app=path.join(root,'apps/journeys'),source='supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql',destination='tests/contracts/'+path.basename(source),sql='-- Original synthetic SQL input';
+ const manifest={version:1,files:['scripts/source-manifest.json'],repositoryFiles:{[destination]:source}},bytes=JSON.stringify(manifest),sourceSha='a'.repeat(40);
+ await mkdir(path.join(app,'scripts'),{recursive:true});await writeFile(path.join(app,'scripts/source-manifest.json'),bytes);await mkdir(path.dirname(path.join(root,source)),{recursive:true});await writeFile(path.join(root,source),sql);
+ const metadata={sourceRevision:sourceSha,sha256:{'scripts/source-manifest.json':hash(bytes),[destination]:hash(sql)}};
+ const collector=await readFile(new URL('../scripts/performance/'+filename,import.meta.url),'utf8');
+ const start=collector.indexOf(filename==='run.mjs'?'if(operations){':'const archivePath ='),end=collector.indexOf(filename==='run.mjs'?'// Refuse an occupied port':'const out =',start);assert.ok(start>=0&&end>start);
+ const actual=collector.slice(start,end),AsyncFunction=Object.getPrototypeOf(async function(){}).constructor;
+ const execute=()=>new AsyncFunction('operations','app','sourceSha','execFileSync','path','readFile','createHash','stat','verifySourceInputs',actual)(true,app,sourceSha,cmd=>cmd==='git'?sourceSha:JSON.stringify(metadata),path,readFile,createHash,async name=>({mtimeMs:name.endsWith('BUILD_ID')?2:1}),helper.verifySourceInputs);
+ await execute();await writeFile(path.join(root,source),'-- Wrong current checkout SQL');await assert.rejects(execute,/source differs/);
+});

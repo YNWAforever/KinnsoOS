@@ -28,34 +28,37 @@ export function SupportWorkspace({actorId,enabled,opsMode=false}:{actorId:string
  const setSubject=(value:string|((old:string)=>string))=>setDraft(d=>({...d,subject:typeof value==='function'?value(d.subject):value}));
  const setMessage=(message:string)=>setDraft(d=>({...d,message}));
  const editCase=(id:string,patch:Partial<CaseDraft>)=>setDraft(d=>({...d,cases:{...d.cases,[id]:{...(d.cases[id]??emptyCaseDraft()),...patch}}}));
- const scope=useRef(0),contextGeneration=useRef(0),generation=useRef(0),pending=useRef<{command:Record<string,unknown>;id:string}|null>(null);
+ const scope=useRef(0),contextGeneration=useRef(0),generation=useRef(0),sending=useRef(false),pending=useRef<{command:Record<string,unknown>;id:string}|null>(null);
  const recovery=useWorkspaceRecovery({actorId,scope:'support:'+opsMode+':'+contextQuery,authorized:items!==null&&valid,draft,pending:pending.current,dirty:supportDraftDirty(draft),restore:value=>{setDraft(restoreSupportDraft(value.draft));if(value.pending?.id&&value.pending.command&&typeof value.pending.command==='object'){pending.current=value.pending as {command:Record<string,unknown>;id:string};setUnknown(true);setError('UNAVAILABLE');}}});
- function clear(){scope.current++;contextGeneration.current++;setItems(null);setCursor(null);pending.current=null;setUnknown(false);setDraft(emptySupportDraft());setContext(null);setContextError('');setContextLoading(false);setConfirmation('');}
+ function clear(){scope.current++;contextGeneration.current++;sending.current=false;setBusy(false);setItems(null);setCursor(null);pending.current=null;setUnknown(false);setDraft(emptySupportDraft());setContext(null);setContextError('');setContextLoading(false);setConfirmation('');}
  async function load(after?:string){const own=++generation.current;setBusy(true);const r=await support.list(opsMode,after);if(own!==generation.current)return;setBusy(false);if(!r.ok){if(r.code==='AUTH_REQUIRED'||r.code==='FORBIDDEN'){clear();if(r.code==='AUTH_REQUIRED')setValid(false);}else{setItems(null);setCursor(null);}setError(r.code);return;}setItems(r.data.items);setCursor(r.data.nextCursor);setError('');}
  async function loadContext(){const own=++contextGeneration.current,ownScope=scope.current;const q=new URLSearchParams(contextQuery);if(opsMode||!q.has('mission'))return;const ids=q.getAll('mission');if(ids.length!==1){setContextError('INVALID');return;}setContextLoading(true);const r=await support.context(ids[0]);if(own!==contextGeneration.current||ownScope!==scope.current)return;setContextLoading(false);setContextError('');if(!r.ok){setContextError(r.code);if(r.code==='AUTH_REQUIRED'){setValid(false);clear();}return;}setContext(r.data);setSubject(value=>value||supportSubject(r.data,locale));}
  async function older(c:SupportCase){if(!c.messagesNextCursor)return;const own=++generation.current;setBusy(true);const r=await support.messages(c.id,c.messagesNextCursor,opsMode);if(own!==generation.current)return;setBusy(false);if(!r.ok){if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED')clear();setError(r.code);return;}setItems(rows=>rows?.map(row=>row.id===c.id?{...row,messages:[...r.data.items,...row.messages],messagesNextCursor:r.data.nextCursor}:row)??null);setError('');}
  useEffect(()=>{setValid(true);clear();setError('');const unsub=subscribeAccountInvalidation(next=>{if(next!==actorId){++generation.current;setValid(false);clear();}});if(actorId&&enabled){void load();void loadContext();}return()=>{scope.current++;contextGeneration.current++;++generation.current;unsub();};},[actorId,enabled,opsMode,contextQuery]);
  async function send(command?:Record<string,unknown>){
+  if(sending.current||command&&pending.current)return;
   if(!pending.current&&command)pending.current={command,id:crypto.randomUUID()};
   const p=pending.current;if(!p)return;
   const ownScope=scope.current,own=++generation.current,wasUnknown=unknown;
   const current=()=>own===generation.current&&ownScope===scope.current;
-  setBusy(true);
+  sending.current=true;setBusy(true);
+  try{
   async function confirmed(id:string){
-   try{await recovery.release(p!.id);}catch{if(current()){setBusy(false);setUnknown(true);setError('UNAVAILABLE');}return;}
+   const completedDraft=completeSupportDraft(draft,p!.command);
+   try{await recovery.complete(p!.id,completedDraft);}catch{if(current()){setUnknown(true);setError('UNAVAILABLE');}return;}
    if(!current())return;
-   pending.current=null;setUnknown(false);setDraft(d=>completeSupportDraft(d,p!.command));
+   pending.current=null;setUnknown(false);setDraft(completedDraft);
    await load();if(ownScope!==scope.current)return;
    setConfirmation(p!.command.type==='create'?id:'updated');
   }
   if(wasUnknown){
    const receipt=await support.receipt(p.command,p.id);if(!current())return;
-   if(!receipt.ok){setBusy(false);setError(receipt.code);if(receipt.code==='AUTH_REQUIRED'||receipt.code==='FORBIDDEN'){clear();if(receipt.code==='AUTH_REQUIRED')setValid(false);}return;}
+   if(!receipt.ok){setError(receipt.code);if(receipt.code==='AUTH_REQUIRED'||receipt.code==='FORBIDDEN'){clear();if(receipt.code==='AUTH_REQUIRED')setValid(false);}return;}
    if(receipt.data.result){await confirmed(receipt.data.result.id);return;}
   }
-  try{await recovery.retain(p);}catch{if(current()){setBusy(false);setUnknown(true);setError('UNAVAILABLE');}return;}
+  try{await recovery.retain(p);}catch{if(current()){setUnknown(true);setError('UNAVAILABLE');}return;}
   if(!current())return;
-  const r=await support.command(p.command,p.id);if(!current())return;setBusy(false);
+  const r=await support.command(p.command,p.id);if(!current())return;
   if(!r.ok){
    if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED'){clear();if(r.code==='AUTH_REQUIRED')setValid(false);setError(r.code);return;}
    setError(r.code);setUnknown(wasUnknown||r.code==='UNAVAILABLE');
@@ -63,6 +66,7 @@ export function SupportWorkspace({actorId,enabled,opsMode=false}:{actorId:string
    return;
   }
   await confirmed(r.data.id);
+  }finally{if(ownScope===scope.current){sending.current=false;setBusy(false);}}
  }
 
  const locked=busy||unknown||items!==null&&!recovery.ready,createLocked=locked||contextLoading||!!contextError||(!opsMode&&new URLSearchParams(contextQuery).has('mission')&&!context);

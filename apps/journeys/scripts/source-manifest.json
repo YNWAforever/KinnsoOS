@@ -269,6 +269,7 @@
     "scripts/source-manifest.json",
     "scripts/start-connected-local.mjs",
     "scripts/test-integration.mjs",
+    "scripts/verify-source-inputs.mjs",
     "scripts/verify-test-target.mjs",
     "tests/adoption-preview.test.mjs",
     "tests/adventurelog-callsite.test.mjs",
@@ -414,6 +415,7 @@
     "tests/readiness.test.mjs",
     "tests/seo-migration.test.mjs",
     "tests/sitemap-discovery.test.mjs",
+    "tests/source-inputs.test.mjs",
     "tests/source_package_test.py",
     "tests/support-draft-isolation.test.mjs",
     "tests/telemetry.privacy.test.mjs",
@@ -426,5 +428,9 @@
     "tests/workspace-service-state.test.mjs",
     "tsconfig.json"
   ],
-  "version": 1
+  "version": 1,
+  "repositoryFiles": {
+    "tests/contracts/20261011004000_kinnso_merchant_insights.sql": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
+    "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql"
+  }
 }

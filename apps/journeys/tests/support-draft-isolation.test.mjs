@@ -39,7 +39,7 @@ test('ops decisions and private reasons belong to the selected case',async()=>{
 
 test('an unknown reply reconciles its original command and preserves other drafts on the device',async()=>{
  let stored=null;const events=[];
- const recovery={read:async()=>stored,save:async(actor,scope,value)=>{stored=structuredClone(value);},release:async()=>{stored.pending=null;},clear:async()=>{stored=null;}};
+ const recovery={read:async()=>stored,save:async(actor,scope,value)=>{stored=structuredClone(value);},release:async()=>{stored.pending=null;},complete:async(actor,scope,id,draft)=>{stored={version:1,draft:structuredClone(draft),pending:null};},clear:async()=>{stored=null;}};
  const ports={workspaceRecovery:recovery,request:async(url,method,body)=>{if(method==='POST'){events.push({url,body});return url.endsWith('/receipt')?{ok:true,data:{result:{id:a,revision:2,status:'open'}}}:{ok:false,code:'UNAVAILABLE'};}return reads();}};
  const h=await workspaceHarness('SupportWorkspace',ports);
  edit(h,b,'Reply to this case','Retain across reload');edit(h,a,'Reply to this case','Original uncertain reply');submit(h,a);await settle(h);
@@ -57,4 +57,57 @@ test('legacy unscoped recovery text is available to copy but is not assigned to 
  assert.equal(input(h,a,'Reply to this case').props.value,'');assert.equal(input(h,b,'Reply to this case').props.value,'');
  assert.equal(h.field('Message to support').props.value,'');
  assert.ok(h.elements().some(n=>n.type==='textarea'&&n.props.readOnly&&n.props.value.includes('Unscoped old reply')));
+});
+
+const journal=()=>{
+ let value=null;
+ return {get value(){return value;},read:async()=>value,save:async(actor,scope,next)=>{value=structuredClone(next);},clear:async()=>{value=null;},release:async()=>{value.pending=null;},complete:async(actor,scope,id,draft)=>{value={version:1,draft:structuredClone(draft),pending:null};}};
+};
+
+test('successful replies stay locked until durable completion and reject an overlapping submission',async()=>{
+ const recovery=journal(),writes=[];let finish;
+ const gate=new Promise(resolve=>{finish=resolve;});
+ const release=recovery.release,complete=recovery.complete;
+ recovery.release=async(...args)=>{await gate;await release(...args);};
+ recovery.complete=async(...args)=>{await gate;await complete(...args);};
+ const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{if(method==='POST'){writes.push(body);return{ok:true,data:{id:a,revision:2,status:'open'}};}return reads();}});
+ edit(h,a,'Reply to this case','Confirmed A');edit(h,b,'Reply to this case','Unsent B');
+ const otherSubmit=h.elements(article(h,b)).find(n=>n.type==='form').props.onSubmit;
+ submit(h,a);await settle(h);
+ assert.equal(input(h,a,'Reply to this case').props.disabled,true,'do not accept text that completion would erase');
+ otherSubmit({preventDefault(){}});await settle(h);
+ assert.equal(writes.length,1,'a stale submit handler must not replay another case command');
+ finish();await settle(h);
+ assert.equal(input(h,a,'Reply to this case').props.disabled,false);
+ edit(h,a,'Reply to this case','Next follow-up');await settle(h);
+ assert.equal(input(h,a,'Reply to this case').props.value,'Next follow-up');
+ assert.equal(input(h,b,'Reply to this case').props.value,'Unsent B');
+});
+
+test('a failed refresh after acknowledgement cannot restore sent text as a new draft',async()=>{
+ const recovery=journal();let readsFail=false;
+ const ports={workspaceRecovery:recovery,request:async(url,method)=>{if(method==='POST'){readsFail=true;return{ok:true,data:{id:a,revision:2,status:'open'}};}return readsFail?{ok:false,code:'UNAVAILABLE'}:reads();}};
+ const h=await workspaceHarness('SupportWorkspace',ports);
+ edit(h,a,'Reply to this case','Already delivered');edit(h,b,'Reply to this case','Still unsent');submit(h,a);await settle(h);
+ assert.equal(recovery.value.pending,null);
+ assert.equal(recovery.value.draft.cases[a],undefined,'sent text is removed in the same durable operation as its pending identity');
+ assert.equal(recovery.value.draft.cases[b].message,'Still unsent');
+ readsFail=false;
+ const restored=await workspaceHarness('SupportWorkspace',ports);await settle(restored);
+ assert.equal(input(restored,a,'Reply to this case').props.value,'');
+ assert.equal(input(restored,b,'Reply to this case').props.value,'Still unsent');
+});
+
+test('failed completion retains the exact request for receipt reconciliation',async()=>{
+ const recovery=journal(),writes=[];let fail=true;
+ const complete=recovery.complete;
+ recovery.complete=async(...args)=>{if(fail)throw Error('LOCAL_STORAGE_UNAVAILABLE');await complete(...args);};
+ const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{if(method==='POST'){writes.push({url,body});return url.endsWith('/receipt')?{ok:true,data:{result:{id:a,revision:2,status:'open'}}}:{ok:true,data:{id:a,revision:2,status:'open'}};}return reads();}});
+ edit(h,a,'Reply to this case','Exact delivered message');edit(h,b,'Reply to this case','Keep B');submit(h,a);await settle(h);
+ assert.ok(recovery.value.pending,'a failed local acknowledgement cannot discard the server request identity');
+ assert.equal(input(h,a,'Reply to this case').props.disabled,true);
+ fail=false;h.find('button','Retry the same request').props.onClick();await settle(h);
+ assert.deepEqual(writes.map(x=>x.url),['/api/support','/api/support/receipt']);
+ assert.deepEqual(writes[0].body,writes[1].body);
+ assert.equal(input(h,a,'Reply to this case').props.value,'');assert.equal(input(h,b,'Reply to this case').props.value,'Keep B');
 });

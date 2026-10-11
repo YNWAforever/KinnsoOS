@@ -23,3 +23,21 @@ test('unknown recovery cannot replace its UUID or payload, and only exact termin
 test('account switch and explicit logout clear recovery with existing private snapshots and trip drafts',async()=>{const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.synchronizeAccountCache('B');await s.synchronizeAccountCache('A');assert.equal(await s.readLocalWorkspaceRecovery('A','mission:1'),null);await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.clearAccountCaches();await s.synchronizeAccountCache('A');assert.equal(await s.readLocalWorkspaceRecovery('A','mission:1'),null);});
 
 test('definite request release atomically preserves the draft, rejects another owner, and cannot release a different pending UUID',async()=>{const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.releaseLocalWorkspaceRecovery('A','mission:1','wrong');assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','mission:1'))),value);await assert.rejects(s.releaseLocalWorkspaceRecovery('B','mission:1',uuid),/CACHE_ACCOUNT_CHANGED/);await s.releaseLocalWorkspaceRecovery('A','mission:1',uuid);assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','mission:1'))),{...value,pending:null});const next={...value,pending:{requestId:'22222222-2222-4222-8222-222222222222',command:{type:'submitEvidence',notes:'Corrected explicit intent'}}};await s.saveLocalWorkspaceRecovery('A','mission:1',next);assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','mission:1'))),next);});
+
+test('acknowledgement atomically persists the remaining draft and releases only its exact receipt',async()=>{
+ const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','support',value);
+ const remaining={notes:'Another unsent draft'};
+ await assert.rejects(s.completeLocalWorkspaceRecovery('A','support','wrong',remaining),/PENDING_DRAFT/);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','support'))),value);
+ await s.completeLocalWorkspaceRecovery('A','support',uuid,remaining);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','support'))),{version:1,draft:remaining,pending:null});
+});
+
+test('acknowledgement cannot cross accounts or replace a journal with an oversized draft',async()=>{
+ const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','support',value);
+ await assert.rejects(s.completeLocalWorkspaceRecovery('B','support',uuid,{}),/CACHE_ACCOUNT_CHANGED/);
+ await assert.rejects(s.completeLocalWorkspaceRecovery('A','support',uuid,{text:'x'.repeat(80000)}),/INVALID_RECOVERY/);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','support'))),value);
+ await s.synchronizeAccountCache('B');
+ await assert.rejects(s.completeLocalWorkspaceRecovery('A','support',uuid,{}),/CACHE_ACCOUNT_CHANGED/);
+});

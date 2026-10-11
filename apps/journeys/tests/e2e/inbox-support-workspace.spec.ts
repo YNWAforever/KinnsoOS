@@ -54,9 +54,21 @@ test('in-app event opens an owned case with visible operator response, customer 
   // The textarea already contains this text before saving; DOM text alone does not
   // prove completion. Wait for the actual command response before navigating away.
   const reply=page.waitForResponse(r=>r.url().endsWith('/api/support')&&r.request().method()==='POST');
+  // A real successful command followed by an unavailable read must not turn
+  // its delivered message back into a fresh editable draft after recovery.
+  let failNextRead=true;
+  await page.route('**/api/support*',async route=>{
+   if(failNextRead&&route.request().method()==='GET'&&new URL(route.request().url()).pathname==='/api/support'){
+    failNextRead=false;await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'UNAVAILABLE'})});return;
+   }
+   await route.continue();
+  });
   await caseCard.getByRole('button',{name:'Send case reply',exact:true}).click();
   const replied=await reply;expect(replied.status()).toBe(200);const savedReply=await replied.json();
   expect(savedReply.ok).toBe(true);expect(savedReply.data.revision).toBe(3);
+  await expect(page.getByRole('alert').filter({hasText:'Support request was not completed'})).toBeVisible();
+  await page.unroute('**/api/support*');await page.getByRole('button',{name:'Refresh cases',exact:true}).click();
+  await expect(caseCard.getByLabel('Reply to this case',{exact:true})).toHaveValue('');
   const persistedReply=(await ok(customer.client.rpc('get_kinnso_support'))).items.find((c:any)=>c.id===caseId);
   expect(persistedReply.revision).toBe(3);expect(persistedReply.messages.map((m:any)=>m.message)).toContain(customerReply);
   await expect(caseCard).toContainText(customerReply);

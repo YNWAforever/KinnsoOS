@@ -136,16 +136,33 @@
   "localContinuation": {
     "node": "24.19.0",
     "baselineUnitPass": 544,
-    "currentUnitPass": 555,
+    "currentUnitPass": 568,
     "currentUnitFail": 0,
     "currentUnitSkip": 0,
     "build": "PASS",
     "typecheck": "PASS",
-    "sourcePackagePythonTests": 6,
+    "sourcePackagePythonTests": 10,
     "connectedBrowser": "NOT_RUN_LOCALLY; no Docker CLI available",
     "hostedRoleUAT": "BLOCKED; no designated approved role accounts/staging target"
   },
-  "openPRs": [
+  "writes": {
+    "hostedDatabase": 0,
+    "productionConfiguration": 0,
+    "messagesSent": 0,
+    "realPublishedGuides": 0
+  },
+  "integrationUpdate": {
+    "main": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+    "pr74": "merged_into_main",
+    "pr76": {
+      "merged": true,
+      "base": "codex/workspace-recovery-source-contract-20261011",
+      "mergeCommit": "992fc09b1ef51258f3124ed420c90d4cd1c6b24a",
+      "inMain": false
+    },
+    "pr77": "https://github.com/YNWAforever/KinnsoOS/pull/77"
+  },
+  "baselineOpenPRs": [
     {
       "number": 74,
       "head": "2400da159281070c7b191fb76f71068c084f7840",
@@ -157,10 +174,20 @@
       "scope": "Merchant workspace lazy loading; based on PR 74"
     }
   ],
-  "writes": {
-    "hostedDatabase": 0,
-    "productionConfiguration": 0,
-    "messagesSent": 0,
-    "realPublishedGuides": 0
+  "independentReview": {
+    "range": "c5c7372..104c7aa",
+    "critical": 0,
+    "important": 2,
+    "fixPasses": 1,
+    "redRegressions": 5,
+    "focusedTestsPassed": 13,
+    "result": "Both findings addressed; exact-source CI pending"
+  },
+  "productionAtFinalMetadataCheck": {
+    "deploymentId": "dpl_7DJFouZs9q6hWaxyA4dSaSFsnLrB",
+    "state": "READY",
+    "alias": "https://kinnso-os.vercel.app",
+    "commit": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+    "observedAt": "2026-10-11T18:08:06.455Z"
   }
 }
