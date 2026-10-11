@@ -2110,12 +2110,40 @@
           "source_sha": "4b4c4edd37b79f8417be9d2e2a014475f063637e",
           "scenario": "P14 bounded dates, aggregate CSV formula/private-field defense, invitation numerator/denominator coverage",
           "result": "RED: 3/3 missing-helper behavior tests fail before implementation; four owned DB cases added, not yet executed."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "71fade9f211db74542f92fbff4397c5f6914547a",
+          "tested_merge_sha": "3bab4126a85d7cb630654571ea5c1c8a490e5be1",
+          "run": 38098142373,
+          "scenario": "P14 baseline with complete owned fixtures",
+          "result": "RED: 449 unit PASS / 3 new FAIL; 80 DB PASS / 4 new FAIL / 0 SKIP. Every new DB case reached missing insights RPC. Not hosted acceptance."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "71fade9f211db74542f92fbff4397c5f6914547a",
+          "scenario": "Actual insights BFF, UI filtering and delayed old-actor read",
+          "result": "RED 0/6 -> GREEN 6/6 before complete candidate commit; no current complete CI claim."
         }
       ],
       "blockers": [
         "BLOCKED_TARGET: designated staging configuration, test actors and recovery proof have not been supplied."
       ],
-      "next_action": "Execute owned CI RED baseline, finish current P10 code gate, then implement read-only owner insights without guessed historical events or payment/ROI."
+      "next_action": "Execute owned CI RED baseline, finish current P10 code gate, then implement read-only owner insights without guessed historical events or payment/ROI.",
+      "rulings": [
+        {
+          "decision": "Date range selects campaigns by immutable stored creation timestamp, while the selected campaigns current statuses and invitation/application/review records use separate definitions. Dates are UTC inclusive/exclusive and bounded to366 days.",
+          "cost_if_wrong": "Product may prefer an event-only date selection; change definitions and add matching UI/DB filter regressions before release."
+        },
+        {
+          "decision": "Historical submission events and campaign-level redemption/visit attribution lack complete source contracts. Emit null/unknown and preserve existing authorized redemption outcome records. No invented zero, income or ROI.",
+          "cost_if_wrong": "Additional event/attribution sources may support more metrics; evaluate them with scoped evidence before extending the report."
+        },
+        {
+          "decision": "Read and export use mature owner-only merchant authority and live Auth/session verification. Marketing/finance/ops do not gain global company reporting access. CSV has authorized aggregate columns and5000 hard cap.",
+          "cost_if_wrong": "Additional reporting roles require a separately specified scope contract and foreign-denial matching-success tests."
+        }
+      ]
     },
     {
       "id": "P15",

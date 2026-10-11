@@ -47,6 +47,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     drafts:'export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);',
     creator:'export const creatorMissions=globalThis.__ports.creatorMissions; export const creatorEarnings=globalThis.__ports.creatorEarnings;',
     campaigns:'export const merchantCampaigns=globalThis.__ports.merchantCampaigns;',
+    insights:'export const merchantInsights=globalThis.__ports.merchantInsights;',
     discovery:'export const merchantCreators=globalThis.__ports.merchantCreators;',
     onboarding:'export const merchantOnboarding=globalThis.__ports.merchantOnboarding;',
     repository:'export const request=(...args)=>globalThis.__ports.request(...args);',
@@ -58,6 +59,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';
       else if(args.path.endsWith('/creators/collaboration'))path='creator';
       else if(args.path.endsWith('/merchants/campaign-repository'))path='campaigns';
+      else if(args.path.endsWith('/merchants/insights-repository'))path='insights';
       else if(args.path.endsWith('/merchants/creator-discovery'))path='discovery';
       else if(args.path.endsWith('/merchants/onboarding'))path='onboarding';
       else if(args.path.endsWith('/trips/repository'))path='repository';
