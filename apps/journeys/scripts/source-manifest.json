@@ -421,7 +421,9 @@
     "tsconfig.json",
     "tests/blank-reset-dialog.test.mjs",
     "tests/workspace-loading.test.mjs",
-    "tests/e2e/u16-workspace-loading-layout.spec.ts"
+    "tests/e2e/u16-workspace-loading-layout.spec.ts",
+    "scripts/verify-source-inputs.mjs",
+    "tests/source-inputs.test.mjs"
   ],
   "version": 1,
   "repositoryFiles": {

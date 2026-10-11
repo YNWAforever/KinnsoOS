@@ -143,6 +143,52 @@ class SourcePackageTests(unittest.TestCase):
         with ZipFile(extracted / 'public/source/kinnsoos-source.zip') as archive:
             self.assertEqual(archive.read(destination), sql)
             self.assertEqual(json.loads(archive.read('SOURCE_METADATA.json'))['sha256'][destination], metadata['sha256'][destination])
+        subprocess.run(['git', 'init', '-q', str(extracted)], check=True)
+        subprocess.run(['git', 'add', '.'], cwd=extracted, check=True)
+        subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'synthetic initialized extraction'], cwd=extracted, check=True)
+        result = self.run_pack()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(extracted / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read(destination), sql, 'Ordinary initialized extraction keeps its own SQL')
+
+    def test_initialized_distribution_keeps_internal_sql_in_another_repository(self):
+        repository = self.root
+        app = repository / 'apps/journeys'
+        app.mkdir(parents=True)
+        for name in ['LICENSE', 'package.json', 'scripts/package-source.py', 'scripts/source-manifest.json']:
+            target = app / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(repository / name, target)
+        source = 'supabase/migrations/20261011004000_kinnso_merchant_insights.sql'
+        destination = 'tests/contracts/20261011004000_kinnso_merchant_insights.sql'
+        foreign = repository / source
+        foreign.parent.mkdir(parents=True)
+        foreign.write_bytes(b'-- Unrelated parent SQL must never substitute for distributed bytes')
+        subprocess.run(['git', 'init', '-q', str(repository)], check=True)
+        internal = app / destination
+        internal.parent.mkdir(parents=True)
+        sql = b'-- Archived reviewed SQL input, never executed.\nselect 1;\n'
+        internal.write_bytes(sql)
+        manifest = json.loads((app / 'scripts/source-manifest.json').read_text())
+        manifest['repositoryFiles'] = {destination: source}
+        (app / 'scripts/source-manifest.json').write_text(json.dumps(manifest))
+        (app / 'SOURCE_METADATA.json').write_text(json.dumps({'sourceRevision': 'b' * 40, 'dirty': False, 'sha256': {destination: hashlib.sha256(sql).hexdigest()}}))
+        subprocess.run(['git', 'init', '-q', str(app)], check=True)
+        subprocess.run(['git', 'add', '.'], cwd=app, check=True)
+        subprocess.run(['git', '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'synthetic extracted input'], cwd=app, check=True)
+        self.root = app
+        result = self.run_pack()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(app / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read(destination), sql, 'Own Git must not select parent SQL')
+        foreign.unlink()
+        result = self.run_pack()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        foreign.write_bytes(b'-- Parent input still must not be selected')
+        internal.unlink()
+        self.assertNotEqual(self.run_pack().returncode, 0, 'Own Git never fills a missing internal input from its parent')
+        internal.write_bytes(b'-- Modified unapproved input')
+        self.assertNotEqual(self.run_pack().returncode, 0, 'Own Git must not disable the archived hash check')
 
     def test_repository_sql_input_rejects_unsafe_or_missing_sources(self):
         destination = 'tests/contracts/20261011004000_kinnso_merchant_insights.sql'

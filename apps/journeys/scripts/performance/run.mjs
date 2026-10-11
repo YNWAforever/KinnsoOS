@@ -1,3 +1,4 @@
+import {verifySourceInputs} from '../verify-source-inputs.mjs';
 import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {existsSync, createWriteStream} from 'node:fs';
 import {execFileSync, spawn} from 'node:child_process';
@@ -37,7 +38,7 @@ if(operations){
  const source=execFileSync('git',['rev-parse','HEAD'],{cwd:app,encoding:'utf8'}).trim(),archive=path.join(app,'public/source/kinnsoos-source.zip');
  const metadata=JSON.parse(execFileSync('python',['-c','import json,sys,zipfile; print(json.dumps(json.loads(zipfile.ZipFile(sys.argv[1]).read("SOURCE_METADATA.json"))))',archive],{encoding:'utf8'}));
  if(metadata.sourceRevision!==source)throw Error('Operations build archive must bind current source');
- for(const[name,hash]of Object.entries(metadata.sha256))if(createHash('sha256').update(await readFile(path.join(app,name))).digest('hex')!==hash)throw Error('Operations source differs from packaged source');
+ await verifySourceInputs(app,metadata);
 }
 
 // Refuse an occupied port: this runner never attaches to or terminates somebody else's server.

@@ -24,7 +24,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  const generation=useRef(0),scope=useRef(0),running=useRef(false),pending=useRef<{command:CampaignCommand;requestId:string}|null>(null),query=useRef<CampaignQuery>({});
  const editorBaseline=useRef({input:JSON.stringify(blank()),rates:['','',''].join('|')});
  const reference=useRef<string|undefined>(undefined);
- const firstRead=useRef(true);
+ const firstRead=useRef(true),initialLocationValid=useRef(true);
  const recovery=useWorkspaceRecovery({actorId,scope:'merchant-campaign:'+merchantId,authorized:!!data&&valid,draft:{draft,rates,editing,feedback,branchEdits},pending:pending.current,dirty:JSON.stringify(draft)!==editorBaseline.current.input||rates.some(Boolean)||Object.values(feedback).some(Boolean)||Object.keys(branchEdits).length>0,restore:value=>{const d=value.draft as {draft?:CampaignInput;rates?:string[];editing?:Pick<CampaignDetail,'id'|'title'|'updatedAt'>|null;feedback?:Record<string,string>;branchEdits?:Record<string,{name:string;reason:string}>};if(d?.draft){try{if(typeof d.draft.title!=='string'||typeof d.draft.summary!=='string'||!Array.isArray(d.draft.milestones)||!Array.isArray(d.draft.requirements)||!Array.isArray(d.draft.deliverables))throw Error('INVALID');setDraft(d.draft);if(Array.isArray(d.rates)&&d.rates.length===3&&d.rates.every(x=>typeof x==='string'))setRates(d.rates);if(d.editing?.id&&typeof d.editing.updatedAt==='string')setEditing(d.editing);}catch{setError('INVALID');}}if(d?.feedback&&Object.values(d.feedback).every(x=>typeof x==='string'&&x.length<=4000))setFeedback(d.feedback);if(d?.branchEdits&&Object.values(d.branchEdits).every(x=>typeof x?.name==='string'&&typeof x.reason==='string'))setBranchEdits(d.branchEdits);if(value.pending?.requestId){try{const command=campaignCommand(value.pending.command);pending.current={command,requestId:value.pending.requestId};setUnknown(true);setError('UNAVAILABLE');}catch{setError('INVALID');}}}});
  const blocked=locked||busy||unknown||!valid||!data||!recovery.ready;
  const dirty=JSON.stringify(draft)!==editorBaseline.current.input||rates.join('|')!==editorBaseline.current.rates;
@@ -41,14 +41,14 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   firstRead.current=false;query.current=next;writeListLocation(next,undefined,merchantId);setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items].filter((row,index,all)=>all.findIndex(i=>i.id===row.id)===index)}:result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
  }
  useEffect(()=>{
-  scope.current++;firstRead.current=true;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);
+  scope.current++;firstRead.current=true;initialLocationValid.current=true;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);
   const entry=new URLSearchParams(window.location.search),campaign=entry.get('campaign');
-  let filter:CollaborationListQuery={};try{filter=readListLocation('merchant',merchantId);}catch{setError('INVALID');setLoading(false);return;}setFilters(filter);
+  let filter:CollaborationListQuery={};try{filter=readListLocation('merchant',merchantId);}catch{initialLocationValid.current=false;setError('INVALID');setLoading(false);return;}setFilters(filter);
   query.current=entry.getAll('campaign').length===1&&sameCompanyLocation(entry,merchantId)&&campaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaign)?{...filter,campaignId:campaign}:{...filter};void load();
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){scope.current++;generation.current++;setValid(false);setData(null);setFilters({});resetEditor();setFeedback({});setBranchEdits({});pending.current=null;running.current=false;setBusy(false);setUnknown(false);}});
   return()=>{scope.current++;generation.current++;unsubscribe();};
  },[actorId,merchantId]);
- useEffect(()=>{if(!routeCampaign||routeCampaign===query.current.campaignId)return;if(pending.current||dirty){setError('CONFLICT');return;}void load({...query.current,campaignId:routeCampaign,participantsAfter:undefined,submissionsAfter:undefined});},[routeCampaign]);
+ useEffect(()=>{if(!initialLocationValid.current||!routeCampaign||routeCampaign===query.current.campaignId)return;if(pending.current||dirty){setError('CONFLICT');return;}void load({...query.current,campaignId:routeCampaign,participantsAfter:undefined,submissionsAfter:undefined});},[routeCampaign]);
  useEffect(()=>{if(refreshKey>0&&!pending.current)void load();},[refreshKey]);
  useEffect(()=>{onLockChange(busy||unknown);return()=>onLockChange(false);},[busy,unknown,onLockChange]);
  useEffect(()=>{const prevent=(event:BeforeUnloadEvent)=>{if(valid&&(dirty||busy||unknown)){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[valid,dirty,busy,unknown]);
@@ -81,6 +81,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  if(!valid)return <WorkspaceServiceState locale={locale} code={error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
  if(firstRead.current)return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   {loading?<p role="status">{t('Loading promotions…','正在載入推廣…')}</p>:<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={reference.current} retryState="read" onRetry={()=>void load({...query.current,after:undefined},true)} returnPath={`/${locale}/merchant`}/>}
+  {!loading&&error==='INVALID'&&<button className="k-btn" type="button" onClick={()=>{initialLocationValid.current=true;setFilters({});void load({},true);}}>{t('Reload promotion','重新載入推廣')}</button>}
  </section>;
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}

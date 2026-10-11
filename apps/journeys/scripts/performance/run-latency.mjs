@@ -1,3 +1,4 @@
+import {verifySourceInputs} from '../verify-source-inputs.mjs';
 import {mkdir, readFile, writeFile, stat} from 'node:fs/promises';
 import {createWriteStream, existsSync} from 'node:fs';
 import {execFileSync, spawn} from 'node:child_process';
@@ -28,8 +29,7 @@ const metadata = JSON.parse(execFileSync('python',['-c',
   'import json,sys,zipfile; print(json.dumps(json.loads(zipfile.ZipFile(sys.argv[1]).read("SOURCE_METADATA.json"))))',archivePath],{encoding:'utf8'}));
 if(metadata.sourceRevision!==sourceSha || (await stat(path.join(app,'.next/BUILD_ID'))).mtimeMs < (await stat(archivePath)).mtimeMs)
   throw Error('The selected build must follow source packaging on this current head');
-for(const [name,sha256] of Object.entries(metadata.sha256))
-  if(createHash('sha256').update(await readFile(path.join(app,name))).digest('hex')!==sha256) throw Error('Build source differs from packaged source');
+ await verifySourceInputs(app,metadata);
 const out = path.join(app, 'evidence/performance', 'latency-'+new Date().toISOString().replace(/[:.]/g,'-'));
 await mkdir(out, {recursive:true});
 const budgetFile = process.env.KINNSO_LATENCY_BUDGET_FILE;

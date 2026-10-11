@@ -33,7 +33,7 @@ def build_archive(root: Path):
     repository_files = manifest.get('repositoryFiles', {})
     if not isinstance(repository_files, dict):
         raise ValueError('Invalid repository source manifest')
-    extracted = (root / 'SOURCE_METADATA.json').is_file() and not (root / '.git').exists()
+    extracted = (root / 'SOURCE_METADATA.json').is_file()
     prior = json.loads((root / 'SOURCE_METADATA.json').read_text(encoding='utf-8')) if extracted else None
     for destination, source in repository_files.items():
         # Only explicitly reviewed migration inputs for source-distributed tests.
