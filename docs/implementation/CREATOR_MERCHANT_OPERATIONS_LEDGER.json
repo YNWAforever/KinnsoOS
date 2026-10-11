@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "observed_at": "2026-10-10T21:28:26.363761+00:00",
+  "observed_at": "2026-10-10T21:29:54.659420+00:00",
   "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
   "baseline": {
     "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
@@ -1445,12 +1445,21 @@
         "U04",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
       "blockers": [
         "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
       ],
@@ -1497,12 +1506,21 @@
         "U05",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
       "blockers": [
         "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
       ],
@@ -1529,12 +1547,21 @@
         "N18",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
       "blockers": [
         "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
       ],
@@ -1574,14 +1601,25 @@
         "U03",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "LOCAL_VERIFIED",
+      "ci_status": "PENDING_CURRENT_HEAD",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "5c7fc9f365fcf86d4c183fa849d0a6fbe61abcc5",
+      "evidence": [
+        {
+          "source_sha": "5c7fc9f365fcf86d4c183fa849d0a6fbe61abcc5",
+          "environment": "local_isolated",
+          "scenario": "bounded creator/merchant next actions, deep links, stale-account privacy, real task component reflow and review fixes",
+          "result": "10_behavior_RED_then_GREEN; self_review_RED_then_GREEN; fullunit428_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS; 6_P07_component_browser_PASS_at_b07267f; no_owned_connected_run_locally",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p07-current-unit.log; p07-current-build.log; p07-browser.log; committed collaboration-tasks.test.mjs and u06-collaboration-tasks.spec.ts",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
+      "blockers": [
+        "CURRENT_HEAD_OWNED_CI_PENDING: includes two new connected role cases and restored lazy-agent logout test; hosted role acceptance NOT_RUN."
+      ],
+      "next_action": "Run current-source owned CI; continue separate P08 schedule/table-boundary migration batch."
     },
     {
       "id": "P08",

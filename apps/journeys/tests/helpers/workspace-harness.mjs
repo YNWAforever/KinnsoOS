@@ -4,6 +4,7 @@ import {createContext,runInContext} from 'node:vm';
 import {createRequire} from 'node:module';
 import {build,transform} from 'esbuild';
 import {safeReturnPath} from '../../lib/auth/return-path.ts';
+import {actionGroup} from '../../lib/collaboration/tasks.ts';
 
 const require=createRequire(import.meta.url);
 export const tick=()=>new Promise(resolve=>setImmediate(resolve));
@@ -20,9 +21,19 @@ export async function serviceStateModule(jsx) {
   return module.exports;
 }
 
+export async function taskComponentModule(jsx){
+ const source=await transform(await readFile(new URL('../../app/travel/CollaborationTasks.tsx',import.meta.url),'utf8'),{loader:'tsx',format:'cjs',jsx:'automatic'});
+ const module={exports:{}};
+ runInContext(source.code,createContext({module,exports:module.exports,require:name=>{
+  if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
+  if(name==='../../lib/collaboration/tasks')return{actionGroup};
+  throw Error('Unexpected task component dependency '+name);
+ }}));return module.exports;
+}
+
 /** Executes actual component handlers; only session/network/framework boundaries are doubles. */
 export async function workspaceHarness(name,ports={},initial={}) {
-  const states=[],refs=[],effects=[],events=[];let cursor=0,changed=false,tree,invalidator,sequence=0;
+  const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=0;
   const props={actorId:'actor-A',enabled:true,path:'studio/missions',merchantId:'11111111-1111-4111-8111-111111111111',refreshKey:0,locked:false,onDenied:()=>{},onLockChange:()=>{},onChanged:async()=>{},...initial};
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
   const jsx=(type,props)=>typeof type==='function'?type(props):({type,props});
@@ -48,7 +59,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     b.onLoad({filter:/.*/,namespace:'test'},args=>({loader:'js',contents:snippets[args.path]}));
   }}]});
   const session=new Map();const module={exports:{}};
-  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:'',reload(){}},addEventListener(){},removeEventListener(){},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidator=fn;return()=>{};},require:name=>{
+  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',reload(){}},addEventListener(){},removeEventListener(){},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
     if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}})};
     return require(name);
   }});
@@ -58,5 +69,5 @@ export async function workspaceHarness(name,ports={},initial={}) {
   function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
   const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||text(x)===label));
   const field=label=>{const row=elements().find(x=>x.type==='label'&&[x.props.children].flat(Infinity).includes(label));return row&&elements(row).find(x=>['input','textarea','select'].includes(x.type));};
-  render();await tick();render();return{props,render,find,field,elements,text,events,invalidate:()=>{invalidator?.(null);render();}};
+  render();await tick();render();return{props,render,find,field,elements,text,events,invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
 }
