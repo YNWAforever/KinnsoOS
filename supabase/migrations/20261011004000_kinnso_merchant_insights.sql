@@ -4,7 +4,7 @@ returns jsonb language plpgsql security definer set search_path='' as $$
 declare actor uuid:=kinnso_internal.actor();as_of timestamptz:=statement_timestamp();from_day date;to_day date;from_time timestamptz;to_time timestamptz;campaign uuid;after_text text;binding text;anchor jsonb;anchor_id uuid;anchor_created timestamptz;result jsonb;last_row jsonb;cursor text;maximum integer;
 begin
  perform 1 from auth.users where id=actor and deleted_at is null and (banned_until is null or banned_until<=as_of) for share;
- if not found then raise exception 'auth_required';end if;
+ if not found then raise exception 'unauthenticated';end if;
  perform kinnso_internal.merchant_role(p_merchant_id,actor,null,array['owner']);
  perform kinnso_internal.keys(p_query,array['from','to','campaignId','after']);
  if jsonb_typeof(p_query) is distinct from 'object' or p_export is null then raise exception 'invalid_query';end if;
