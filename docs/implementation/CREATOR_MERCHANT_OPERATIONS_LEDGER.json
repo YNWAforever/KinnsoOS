@@ -2052,16 +2052,25 @@
         "U01",
         "U03"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "EXISTING_CONTRACTS_REUSED",
+      "ci_status": "PENDING_COMBINED_CONTINUATION",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [
-        "BLOCKED_CONTENT: no author-approved three-guide pilot supplied."
+      "source_sha": "4b4c4ed",
+      "evidence": [
+        {
+          "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Existing explicit publication/adoption/private-copy and native/legacy recovery contracts retained",
+          "result": "Complete P09 Journeys38094594052 browser126PASS0FAIL0SKIP includes existing content stories; combined4b4c4ed current CI pending; real content and hosted publication NOT_RUN.",
+          "observed_at": "2026-10-11T00:11:30.709008+00:00"
+        }
       ],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "blockers": [
+        "BLOCKED_CONTENT: no three author-consented real structured guides, source/cover rights or author acceptance supplied.",
+        "BLOCKED_TARGET: designated hosted target and approved test actors not supplied."
+      ],
+      "next_action": "Obtain three author-consented real guides with source/cover rights and designated target; run explicit content pilot without treating fixtures as content."
     },
     {
       "id": "P14",
@@ -2090,14 +2099,23 @@
         "N18",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "RED_TEST_CHECKPOINT",
+      "ci_status": "PENDING_OWNED_BASELINE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "4b4c4edd37b79f8417be9d2e2a014475f063637e",
+      "evidence": [
+        {
+          "environment": "isolated-local",
+          "source_sha": "4b4c4edd37b79f8417be9d2e2a014475f063637e",
+          "scenario": "P14 bounded dates, aggregate CSV formula/private-field defense, invitation numerator/denominator coverage",
+          "result": "RED: 3/3 missing-helper behavior tests fail before implementation; four owned DB cases added, not yet executed."
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: designated staging configuration, test actors and recovery proof have not been supplied."
+      ],
+      "next_action": "Execute owned CI RED baseline, finish current P10 code gate, then implement read-only owner insights without guessed historical events or payment/ROI."
     },
     {
       "id": "P15",

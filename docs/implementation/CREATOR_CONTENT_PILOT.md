@@ -1,0 +1,9 @@
+# Creator content pilot — P13
+
+Status: BLOCKED_CONTENT / hosted acceptance NOT_RUN. No three author-consented real structured guides or their cover/source rights evidence were supplied. Existing synthetic fixtures are not pilot content. No guide was published, withdrawn, seeded or changed on a hosted target.
+
+The delivered CreatorWorkspace/editor-operations, explicit publication/withdrawal API and public projection remain in use. Existing creator editor tests cover authored day/stop operations, HH:mm and conflict recovery. `tests/e2e/content-first-wave.spec.ts` follows manual onboarding, explicit publication, anonymous structured adoption, confirmation before private import, fresh-account readback and retention after withdrawal. `tests/e2e/creator-source.spec.ts` preserves native/legacy publication and acknowledgement recovery. Collaboration evidence does not publish a guide automatically.
+
+Current inherited evidence is P09 source c2203731827c613fae45dfb689fa8dcc0ccc5d16, owned Journeys run38094594052 (complete126 browser cases, zero failure/skip). This is regression evidence for that source only. The combined P09/P10 continuation at4b4c4ed must pass its own current gates before an updated claim. The older STRUCTURED_CONTENT_ACCEPTANCE.md observation remains historical and is not a current catalog/rights claim.
+
+Before actual pilot acceptance, record at least three named author consents, guide/version IDs, genuine days/stops, content language, checked-at dates, source links and cover rights; then verify private drafts/notes, published reading, adoption provenance and existing traveller-copy retention after withdrawal on the designated owned target. Keep author acceptance, isolated regression and production publication separate. User content and target questions remain pending; no substitute or invented itinerary will close this gate.
