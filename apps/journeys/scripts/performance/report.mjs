@@ -73,6 +73,24 @@ export async function withCollectionDeadline(collect,milliseconds,message){
   }finally{clearTimeout(timer);}
 }
 
+/** Only an owned fixture's initial blank reset may discard its synthetic unload warning. */
+export function prepareOwnedBlankReset(page,origin) {
+ localOrigin(origin);
+ const counts={beforeUnloadDialogs:0,acceptedBeforeUnloadDialogs:0,unhandledDialogs:0,handlingFailures:0,blankCompleted:false};
+ let stopped=false,retained;
+ const detach=()=>{page.off('dialog',dialog);page.off('framenavigated',navigated);};
+ const dialog=value=>{
+  let type,owned=false;
+  try{type=value.type();owned=new URL(page.url()).origin===origin;}catch{counts.handlingFailures++;return;}
+  if(type==='beforeunload')counts.beforeUnloadDialogs++;
+  if(type!=='beforeunload'||!owned){counts.unhandledDialogs++;return;}
+  Promise.resolve().then(async()=>{if(stopped)return;await value.accept();if(!stopped)counts.acceptedBeforeUnloadDialogs++;}).catch(()=>{if(!stopped)counts.handlingFailures++;});
+ };
+ const navigated=frame=>{if(frame.parentFrame()===null&&frame.url()==='about:blank'){counts.blankCompleted=true;detach();}};
+ page.on('dialog',dialog);page.on('framenavigated',navigated);
+ return{stop(){if(retained)return retained;stopped=true;detach();retained={...counts};return retained;}};
+}
+
 /** Per-page evidence only: no global Lighthouse logger, URLs/headers/claims or bodies. */
 export function observeNavigation(page,origin,clock=()=>performance.now()) {
  const started=clock(),pending=new Map(),active=new WeakSet();let retained;

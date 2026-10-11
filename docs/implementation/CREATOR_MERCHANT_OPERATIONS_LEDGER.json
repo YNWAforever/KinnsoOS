@@ -3247,5 +3247,75 @@
       }
     ],
     "next_action": "Fresh review and exact-source native/source/root/lab evidence; never waive parent U04 failure or point reset/cleanup at hosted target."
+  },
+  "operations_blank_reset_continuation": {
+    "parent_pr": 69,
+    "parent_sha": "ddded5a8e1136477e128b9b98544d407bb6ea53c",
+    "scope": "P16 owned Lighthouse initial blank reset only",
+    "reason": "Actual locked Lighthouse blank reset blocks on an unhandled beforeunload dialog before its own dialog handler is installed. Pending fetch/zero DOM alone did not identify a product API.",
+    "implementation": "Accept only owned fixture beforeunload until the initial main-frame about:blank; detach there and on timeout, retain safe immutable counts without messages or origins. Other dialogs and foreign pages remain untouched.",
+    "tdd": {
+      "compiled_collector_red": {
+        "pass": 0,
+        "fail": 3
+      },
+      "same_green": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "focused_regression": {
+        "pass": 26,
+        "fail": 0,
+        "skip": 0
+      },
+      "baseline_unit": {
+        "pass": 537,
+        "fail": 0,
+        "skip": 0
+      },
+      "queued_stop_red": {
+        "pass": 3,
+        "fail": 1,
+        "skip": 0
+      },
+      "final_focused": {
+        "pass": 27,
+        "fail": 0,
+        "skip": 0
+      },
+      "final_new_tests": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "runtime_probe": "owned synthetic loopback Chromium145.0.7632.6/Lighthouse13.5.0 blank-stage reproduction; not full application/lab or hosted acceptance",
+    "current_source_ci": "PENDING_NOT_TRANSFERRED",
+    "historical_lab": "PR69 PR42/48 and push45/48 remain INCOMPLETE; no backfill or inferred cause",
+    "release": "M1/M2 NO_GO; staging NOT_RUN_BLOCKED_TARGET; production NOT_RELEASED",
+    "unchanged": [
+      "product beforeunload/draft protection",
+      "actor/session/RLS and source/ownership gates",
+      "45s load/60s audit deadlines",
+      "48/8/24/960 denominators",
+      "requests/payload/reconcile/CAS/receipts",
+      "SQL/flags/providers/financial boundaries"
+    ],
+    "local": {
+      "unit": {
+        "pass": 541,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "windows_source_package": {
+        "pass": 5,
+        "fail": 0,
+        "skip": 1,
+        "skip_reason": "Windows symlink privilege unavailable; actual Linux gate remains pending"
+      }
+    }
   }
 }

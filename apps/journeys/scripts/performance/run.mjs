@@ -12,7 +12,7 @@ import {chromium} from '@playwright/test';
 import {createClient} from '@supabase/supabase-js';
 import {transform} from 'esbuild';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, observeNavigation, foundationRevision,workspacePages,operationRole} from './report.mjs';
+import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, observeNavigation, prepareOwnedBlankReset, foundationRevision,workspacePages,operationRole} from './report.mjs';
 import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -137,7 +137,7 @@ async function navigation(page, kind, route, cache, run, deadlineMs=flags.maxWai
     verified:false,lcpMs:null,cls:null,tbtMs:null,jsTransferBytes:null,imageTransferBytes:null,api:[],auditErrors:[],
     reportFile: `${kind}-${run}-${cache}.lhr.json`, traceFile: `${kind}-${run}-${cache}.trace.json`};
   samples.push(sample);
-  const observation=observeNavigation(page,origin);
+  const observation=observeNavigation(page,origin),blankReset=prepareOwnedBlankReset(page,origin);
   console.log(`${kind} ${run} ${cache}: collection START deadline=${deadlineMs}ms`);
   try {
     const result=await withCollectionDeadline(()=>lighthouse(origin+route,flags,undefined,page),deadlineMs,
@@ -157,7 +157,7 @@ async function navigation(page, kind, route, cache, run, deadlineMs=flags.maxWai
       else throw Error('Navigation trace missing');
     },async()=>{await ready(page,kind);sample.verified=finalPath===new URL(origin+route).pathname;});
   }catch(error){sample.failure=error.message;throw error;}
-  finally{sample.collectorDiagnostics=observation.stop();await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
+  finally{sample.blankResetDiagnostics=blankReset.stop();sample.collectorDiagnostics=observation.stop();await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
   console.log(`${kind} ${run} ${cache}: LCP=${sample.lcpMs?.toFixed(0)}ms CLS=${sample.cls} TBT=${sample.tbtMs?.toFixed(0)}ms`);
 }
 async function interaction(page, kind) {
@@ -218,7 +218,7 @@ try {
   if (!foundation) fixture = await setup();
   browser = await puppeteer.launch({executablePath: chromium.executablePath(), headless: true,
     args: ['--no-first-run', '--disable-background-networking', '--disable-component-update']});
-  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',lighthouseDeadlineMs:flags.maxWaitForLoad+15000,collectorDiagnostics:'per-page owned lifecycle/network counts v1',
+  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',lighthouseDeadlineMs:flags.maxWaitForLoad+15000,collectorDiagnostics:'per-page owned lifecycle/network counts v1',blankResetPolicy:'owned beforeunload only until initial blank v1',
     region: 'same owned '+process.platform+' host; loopback app and isolated database', ...flags,
     cacheDefinition: 'HTTP cache cleared before cold; retained before warm; fresh context for each pair'};
   const routes = {home: '/en', explore: '/en/explore',
