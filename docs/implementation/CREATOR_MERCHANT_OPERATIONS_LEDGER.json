@@ -1469,6 +1469,14 @@
           "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
           "observed_at": "2026-10-11T05:56:17.722508+00:00",
           "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
+        },
+        {
+          "source_sha": "84e9c729fdac079dbcfb02b031705139078f8e66",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Native keyboard read-retry stories and test-selector correction",
+          "result": "PR/push136PASS2FAIL0SKIP; DB94PASS0FAIL0SKIP. Actual retry and matching totals appear in both failure DOM snapshots; corrected exact accessible combobox selector, new-source native pending.",
+          "observed_at": "2026-10-11T06:19:43.889392+00:00",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38116568892; https://github.com/YNWAforever/KinnsoOS/actions/runs/38116565815"
         }
       ],
       "blockers": [
@@ -2728,6 +2736,14 @@
           "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
           "observed_at": "2026-10-11T05:56:17.722508+00:00",
           "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
+        },
+        {
+          "source_sha": "84e9c729fdac079dbcfb02b031705139078f8e66",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Native keyboard read-retry stories and test-selector correction",
+          "result": "PR/push136PASS2FAIL0SKIP; DB94PASS0FAIL0SKIP. Actual retry and matching totals appear in both failure DOM snapshots; corrected exact accessible combobox selector, new-source native pending.",
+          "observed_at": "2026-10-11T06:19:43.889392+00:00",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38116568892; https://github.com/YNWAforever/KinnsoOS/actions/runs/38116565815"
         }
       ],
       "blockers": [
@@ -3127,6 +3143,29 @@
         "decision": "Use actual compiled component tests and add EN/zh-HK native keyboard retry at320px against real owned local reads, foreign-company exclusion and zero finance POST.",
         "cost_if_wrong": "Native cases remain pending until actual new-source CI; browser emulation does not prove physical device or assistive technology acceptance."
       }
-    ]
+    ],
+    "native_selector_correction": {
+      "observed_at": "2026-10-11T06:19:43.889392+00:00",
+      "source": "84e9c729fdac079dbcfb02b031705139078f8e66",
+      "tested_merge": "c7ecde9862233235de908f7272245eb76df924ac",
+      "native_pr": {
+        "pass": 136,
+        "fail": 2,
+        "skip": 0
+      },
+      "native_push": {
+        "pass": 136,
+        "fail": 2,
+        "skip": 0
+      },
+      "integration": {
+        "pass": 94,
+        "fail": 0,
+        "skip": 0
+      },
+      "cause": "Both retained DOM snapshots contain the correct owned selected combobox and Matching totals after actual GET retry. Exact getByLabel includes populated option text and stops matching. Actual local locked Chromium probe confirms exact-label0 versus exact-role1 for both locales. Minimum test locator changes to accessible combobox name; product unchanged.",
+      "current_source_native": "PENDING_AFTER_TEST_CORRECTION",
+      "review": "One source review at84e9,0 Critical/Important/Minor; no re-review or new native PASS claimed."
+    }
   }
 }

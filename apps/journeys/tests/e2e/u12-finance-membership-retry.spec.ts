@@ -28,7 +28,7 @@ for(const locale of ['en','zh-HK'])test(`P03/P17 ${locale}: initial membership50
   await expect(page.getByText(label('No merchant finance membership is available for this account.','此帳戶沒有可用的商戶財務成員權限。'),{exact:true})).toHaveCount(0);
   await expect(page.getByRole('button',{name:label('Refresh records','重新載入紀錄'),exact:true})).toBeDisabled();
   await retry.focus();await page.keyboard.press('Enter');
-  const merchant=page.getByLabel(label('Merchant','商戶'),{exact:true});await expect(merchant).toHaveValue(merchants[0]);await expect(merchant.locator('option')).toHaveCount(1);await expect(merchant).not.toContainText('Foreign finance company');
+  const merchant=page.getByRole('combobox',{name:label('Merchant','商戶'),exact:true});await expect(merchant).toHaveValue(merchants[0]);await expect(merchant.locator('option')).toHaveCount(1);await expect(merchant).not.toContainText('Foreign finance company');
   await expect(page.getByRole('heading',{name:label('Matching totals','符合條件的總額'),exact:true})).toBeVisible();await expect(retry).toHaveCount(0);expect(membershipReads).toBe(2);expect(financePosts).toBe(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
   await testInfo.attach('finance-membership-retry-'+locale,{body:await page.screenshot({fullPage:true}),contentType:'image/png'});
