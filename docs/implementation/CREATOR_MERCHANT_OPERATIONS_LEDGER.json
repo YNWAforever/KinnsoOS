@@ -2554,6 +2554,13 @@
           "reviewed_source_sha": "1223bd02cc0007c5b85a132f9625ae0648dca915",
           "scenario": "Single fresh focused P16 review and one fix pass",
           "result": "Fresh read-only review0 Critical1 Important0 Minor: actual readiness still required the moved detail h1. Component-backed actual ready predicate2 PASS1 valid assertion RED ->3 GREEN including pending/denial negative controls. Strict full authorized article heading now matches h2; actor/origin checks unchanged. Focused12 PASS/full515 PASS0 FAIL0 SKIP/typecheck/build PASS. New-source owned CI and same-condition runtime measurements pending; previous39/48 and880/960 denominators preserved."
+        },
+        {
+          "source_sha": "00453a634a4591610f045c6066839f11beb288a0",
+          "environment": "owned-localhost-ci",
+          "run": 38110152206,
+          "scenario": "Measured layout improvement and actual semantic-heading contract failure",
+          "result": "Source515/Linux6/workflow2/extraction and SMTP4 PASS; DB94 PASS0FAIL0SKIP, native134PASS2FAIL0SKIP. Both native failures are EN/zh-HK u06 obsolete exact mission level1 assertions after the intentional full-title card h2 change; schedule/owner steps were not reached in these cases, so136 PASS is not claimed. Current rootPR38110194132 and push38110152147 all jobs SUCCESS. Raw lab48started/46valid/48required,7/8 interactions and24/24 backend reads despite2 retained merchantReview warm deadline failures;880/960 latency with2 READ ONLY/shared-lock groups missing; both cleanup PASS. Matching browser/CPU/throttle/data: all6 creator detail CLS0.16685243479704767 ->0.06302391996372786. Narrow layout observation is not full lab, field CWV, production SLO or controlled general latency acceptance."
         }
       ],
       "blockers": [
@@ -2968,7 +2975,12 @@
       {
         "decision": "Parent onboarding, collaboration and earnings contracts remain excluded from focused reimplementation/review.",
         "cost_if_wrong": "Combined owned suites remain required to detect regressions; this focused review provides no separate new parent acceptance."
+      },
+      {
+        "decision": "Align the actual native next-action story with the intentional stable page h1/full mission card h2 semantics; require both exact headings while preserving owned route, both roles, schedule identity and320 width assertions. Actual current134 PASS2 FAIL is the retained RED, not a waived test.",
+        "cost_if_wrong": "Until the corrected native story runs at the new source, its owner/date continuation is unverified. This is a test contract correction within the single unfinished fix pass; no new product layout change or old136 acceptance is inferred."
       }
-    ]
+    ],
+    "verification_followup": "The same single fix pass corrects existing native EN/zh heading assertions to require BOTH stable localized h1 and exact full-title authorized article h2. Owned link/date/merchant/schedule/width checks remain; actual134/2 failure logs retained. Updated exact-source native result pending, no second review or source-product change."
   }
 }
