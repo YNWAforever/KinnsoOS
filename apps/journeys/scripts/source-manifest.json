@@ -421,7 +421,13 @@
     "tsconfig.json",
     "tests/blank-reset-dialog.test.mjs",
     "tests/workspace-loading.test.mjs",
-    "tests/e2e/u16-workspace-loading-layout.spec.ts"
+    "tests/e2e/u16-workspace-loading-layout.spec.ts",
+    "scripts/verify-source-inputs.mjs",
+    "tests/source-inputs.test.mjs"
   ],
-  "version": 1
+  "version": 1,
+  "repositoryFiles": {
+    "tests/contracts/20261011004000_kinnso_merchant_insights.sql": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
+    "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql"
+  }
 }

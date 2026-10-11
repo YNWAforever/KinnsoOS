@@ -27,3 +27,9 @@ test('mandatory browser collection runs after latency failure, but stops when th
   assert.equal(evaluate(condition, {}, false), true, 'a failed latency step still requires every browser denominator');
   assert.equal(evaluate(condition, {}, true), false, 'cancellation must stop this potentially long collection');
 });
+
+test('standalone corresponding source runs its entire Node suite after locked install', () => {
+  const step = workflow.split('- name: Rebuild distributed corresponding source')[1]?.split('- uses:')[0];
+  assert.ok(step, 'source extraction gate must exist');
+  assert.match(step, /npm ci[\s\S]*npm test[\s\S]*npm run build[\s\S]*npm run typecheck/);
+});

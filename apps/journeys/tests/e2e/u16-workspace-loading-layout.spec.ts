@@ -46,10 +46,10 @@ test.beforeAll(async()=>{
   b.onLoad({filter:/.*/,namespace:'owner-only'},args=>({loader:'js',contents:`export const ${args.path}=()=>null;`}));
  }}]});script=output.outputFiles[0].text;
 });
-async function mount(page:Page,kind:string,locale:string,width:number){
+async function mount(page:Page,kind:string,locale:string,width:number,search=''){
  await page.setViewportSize({width,height:844});
  await page.route('http://127.0.0.1:3495/__layout-fixture**',route=>route.fulfill({contentType:'text/html',body:`<style>body{margin:0}${css}</style><div class="k-app"><header style="height:240px">Journeys</header><main class="k-main" id="fixture"></main><footer class="k-footer">Footer</footer></div>`}));
- await page.goto('http://127.0.0.1:3495/__layout-fixture?company='+id+'&campaign='+id);
+ await page.goto('http://127.0.0.1:3495/__layout-fixture?company='+id+'&campaign='+id+search);
  await page.evaluate(({kind,locale})=>{(window as any).fixture={kind,locale};},{kind,locale});await page.addScriptTag({content:script});
 }
 async function settle(page:Page,kind:string,data:unknown){
@@ -106,4 +106,31 @@ for(const locale of ['en','zh-HK'])test(`P17 ${locale}: A draft is quarantined u
  await page.evaluate(company=>(window as any).fixtureCompany(company),id);await expect(title).toHaveCount(0);
  await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await expect(title).toHaveValue('PRIVATE_A_TITLE');await expect(page.getByRole('textbox',{name:label(locale,'Brief description','簡報內容'),exact:true})).toHaveValue('PRIVATE_A_DESCRIPTION');await expect(page.getByLabel(label(locale,'Coupon code','優惠碼'),{exact:true})).toHaveValue('PRIVATE_A_COUPON');
  await page.evaluate(()=>window.dispatchEvent(new Event('fixture-invalidate')));await expect(title).toHaveCount(0);
+});
+
+for(const locale of ['en','zh-HK'])for(const width of [320,640,1280])test(`P03 ${locale} ${width}: first-read recovery keeps the shell through retry`,async({page},testInfo)=>{
+ await mount(page,'campaigns',locale,width);await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(1);
+ const title=page.getByLabel(label(locale,'Brief title','簡報標題'),{exact:true});await expect(title).toHaveCount(0);
+ await page.evaluate(()=>(window as any).fixtureResolve('campaigns',{ok:false,code:'UNAVAILABLE',requestId:'22222222-2222-4222-8222-222222222222'}));
+ const retry=page.getByRole('button',{name:label(locale,'Retry loading','重試載入'),exact:true});await expect(retry).toBeVisible();
+ await expect(title).toHaveCount(0);await expect(page.locator('.k-campaigns form')).toHaveCount(0);
+ const failure=(await page.locator('.k-campaigns').boundingBox())!;await retry.focus();await page.keyboard.press('Enter');
+ await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(2);await expect(title).toHaveCount(0);
+ await expect(page.getByRole('status')).toContainText(label(locale,'Loading promotions','正在載入推廣'));
+ await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await title.fill('Original scoped input');
+ await page.getByRole('button',{name:label(locale,'Reload promotion','重新載入推廣'),exact:true}).click();
+ await page.evaluate(()=>(window as any).fixtureResolve('campaigns',{ok:false,code:'UNAVAILABLE'}));await expect(retry).toBeVisible();await expect(title).toHaveValue('Original scoped input');
+ await retry.click();await expect(title).toHaveValue('Original scoped input');await settle(page,'campaigns',{...directory,items:[]});await expect(title).toBeEnabled();await expect(title).toHaveValue('Original scoped input');
+ await testInfo.attach('first-read-recovery-shell',{body:Buffer.from(JSON.stringify({locale,width,failure,reads:4})),contentType:'application/json'});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const locale of ['en','zh-HK'])for(const initial of ['invalid-url','invalid-response'])test(`P03 ${locale}: keyboard reload recovers first ${initial}`,async({page})=>{
+ await mount(page,'campaigns',locale,320,initial==='invalid-url'?'&status=bogus':'');
+ if(initial==='invalid-response'){await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(1);await page.evaluate(()=>(window as any).fixtureResolve('campaigns',{ok:false,code:'INVALID'}));}
+ const title=page.getByLabel(label(locale,'Brief title','簡報標題'),{exact:true});await expect(title).toHaveCount(0);
+ const reload=page.getByRole('button',{name:label(locale,'Reload promotion','重新載入推廣'),exact:true});await expect(reload).toBeEnabled();await reload.focus();await page.keyboard.press('Enter');
+ await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(initial==='invalid-url'?1:2);await expect(title).toHaveCount(0);
+ await settle(page,'campaigns',{...directory,items:[]});await expect(title).toBeEnabled();expect(new URL(page.url()).searchParams.get('status')).toBeNull();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
 });
