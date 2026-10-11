@@ -4,3 +4,5 @@ Scope: creator collaboration and historical earnings; merchant coupon campaign d
 Preserve prior N mappings; whole phase requested supersedes old first-three-only PR split. Additive isolated development only; no current deployment or production SQL authorization inferred.
 Three independently owned code scopes via dispatching-parallel-agents. Root owns shared UI/navigation/css/source manifest + onboarding/profile + integration.
 No Docker/owned DB is available locally; do not bypass verifyTestTarget. SQL and connected-browser verification will use existing owned CI stack; bounded PGlite adapter can supplement but not replace migration/DB evidence.
+
+P11 candidate: bounded deadline reminders, same-transaction unique facts/inbox, fresh deadline/account/mission/participant checks, separate unknown/success/failure job health and native links. Local445unit/type/buildPASS; owned current DB/browser/review pending. No hosted scheduling, delivery or release claim.
