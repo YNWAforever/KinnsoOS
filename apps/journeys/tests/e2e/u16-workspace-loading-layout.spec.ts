@@ -16,7 +16,7 @@ test.beforeAll(async()=>{
  if(start<0||end<start)throw Error('Actual role loader missing');
  const ports:Record<string,string>={
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='zh-HK'?zh:en,href:path=>'/'+window.fixture.locale+'/'+path});`,
-  session:`export const subscribeAccountInvalidation=fn=>{const handler=()=>fn(null);window.addEventListener('fixture-invalidate',handler);return()=>window.removeEventListener('fixture-invalidate',handler)};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};`,
+  session:`const records=new Map();export const subscribeAccountInvalidation=fn=>{const handler=()=>fn(null);window.addEventListener('fixture-invalidate',handler);return()=>window.removeEventListener('fixture-invalidate',handler)};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(actor,scope)=>records.get(actor+':'+scope)??null;export const saveLocalWorkspaceRecovery=async(actor,scope,value)=>{records.set(actor+':'+scope,structuredClone(value))};export const clearLocalWorkspaceRecovery=async(actor,scope)=>{records.delete(actor+':'+scope)};export const releaseLocalWorkspaceRecovery=async()=>{};`,
   creator:`export const creatorMissions={get:()=>window.fixtureRead('creator')};`,
   campaigns:`export const merchantCampaigns={list:()=>window.fixtureRead('campaigns')};`,
   merchant:`export const merchants={memberships:()=>window.fixtureRead('memberships'),workspace:()=>window.fixtureRead('workspace')};`,
@@ -31,7 +31,9 @@ test.beforeAll(async()=>{
   const waiters={};window.fixtureReads={};window.fixtureRead=kind=>{window.fixtureReads[kind]=(window.fixtureReads[kind]??0)+1;return new Promise(resolve=>(waiters[kind]??=[]).push(resolve))};
   window.fixtureResolve=(kind,result)=>{const done=waiters[kind]?.shift();if(!done)throw Error('No pending '+kind);done(result)};
   const f=window.fixture,id='${id}';
-  createRoot(document.getElementById('fixture')).render(f.kind==='creator'?<CreatorMissionsWorkspace actorId="actor-A" enabled path={'studio/missions/'+id}/>:f.kind==='merchant'?<MerchantWorkspace actorId="actor-A" enabled/>:f.kind==='campaigns'?<section className="k-page k-merchant"><h1>Merchant workspace</h1><MerchantCampaigns actorId="actor-A" merchantId={id} refreshKey={0} locked={false} onLockChange={()=>{}} onChanged={async()=>{}} onDenied={()=>{}}/></section>:<RoleWorkspaceLoading/>);
+  const root=createRoot(document.getElementById('fixture'));
+  window.fixtureCompany=company=>root.render(<section className="k-page k-merchant"><h1>Merchant workspace</h1><MerchantCampaigns key={company} actorId="actor-A" merchantId={company} refreshKey={0} locked={false} onLockChange={()=>{}} onChanged={async()=>{}} onDenied={()=>{}}/></section>);
+  root.render(f.kind==='creator'?<CreatorMissionsWorkspace actorId="actor-A" enabled path={'studio/missions/'+id}/>:f.kind==='merchant'?<MerchantWorkspace actorId="actor-A" enabled/>:f.kind==='campaigns'?<section className="k-page k-merchant"><h1>Merchant workspace</h1><MerchantCampaigns actorId="actor-A" merchantId={id} refreshKey={0} locked={false} onLockChange={()=>{}} onChanged={async()=>{}} onDenied={()=>{}}/></section>:<RoleWorkspaceLoading/>);
  `,loader:'tsx',resolveDir:resolve('.')},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',plugins:[{name:'owned-boundaries',setup(b){
   b.onResolve({filter:/.*/},args=>{
    const port=args.path==='./ui'||args.path==='./app/travel/ui'?'ui':args.path.endsWith('/trips/local-drafts')?'session':args.path.endsWith('/creators/collaboration')?'creator':args.path.endsWith('/merchants/campaign-repository')?'campaigns':args.path.endsWith('/merchants/repository')?'merchant':args.path==='next/navigation'?'router':args.path==='next/link'?'link':null;
@@ -91,3 +93,17 @@ for(const locale of ['en','zh-HK'])for(const width of [320,640,1280]){
   await expect(page.locator('.k-footer')).not.toBeInViewport();
  });
 }
+
+for(const locale of ['en','zh-HK'])test(`P17 ${locale}: A draft is quarantined until its fresh scope read and survives A-B-A`,async({page})=>{
+ await mount(page,'campaigns',locale,320);
+ const title=page.getByLabel(label(locale,'Brief title','簡報標題'),{exact:true});
+ await expect(title).toHaveCount(0);await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();
+ await title.fill('PRIVATE_A_TITLE');await page.getByRole('textbox',{name:label(locale,'Brief description','簡報內容'),exact:true}).fill('PRIVATE_A_DESCRIPTION');await page.getByLabel(label(locale,'Coupon code','優惠碼'),{exact:true}).fill('PRIVATE_A_COUPON');
+ await expect(page.getByRole('status').filter({hasText:label(locale,'Draft kept on this device for this account.','草稿已保存在此裝置，僅供此帳戶使用。')})).toBeVisible();
+ const second='33333333-3333-4333-8333-333333333333';
+ await page.evaluate(company=>(window as any).fixtureCompany(company),second);await expect(title).toHaveCount(0);
+ await settle(page,'campaigns',{...directory,merchantId:second,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await expect(title).toHaveValue('');await expect(page.getByRole('textbox',{name:label(locale,'Brief description','簡報內容'),exact:true})).toHaveValue('');await expect(page.getByLabel(label(locale,'Coupon code','優惠碼'),{exact:true})).toHaveValue('');
+ await page.evaluate(company=>(window as any).fixtureCompany(company),id);await expect(title).toHaveCount(0);
+ await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await expect(title).toHaveValue('PRIVATE_A_TITLE');await expect(page.getByRole('textbox',{name:label(locale,'Brief description','簡報內容'),exact:true})).toHaveValue('PRIVATE_A_DESCRIPTION');await expect(page.getByLabel(label(locale,'Coupon code','優惠碼'),{exact:true})).toHaveValue('PRIVATE_A_COUPON');
+ await page.evaluate(()=>window.dispatchEvent(new Event('fixture-invalidate')));await expect(title).toHaveCount(0);
+});

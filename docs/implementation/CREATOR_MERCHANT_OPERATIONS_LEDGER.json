@@ -3401,5 +3401,49 @@
     "second_review": "NOT_RUN_NOT_CLAIMED",
     "current_source_ci": "PENDING_NEW_HEAD_NOT_TRANSFERRED",
     "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  },
+  "workspace_layout_native_checkpoint": {
+    "observedAt": "2026-10-11T10:30:00Z",
+    "parentSource": "7a1041267417475430cdda80637e702621efed53",
+    "productReviewedSource": "414f8522e52d99d91c81589c311059de5add127e",
+    "originalCurrentNative": {
+      "pr": 38130610288,
+      "push": 38130607368,
+      "passed": 160,
+      "failed": 2,
+      "skipped": 0,
+      "preserved": true
+    },
+    "fixedAssertions": [
+      "U04 waits for saved scoped draft; denies all A text in B; fresh return restores A text",
+      "N14 waits for authorized campaign editor; preserves >=12 fields and original geometry keyboard 200pct checks"
+    ],
+    "newCases": [
+      "EN A-B-A slow first-read draft quarantine/restoration",
+      "zh-HK A-B-A slow first-read draft quarantine/restoration"
+    ],
+    "local": {
+      "unit": {
+        "passed": 544,
+        "failed": 0,
+        "skipped": 0
+      },
+      "componentBrowser": {
+        "passed": 40,
+        "failed": 0,
+        "skipped": 0
+      },
+      "typecheck": "PASS",
+      "windowsPackage": {
+        "passed": 5,
+        "failed": 0,
+        "skipped": 1,
+        "reason": "symlink creation privilege unavailable"
+      }
+    },
+    "productDeltaAfterReviewedSource": "UNCHANGED",
+    "newExactSourceCI": "PENDING_ORIGINAL_RUN",
+    "standaloneWholeUnit": "542_PASS_2_FAIL_MISSING_MONOREPO_SQL",
+    "release": "NO_GO_NOT_RELEASED"
   }
 }
