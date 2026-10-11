@@ -2518,6 +2518,15 @@
           "environment": "owned-localhost-ci",
           "scenario": "Sandbox-preserving Ubuntu22 collection and actual metadata RED",
           "result": "880 verified latency samples again;2 merchant SQL groups INCOMPLETE under unchanged READ ONLY guard. Browser sandbox starts, then0 navigation samples due newly introduced missing os import. Both cleanup PASS. Exact metadata runtime reproduction6 PASS1 valid RED ReferenceError before minimum import fix; next source must execute full lab. Linux CI archive a673ee0868edf1c614ddbf97ba27f88f76004a4f4132f448e7cdbcf2c39d1339, separate from local Windows archive."
+        },
+        {
+          "source_sha": "a83ce9db63524e01804bcec7967998398e1c8ef8",
+          "tested_merge": "9e0c1a1b4714f42da3276448580211aeff0d5461",
+          "run": 38103592954,
+          "environment": "owned-localhost-ci",
+          "scenario": "Bounded lab cancellation and missing artifact denominator",
+          "result": "Browser collection exceeds configured45-minute window; normal cancel and official force-cancel requests accepted, fresh API still IN_PROGRESS. No final performance artifact/log is available yet; samples/traces/cleanup NOT_VERIFIED and cannot be backfilled. Same-source push run38103590358 remains independent.",
+          "observed_at": "2026-10-11T02:56:35.994238+00:00"
         }
       ],
       "blockers": [
@@ -2633,6 +2642,14 @@
           "run": 38103592954,
           "scenario": "Final native readiness window",
           "result": "94 DB PASS;134 browser PASS2 u11 FAIL0 SKIP at initial merchant device-save predicate. Existing snapshot version regression now PASS. Valid deferred-initial-directory actual component reproduction13 PASS1 FAIL: editor accepted input before fresh authority/device restoration. Minimum fix locks authoring until current directory and restoration are ready; keep actual-page diagnostics, strict original command/durable-row assertions and full native denominator."
+        },
+        {
+          "source_sha": "04221db07f7b641b9978e96d9103970618e92a6d",
+          "run": 38106233258,
+          "environment": "owned-localhost-ci",
+          "scenario": "Fresh root candidate gate",
+          "result": "Root PR quality fails at Next16.3.8 Turbopack NextFontGoogleFontFileReplacer import-map; downstream E2E NOT_RUN. Log retained. Same-source push quality38106230732 passed web build and is running pnpm tests; not a PR success substitute. Journeys38106233270 pending behind unresponsive old group.",
+          "observed_at": "2026-10-11T02:56:35.994238+00:00"
         }
       ],
       "blockers": [
@@ -2786,7 +2803,7 @@
     "verification": {
       "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
       "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending",
-      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS."
+      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required."
     },
     "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
     "rulings": [
@@ -2845,6 +2862,10 @@
       {
         "decision": "Merchant authoring must wait for fresh current-company directory authority and completed actor-bound device restoration; service retry remains available through its existing state action. Real native storage failure and valid deferred-read RED justify this correction within the unfinished single fix pass.",
         "cost_if_wrong": "Initial outage prevents new authoring until an authorized read/recovery succeeds; native evidence is still required to establish the actual failed storage story cause, not inferred from this unit reproduction."
+      },
+      {
+        "decision": "Isolate owned Journeys acceptance concurrency by event/PR-or-ref/source SHA; duplicate same-source runs retain one group. Long browser collection remains required after latency failure but is cancellation-aware. Actual accepted cancellation remains unconfirmed, not assumed successful.",
+        "cost_if_wrong": "Multiple source SHAs may consume more isolated CI runners; failed/cancelled old denominators and missing cleanup remain evidence. All localhost ownership guards, sample counts and mandatory gates remain; this repair cannot certify the new source until CI executes."
       }
     ]
   }

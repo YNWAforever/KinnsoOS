@@ -3,7 +3,7 @@ on: [push, pull_request]
 permissions:
   contents: read
 concurrency:
-  group: journeys-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  group: journeys-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
@@ -23,6 +23,8 @@ jobs:
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p source_package_test.py
+      - name: Owned CI concurrency and cancellation contracts
+        run: node --test ../../scripts/journeys-workflow-test.mjs
       - name: Deployment scope native contracts (metadata only)
         run: |
           set -o pipefail
@@ -152,7 +154,7 @@ jobs:
       - name: Collect complete operations warm-read baseline without inventing budgets
         run: node scripts/performance/run-latency.mjs --operations
       - name: Collect all traveller and private workspace cold/warm navigation evidence
-        if: always()
+        if: ${{ !cancelled() }}
         run: node scripts/performance/run.mjs --operations
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
