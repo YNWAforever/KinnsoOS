@@ -48,7 +48,7 @@ create table kinnso_internal.collaboration_reminder_facts(
 alter table kinnso_internal.collaboration_reminder_facts enable row level security;
 revoke all on kinnso_internal.collaboration_reminder_facts from public,anon,authenticated,service_role;
 
-create function kinnso_internal.collaboration_reminder_candidates(p_now timestamptz,p_participant uuid default null,p_milestone uuid default null)
+create function kinnso_internal.collaboration_reminder_candidates(p_now timestamptz,p_participant uuid default null,p_milestone uuid default null,p_after_participant uuid default null,p_after_milestone uuid default null,p_limit integer default 51)
 returns table(participant_id uuid,milestone_id uuid,mission_id uuid,recipient_id uuid,deadline_version timestamptz,event_kind text,mission_title text)
 language sql stable security definer set search_path='' as $$
  select p.id,l.id,m.id,p.creator_id,l.due_at,case when p_now<l.due_at then 'collaboration.due_soon' else 'collaboration.overdue' end,m.title
@@ -60,9 +60,12 @@ language sql stable security definer set search_path='' as $$
  and(m.mission_source='merchant'and merchant.status='active' or m.mission_source='travelpayouts'and program.status='active')
  and l.due_at is not null and l.due_at<=p_now+interval '24 hours'
  and(case when l.repeatable then m.max_receipts_per_creator is null or(select count(*)from public.mission_milestone_submissions s where s.mission_participant_id=p.id and s.mission_milestone_id=l.id and s.status in('submitted','approved'))<m.max_receipts_per_creator
- else not exists(select 1 from public.mission_milestone_submissions s where s.mission_participant_id=p.id and s.mission_milestone_id=l.id and s.status in('submitted','approved'))end);
+ else not exists(select 1 from public.mission_milestone_submissions s where s.mission_participant_id=p.id and s.mission_milestone_id=l.id and s.status in('submitted','approved','rejected'))end)
+ and(p_after_participant is null or(p.id,l.id)>(p_after_participant,p_after_milestone))
+ and not exists(select 1 from kinnso_internal.collaboration_reminder_facts f where f.event_kind=case when p_now<l.due_at then 'collaboration.due_soon'else 'collaboration.overdue'end and f.milestone_id=l.id and f.recipient_id=p.creator_id and f.deadline_version=l.due_at)
+ order by p.id,l.id limit p_limit;
 $$;
-revoke all on function kinnso_internal.collaboration_reminder_candidates(timestamptz,uuid,uuid)from public,anon,authenticated,service_role;
+revoke all on function kinnso_internal.collaboration_reminder_candidates(timestamptz,uuid,uuid,uuid,uuid,integer)from public,anon,authenticated,service_role;
 
 create function public.due_kinnso_collaboration_reminders(p_now timestamptz,p_after text default null,p_limit integer default 50)
 returns jsonb language plpgsql stable security definer set search_path='' as $$
@@ -72,10 +75,7 @@ declare anchor_participant uuid;anchor_milestone uuid;items jsonb;cursor text;be
   if p_after!~ '^[0-9a-f-]{36}:[0-9a-f-]{36}$' then raise exception 'invalid_cursor';end if;
   begin anchor_participant:=split_part(p_after,':',1)::uuid;anchor_milestone:=split_part(p_after,':',2)::uuid;exception when others then raise exception 'invalid_cursor';end;
  end if;
- with bounded as(select c.*,row_number()over(order by c.participant_id,c.milestone_id)n from kinnso_internal.collaboration_reminder_candidates(p_now)c
-  where(p_after is null or(c.participant_id,c.milestone_id)>(anchor_participant,anchor_milestone))
-  and not exists(select 1 from kinnso_internal.collaboration_reminder_facts f where f.event_kind=c.event_kind and f.milestone_id=c.milestone_id and f.recipient_id=c.recipient_id and f.deadline_version=c.deadline_version)
-  order by c.participant_id,c.milestone_id limit p_limit+1)
+ with bounded as(select c.*,row_number()over(order by c.participant_id,c.milestone_id)n from kinnso_internal.collaboration_reminder_candidates(p_now,null,null,anchor_participant,anchor_milestone,p_limit+1)c)
  select coalesce(jsonb_agg(jsonb_build_object('participantId',participant_id,'milestoneId',milestone_id,'deadlineVersion',deadline_version,'eventKind',event_kind)order by n)filter(where n<=p_limit),'[]'),
   case when count(*)>p_limit then ((jsonb_agg(participant_id::text||':'||milestone_id::text order by n)->(p_limit-1))#>>'{}')end into items,cursor from bounded;
  return jsonb_build_object('items',items,'nextCursor',cursor);
@@ -83,7 +83,7 @@ end $$;
 
 create function public.emit_kinnso_collaboration_reminder(p_now timestamptz,p_candidate jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $$
-declare participant uuid;milestone uuid;deadline timestamptz;kind text;mission uuid;recipient uuid;c record;fact uuid;notification uuid;begin
+declare participant uuid;milestone uuid;deadline timestamptz;kind text;mission uuid;recipient uuid;candidate record;fact uuid;notification uuid;begin
  perform kinnso_internal.keys(p_candidate,array['participantId','milestoneId','deadlineVersion','eventKind']);
  if p_now is null or p_now>clock_timestamp()+interval '1 minute' or p_candidate->>'participantId' is null or p_candidate->>'milestoneId' is null or p_candidate->>'deadlineVersion' is null or p_candidate->>'eventKind' is null then raise exception 'invalid_reminder';end if;
  begin participant:=(p_candidate->>'participantId')::uuid;milestone:=(p_candidate->>'milestoneId')::uuid;deadline:=(p_candidate->>'deadlineVersion')::timestamptz;exception when others then raise exception 'invalid_reminder';end;
@@ -99,11 +99,11 @@ declare participant uuid;milestone uuid;deadline timestamptz;kind text;mission u
  perform 1 from auth.users u where u.id=recipient for share;
  perform 1 from public.merchant_profiles a join public.missions m on m.merchant_profile_id=a.id where m.id=mission for share of a;
  perform 1 from public.affiliate_network_programs a join public.missions m on m.affiliate_network_program_id=a.id where m.id=mission for share of a;
- select * into c from kinnso_internal.collaboration_reminder_candidates(p_now,participant,milestone);
- if not found or c.recipient_id is distinct from recipient or c.mission_id is distinct from mission or c.deadline_version is distinct from deadline or c.event_kind is distinct from kind then return jsonb_build_object('emitted',false);end if;
+ select * into candidate from kinnso_internal.collaboration_reminder_candidates(p_now,participant,milestone);
+ if not found or candidate.recipient_id is distinct from recipient or candidate.mission_id is distinct from mission or candidate.deadline_version is distinct from deadline or candidate.event_kind is distinct from kind then return jsonb_build_object('emitted',false);end if;
  insert into kinnso_internal.collaboration_reminder_facts(event_kind,milestone_id,recipient_id,deadline_version)values(kind,milestone,recipient,deadline)on conflict do nothing returning milestone_id into fact;
  if not found then return jsonb_build_object('emitted',false);end if;
- insert into public.notifications(creator_id,notification_type,entity_type,entity_id,payload)values(recipient,kind,'mission',mission,jsonb_build_object('mission_title',c.mission_title))returning id into notification;
+ insert into public.notifications(creator_id,notification_type,entity_type,entity_id,payload)values(recipient,kind,'mission',mission,jsonb_build_object('mission_title',candidate.mission_title))returning id into notification;
  update kinnso_internal.collaboration_reminder_facts set notification_id=notification where event_kind=kind and milestone_id=milestone and recipient_id=recipient and deadline_version=deadline;
  return jsonb_build_object('emitted',true);
 end $$;

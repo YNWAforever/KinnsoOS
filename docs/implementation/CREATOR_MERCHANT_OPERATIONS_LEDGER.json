@@ -1250,7 +1250,11 @@
     "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
     "P11 Ruling: service-only scan uses participant/milestone UUID tuple cursor; emitted facts are excluded, so a bounded partial or crashed job may restart cold and safely progress. Cost if wrong: additional rescan cost; no actor-facing cursor or private evidence is exposed.",
     "P11 Ruling: a scan hitting page/time budget records incomplete as job failure and returns retryable 503, preserving last success; it does not claim full success from partial work. Cost if wrong: busy periods may surface repeated job alerts until backlog is drained.",
-    "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence."
+    "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence.",
+    "P11 final review Ruling: suppress terminal rejected nonrepeatable work in scan and fresh emit; pending/revision/unsubmitted remain eligible, repeatable uses receipt cap. Cost: final rejection requires a separately authorized future workflow to reopen.",
+    "P11 final review Ruling: apply cursor, processed facts and lookahead inside the SQL candidate query; verify substantial processed history with EXPLAIN ANALYZE before any index proposal. Cost: query still scans eligible ownership joins as chosen by current indexes; no hosted performance claim.",
+    "P11 final review declined hosted target compatibility, scheduler ownership/registration, external providers, human hosted acceptance, and unchanged P01-P10 beyond required dependencies. Cost: these gates remain NOT_RUN, no schedule enabled.",
+    "P11 minor deferred: identical mission-level inbox title/link for two deadlines remains safe but less specific; a future allowlisted milestone title/deadline projection needs its own native inbox contract coverage."
   ],
   "tasks": [
     {
@@ -1922,11 +1926,11 @@
         "U04",
         "U05"
       ],
-      "code_status": "IMPLEMENTED_CI_AND_REVIEW_PENDING",
+      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
       "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
+      "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
       "evidence": [
         {
           "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
@@ -1935,6 +1939,13 @@
           "result": "72existingintegrationPASS_3newFAIL_0SKIP; two reminder cases reach missing due RPC; distinct scheduled health row absent. Earlier7ff6632/b9aa8ba two cases NOT_REACHED due mandatory milestone description/participant source; those failures are not reminder RED. Unit3newFAIL before interface; now local445unitPASS_0FAIL_0SKIP, typecheck/build/source packPASS. Bounded runtime independent RED to GREEN. Six current DB cases and two new native EN/zh-HK browser stories pending.",
           "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095349058; .superpowers/sdd/2026-10-11-creator-merchant-reminders/unit-candidate.log; build-candidate.log",
           "observed_at": "2026-10-10T23:45:08.461721+00:00"
+        },
+        {
+          "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh final review terminal rejection and bounded internal query",
+          "result": "CI38096569994 reaches rejected scan true expected false and missing bounded helper interface; prior candidate also exposes record/table alias collision55000 in emit. Fixed nonrepeatable terminal rejected suppression, cursor/dedupe/limit inside SQL helper, and record name. Added1001-row processed-history query plan verification; GREEN pending. No Critical; two Important fixed in one pass.",
+          "observed_at": "2026-10-11T00:01:06.230697+00:00"
         }
       ],
       "blockers": [

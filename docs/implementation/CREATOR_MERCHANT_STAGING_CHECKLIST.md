@@ -35,3 +35,5 @@ P08 source-only inventory at `0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2`: `202610
 P09 source-only candidate on `ec3b30b`: `20261010223500_kinnso_creator_discovery.sql` SHA-256 `1cb8f76ce74df13ce863cdc89739103a2d0928340e04b82e7339e2db1a7f238a`. Hosted status **NOT_EXECUTED**; this adds owner private CRM versioning, mature monthly invitation quota protection across native/legacy/direct writers, owner receipts, and transactional single invitation inbox event. Reconcile current live schema and dependent P08 guard before selecting any hosted delta. Current owned CI and role UAT remain separate gates.
 
 P11 source-only migration `20261010233500_kinnso_collaboration_reminders.sql` SHA256 `930e8074097586eed7bee855a4a47b2ab476eed1f95c6da994a5806c13d16efe`. Hosted NOT_EXECUTED; cron NOT_REGISTERED; email UNCONFIGURED. Service-only transaction, six DB tests, two native browser stories await current CI.
+
+P11 review-fixed source-only packet: `20261010233500_kinnso_collaboration_reminders.sql` SHA-256 `9d83d3d9b947a069f1d63d14e96684a77f0e5541a467cf6c21a96cc694aec788`; owned CI GREEN pending. Hosted SQL, scheduler registration and provider sending: NOT_EXECUTED.
