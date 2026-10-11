@@ -707,7 +707,16 @@
         "Second-wave U02/U04/U05 acceptance depends on N10/N11/N15/N17; source regression is not acceptance."
       ],
       "rollback": "Revert the task PR; preserve existing data.",
-      "source_ref": "codex/structured-content-first-wave-20261008"
+      "source_ref": "codex/structured-content-first-wave-20261008",
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
+      ]
     },
     {
       "task_id": "N10",
@@ -1061,7 +1070,16 @@
         "ci": "four_exact_push_PR_artifacts_verified_348unit41integration107browser_rootPASS",
         "review": "native_final_diff_pass_with_prior_review_retained_no_fresh_bot_review",
         "acceptance": "formal_hosted_physical_AT_NOT_RUN"
-      }
+      },
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
+      ]
     },
     {
       "task_id": "N15",
@@ -1122,7 +1140,16 @@
         "environment_status": "owned_local_Auth_Storage_RPC_verified",
         "acceptance_status": "synthetic_local_only_hosted_physical_NOT_RUN",
         "evidence": "PHOTO_UPLOAD_LIFETIME_ACCEPTANCE.md"
-      }
+      },
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
+      ]
     },
     {
       "task_id": "N16",
@@ -1208,6 +1235,15 @@
       "source_ref": "codex/n16-release-readiness-20261008",
       "evidence_paths": [
         "docs/implementation/NEXT_PHASE_RELEASE_GATE.md"
+      ],
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
       ]
     },
     {
@@ -1267,6 +1303,15 @@
       "source_ref": "codex/n17-finance-agent-verification-20261008",
       "evidence_paths": [
         "docs/implementation/FINANCE_AGENT_ACCEPTANCE.md"
+      ],
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
       ]
     },
     {
@@ -1474,7 +1519,16 @@
         "retained_failure_run": 38073934984,
         "tests": "Baseline9PASS; actual imported config8PASS1RED; minimal logging config9PASS",
         "rollback": "Revert the two stream options and associated assertions; retain failure evidence."
-      }
+      },
+      "operations_increments": [
+        {
+          "observed_at": "2026-10-11",
+          "operations_pr": "https://github.com/YNWAforever/KinnsoOS/pull/65",
+          "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "evidence_ledger": "CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
+          "result": "Appended operations contracts/recovery/owned CI evidence only; current final-source CI pending. Hosted/content/human/release remain open; historical status, source, tests and acceptance are unchanged."
+        }
+      ]
     }
   ],
   "integration_checkpoint_sha": "093c93799fa93c4e297f917fba311d9bb12d1952",

@@ -58,7 +58,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   }
   try{await recovery.retain(intent);}catch{setBusy(false);setUnknown(true);setError('UNAVAILABLE');return;}
   const result=await creatorMissions.command(missionId,intent.command,intent.requestId);if(own!==generation.current)return;setBusy(false);
-  if(!result.ok){reference.current=result.requestId;denied(result.code);setError(result.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(result.code))return;setUnknown(wasUnknown||result.retryable);if(!wasUnknown&&!result.retryable){await recovery.clear(intent.requestId);pending.current=null;}return;}
+  if(!result.ok){reference.current=result.requestId;denied(result.code);setError(result.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(result.code))return;setUnknown(wasUnknown||result.retryable);if(!wasUnknown&&!result.retryable){try{await recovery.release(intent.requestId);pending.current=null;}catch{setUnknown(true);setError('UNAVAILABLE');}}return;}
   try{await recovery.clear(intent.requestId);}catch{setUnknown(true);setError('UNAVAILABLE');return;}
   pending.current=null;setUnknown(false);setForm(null);setAgreed(false);setApplicationNote('');setMessage(t('Your update is saved.','更新已保存。'));await load();
  }

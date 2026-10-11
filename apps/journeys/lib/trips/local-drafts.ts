@@ -29,3 +29,8 @@ export async function readLocalWorkspaceRecovery(ownerId:string,scope:string):Pr
 export async function clearLocalWorkspaceRecovery(ownerId:string,scope:string,requestId?:string){
  const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['recoveries','identity'],'readwrite'),store=tx.objectStore('recoveries'),key=ownerId+':'+recoveryScope(scope),identity=tx.objectStore('identity').get('actor');identity.onsuccess=()=>{if(identity.result?.ownerId!==ownerId){tx.abort();return;}const row=store.get(key);row.onsuccess=()=>{if(row.result&&(!row.result.requestId||row.result.requestId===requestId))store.delete(key);};};tx.oncomplete=()=>resolve();tx.onerror=()=>reject(Error('LOCAL_STORAGE_UNAVAILABLE'));tx.onabort=()=>reject(Error('CACHE_ACCOUNT_CHANGED'));});}finally{db.close();}
 }
+
+/** A definite failed command releases its receipt identity without deleting the unsent draft. */
+export async function releaseLocalWorkspaceRecovery(ownerId:string,scope:string,requestId:string){
+ const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['recoveries','identity'],'readwrite'),store=tx.objectStore('recoveries'),key=ownerId+':'+recoveryScope(scope),identity=tx.objectStore('identity').get('actor');identity.onsuccess=()=>{if(identity.result?.ownerId!==ownerId){tx.abort();return;}const row=store.get(key);row.onsuccess=()=>{if(row.result?.requestId===requestId)store.put({...row.result,requestId:undefined,value:{...row.result.value,pending:null}});};};tx.oncomplete=()=>resolve();tx.onerror=()=>reject(Error('LOCAL_STORAGE_UNAVAILABLE'));tx.onabort=()=>reject(Error('CACHE_ACCOUNT_CHANGED'));});}finally{db.close();}
+}

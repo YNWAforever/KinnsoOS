@@ -2196,8 +2196,8 @@
         "N18",
         "U04"
       ],
-      "code_status": "IMPLEMENTED_CI_FIXTURE_PENDING",
-      "ci_status": "FAILED_FIXTURE_SETUP",
+      "code_status": "IMPLEMENTED_OWNED_DB_VERIFIED_NATIVE_PENDING",
+      "ci_status": "MIXED_BROWSER_DENOMINATOR_RETAINED",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "9f2350c9683030e52c4db279eecd03b979d588b5",
@@ -2241,6 +2241,13 @@
           "run": 38099788314,
           "scenario": "Final P14 isolated gate retained",
           "result": "DB gate PASS;127 browser PASS/1 company-switch FAIL. P14 u10 browser stories were NOT_SELECTED by u0 glob, therefore no P14 native acceptance claimed. P17 adds executed-denominator regression and fixes stale company denial after valid component RED."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+          "run": 38099788314,
+          "scenario": "P14 current independent candidate",
+          "result": "458 unit84 integration127 browser PASS1 existing company-switch FAIL4 mailbox PASS0 SKIP; type/build/source/extracted rebuild PASS. Actual u10 merchant report browser tests NOT_SELECTED under prior u0 glob, corrected to u0/u1 in combined061 candidate; no omitted test PASS claim."
         }
       ],
       "blockers": [
@@ -2317,8 +2324,8 @@
         "U04",
         "U05"
       ],
-      "code_status": "IMPLEMENTED_LOCAL",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "IMPLEMENTED_OWNED_JOURNEYS_VERIFIED",
+      "ci_status": "MIXED_INDEPENDENT_ROOT_RUNS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
@@ -2341,6 +2348,13 @@
           "run": 38099937802,
           "scenario": "Journeys P15 current source",
           "result": "463 unit/74 DB/128 browser/4 mailbox PASS;0 FAIL/0 SKIP. Root PR38099937798 font build FAIL/e2e SKIPPED, root push38099934629 PASS; mixed root gate is retained."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+          "run": 38099937802,
+          "scenario": "P15 independent native/source gates",
+          "result": "463 unit74 DB128 browser4 mailbox PASS0 FAIL0 SKIP; source/type/build/extracted rebuild PASS. Root PR38099937798 FAIL GoogleFontFileReplacer while same-head root push38099934629 PASS; failure retained. Combined061 root38102213747 all jobs PASS is separate current-source evidence."
         }
       ],
       "blockers": [
@@ -2471,8 +2485,8 @@
         "N18",
         "U06"
       ],
-      "code_status": "IMPLEMENTED_LOCAL_BASELINE_PENDING",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "IMPLEMENTED_LOCAL_REVIEW_FIXES",
+      "ci_status": "INCOMPLETE_BASELINE_NEW_CANDIDATE_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
@@ -2489,10 +2503,19 @@
           "run": 38100760304,
           "scenario": "First real operations lab",
           "result": "Both latency and cold/warm collectors INCOMPLETE: setup PGRST204,0 samples. Cleanup PASS_OWNED_SYNTHETIC_ACTORS_REMOVED. Incorrect proof_notes fixture field corrected to mature notes; no product bottleneck or metric acceptance inferred."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "run": 38102213699,
+          "scenario": "Preserved real operations collection denominator",
+          "result": "880 verified latency samples: all8 API/all8 PostgREST plus6/8 PostgreSQL groups. Merchant PostgreSQL stops on SELECT FOR SHARE in READ ONLY transaction; cold/warm browser0 samples due No usable sandbox. Both assessments INCOMPLETE; cleanup PASS. Source review fixes actual proof interaction and complete-dataset comparison; Ubuntu22 sandbox-preserving repair requires new evidence."
         }
       ],
-      "blockers": [],
-      "next_action": "Collect exact-candidate owned creator/merchant cold/warm and API/PostgREST/read-only PostgreSQL baselines; retain incomplete/failed groups, select at most one reproducible bottleneck after actual evidence.",
+      "blockers": [
+        "MEASUREMENT_METHOD: merchant authorization RPC uses shared locks incompatible with existing READ ONLY SQL collector; preserve locks/read-only and incomplete SQL groups."
+      ],
+      "next_action": "Run complete current-source browser baseline on pinned owned Ubuntu22 with sandbox; retain all8 SQL denominator, use measured same-condition evidence only before choosing a reproducible bottleneck.",
       "rulings": [
         {
           "decision": "Compose existing owned lab and latency completeness rules with four mandatory private workspace routes; existing traveller/foundation reports retain their original denominator. Operations reports require matching measured role and owned55-campaign dataset.",
@@ -2563,8 +2586,8 @@
         "U04",
         "U06"
       ],
-      "code_status": "IMPLEMENTED_LOCAL_NATIVE_PENDING",
-      "ci_status": "PENDING_NEW_CANDIDATE",
+      "code_status": "IMPLEMENTED_LOCAL_REVIEW_FIXES_NATIVE_PENDING",
+      "ci_status": "CURRENT_CANDIDATE_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
@@ -2581,9 +2604,18 @@
           "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8 plus scoped P17 working-tree changes",
           "scenario": "Draft/unknown/role and native test-denominator TDD",
           "result": "Finance draft/unknown original baseline1 PASS2 FAIL; creator/campaign/support remount and stale company denial3 PASS4 FAIL ->7 PASS. Terminal conflict18 PASS1 FAIL ->19 PASS. Actual connected config omitted u10 ->RED0 PASS1 FAIL, added u1 glob. Full500 unit PASS0 FAIL0 SKIP,typecheck/build PASS; native and archive rebuild pending. Three strict IDB regressions enforce transaction participation, same UUID/payload preservation and account switch/logout clearing."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c plus single final review fix pass",
+          "scenario": "Final review RED to GREEN",
+          "result": "7 valid new failures ->19/19 focused PASS;508 unit PASS0 FAIL0 SKIP;4 strict actual IDB tests PASS;typecheck PASS. Conflict draft release is atomic, unknown auth denial keeps original, context denial leaves owned support usable, company finance isolation and duplicate receipt clear corrected. Native u10/u11 current source pending."
         }
       ],
-      "blockers": [],
+      "blockers": [
+        "HUMAN_DEVICE_AT_NOT_RUN: physical iOS/Android/VoiceOver/NVDA owners not supplied.",
+        "Raw invite/redemption tokens not journaled; explicit logout/account switch clears device original; no all-workspace lossless claim."
+      ],
       "next_action": "Run actual u10/u11 owned native browser stories and all final source gates; retain physical iOS/Android/VoiceOver/NVDA NOT_RUN and hosted target blockers.",
       "rulings": [
         {
@@ -2654,9 +2686,134 @@
         }
       ],
       "blockers": [
-        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied.",
+        "P13 content/cover rights, consenting pilot actors, physical devices/AT and current recovery rehearsal not supplied.",
+        "P16 full SQL baseline remains INCOMPLETE; no measured approved production SLO."
       ],
       "next_action": "After exact-current code/CI gates, receive designated staging, consented pilot actors/content and current recovery owner/evidence; reconcile target read-only before a concrete scoped mutation approval."
     }
-  ]
+  ],
+  "final_review": {
+    "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+    "base_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+    "critical": 0,
+    "important": 6,
+    "minor": 1,
+    "regraded_important": 1,
+    "review_count": 1,
+    "fix_pass_count": 1,
+    "findings": [
+      {
+        "id": "I1",
+        "severity": "Important",
+        "problem": "Terminal conflict erased the journal with the unsent draft.",
+        "decision": "Atomic exact-UUID release keeps the actor/scope draft and removes only a definite terminal command.",
+        "cost_if_wrong": "A receipt mistakenly treated as terminal could lose original unknown intent; release is restricted to the first definite response, not a replay.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I2",
+        "severity": "Important",
+        "problem": "Finance/support replay auth denial deleted an unresolved original request.",
+        "decision": "Preserve unknown UUID/payload in the device journal across replay denial while clearing private views.",
+        "cost_if_wrong": "Explicit logout or account change still clears private device data; fresh same-actor authorization is required for restoration.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I3",
+        "severity": "Important",
+        "problem": "A denied mission context blocked owned support replies and receipt recovery.",
+        "decision": "Authorize restoration from the fresh owned case list; context denial blocks only creation of a new contextual case.",
+        "cost_if_wrong": "Backend receipt and case ownership checks remain mandatory; this grants no lost mission access.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I4",
+        "severity": "Important",
+        "problem": "Company A finance reason could become company B draft.",
+        "decision": "Reset reason/review state on scope change and gate both restore and private rendering on the matching company.",
+        "cost_if_wrong": "A draft save queued immediately before navigation can still fail in denied device storage; no cross-company fallback is allowed.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I5",
+        "severity": "Important",
+        "problem": "The operations lab requested Prepare evidence although its sole nonrepeatable milestone already had a submitted proof.",
+        "decision": "Exercise the actual Edit and resubmit evidence editor and cancel without a new write.",
+        "cost_if_wrong": "A component reproduction is not the actual browser lab; current candidate native collection is required.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I6",
+        "severity": "Important",
+        "problem": "Latency budget compared datasets before adding mandatory operations fixture metadata.",
+        "decision": "Compare the complete dataset after owned operations setup.",
+        "cost_if_wrong": "Same source, archive, OS, conditions and data are still required; no production budget is invented.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I7",
+        "severity": "Important (regraded from Minor)",
+        "problem": "A second device clear after a confirmed support receipt could leave busy true and freeze the workspace.",
+        "decision": "Clear the confirmed receipt once before loading cases; valid failure injection proves no redundant transaction.",
+        "cost_if_wrong": "A first legitimate device transaction can fail, retaining retry state. Regrade is based on user-visible loss of recovery, not formatting.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      }
+    ],
+    "verification": {
+      "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
+      "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending"
+    },
+    "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
+    "rulings": [
+      {
+        "decision": "Hosted migrations, effective config, actor pilot, release and rollback are not authorized or verified without the designated target.",
+        "cost_if_wrong": "P04/P05/P06/P18 remain open; source/CI cannot certify hosted acceptance."
+      },
+      {
+        "decision": "Real guides and lawful cover consent remain P13 inputs.",
+        "cost_if_wrong": "No publication or claim of real content acceptance."
+      },
+      {
+        "decision": "Physical iOS/Android/VoiceOver/NVDA sessions are unavailable.",
+        "cost_if_wrong": "Emulated width/zoom Chromium tests cannot close human device/AT acceptance."
+      },
+      {
+        "decision": "Final native/root/source extraction CI must execute on the new candidate.",
+        "cost_if_wrong": "One source review is not runtime acceptance; omitted and failed groups remain in the denominator."
+      },
+      {
+        "decision": "Keep shared merchant authorization locks and READ ONLY SQL measurements.",
+        "cost_if_wrong": "Merchant SQL groups remain INCOMPLETE until a reviewed safe equivalent method exists; do not drop groups, weaken guards or infer them from API p95."
+      },
+      {
+        "decision": "Pin only owned performance job to Ubuntu22.04, keep Chromium sandbox and retain ImageOS/kernel metadata.",
+        "cost_if_wrong": "This environment repair is untested until CI; Ubuntu24 measurements cannot be used for before/after against22."
+      },
+      {
+        "decision": "Do not infer production capacity, concurrency, field CWV or SLO from the synthetic lab.",
+        "cost_if_wrong": "An observed local baseline does not grant release thresholds or hosted operational acceptance."
+      },
+      {
+        "decision": "Retain established explicit logout/account-switch private cache clearing.",
+        "cost_if_wrong": "Device original payload is unavailable after logout; server receipts remain but no cross-device or post-logout recovery guarantee."
+      },
+      {
+        "decision": "Do not newly persist raw invitation or redemption secrets.",
+        "cost_if_wrong": "Broader invitation/redemption hard-refresh acceptance remains a stated P17 limitation, not ALL_PASS."
+      },
+      {
+        "decision": "Force kill before asynchronous local save remains a device limitation.",
+        "cost_if_wrong": "Newest keystrokes may be lost; this does not excuse ordinary terminal-conflict draft deletion, which is fixed."
+      },
+      {
+        "decision": "Keep unrelated generic inbox/delivery retry and broader support reply-editor redesign outside this review fix pass.",
+        "cost_if_wrong": "Those workflows do not acquire a new lossless recovery guarantee; preserve existing tests and release blockers."
+      },
+      {
+        "decision": "Keep previous P10/P11/P14 Minor rulings unchanged.",
+        "cost_if_wrong": "Malformed URL invalidation edge, indistinguishable same-campaign milestone cards, and explicit-Apply report freshness remain deferred with their recorded costs."
+      }
+    ]
+  }
 }

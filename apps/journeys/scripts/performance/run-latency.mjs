@@ -57,7 +57,7 @@ const server = spawn(process.execPath,[path.join(app,'node_modules/next/dist/bin
 server.stdout.pipe(log); server.stderr.pipe(log);
 const report = {schemaVersion:1,kind:operations?'operations-latency':'latency',sourceSha,sourceDiff:execFileSync('git',['diff','--name-only'],{cwd:app,encoding:'utf8'}).trim().split('\n').filter(Boolean),
   environment:'owned isolated local',project:target.projectRef,observedAt:new Date().toISOString(),
-  conditions:{region:'same owned '+process.platform+' host, loopback app/PostgREST and owned Docker PostgreSQL',concurrency:1,
+  conditions:{runnerImage:process.env.ImageOS??null,kernel:os.release(),region:'same owned '+process.platform+' host, loopback app/PostgREST and owned Docker PostgreSQL',concurrency:1,
     warmupReads:3,measuredReads:40,node:process.version,platform:process.platform,cpu:os.cpus()[0]?.model,
     databaseImage:inspect.Config.Image,buildId:(await readFile(path.join(app,'.next/BUILD_ID'),'utf8')).trim(),
     sourceArchiveSha256:createHash('sha256').update(await readFile(archivePath)).digest('hex'),
@@ -136,9 +136,9 @@ try {
     schemaHead:sql('begin read only; select max(version) from supabase_migrations.schema_migrations; rollback;').trim(),
     postgresVersion:sql('show server_version;').trim(),guideBody:'one explicitly authored day/stop, all other rows summary-only',owners:1};
   if(count!==2401||capped.length<=0||count<=capped.length*2)throw Error('Scale must exceed the observed PostgREST cap by more than two times');
+  if(operations){workFixture=await setupOperations({admin,creatorId:ownerId,target,onActor:id=>additionalActors.push(id)});report.dataset.operations=workFixture.dataset;}
   if(baselineReport && (JSON.stringify(baselineReport.conditions)!==JSON.stringify(report.conditions) ||
     JSON.stringify(baselineReport.dataset)!==JSON.stringify(report.dataset))) throw Error('Budget comparison requires unchanged measured conditions and dataset');
-  if(operations){workFixture=await setupOperations({admin,creatorId:ownerId,target,onActor:id=>additionalActors.push(id)});report.dataset.operations=workFixture.dataset;}
   const cookie=[...jar].map(([name,value])=>name+'='+value).join('; ');
   for(const layer of ['api','postgrest']) for(const operation of measuredPages) for(let i=1;i<=43;i++) {
     await timed(layer,operation,i<=3?i:i-3,i<=3,async()=>{

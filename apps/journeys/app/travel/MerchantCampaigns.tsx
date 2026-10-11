@@ -62,7 +62,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   try{await recovery.retain(request);}catch{running.current=false;setBusy(false);setUnknown(true);setError('UNAVAILABLE');return;}
   const result=await merchantCampaigns.command(merchantId,request.command,request.requestId);if(own!==scope.current)return;
   running.current=false;setBusy(false);
-  if(!result.ok){reference.current=result.requestId;setError(result.code);setUnknown(wasUnknown||result.code==='UNAVAILABLE');if(!wasUnknown&&result.code!=='UNAVAILABLE'){await recovery.clear(request.requestId);pending.current=null;}deny(result.code);return;}
+  if(!result.ok){reference.current=result.requestId;setError(result.code);setUnknown(wasUnknown||result.code==='UNAVAILABLE');if(!wasUnknown&&result.code!=='UNAVAILABLE'){try{await recovery.release(request.requestId);pending.current=null;}catch{setUnknown(true);setError('UNAVAILABLE');}}deny(result.code);return;}
   try{await recovery.clear(request.requestId);}catch{setUnknown(true);setError('UNAVAILABLE');return;}
   pending.current=null;setUnknown(false);setError('');setMessage(t('Saved on the server.','已儲存至伺服器。'));
   if(['createDraft','updateDraft'].includes(request.command.type))resetEditor();

@@ -167,7 +167,7 @@ async function interaction(page, kind) {
   let assertion;
   try {
     if(workspacePages.includes(kind)){
-      if(kind==='creatorDetail'){await button(page,'Prepare evidence');await input(page,'Notes for reviewer','Synthetic lab draft retained');await button(page,'Cancel editing');await ready(page,kind);assertion='Owned evidence editor opened and cancelled without submitting a new record';}
+      if(kind==='creatorDetail'){await button(page,'Edit and resubmit evidence');await input(page,'Notes for reviewer','Synthetic lab draft retained');await button(page,'Cancel editing');await ready(page,kind);assertion='Owned evidence editor opened and cancelled without submitting a new record';}
       else if(kind==='merchantReview'){await input(page,'Deliverable review feedback','Synthetic lab review draft');await page.waitForFunction(()=>[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='Approve deliverable'&&!b.disabled));await input(page,'Deliverable review feedback','');assertion='Owner private review feedback enables its action; no approval or money command sent';}
       else {const search=kind==='merchantCampaigns'?'Search promotions':'Search collaborations';await input(page,search,workFixture.title);await button(page,search);await ready(page,kind);assertion='Title filter retains owned collaboration rows';}
     } else if (kind === 'home') {
@@ -215,7 +215,7 @@ try {
   if (!foundation) fixture = await setup();
   browser = await puppeteer.launch({executablePath: chromium.executablePath(), headless: true,
     args: ['--no-first-run', '--disable-background-networking', '--disable-component-update']});
-  report.conditions = {browser: await browser.version(), lighthouse: '13.5.0',
+  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',
     region: 'same owned '+process.platform+' host; loopback app and isolated database', ...flags,
     cacheDefinition: 'HTTP cache cleared before cold; retained before warm; fresh context for each pair'};
   const routes = {home: '/en', explore: '/en/explore',
