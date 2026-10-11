@@ -40,7 +40,7 @@ jobs:
           npm ci
           npm run build
           npm run typecheck
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: journeys-verification-summary
@@ -77,13 +77,13 @@ jobs:
         run: npm exec playwright install -- --with-deps chromium
       - name: New-site creator and connected UAT flows
         run: node scripts/ci-evidence.mjs browser
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: journeys-connected-summary
           path: apps/journeys/evidence/ci/*.json
           if-no-files-found: warn
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: failure()
         with:
           name: journeys-connected-local-results
@@ -117,7 +117,7 @@ jobs:
         run: npm exec playwright install -- --with-deps chromium
       - name: Actual local signup and recovery emails in both languages
         run: node scripts/ci-evidence.mjs auth-mailbox
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: journeys-auth-mailbox-summary
