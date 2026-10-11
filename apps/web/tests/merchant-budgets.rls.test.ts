@@ -82,13 +82,9 @@ d('r11.2 merchant budgets: funding gate, ledger idempotency, ops RPCs, and RLS',
   // mission_milestone_submissions has a unique (mission_milestone_id, mission_participant_id)
   // constraint, so every fresh submission for a participant needs its own milestone -- reusing
   // a milestone id across inserts hits that constraint on the second insert.
-  async function freshMilestone(missionId: string): Promise<string> {
-    const s = svc()
-    const milestone = await s.from('mission_milestones').insert({
-      mission_id: missionId, title: `Budget proof ${Math.random().toString(36).slice(2)}`, description: 'Upload proof',
-    }).select('id').single()
-    if (milestone.error) throw milestone.error
-    return milestone.data!.id
+  const authoredMilestones=new Map<string,string[]>()
+  async function freshMilestone(missionId:string):Promise<string>{
+    const id=authoredMilestones.get(missionId)?.shift();if(!id)throw new Error('Authored budget fixture milestones exhausted');return id
   }
 
   async function submitFresh(missionId: string, participantId: string, tag: string): Promise<string> {
@@ -154,40 +150,47 @@ d('r11.2 merchant budgets: funding gate, ledger idempotency, ops RPCs, and RLS',
 
     const missionA = await s.from('missions').insert({
       merchant_profile_id: merchantProfileId, mission_source: 'merchant', mission_type: 'paid',
-      visibility: 'open', status: 'published', title: `R11.2 Budget Mission A ${runId}`,
+      visibility: 'open', status: 'draft', title: `R11.2 Budget Mission A ${runId}`,
       summary: 'Paid mission used to prove the budget funding gate', paid_fee_amount: 150, paid_fee_currency: 'HKD',
-      coupon_code: `R112A${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a', published_at: new Date().toISOString(),
+      coupon_code: `R112A${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a', published_at: null,
     }).select('id').single()
     if (missionA.error) throw missionA.error
     missionAId = missionA.data!.id
 
     const missionA3 = await s.from('missions').insert({
       merchant_profile_id: merchantProfileId, mission_source: 'merchant', mission_type: 'paid',
-      visibility: 'open', status: 'published', title: `R11.2 Budget Mission A3 ${runId}`,
+      visibility: 'open', status: 'draft', title: `R11.2 Budget Mission A3 ${runId}`,
       summary: 'Second paid mission on the same merchant, used for the unenforced scenario', paid_fee_amount: 60, paid_fee_currency: 'HKD',
-      coupon_code: `R112A3${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a3', published_at: new Date().toISOString(),
+      coupon_code: `R112A3${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a3', published_at: null,
     }).select('id').single()
     if (missionA3.error) throw missionA3.error
     missionA3Id = missionA3.data!.id
 
     const missionA4 = await s.from('missions').insert({
       merchant_profile_id: merchantProfileId, mission_source: 'merchant', mission_type: 'paid',
-      visibility: 'open', status: 'published', title: `R11.2 Budget Mission A4 ${runId}`,
+      visibility: 'open', status: 'draft', title: `R11.2 Budget Mission A4 ${runId}`,
       summary: 'Auto-approve mission with a fee larger than the budget, used for the R11.1 interaction',
       paid_fee_amount: 200, paid_fee_currency: 'HKD', auto_approve_policy: 'verified_signal_only',
-      coupon_code: `R112A4${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a4', published_at: new Date().toISOString(),
+      coupon_code: `R112A4${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-a4', published_at: null,
     }).select('id').single()
     if (missionA4.error) throw missionA4.error
     missionA4Id = missionA4.data!.id
 
     const missionB = await s.from('missions').insert({
       merchant_profile_id: otherMerchantProfileId, mission_source: 'merchant', mission_type: 'paid',
-      visibility: 'open', status: 'published', title: `R11.2 Budget Mission B ${runId}`,
+      visibility: 'open', status: 'draft', title: `R11.2 Budget Mission B ${runId}`,
       summary: 'Paid mission on an unfunded merchant with no budget row at all', paid_fee_amount: 80, paid_fee_currency: 'HKD',
-      coupon_code: `R112B${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-b', published_at: new Date().toISOString(),
+      coupon_code: `R112B${runId.slice(-6)}`, coupon_url: 'https://example.com/r11-2-b', published_at: null,
     }).select('id').single()
     if (missionB.error) throw missionB.error
     missionBId = missionB.data!.id
+
+    // Establish immutable terms before publication without changing funding behavior.
+    for(const [id,count] of [[missionAId,2],[missionA3Id,1],[missionA4Id,1],[missionBId,1]] as const){
+      const rows=await s.from('mission_milestones').insert(Array.from({length:count},(_,i)=>({mission_id:id,title:'Budget proof '+i,description:'Upload proof'}))).select('id')
+      if(rows.error)throw rows.error;authoredMilestones.set(id,rows.data!.map(row=>row.id))
+      const published=await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',id);if(published.error)throw published.error
+    }
 
     const participantA = await s.from('mission_participants').insert({
       mission_id: missionAId, creator_id: creatorUser, status: 'active', source: 'open_join',

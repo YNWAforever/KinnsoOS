@@ -130,10 +130,10 @@ d('r10.3 notifications: triggers, RLS isolation, mark-read, and the fault-inject
         mission_source: 'merchant',
         mission_type: 'coupon_affiliate',
         visibility: 'open',
-        status: 'published',
+        status: 'draft',
         coupon_code: 'NOTIFRLS',
         coupon_url: 'https://example.com/notif-rls',
-        published_at: new Date().toISOString(),
+        published_at: null,
       })
       .select('id, title')
       .single()
@@ -147,6 +147,9 @@ d('r10.3 notifications: triggers, RLS isolation, mark-read, and the fault-inject
       .single()
     if (milestone.error) throw milestone.error
     milestoneAId = milestone.data!.id
+    const publishednormalMissionId = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',normalMissionId)
+    if (publishednormalMissionId.error) throw publishednormalMissionId.error
+
 
     const participantA = await s
       .from('mission_participants')
@@ -350,10 +353,10 @@ d('r10.3 notifications: triggers, RLS isolation, mark-read, and the fault-inject
         mission_source: 'merchant',
         mission_type: 'coupon_affiliate',
         visibility: 'open',
-        status: 'published',
+        status: 'draft',
         coupon_code: 'NOTIFFAULT',
         coupon_url: 'https://example.com/notif-fault',
-        published_at: new Date().toISOString(),
+        published_at: null,
       })
       .select('id')
       .single()
@@ -366,6 +369,9 @@ d('r10.3 notifications: triggers, RLS isolation, mark-read, and the fault-inject
       .select('id')
       .single()
     if (faultMilestone.error) throw faultMilestone.error
+    const publishedfaultMissionId = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',faultMissionId)
+    if (publishedfaultMissionId.error) throw publishedfaultMissionId.error
+
 
     const faultParticipant = await s
       .from('mission_participants')

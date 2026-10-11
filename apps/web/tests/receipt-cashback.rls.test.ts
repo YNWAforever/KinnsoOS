@@ -146,19 +146,13 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
     // (paid missions do NOT get Task 1's auto-creation trigger, unlike receipt_cashback).
     const missionC = await s.from('missions').insert({
       merchant_profile_id: merchantProfileId, mission_source: 'merchant', mission_type: 'paid',
-      visibility: 'open', status: 'published', title: `R12.2 Paid Mission C ${runId}`,
+      visibility: 'open', status: 'draft', title: `R12.2 Paid Mission C ${runId}`,
       summary: 'Live-proof mission: paid settlement guarantee must stay untouched by receipt branch',
       paid_fee_amount: 900, paid_fee_currency: 'HKD',
-      published_at: new Date().toISOString(),
+      published_at: null,
     }).select('id').single()
     if (missionC.error) throw missionC.error
     missionCId = missionC.data!.id
-
-    const participantC = await s.from('mission_participants').insert({
-      mission_id: missionCId, creator_id: creatorId, status: 'active', source: 'open_join',
-    }).select('id').single()
-    if (participantC.error) throw participantC.error
-    missionCParticipantId = participantC.data!.id
 
     const milestonesC = await s.from('mission_milestones').insert([
       { mission_id: missionCId, title: 'Post proof', description: 'Upload post proof', sort_order: 0 },
@@ -167,6 +161,15 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
     if (milestonesC.error) throw milestonesC.error
     missionCMilestoneOneId = milestonesC.data![0].id
     missionCMilestoneTwoId = milestonesC.data![1].id
+    const publishedmissionCId = await s.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',missionCId)
+    if (publishedmissionCId.error) throw publishedmissionCId.error
+    const participantC = await s.from('mission_participants').insert({
+      mission_id: missionCId, creator_id: creatorId, status: 'active', source: 'open_join',
+    }).select('id').single()
+    if (participantC.error) throw participantC.error
+    missionCParticipantId = participantC.data!.id
+
+
 
     // Mission D -- repeatable, no cap, used only for scenario 5's receipt-taxonomy direction so
     // it can never collide with A's or B's cap accounting.
@@ -403,30 +406,36 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
   it('at most one repeatable milestone is ever allowed per mission, and repeatable can only attach to a receipt_cashback mission', async () => {
     const s = svc()
 
-    // Mission A already has exactly one repeatable milestone (auto-created by Task 1's
-    // trigger). A second repeatable=true insert on the SAME mission must be rejected by the
+    // A draft also has exactly one repeatable milestone (auto-created by Task 1's
+    // trigger). Before its terms are sealed, a second insert must be rejected by the
     // partial unique index -- this is the guard submit_receipt's unordered `limit 1` lookup
     // actually depends on.
+    const draft=await s.from('missions').insert({merchant_profile_id:merchantProfileId,mission_source:'merchant',mission_type:'receipt_cashback',status:'draft',title:'Unique index draft control',summary:'Isolated physical constraint control',paid_fee_amount:1,paid_fee_currency:'HKD'}).select('id').single()
+    if(draft.error)throw draft.error
     const second = await s.from('mission_milestones').insert({
-      mission_id: missionAId, title: 'Duplicate repeatable milestone', description: 'Should be rejected', repeatable: true,
+      mission_id: draft.data!.id, title: 'Duplicate repeatable milestone', description: 'Should be rejected', repeatable: true,
     })
     expect(second.error).not.toBeNull()
     expect(/duplicate key value violates unique constraint|mission_milestones_one_repeatable_per_mission/i.test(`${second.error?.message}`)).toBe(true)
 
     const countA = await s.from('mission_milestones').select('id', { count: 'exact', head: true }).eq('mission_id', missionAId).eq('repeatable', true)
     expect(countA.count).toBe(1)
+    const cleanup=await s.from('missions').delete().eq('id',draft.data!.id);if(cleanup.error)throw cleanup.error
 
     // A merchant inserting a repeatable=true milestone on a NON-receipt_cashback mission
-    // (Mission C, 'paid') must be rejected by the tightened RLS policy, independent of the
+    // ('paid' draft) must be rejected by the tightened RLS policy, independent of the
     // uniqueness index above -- defense in depth so a repeatable milestone can never attach to
     // the wrong mission type at all.
     const merchant = clientFor(merchantUser)
+    const paidDraft=await s.from('missions').insert({merchant_profile_id:merchantProfileId,mission_type:'paid',status:'draft',title:'Paid draft RLS control',summary:'Isolated wrong-type control',paid_fee_amount:1,paid_fee_currency:'HKD'}).select('id').single()
+    if(paidDraft.error)throw paidDraft.error
     const wrongType = await merchant.from('mission_milestones').insert({
-      mission_id: missionCId, title: 'Repeatable on a paid mission', description: 'Should be rejected', repeatable: true,
+      mission_id: paidDraft.data!.id, title: 'Repeatable on a paid mission', description: 'Should be rejected', repeatable: true,
     })
     expect(wrongType.error).not.toBeNull()
 
     const countC = await s.from('mission_milestones').select('id', { count: 'exact', head: true }).eq('mission_id', missionCId).eq('repeatable', true)
     expect(countC.count).toBe(0)
+    const paidCleanup=await s.from('missions').delete().eq('id',paidDraft.data!.id);if(paidCleanup.error)throw paidCleanup.error
   }, testTimeout)
 })

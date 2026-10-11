@@ -29,3 +29,5 @@ Configuration verification must check effective value relationships without expo
 | Exact-source role UAT | NOT_RUN — see [P05 matrix](CREATOR_MERCHANT_HOSTED_UAT.md) |
 
 Next concrete action: identify the staging/Auth target and its private recovery/actor record, then compare live definitions read-only. No approval request for an unselected SQL bundle is warranted yet.
+
+P08 source-only inventory at `0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2`: `20261010213700_kinnso_campaign_schedule_terms.sql` SHA-256 `8eb3efca4c192bc8f2d11926cb0a4b9485d00f2aa5954c8c268ac3ee8548ba6e`. Current owned CI is pending; this is not an authorized/executable hosted delta. Backfill seals previously published merchant terms, including historical draft-shaped rows, and advances existing CAS timestamps. Reconcile live definitions, grants, publication history and recovery coverage before selecting any SQL packet.

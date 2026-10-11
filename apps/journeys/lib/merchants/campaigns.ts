@@ -1,5 +1,6 @@
 // The server validates the same fields again inside the atomic database command.
-export type CampaignInput={title:string;summary:string;couponCode:string;couponUrl:string;affiliateRate:number|null;kinnsoRate:number|null;creatorRate:number|null;requirements:string[];deliverables:string[];milestones:{id:string;title:string;description:string;dueAt:string|null}[]};
+import {campaignSchedule,type CampaignSchedule} from './campaign-schedule.ts';
+export type CampaignInput=CampaignSchedule&{title:string;summary:string;couponCode:string;couponUrl:string;affiliateRate:number|null;kinnsoRate:number|null;creatorRate:number|null;requirements:string[];deliverables:string[];milestones:{id:string;title:string;description:string;dueAt:string|null}[]};
 export type CampaignCommand=
  |{type:'createDraft';id:string;input:CampaignInput;publish:boolean;reason:string}
  |{type:'updateDraft';id:string;expectedUpdatedAt:string;input:CampaignInput;reason:string}
@@ -12,7 +13,8 @@ const timestamp=(v:unknown)=>typeof v==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2
 function record(v:unknown,keys:string[]){if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(key=>!keys.includes(key)))throw Error('INVALID');return v as Record<string,unknown>;}
 const string=(v:unknown,max:number,required=false)=>typeof v==='string'&&v.length<=max&&(!required||v.trim().length>0);
 export function campaignLink(value:unknown):value is string {if(typeof value!=='string'||value.length>2048)return false;try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)&&!!url.hostname&&!url.username&&!url.password&&!/\s/.test(value);}catch{return false;}}
-function input(v:unknown,publish:boolean){const d=record(v,['title','summary','couponCode','couponUrl','affiliateRate','kinnsoRate','creatorRate','requirements','deliverables','milestones']);
+function input(v:unknown,publish:boolean){const d=record(v,['title','summary','couponCode','couponUrl','affiliateRate','kinnsoRate','creatorRate','requirements','deliverables','milestones','applicationOpensAt','applicationClosesAt','scheduleTimeZone']);
+ campaignSchedule(d);
  if(!string(d.title,120,true)||!string(d.summary,5000,publish)||!string(d.couponCode,200,publish)||!string(d.couponUrl,2048,publish)||(d.couponUrl!==''&&!campaignLink(d.couponUrl)))throw Error('INVALID');
  for(const key of ['affiliateRate','kinnsoRate','creatorRate']){const rate=d[key];if(rate===null&&!publish)continue;if(typeof rate!=='number'||!Number.isFinite(rate)||rate<0||rate>999999.99||Math.abs(rate*100-Math.round(rate*100))>1e-7)throw Error('INVALID');}
  for(const key of ['requirements','deliverables'])if(!Array.isArray(d[key])||d[key].length>20||d[key].some(value=>!string(value,1000,true)))throw Error('INVALID');

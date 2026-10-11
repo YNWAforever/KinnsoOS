@@ -280,6 +280,62 @@ describe('mission actions builders', () => {
 })
 
 describe('createMissionAction', () => {
+  it('keeps a publishing brief private until its milestones are saved', async () => {
+    const calls: string[] = []
+    const missionBuilder = createBuilder({
+      insert: vi.fn(payload => { calls.push(`insert:${payload.status}`); return missionBuilder }),
+      single: vi.fn(async () => ({ data: { id: 'mission-1' }, error: null })),
+      update: vi.fn(payload => { calls.push(`update:${payload.status}`); return missionBuilder }),
+      maybeSingle: vi.fn(async () => ({ data: { id: 'mission-1', updated_at: '2026-10-10T21:00:00Z' }, error: null })),
+    })
+    createSupabaseServerClientMock.mockResolvedValue(createSupabaseMock({
+      merchant_profiles: createBuilder({ maybeSingle: vi.fn(async () => ({ data: { id: 'merchant-profile-1' }, error: null })) }),
+      missions: missionBuilder,
+      mission_milestones: createBuilder({ insert: vi.fn(async () => { calls.push('milestones'); return { error: null } }) }),
+    }))
+    expect(await createMissionAction(missionDraftFixture, { publish: true })).toEqual({ ok: true, missionId: 'mission-1' })
+    expect(calls).toEqual(['insert:draft', 'milestones', 'update:published'])
+    expect(missionBuilder.eq).toHaveBeenCalledWith('updated_at', '2026-10-10T21:00:00Z')
+  })
+
+  it('keeps a changed draft and its reference when publication CAS returns no row', async () => {
+    const builder = createBuilder({
+      single: vi.fn(async () => ({ data: { id: 'mission-1' }, error: null })),
+      maybeSingle: vi.fn()
+        .mockResolvedValueOnce({ data: { id: 'mission-1', updated_at: '2026-10-10T21:00:00Z' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: null })
+        .mockResolvedValueOnce({ data: { id: 'mission-1', status: 'draft' }, error: null }),
+    })
+    createSupabaseServerClientMock.mockResolvedValue(createSupabaseMock({
+      merchant_profiles: createBuilder({ maybeSingle: vi.fn(async () => ({ data: { id: 'merchant-profile-1' }, error: null })) }),
+      missions: builder,
+      mission_milestones: createBuilder({ insert: vi.fn(async () => ({ error: null })) }),
+    }))
+    expect(await createMissionAction(missionDraftFixture, { publish: true })).toEqual({ ok: false, errors: { form: ['Mission publication needs confirmation. Check existing draft mission-1 before retrying.'] } })
+    expect(builder.update).toHaveBeenCalledTimes(1)
+    expect(builder.delete).not.toHaveBeenCalled()
+    expect(revalidatePathMock).not.toHaveBeenCalled()
+  })
+
+  it('reconciles a lost publication response without deleting or recreating the saved brief', async () => {
+    const builder = createBuilder({
+      single: vi.fn(async () => ({ data: { id: 'mission-1' }, error: null })),
+      maybeSingle: vi.fn()
+        .mockResolvedValueOnce({ data: { id: 'mission-1', updated_at: '2026-10-10T21:00:00Z' }, error: null })
+        .mockResolvedValueOnce({ data: null, error: new Error('Response lost after commit') })
+        .mockResolvedValueOnce({ data: { id: 'mission-1', status: 'published' }, error: null }),
+    })
+    createSupabaseServerClientMock.mockResolvedValue(createSupabaseMock({
+      merchant_profiles: createBuilder({ maybeSingle: vi.fn(async () => ({ data: { id: 'merchant-profile-1' }, error: null })) }),
+      missions: builder,
+      mission_milestones: createBuilder({ insert: vi.fn(async () => ({ error: null })) }),
+    }))
+    expect(await createMissionAction(missionDraftFixture, { publish: true })).toEqual({ ok: true, missionId: 'mission-1' })
+    expect(builder.insert).toHaveBeenCalledTimes(1)
+    expect(builder.update).toHaveBeenCalledTimes(1)
+    expect(builder.delete).not.toHaveBeenCalled()
+  })
+
   it('revalidates locale-aware merchant and studio mission paths', async () => {
     const supabase = createSupabaseMock({
       merchant_profiles: createBuilder({
@@ -287,6 +343,7 @@ describe('createMissionAction', () => {
       }),
       missions: createBuilder({
         single: vi.fn(async () => ({ data: { id: 'mission-1' }, error: null })),
+        maybeSingle: vi.fn(async () => ({ data: { id: 'mission-1', updated_at: '2026-10-10T21:00:00Z' }, error: null })),
       }),
       mission_milestones: createBuilder({
         insert: vi.fn(async () => ({ error: null })),

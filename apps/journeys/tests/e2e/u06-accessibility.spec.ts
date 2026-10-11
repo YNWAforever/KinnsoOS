@@ -25,9 +25,10 @@ test('U06 connected routes reflow across four widths and a 200% zoom-equivalent 
     await ok(admin.from('creators').update({ status: 'active' }).eq('id', creator.id));
     opsId = (await ok(admin.from('kinnso_ops_members').insert({ user_id: operator.id, display_name: 'Synthetic accessibility operator', role: 'admin' }).select('id').single())).id;
     merchantId = (await ok(admin.from('merchant_profiles').insert({ user_id: operator.id, company_name: 'Synthetic U06 company', contact_email: email }).select('id').single())).id;
-    missionId = (await ok(admin.from('missions').insert({ merchant_profile_id: merchantId, title: 'Synthetic accessible review', summary: 'Owned local keyboard verification fixture', mission_type: 'coupon_affiliate', status: 'published' }).select('id').single())).id;
-    const participant = await ok(admin.from('mission_participants').insert({ mission_id: missionId, creator_id: creator.id, status: 'active', source: 'open_join' }).select('id').single());
+    missionId = (await ok(admin.from('missions').insert({ merchant_profile_id: merchantId, title: 'Synthetic accessible review', summary: 'Owned local keyboard verification fixture', mission_type: 'coupon_affiliate', status: 'draft' }).select('id').single())).id;
     const milestone = await ok(admin.from('mission_milestones').insert({ mission_id: missionId, title: 'Keyboard evidence fixture', description: 'Synthetic verification milestone' }).select('id').single());
+    await ok(admin.from('missions').update({ status: 'published' }).eq('id', missionId));
+    const participant = await ok(admin.from('mission_participants').insert({ mission_id: missionId, creator_id: creator.id, status: 'active', source: 'open_join' }).select('id').single());
     await ok(admin.from('mission_milestone_submissions').insert({ mission_milestone_id: milestone.id, mission_participant_id: participant.id, status: 'submitted', submitted_at: new Date().toISOString(), notes: 'Synthetic evidence readable in the real modal.', proof_urls: ['https://example.test/synthetic-keyboard-evidence'] }));
     await page.goto('/en/sign-in?next=/en/ops');
     await page.getByLabel('Email', { exact: true }).fill(email);

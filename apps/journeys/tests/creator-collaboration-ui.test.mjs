@@ -1,5 +1,6 @@
 import {serviceStateModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
+import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createContext,runInContext} from 'node:vm';
@@ -21,6 +22,7 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;
   if(name==='../../lib/creators/collaboration')return{creatorMissions:{get:async()=>({ok:true,data:detail()}),list:async()=>({ok:true,data:{items:[],nextCursor:null}}),...port},creatorEarnings:{get:async()=>({ok:true,data:{section:'settled',totals:[],items:[],nextCursor:null}}),...port}};
+  if(name.endsWith('/campaign-schedule'))return{scheduleDate};
   throw Error('Unexpected import '+name);
  }}));
  function render(){for(let n=0;n<12;n++){cursor=0;changed=false;tree=module.exports[name](props);for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;}return tree;}
