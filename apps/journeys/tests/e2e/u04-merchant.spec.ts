@@ -57,12 +57,16 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Coupon code', { exact: true }).fill('U04PROMO');
     await page.getByLabel('Coupon URL', { exact: true }).fill('https://example.test/u04');
     for (const name of ['Affiliate commission rate (%)', 'Platform commission rate (%)', 'Creator commission rate (%)']) await page.getByLabel(name, { exact: true }).fill('0');
+    await page.getByRole('button', { name: 'Add milestone', exact: true }).click();
+    await page.getByLabel('Milestone title', { exact: true }).fill('Publish a city guide');
+    await page.getByLabel('Milestone instructions', { exact: true }).fill('Submit the public guide URL and original supporting notes.');
     await page.getByRole('button', { name: 'Publish promotion brief', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toBeVisible();
     const missions = await ok(admin.from('missions').select('id,status').eq('merchant_profile_id', companies[0]));
     expect(missions).toHaveLength(1); expect(missions[0].status).toBe('published');
     const application = await ok(admin.from('mission_participants').insert({ mission_id: missions[0].id, creator_id: creator.id, status: 'applied', source: 'open_join', application_note: 'Synthetic application for browser review' }).select('id').single());
     await page.getByRole('button', { name: 'Refresh workspace', exact: true }).click();
+    await page.getByLabel('Application review feedback', { exact: true }).fill('Your original city guide proposal meets the promotion requirements.');
     await page.getByRole('button', { name: 'Approve application', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Approve application', exact: true })).toHaveCount(0);
     expect((await ok(admin.from('mission_participants').select('status').eq('id', application.id).single())).status).toBe('active');
@@ -181,8 +185,24 @@ for (const locale of ['en', 'zh-HK'] as const) {
         await page.setViewportSize({ width, height: 900 });
         await page.evaluate(enlarged => { document.documentElement.style.fontSize = enlarged ? '32px' : ''; (document.querySelector('.k-app') as HTMLElement).style.fontSize = enlarged ? '32px' : ''; }, enlarged);
         const geometry = await section.evaluate(element => {
+          const viewport = document.documentElement.clientWidth;
+          const overflowingElements = Array.from(document.body.querySelectorAll<HTMLElement>('*')).filter(item => item.getClientRects().length).flatMap(item => {
+            const bounds = item.getBoundingClientRect();
+            if (bounds.left >= 0 && bounds.right <= viewport) return [];
+            const style = getComputedStyle(item);
+            return [{ tag: item.tagName, id: item.id, className: item.className, text: item.textContent?.trim().slice(0, 120), left: bounds.left, right: bounds.right, width: bounds.width, top: bounds.top, clientWidth: item.clientWidth, scrollWidth: item.scrollWidth, display: style.display, minWidth: style.minWidth, maxWidth: style.maxWidth, fontSize: style.fontSize, whiteSpace: style.whiteSpace, overflowWrap: style.overflowWrap, gridTemplateColumns: style.gridTemplateColumns }];
+          }).slice(0, 30);
+          const overflowingText: { tag: string; className: string; text: string; left: number; right: number; top: number; fontSize: string }[] = [];
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+          while (walker.nextNode() && overflowingText.length < 30) {
+            const node = walker.currentNode, parent = node.parentElement;
+            if (!node.textContent?.trim() || !parent?.getClientRects().length || parent.closest('script,style')) continue;
+            const range = document.createRange(); range.selectNodeContents(node);
+            const bounds = Array.from(range.getClientRects()).find(rect => rect.left < 0 || rect.right > viewport);
+            if (bounds) overflowingText.push({ tag: parent.tagName, className: parent.className, text: node.textContent.trim().slice(0, 120), left: bounds.left, right: bounds.right, top: bounds.top, fontSize: getComputedStyle(parent).fontSize });
+          }
           const fields = Array.from(element.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>('form input:not([type="checkbox"]), form select, form textarea')).filter(field => field.getClientRects().length);
-          return { viewport: document.documentElement.clientWidth, scrollWidth: document.documentElement.scrollWidth, fields: fields.map(field => {
+          return { viewport, scrollWidth: document.documentElement.scrollWidth, overflowingElements, overflowingText, fields: fields.map(field => {
             const label = field.closest('label')!, control = field.getBoundingClientRect(), bounds = label.getBoundingClientRect();
             const node = Array.from(label.childNodes).find(child => child.nodeType === Node.TEXT_NODE && child.textContent?.trim())!;
             const range = document.createRange(); range.selectNodeContents(node);
@@ -190,9 +210,10 @@ for (const locale of ['en', 'zh-HK'] as const) {
           }) };
         });
         measurements.push({ width, enlarged, geometry });
+        await testInfo.attach(`n14-${locale}-${width}-${enlarged ? 'double-text' : 'normal'}-geometry`, { body: JSON.stringify(geometry), contentType: 'application/json' });
         await page.screenshot({ path: `evidence/n14-merchant-${locale}-${width}-${enlarged ? 'double-text' : 'normal'}.png`, fullPage: true });
         expect(geometry.fields.length).toBeGreaterThanOrEqual(12);
-        expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewport);
+        expect(geometry.scrollWidth, `${locale} at ${width}px, enlarged text: ${enlarged}; see attached viewport geometry`).toBeLessThanOrEqual(geometry.viewport);
         for (const field of geometry.fields) {
           expect(field.height, `${field.name}: usable field height`).toBeGreaterThanOrEqual(44);
           expect(field.width, `${field.name}: full-width entry`).toBeGreaterThanOrEqual(field.available - 2);

@@ -1,0 +1,2266 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-10T22:39:33.840198+00:00",
+  "plan": "docs/superpowers/plans/2026-10-11-creator-merchant-operations.md",
+  "baseline": {
+    "main_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
+    "parent_pr": 55,
+    "parent_state": "OPEN",
+    "parent_head_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+    "stacked_base": "codex/creator-merchant-phase-20261011",
+    "preview": {
+      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+      "state": "READY",
+      "role_acceptance": "NOT_RUN",
+      "api_status": "503_UNAVAILABLE_REPRODUCED_CREATOR_AND_MERCHANT"
+    },
+    "production": {
+      "source_sha": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
+      "state": "READY",
+      "role_acceptance": "NOT_RUN"
+    },
+    "ci": [
+      {
+        "run": 38081449970,
+        "workflow": "Journeys",
+        "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+        "result": "SUCCESS"
+      },
+      {
+        "run": 38081449892,
+        "workflow": "CI",
+        "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+        "result": "SUCCESS"
+      }
+    ],
+    "review": {
+      "state": "COMMENTED",
+      "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+      "unresolved": [
+        "P1: published campaign terms can bypass RPC through legacy/direct table updates; table-boundary guard required before release."
+      ]
+    }
+  },
+  "evidence_rule": "Each evidence item binds source SHA, environment, scenario, result, run/artifact and observation time. READY metadata/config exits do not prove schema/auth/roles/release.",
+  "reference_registry": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "A12",
+    "A13",
+    "A14",
+    "A15",
+    "A16",
+    "A17",
+    "A18",
+    "A19",
+    "A20",
+    "G01",
+    "G02",
+    "G03",
+    "G04",
+    "G05",
+    "G06",
+    "G07",
+    "G08",
+    "G09",
+    "G10",
+    "G11",
+    "G12",
+    "G13",
+    "G14",
+    "G15",
+    "G16",
+    "G17",
+    "G18",
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08",
+    "N09",
+    "N10",
+    "N11",
+    "N12",
+    "N13",
+    "N14",
+    "N15",
+    "N16",
+    "N17",
+    "N18",
+    "U01",
+    "U02",
+    "U03",
+    "U04",
+    "U05",
+    "U06"
+  ],
+  "historical_requirements": [
+    {
+      "id": "A01",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N14",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A02",
+      "operations": [
+        "P01",
+        "P17"
+      ],
+      "legacy_N": [
+        "N02",
+        "N03",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A03",
+      "operations": [
+        "P03",
+        "P05",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N08",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A04",
+      "operations": [
+        "P03",
+        "P15"
+      ],
+      "legacy_N": [
+        "N03",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A05",
+      "operations": [
+        "P07",
+        "P17"
+      ],
+      "legacy_N": [
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A06",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A07",
+      "operations": [
+        "P03",
+        "P10",
+        "P14"
+      ],
+      "legacy_N": [
+        "N01",
+        "N07",
+        "N09",
+        "N12",
+        "N13"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A08",
+      "operations": [
+        "P09",
+        "P10",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A09",
+      "operations": [
+        "P07",
+        "P10",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N12",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A10",
+      "operations": [
+        "P14",
+        "P15",
+        "P16"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N12",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A11",
+      "operations": [
+        "P07",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A12",
+      "operations": [
+        "P07",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N13",
+        "N14"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A13",
+      "operations": [
+        "P03",
+        "P05",
+        "P09"
+      ],
+      "legacy_N": [
+        "N01",
+        "N05",
+        "N09",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A14",
+      "operations": [],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N15",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A15",
+      "operations": [
+        "P01",
+        "P06",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N12",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A16",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N01",
+        "N09",
+        "N13",
+        "N14",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A17",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N08",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A18",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N07",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A19",
+      "operations": [
+        "P07",
+        "P16"
+      ],
+      "legacy_N": [
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "A20",
+      "operations": [
+        "P03",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N07",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G01",
+      "operations": [
+        "P01",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G02",
+      "operations": [
+        "P01",
+        "P09",
+        "P14",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G03",
+      "operations": [
+        "P04",
+        "P05",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N09",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G04",
+      "operations": [
+        "P05",
+        "P07"
+      ],
+      "legacy_N": [
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G05",
+      "operations": [
+        "P05",
+        "P17"
+      ],
+      "legacy_N": [
+        "N04",
+        "N05",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G06",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G07",
+      "operations": [
+        "P13"
+      ],
+      "legacy_N": [
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G08",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N04",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G09",
+      "operations": [
+        "P12",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G10",
+      "operations": [
+        "P07",
+        "P13"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N14",
+        "N15",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G11",
+      "operations": [
+        "P05",
+        "P07",
+        "P09",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N11",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G12",
+      "operations": [
+        "P12",
+        "P14",
+        "P15"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N11",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G13",
+      "operations": [
+        "P03",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N12",
+        "N15",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G14",
+      "operations": [
+        "P07",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N15"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G15",
+      "operations": [
+        "P13",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N07",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G16",
+      "operations": [],
+      "legacy_N": [
+        "N09",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G17",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "G18",
+      "operations": [
+        "P11",
+        "P14",
+        "P16",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U01",
+      "operations": [
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N05",
+        "N07",
+        "N08",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U02",
+      "operations": [
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N04",
+        "N08",
+        "N09",
+        "N14",
+        "N15",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U03",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N13",
+        "N14",
+        "N16"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U04",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P14",
+        "P15",
+        "P17"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N11",
+        "N14",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U05",
+      "operations": [
+        "P05",
+        "P11",
+        "P12",
+        "P15",
+        "P18"
+      ],
+      "legacy_N": [
+        "N03",
+        "N09",
+        "N10",
+        "N14",
+        "N15",
+        "N16",
+        "N17"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    },
+    {
+      "id": "U06",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "legacy_N": [
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N18"
+      ],
+      "historical_state": "PRESERVED_NOT_REASSESSED"
+    }
+  ],
+  "historical_tasks": [
+    {
+      "id": "N01",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P14",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "65a81a0f7515048ccd3c5c44714594c6423dd8d3"
+    },
+    {
+      "id": "N02",
+      "operations": [
+        "P01",
+        "P04",
+        "P05",
+        "P06",
+        "P09",
+        "P14",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "verified_done",
+      "source_sha": "093c93799fa93c4e297f917fba311d9bb12d1952"
+    },
+    {
+      "id": "N03",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f"
+    },
+    {
+      "id": "N04",
+      "operations": [
+        "P03",
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "historical_status": "code_merged",
+      "source_sha": "58507ef5c4e92af39ccb4dc545f6e2a8e437369f"
+    },
+    {
+      "id": "N05",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "b7c383994dbce28a6f373e5fac984552d0240675"
+    },
+    {
+      "id": "N06",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "f9c62f8f2446d2a7af1a90cc1d125579be823f71"
+    },
+    {
+      "id": "N07",
+      "operations": [
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720"
+    },
+    {
+      "id": "N08",
+      "operations": [
+        "P03",
+        "P05",
+        "P13",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d"
+    },
+    {
+      "id": "N09",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "012841d5529a990f9969dcc8e1c57eefcffcc720"
+    },
+    {
+      "id": "N10",
+      "operations": [
+        "P05",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "6f68aae72776f872be9b1483dd21c05711366714"
+    },
+    {
+      "id": "N11",
+      "operations": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P14",
+        "P15",
+        "P17"
+      ],
+      "historical_status": "partial",
+      "source_sha": "e1977805202748ea9a93c477e2812783885133b5"
+    },
+    {
+      "id": "N12",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "4a5df3b5d783d7fded486730119ff7a521176c69"
+    },
+    {
+      "id": "N13",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "c81725bdde9e35edd09a2f45b55e5b4e9c5a21d2"
+    },
+    {
+      "id": "N14",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "77adb31ab10fbb5ce975f49bee3da60f951a314d"
+    },
+    {
+      "id": "N15",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "22213ec06572323eee229477b669d350b5517eb3"
+    },
+    {
+      "id": "N16",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "0ab943cc5d1952a353b7d0d4ad0e03cc7260ea3d"
+    },
+    {
+      "id": "N17",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "9ebeb68128beec2a2bdfe7d65aea48354985100c"
+    },
+    {
+      "id": "N18",
+      "operations": [
+        "P01",
+        "P03",
+        "P04",
+        "P05",
+        "P06",
+        "P07",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17",
+        "P18"
+      ],
+      "historical_status": "partial",
+      "source_sha": "416f94e8e315e0c19b7d9a1e38d5fd5da38c9650"
+    }
+  ],
+  "preserved_history_sha256": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "af18b38adc76db424ddeaf3185a0bd45ba87fbc114065f4abfb37326afeac363",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "rulings": [
+    "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
+    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
+    "P11 Ruling: service-only scan uses participant/milestone UUID tuple cursor; emitted facts are excluded, so a bounded partial or crashed job may restart cold and safely progress. Cost if wrong: additional rescan cost; no actor-facing cursor or private evidence is exposed.",
+    "P11 Ruling: a scan hitting page/time budget records incomplete as job failure and returns retryable 503, preserving last success; it does not claim full success from partial work. Cost if wrong: busy periods may surface repeated job alerts until backlog is drained.",
+    "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence.",
+    "P11 final review Ruling: suppress terminal rejected nonrepeatable work in scan and fresh emit; pending/revision/unsubmitted remain eligible, repeatable uses receipt cap. Cost: final rejection requires a separately authorized future workflow to reopen.",
+    "P11 final review Ruling: apply cursor, processed facts and lookahead inside the SQL candidate query; verify substantial processed history with EXPLAIN ANALYZE before any index proposal. Cost: query still scans eligible ownership joins as chosen by current indexes; no hosted performance claim.",
+    "P11 final review declined hosted target compatibility, scheduler ownership/registration, external providers, human hosted acceptance, and unchanged P01-P10 beyond required dependencies. Cost: these gates remain NOT_RUN, no schedule enabled.",
+    "P11 minor deferred: identical mission-level inbox title/link for two deadlines remains safe but less specific; a future allowlisted milestone title/deadline projection needs its own native inbox contract coverage."
+  ],
+  "tasks": [
+    {
+      "id": "P01",
+      "dependencies": [],
+      "references": [
+        "A01",
+        "A02",
+        "A15",
+        "G01",
+        "G02",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+      "evidence": [
+        {
+          "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+          "environment": "local_isolated",
+          "scenario": "Baseline Journeys unit",
+          "result": "PASS_396_FAIL_0_SKIP_0",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/baseline-unit.log",
+          "observed_at": "2026-10-10T20:40:51.2740524Z"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
+        },
+        {
+          "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Current stacked PR CI; actual tested merge tree equals branch head tree",
+          "result": "417unit_56integration_116browser_4mailbox_PASS_0FAIL_0SKIP; Linux source package, extracted rebuild and typecheck PASS; root CI SUCCESS; hosted NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38087768841; tested_merge=44ca04899edcaa84d07804366ecfafce69dad37c; tree=69f0a136f3a56a52d9a2a230286dce8bcab9d8b5; root_run=38087768835",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        }
+      ],
+      "blockers": [],
+      "next_action": "Review the unmerged stack; designated staging/actor/recovery packet still required. Continue isolated dependent batches.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
+    },
+    {
+      "id": "P02",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [],
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+      "evidence": [
+        {
+          "source_sha": "fdd100237bf251cfcfa3b6905e914384f115c76f",
+          "environment": "local_isolated_working_tree",
+          "scenario": "readiness RED to GREEN, capabilities, full unit, typecheck",
+          "result": "9_RED_then_18_GREEN_full_unit_405_PASS_typecheck_PASS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p02-red.log; p02-green.log; p02-unit.log",
+          "observed_at": "2026-10-10T20:40:51.2740524Z"
+        },
+        {
+          "source_sha": "097b505d5e4b79948101877f98f331d27813e8af",
+          "environment": "protected_pr_preview_read_only",
+          "scenario": "creator missions and merchant campaigns application responses; project env target metadata",
+          "result": "503_UNAVAILABLE_private_no_store; required project settings target production only; deployment value relationships/Auth/actor/schema unverified",
+          "run_artifact": "Vercel protected fetch 2026-10-10T20:41:44Z and 20:53:48Z; CLI project env metadata inspection; no values exported",
+          "observed_at": "2026-10-10T20:58:12.331182+00:00"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
+        },
+        {
+          "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Current stacked PR CI; actual tested merge tree equals branch head tree",
+          "result": "417unit_56integration_116browser_4mailbox_PASS_0FAIL_0SKIP; Linux source package, extracted rebuild and typecheck PASS; root CI SUCCESS; hosted NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38087768841; tested_merge=44ca04899edcaa84d07804366ecfafce69dad37c; tree=69f0a136f3a56a52d9a2a230286dce8bcab9d8b5; root_run=38087768835",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_CONFIG_VALUE_RELATIONS: connector env listing 403; CLI metadata succeeds, preview required settings absent from current project list. Effective deployment values, Auth, actor and schema not checked."
+      ],
+      "next_action": "Review the unmerged stack; designated staging/actor/recovery packet still required. Continue isolated dependent batches.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
+    },
+    {
+      "id": "P03",
+      "dependencies": [
+        "P02"
+      ],
+      "references": [
+        "A03",
+        "A04",
+        "A07",
+        "A13",
+        "A20",
+        "G13",
+        "N01",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18"
+      ],
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+      "evidence": [
+        {
+          "source_sha": "42d897edcd6aad3cad1c05347255a6656fc51540",
+          "environment": "local_isolated",
+          "scenario": "P03 real component/handler recovery, EN/zh-HK Chromium component fixture, full unit, typecheck/build, root tooling, source packaging",
+          "result": "7 behavioral RED then GREEN; 2 supplemental baseline regressions RED then GREEN; unit414_PASS_0_FAIL_0_SKIP; browser8_PASS; typecheck_PASS; build_PASS; root_tooling72_PASS; source_package6_collected_1_Windows_symlink_SKIP",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/42d897e-unit.log; 42d897e-browser.log; p03-build-nojunction.log; p03-root-tooling-escalated.log; committed tests/e2e/u06-workspace-service-state.spec.ts",
+          "observed_at": "2026-10-10T20:58:12.331182+00:00"
+        },
+        {
+          "source_sha": "220990b0ce65251813a85c5e6b7eee6021b59d72",
+          "environment": "local_isolated",
+          "scenario": "independent P01-P03 review and fixes; conflict comparison retains moderator reason, merchant feedback/branch buffers",
+          "result": "2_P2_RED_to_GREEN; related28_PASS; fullunit416_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS; no_critical_or_deferred_minor_findings",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p03-review-red.log; p03-review-green.log; p03-review-unit.log; p03-review-build.log",
+          "observed_at": "2026-10-10T21:02:55.593429+00:00"
+        },
+        {
+          "source_sha": "ed339ad7ebe2ef4f24dee75dbcb21ed781acc347",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "exact-head push Journeys and stacked PR tree-equivalent CI",
+          "result": "unit416_integration56_browser116_mailbox4_PASS_0_FAIL_0_SKIP; source rebuild and Linux source package PASS; hosted acceptance NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38086127125; PR run38086129398 tested a6df909042a8bfcc2cc0f337d39a9a4f8378bcf9 tree058c2aba83b0cff419ac5a7f46d20f2f75ae3908 equals ed339ad tree; root PR CI38086129467 SUCCESS",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
+        },
+        {
+          "source_sha": "036be6772c6a718c9e44b3f03bbd9d2b968fc7cf",
+          "environment": "local_isolated",
+          "scenario": "disabled creator service with signed-out actor: real component first reports unavailable without login loop or reads",
+          "result": "1_RED_then_GREEN; unit417_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p03-disabled-red.log; p03-disabled-green.log; p03-disabled-build.log",
+          "observed_at": "2026-10-10T21:28:26.363761+00:00"
+        },
+        {
+          "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Current stacked PR CI; actual tested merge tree equals branch head tree",
+          "result": "417unit_56integration_116browser_4mailbox_PASS_0FAIL_0SKIP; Linux source package, extracted rebuild and typecheck PASS; root CI SUCCESS; hosted NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38087768841; tested_merge=44ca04899edcaa84d07804366ecfafce69dad37c; tree=69f0a136f3a56a52d9a2a230286dce8bcab9d8b5; root_run=38087768835",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        },
+        {
+          "source_sha": "d1829cefd8b8b0bdfd6faa0f6eb456675efc2eb1",
+          "environment": "protected_preview",
+          "scenario": "Current candidate creator API read",
+          "result": "503_UNAVAILABLE_private_no-store_vary_Cookie_noindex; no signed-in acceptance",
+          "run_artifact": "Purpose-built protected deployment fetch; source metadata matches candidate; private receipt retained",
+          "observed_at": "2026-10-10T21:53:18Z"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: staging target, approved synthetic actors and recovery packet not designated; local component browser fixture is not connected or hosted acceptance."
+      ],
+      "next_action": "Review the unmerged stack; designated staging/actor/recovery packet still required. Continue isolated dependent batches.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/56"
+    },
+    {
+      "id": "P04",
+      "dependencies": [
+        "P01",
+        "P02"
+      ],
+      "references": [
+        "A01",
+        "G03",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U06"
+      ],
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        },
+        {
+          "source_sha": "0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2",
+          "environment": "source_only",
+          "scenario": "Additional P08 SQL inventory; not an executable hosted delta",
+          "result": "NOT_EXECUTED_sha256=8eb3efca4c192bc8f2d11926cb0a4b9485d00f2aa5954c8c268ac3ee8548ba6e",
+          "run_artifact": "supabase/migrations/20261010213700_kinnso_campaign_schedule_terms.sql",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P05",
+      "dependencies": [
+        "P03",
+        "P04"
+      ],
+      "references": [
+        "A01",
+        "A03",
+        "A13",
+        "A17",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G11",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U03",
+        "U04",
+        "U05",
+        "U06"
+      ],
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P06",
+      "dependencies": [
+        "P05"
+      ],
+      "references": [
+        "A01",
+        "A15",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N09",
+        "N12",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "PREPARATION_DELIVERED",
+      "ci_status": "NOT_APPLICABLE_DOCUMENTS",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+      "evidence": [
+        {
+          "source_sha": "848d7e33fa1f67639f1d39dc93fbff5d5f56b258",
+          "environment": "source_documents_only",
+          "scenario": "staging prerequisite/hash inventory, H01-H14 hosted matrix and M1 rollback/gate preparation",
+          "result": "PREPARED; hosted_target_actors_recovery_missing; all_runtime_NOT_RUN; NO_GO",
+          "run_artifact": "docs/implementation/CREATOR_MERCHANT_STAGING_CHECKLIST.md; CREATOR_MERCHANT_HOSTED_UAT.md; CREATOR_MERCHANT_M1_RELEASE.md",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P07",
+      "dependencies": [
+        "P01",
+        "P03"
+      ],
+      "references": [
+        "A05",
+        "A09",
+        "A11",
+        "A12",
+        "A19",
+        "G04",
+        "G10",
+        "G11",
+        "G14",
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "ba3d5434f57936e4a6cac450065930591546fe06",
+      "evidence": [
+        {
+          "source_sha": "5c7fc9f365fcf86d4c183fa849d0a6fbe61abcc5",
+          "environment": "local_isolated",
+          "scenario": "bounded creator/merchant next actions, deep links, stale-account privacy, real task component reflow and review fixes",
+          "result": "10_behavior_RED_then_GREEN; self_review_RED_then_GREEN; fullunit428_PASS_0_FAIL_0_SKIP; build_including_TypeScript_PASS; 6_P07_component_browser_PASS_at_b07267f; no_owned_connected_run_locally",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p07-current-unit.log; p07-current-build.log; p07-browser.log; committed collaboration-tasks.test.mjs and u06-collaboration-tasks.spec.ts",
+          "observed_at": "2026-10-10T21:29:54.659420+00:00"
+        },
+        {
+          "source_sha": "ba3d5434f57936e4a6cac450065930591546fe06",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Current stacked PR CI; actual tested merge tree equals branch head tree",
+          "result": "428unit_56integration_124browser_4mailbox_PASS_0FAIL_0SKIP; Linux source package, extracted rebuild and typecheck PASS; root CI SUCCESS; hosted NOT_RUN",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38087866289; tested_merge=53ce6da19d961ffb083594083bab6db0b639503e; tree=4e3f9435857eae290e4641399130a60bdb311229; root_run=38087866406",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        },
+        {
+          "source_sha": "ba3d5434f57936e4a6cac450065930591546fe06",
+          "environment": "protected_preview",
+          "scenario": "Current candidate merchant API read",
+          "result": "503_UNAVAILABLE_private_no-store_vary_Cookie_noindex; no signed-in acceptance",
+          "run_artifact": "Purpose-built protected deployment fetch; source metadata matches candidate; private receipt retained",
+          "observed_at": "2026-10-10T21:53:38Z"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: designated staging target, actors and recovery packet absent."
+      ],
+      "next_action": "Review the unmerged stack; designated staging/actor/recovery packet still required. Continue isolated dependent batches."
+    },
+    {
+      "id": "P08",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N11",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "U03",
+        "U04"
+      ],
+      "code_status": "VERIFIED",
+      "ci_status": "PASS_SOURCE_BOUND",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "a0c43bf168dbfa643a52549cb33418903224d69a",
+      "evidence": [
+        {
+          "source_sha": "aeaae511b0b9a8d9c68de03b901a65319d559db7",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P08 test-first unchanged-database baseline",
+          "result": "unit429PASS_2newFAIL; integration56existingPASS_2newFAIL; direct owner mutation and legacy expired join reproduced",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38088065771",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        },
+        {
+          "source_sha": "b027ebae31c3fe6405cd677a24770b085c406959",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh independent whole-batch review regressions before fixes",
+          "result": "unit431PASS_1newFAIL; integration60PASS_5FAIL: three new policy/delete/history regressions, receipt default milestone compatibility and ops scale statement timeout; held-cutoff/close/legacy-native contention controls PASS; no critical findings",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38089717306",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        },
+        {
+          "source_sha": "0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2",
+          "environment": "local_isolated",
+          "scenario": "Schedule/UTC formatter and recovery, policy/delete/lock fixes, legacy draft-before-publication compatibility",
+          "result": "432unitPASS_0FAIL_0SKIP; TypeScript and production build PASS at matching application code; legacy three action regressions RED then 38 related unit PASS; six modified legacy RLS fixtures parse; full borrowed-dependency legacy typecheck NOT_PASS; no owned DB locally",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p08-review-unit.log; p08-review-types.log; p08-review-build.log; p08-legacy-baseline-red.log; p08-legacy-green.log; current owned CI38090289752 pending",
+          "observed_at": "2026-10-10T22:10:50.029443+00:00"
+        },
+        {
+          "source_sha": "0021f821d6cd6f2a6e58d9020cc1602e9c3b69e2",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Legacy settlement suite cleanup after sealed campaign terms",
+          "result": "ROOT_FAIL_afterAll_direct_milestone_cleanup; all eight settlement assertions PASS; owned parent cascade cleanup correction requires new CI; E2E SKIPPED",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38090289725",
+          "observed_at": "2026-10-10T22:20:13.930764+00:00"
+        },
+        {
+          "source_sha": "a0c43bf168dbfa643a52549cb33418903224d69a",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Full post-review schedule and legacy compatibility regression",
+          "result": "432unit_65integration_124browser_4isolatedSMTP_PASS_0FAIL_0SKIP; rootquality_scan_E2E_SUCCESS; testedmerge3cdb241fcb2b5c1ac55d90cb9f8952c55a3c2c38 exactheadtree6955bad524dec2bccebc69a896d7e62023d09c48; build_types_sourcepack_rebuild_PASS",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38091049065; https://github.com/YNWAforever/KinnsoOS/actions/runs/38091049181",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: designated target, actors, schema/config and recovery packet absent."
+      ],
+      "next_action": "Review PR58 dependency stack; continue isolated P09 and P10; prepare designated staging packet.",
+      "pull_request": "https://github.com/YNWAforever/KinnsoOS/pull/58"
+    },
+    {
+      "id": "P09",
+      "dependencies": [
+        "P08"
+      ],
+      "references": [
+        "A08",
+        "A13",
+        "G02",
+        "G11",
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "VERIFIED_OWNED_CI",
+      "ci_status": "PASS",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+      "evidence": [
+        {
+          "source_sha": "ded8dd03f28ec466bb39bc1be12a65a5228483f8",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 unchanged-database test-first discovery and invitation quota baseline",
+          "result": "65existingintegrationPASS_4newFAIL_0SKIP; independent backdated direct owner invitation succeeded despite exhausted quota; new source manifest omission also FAILED and corrected; mailbox4PASS; no hosted target",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38091491015",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
+        },
+        {
+          "source_sha": "344b0b79ef13c1a8260b87f18ae9c57a917f87da",
+          "environment": "local_isolated",
+          "scenario": "Initial discovery owner UI, allowlisted query, private notes and unknown-result reconcile",
+          "result": "438unitPASS_0FAIL_0SKIP; TypeScript and production build PASS at matching application code; corresponding source tests5PASS_1WindowsSKIP; fresh review found optional-cursor serialization and invitation inbox atomicity gaps; review still IN_PROGRESS",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-unit.log; p09-build.log",
+          "observed_at": "2026-10-10T22:39:33.840198+00:00"
+        },
+        {
+          "source_sha": "61ae97b495d621996fa3fc081ac93aed6d9f6a01",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh review regression checkpoint",
+          "result": "439unit:438PASS_1serializationFAIL;70integration:66PASS_4FAIL_0SKIP; notification assertions NOT_REACHED because fixture used pre-seal RETURNING timestamp; exact self-approval forbidden contract regressed; fresh fixture/CAS and contract correction checkpoint ec3b30b pending",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092089343",
+          "observed_at": "2026-10-10T22:47:29.687146+00:00"
+        },
+        {
+          "source_sha": "uncommitted_candidate_on_ec3b30b",
+          "environment": "local_isolated",
+          "scenario": "Review fix pass",
+          "result": "440unitPASS_0FAIL_0SKIP; TypeScript and production build/source pack PASS. Query serialization omits undefined; creator load-more preserves paged campaign selection. Inbox mandatory single-event transaction implemented but valid RED and current DB GREEN still pending. Added bounded scope/filter/stale-anchor and revoked-owner/true foreign campaign controls.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-review-unit.log; p09-review-build.log",
+          "observed_at": "2026-10-10T22:47:29.687156+00:00"
+        },
+        {
+          "source_sha": "ec3b30b37060f8c8500e8f2153b1e936b39c3f23",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reachable review RED checkpoint",
+          "result": "440unit438PASS_2FAIL_0SKIP;72integration69PASS_3FAIL_0SKIP. Native invitation returned success without inbox event (expected1 actual0); scoped notification fault did not abort invitation (expected synthetic_inbox_failure actual success). Both are valid inbox RED. Third failure is owned fixture successor already owning foreign company, violating mature one-company-per-owner unique key; corrected with distinct fresh successor. Remaining quota, cross-filter/stale anchors and exact self-approval contract PASS.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092631635",
+          "observed_at": "2026-10-10T22:51:06.680218+00:00"
+        },
+        {
+          "source_sha": "b0d5e05039b48e1f6f5f807eeb2607d6f8f92396",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 current regression and native browser checkpoint",
+          "result": "440unitPASS;72integrationPASS; browser124PASS_2FAIL_0SKIP at exact implicit-label locator before invitation reconcile/acceptance. Root3270PASS_1FAIL: old direct-invite RLS fixture creator was draft. No hosted acceptance. CI attempt1 port collision was environment-blocked, attempt2 reached these checks.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092961617; root38092961701",
+          "observed_at": "2026-10-10T23:18:49.162530+00:00"
+        },
+        {
+          "source_sha": "candidate_on_b0d5e05",
+          "environment": "local_isolated",
+          "scenario": "Explicit selector label and active invitation fixture",
+          "result": "Selector test8PASS_1FAIL before fix,9PASS after; full441unitPASS_0FAIL_0SKIP, TypeScriptPASS. Added explicit select accessible name; only invited creator RLS fixture activated, existing owned/foreign assertions retained. Browser and root CI pending.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-label-unit.log",
+          "observed_at": "2026-10-10T23:18:49.162541+00:00"
+        },
+        {
+          "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 current whole regression",
+          "result": "441unit_72integration_126browser_4mailbox_PASS_0FAIL_0SKIP;typecheck/build/source extraction rebuildPASS; testedmerge0da35a34e1d42847fd6e4004e538a82df445d89d tree57b9b246b1fd8b2f7c25fb7ec9ae4f48a695fed9 equals current head tree; root quality/image/E2EPASS. PR59 ready for review; unmerged; hosted AuthUATNOT_RUN.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38094594052; root38094594072",
+          "observed_at": "2026-10-10T23:45:08.461705+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: designated target/actors/recovery packet absent."
+      ],
+      "next_action": "Review stack in dependency order; obtain designated staging packet; continue P10-P17 isolated tasks."
+    },
+    {
+      "id": "P10",
+      "dependencies": [
+        "P07"
+      ],
+      "references": [
+        "A07",
+        "A08",
+        "A09",
+        "G14",
+        "N01",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P11",
+      "dependencies": [
+        "P08",
+        "P09"
+      ],
+      "references": [
+        "A11",
+        "G13",
+        "G14",
+        "G18",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
+      "evidence": [
+        {
+          "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reminder baseline after required fixture fields were supplied",
+          "result": "72existingintegrationPASS_3newFAIL_0SKIP; two reminder cases reach missing due RPC; distinct scheduled health row absent. Earlier7ff6632/b9aa8ba two cases NOT_REACHED due mandatory milestone description/participant source; those failures are not reminder RED. Unit3newFAIL before interface; now local445unitPASS_0FAIL_0SKIP, typecheck/build/source packPASS. Bounded runtime independent RED to GREEN. Six current DB cases and two new native EN/zh-HK browser stories pending.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095349058; .superpowers/sdd/2026-10-11-creator-merchant-reminders/unit-candidate.log; build-candidate.log",
+          "observed_at": "2026-10-10T23:45:08.461721+00:00"
+        },
+        {
+          "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh final review terminal rejection and bounded internal query",
+          "result": "CI38096569994 reaches rejected scan true expected false and missing bounded helper interface; prior candidate also exposes record/table alias collision55000 in emit. Fixed nonrepeatable terminal rejected suppression, cursor/dedupe/limit inside SQL helper, and record name. Added1001-row processed-history query plan verification; GREEN pending. No Critical; two Important fixed in one pass.",
+          "observed_at": "2026-10-11T00:01:06.230697+00:00"
+        }
+      ],
+      "blockers": [
+        "HOSTED_SCHEDULE_NOT_ENABLED: no designated environment, named owner, token/config/recovery packet or schedule authorization.",
+        "CURRENT_CI_AND_REVIEW_PENDING: service-only reminder transaction and native inbox links require matching whole regression and fresh review."
+      ],
+      "next_action": "Verify exact current reminder CI and fresh review; retain hosted job registration and provider delivery as separate gates."
+    },
+    {
+      "id": "P12",
+      "dependencies": [
+        "P03",
+        "P07"
+      ],
+      "references": [
+        "A11",
+        "G09",
+        "G12",
+        "G13",
+        "G14",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P13",
+      "dependencies": [
+        "P01"
+      ],
+      "references": [
+        "A03",
+        "A06",
+        "A17",
+        "A18",
+        "A20",
+        "G06",
+        "G07",
+        "G09",
+        "G10",
+        "G15",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U03"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_CONTENT: no author-approved three-guide pilot supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P14",
+      "dependencies": [
+        "P09",
+        "P10"
+      ],
+      "references": [
+        "A07",
+        "A10",
+        "G02",
+        "G12",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N16",
+        "N17",
+        "N18",
+        "U04"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P15",
+      "dependencies": [
+        "P01",
+        "P12"
+      ],
+      "references": [
+        "A04",
+        "A10",
+        "G12",
+        "N03",
+        "N05",
+        "N06",
+        "N07",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U03",
+        "U04",
+        "U05"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P16",
+      "dependencies": [
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "references": [
+        "A08",
+        "A09",
+        "A10",
+        "A19",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P17",
+      "dependencies": [
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14",
+        "P15"
+      ],
+      "references": [
+        "A02",
+        "A05",
+        "A12",
+        "A16",
+        "A17",
+        "A20",
+        "G03",
+        "G05",
+        "G06",
+        "G08",
+        "G11",
+        "G15",
+        "G17",
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08",
+        "N09",
+        "N10",
+        "N11",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U01",
+        "U02",
+        "U03",
+        "U04",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    },
+    {
+      "id": "P18",
+      "dependencies": [
+        "P04",
+        "P05",
+        "P06",
+        "P11",
+        "P13",
+        "P14",
+        "P15",
+        "P16",
+        "P17"
+      ],
+      "references": [
+        "A01",
+        "A15",
+        "G01",
+        "G02",
+        "G15",
+        "G17",
+        "G18",
+        "N01",
+        "N02",
+        "N03",
+        "N07",
+        "N09",
+        "N10",
+        "N12",
+        "N13",
+        "N14",
+        "N15",
+        "N16",
+        "N17",
+        "N18",
+        "U05",
+        "U06"
+      ],
+      "code_status": "NOT_STARTED",
+      "ci_status": "NOT_RUN",
+      "staging_status": "NOT_RUN",
+      "release_status": "NOT_RELEASED",
+      "source_sha": null,
+      "evidence": [],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      ],
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+    }
+  ]
+}

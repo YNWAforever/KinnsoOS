@@ -242,7 +242,8 @@ export async function createMissionAction(
     input,
     merchantProfileId,
     opsMemberId,
-    publish: options.publish ?? false,
+    // Keep partial creation private until the complete milestone set is stored.
+    publish: false,
   })
 
   const { data: mission, error: missionError } = await supabase
@@ -274,6 +275,23 @@ export async function createMissionAction(
       if (rollbackError || !rolledBackMission) return formError(incompleteMissionCreationError)
 
       return formError('Mission milestones could not be created')
+    }
+  }
+
+  if (options.publish) {
+    const { data: savedDraft, error: readError } = await supabase.from('missions')
+      .select('id,updated_at').eq('id', mission.id).eq('status', 'draft').maybeSingle()
+    if (readError || !savedDraft?.updated_at) return formError(`Mission creation needs confirmation. Check existing draft ${mission.id} before retrying.`)
+    const { data: published, error: publicationError } = await supabase.from('missions')
+      .update({ status: 'published', published_at: new Date().toISOString() })
+      .eq('id', mission.id).eq('status', 'draft').eq('updated_at', savedDraft.updated_at)
+      .select('id').maybeSingle()
+    if (publicationError || !published) {
+      // A failed response may follow a committed publication. Read back; never
+      // delete a potentially published brief or recreate it after uncertainty.
+      const { data: confirmed, error: confirmationError } = await supabase.from('missions')
+        .select('id,status').eq('id', mission.id).maybeSingle()
+      if (confirmationError || confirmed?.status !== 'published') return formError(`Mission publication needs confirmation. Check existing draft ${mission.id} before retrying.`)
     }
   }
 

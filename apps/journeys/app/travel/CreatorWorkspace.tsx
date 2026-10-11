@@ -6,6 +6,7 @@ import { useApp } from './ui';
 import { creators, emptyDraft, emptyProfile, type CreatorProgress, type DraftPayload, type GuideDraft, type Profile } from '../../lib/creators/contracts';
 import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
+import {CreatorCollaborationTasks} from './CreatorCollaborationTasks';
 import {formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
@@ -30,7 +31,7 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
  if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
- return editor ? <CreatorEditor key={path} path={path}/> : <CreatorGuides/>;
+ return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}<CreatorGuides/></>;
 }
 
 function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; onDone: () => void }) {

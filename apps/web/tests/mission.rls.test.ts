@@ -33,6 +33,7 @@ let opsUserId = ''
 let merchantProfileId = ''
 let opsMemberId = ''
 let missionId = ''
+let proofMilestoneId = ''
 let targetedMissionId = ''
 let travelpayoutsMissionId = ''
 let affiliateProgramId = ''
@@ -75,7 +76,8 @@ function signTestJwt(userId: string, email: string) {
       email,
       role: 'authenticated',
       aal: 'aal1',
-      session_id: randomUUID(),
+      session_id: userId,
+      is_anonymous: false,
     }),
   )
   const signature = createHmac('sha256', jwtSecret).update(`${header}.${payload}`).digest('base64url')
@@ -157,6 +159,8 @@ async function createTestUser(email: string) {
     );
   `)
 
+  await runPsql(`insert into auth.sessions(id,user_id,created_at,updated_at) values (${sqlString(userId)},${sqlString(userId)},now(),now());`)
+
   userIdsByEmail.set(email, userId)
   return userId
 }
@@ -178,6 +182,10 @@ d('mission schema RLS', () => {
     partnerCreatorId = await createTestUser(partnerCreatorEmail)
     merchantUserId = await createTestUser(merchantEmail)
     opsUserId = await createTestUser(opsEmail)
+
+    // Invitations use the mature active-creator contract on every writer.
+    const activeCreator = await svc.from('creators').update({ status: 'active' }).eq('id', creatorId)
+    expect(activeCreator.error).toBeNull()
 
     const merchant = await svc
       .from('merchant_profiles')
@@ -220,18 +228,24 @@ d('mission schema RLS', () => {
         mission_source: 'merchant',
         mission_type: 'coupon_affiliate',
         visibility: 'open',
-        status: 'published',
+        status: 'draft',
         coupon_code: 'RLS10',
         coupon_url: 'https://example.com/rls',
         affiliate_commission_rate: 10,
         kinnso_commission_rate: 4,
         creator_commission_rate: 6,
-        published_at: new Date().toISOString(),
+        published_at: null,
       })
       .select('id')
       .single()
     expect(mission.error).toBeNull()
     missionId = mission.data!.id
+    // Author proof terms before publication; later tests submit to this saved milestone.
+    const proof = await svc.from('mission_milestones').insert({mission_id:missionId,title:'Post proof',description:'Upload post proof'}).select('id').single()
+    expect(proof.error).toBeNull();proofMilestoneId=proof.data!.id
+    const publishedmissionId = await svc.from('missions').update({status:'published',published_at:new Date().toISOString()}).eq('id',missionId)
+    if (publishedmissionId.error) throw publishedmissionId.error
+
 
     const targetedMission = await svc
       .from('missions')
@@ -292,14 +306,18 @@ d('mission schema RLS', () => {
     }
   }, testTimeout)
 
-  it('merchant can read and update own mission', async () => {
+  it('merchant reads published terms, cannot rewrite them, and edits an owned draft', async () => {
     const merchant = await authed(merchantEmail)
     const { data, error } = await merchant.from('missions').select('id, title').eq('id', missionId).single()
     expect(error).toBeNull()
     expect(data!.title).toBe('RLS coupon mission')
 
     const update = await merchant.from('missions').update({ title: 'RLS coupon mission updated' }).eq('id', missionId)
-    expect(update.error).toBeNull()
+    expect(update.error?.message).toBe('immutable_campaign_terms')
+    const draft = await merchant.from('missions').insert({merchant_profile_id:merchantProfileId,title:'Owned draft',summary:'Draft control',mission_type:'coupon_affiliate',status:'draft'}).select('id').single()
+    expect(draft.error).toBeNull()
+    expect((await merchant.from('missions').update({title:'Owned draft updated'}).eq('id',draft.data!.id)).error).toBeNull()
+    expect((await merchant.from('missions').delete().eq('id',draft.data!.id)).error).toBeNull()
   }, testTimeout)
 
   it('creator can see published open missions and join once', async () => {
@@ -828,8 +846,7 @@ d('mission schema RLS', () => {
 
     const milestone = await svc
       .from('mission_milestones')
-      .insert({ mission_id: missionId, title: 'Post proof', description: 'Upload post proof' })
-      .select('id')
+      .select('id').eq('id',proofMilestoneId)
       .single()
     expect(milestone.error).toBeNull()
 

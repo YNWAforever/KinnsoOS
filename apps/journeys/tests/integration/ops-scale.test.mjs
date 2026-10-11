@@ -13,10 +13,12 @@ test('ops queue keyset and currency totals remain complete above the actual API 
   assert.equal((await creator.client.rpc('get_kinnso_review_queue',{p_filter:{},p_cursor:null,p_limit:50})).error?.message,'forbidden');
   merchantId=randomUUID();missionId=randomUUID();const participantId=randomUUID();
   await ok(admin.from('merchant_profiles').insert({id:merchantId,user_id:owner.id,company_name:'Synthetic queue owner',contact_email:'synthetic@example.test'}));
-  await ok(admin.from('missions').insert({id:missionId,merchant_profile_id:merchantId,title:'Synthetic scale',summary:'Owned test fixture',mission_type:'coupon_affiliate',status:'published'}));
-  await ok(admin.from('mission_participants').insert({id:participantId,mission_id:missionId,creator_id:creator.id,status:'active',source:'open_join'}));
+  await ok(admin.from('missions').insert({id:missionId,merchant_profile_id:merchantId,title:'Synthetic scale',summary:'Owned test fixture',mission_type:'coupon_affiliate',status:'draft'}));
   const ids=Array.from({length:1205},()=>randomUUID());
-  for(let n=0;n<ids.length;n+=200){const chunk=ids.slice(n,n+200);await ok(admin.from('mission_milestones').insert(chunk.map((id,i)=>({id,mission_id:missionId,title:'Synthetic '+(n+i),description:'Fixture',sort_order:n+i}))));await ok(admin.from('mission_milestone_submissions').insert(chunk.map(id=>({id,mission_milestone_id:id,mission_participant_id:participantId,status:'submitted',submitted_at:'2030-01-01T00:00:00Z',review_deadline:null}))));await ok(admin.from('mission_settlements').insert(chunk.map((id,i)=>({mission_id:missionId,status:'pending',amount_currency:(n+i)%2?'USD':'HKD',creator_commission_amount:1,paid_fee_amount:2}))));}
+  for(let n=0;n<ids.length;n+=200){const chunk=ids.slice(n,n+200);await ok(admin.from('mission_milestones').insert(chunk.map((id,i)=>({id,mission_id:missionId,title:'Synthetic '+(n+i),description:'Fixture',sort_order:n+i}))));}
+  await ok(admin.from('missions').update({status:'published'}).eq('id',missionId));
+  await ok(admin.from('mission_participants').insert({id:participantId,mission_id:missionId,creator_id:creator.id,status:'active',source:'open_join'}));
+  for(let n=0;n<ids.length;n+=200){const chunk=ids.slice(n,n+200);await ok(admin.from('mission_milestone_submissions').insert(chunk.map(id=>({id,mission_milestone_id:id,mission_participant_id:participantId,status:'submitted',submitted_at:'2030-01-01T00:00:00Z',review_deadline:null}))));await ok(admin.from('mission_settlements').insert(chunk.map((id,i)=>({mission_id:missionId,status:'pending',amount_currency:(n+i)%2?'USD':'HKD',creator_commission_amount:1,paid_fee_amount:2}))));}
   await ok(admin.from('mission_verification_jobs').insert([
    {mission_milestone_submission_id:ids[1203],creator_id:creator.id,status:'ready',confidence_status:'verified_signal',created_at:'2030-01-01T00:00:00Z'},
    {mission_milestone_submission_id:ids[1204],creator_id:creator.id,status:'ready',confidence_status:'verified_signal',created_at:'2030-01-01T00:00:00Z'},
