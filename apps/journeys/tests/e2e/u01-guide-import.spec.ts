@@ -368,3 +368,11 @@ test('published v2 is reviewed before appending; conflict requires review and lo
  const retry=page.waitForRequest(r=>r.url().endsWith('/api/trips/'+tripId+'/adopt'));await page.getByRole('button',{name:'Confirm apply to this trip',exact:true}).click();expect((await retry).postDataJSON().requestId).toBe(requests[0]);await page.waitForURL('**/en/trips/'+tripId);
  await expect(page.getByLabel('Private note',{exact:true}).first()).toHaveValue('My version-one private note');await page.reload();const result=(await a.client.rpc('get_trip_snapshot',{p_trip_id:tripId})).data;expect(result.revision).toBe(committedRevision);expect(result.days).toHaveLength(2);expect(result.days[0].stops[0].source.guideVersion).toBe(1);expect(result.days[1].stops[0].source.guideVersion).toBe(2);expect(result.days[0].stops[0].travellerNote).toBe('My version-one private note');
 });
+
+for(const locale of ['en','zh-HK'])test(`summary inspiration leads to manual trip planning (${locale})`,async({page})=>{
+ await page.goto('/'+locale+'/g/'+summaryId);
+ const next=page.getByRole('link',{name:locale==='en'?'Build your own itinerary':'建立自己的行程',exact:true});
+ await expect(next).toHaveAttribute('href','/'+locale+'/trips');
+ await expect(page.getByRole('button',{name:locale==='en'?'Apply published itinerary':'套用已發布行程',exact:true})).toHaveCount(0);
+ await next.click();await expect(page).toHaveURL(new RegExp('/'+locale+'/trips$'));
+});

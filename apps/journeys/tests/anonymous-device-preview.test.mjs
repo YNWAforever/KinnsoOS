@@ -38,18 +38,18 @@ test('an anonymous private-trip deep link does not reveal unrelated device copie
  assert.equal(preview(null,'private-trip-A').length,0);
 });
 const guideCode=await transform(await readFile(new URL('../app/travel/GuideWorkspace.tsx',import.meta.url),'utf8'),{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
-function guideRecovery(actorId,valid=true,kind='itinerary'){
+function guideRecovery(actorId,valid=true,kind='itinerary',all=false,locale='en'){
  const GuestPlanner=()=>null,module={exports:{}},jsx=(type,props)=>({type,props});
  runInContext(guideCode.code,createContext({module,exports:module.exports,require:name=>{
   if(name==='react')return{useState:initial=>[initial===true&&!valid?false:initial,()=>{}],useRef:initial=>({current:initial}),useEffect:()=>{}};
   if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
   if(name==='next/navigation')return{useRouter:()=>({}),useSearchParams:()=>({get:()=>null})};
   if(name==='./UnsavedDraftGuard')return{useDraftNavigation:()=>()=>{}};
-  if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};if(name==='./GuestPlanner')return{GuestPlanner};return{};
+  if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='en'?en:zh,href:path=>'/'+locale+'/'+path})};if(name==='./GuestPlanner')return{GuestPlanner};return{};
  }}));
  const tree=module.exports.GuideWorkspace({id:'guide-one',actorId,initialGuide:{id:'guide-one',kind,version:2}});
  const nodes=node=>!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(nodes)];
- return nodes(tree).filter(node=>node.type===GuestPlanner);
+ return all?nodes(tree):nodes(tree).filter(node=>node.type===GuestPlanner);
 }
 test('a valid signed-in guide view offers explicit device recovery with its current actor',()=>{
  const result=guideRecovery('account-A');assert.equal(result.length,1);assert.equal(result[0].props.actorId,'account-A');
@@ -57,4 +57,11 @@ test('a valid signed-in guide view offers explicit device recovery with its curr
 });
 test('invalidated guide views and summary content do not render a device itinerary editor',()=>{
  assert.equal(guideRecovery('account-A',false).length,0);assert.equal(guideRecovery(null,true,'summary').length,0);
+});
+
+for(const locale of ['en','zh-HK'])test(`summary guide offers explicit manual planning without an adoption action (${locale})`,()=>{
+ const nodes=guideRecovery(null,true,'summary',true,locale);
+ const link=nodes.find(n=>n.type==='a'&&n.props.children===(locale==='en'?'Build your own itinerary':'建立自己的行程'));
+ assert.ok(link,'summary readers need a next step');assert.equal(link.props.href,'/'+locale+'/trips');
+ assert.equal(nodes.some(n=>n.type==='button'&&n.props.children==='Apply published itinerary'),false);
 });

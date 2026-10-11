@@ -1,4 +1,17 @@
-import type {DraftContent} from './contracts';
+import type {DraftContent,DraftPayload} from './contracts';
+export type PublicationIssue={code:'title'|'city'|'summary'|'days'|'stops'|'stopTitle';day?:number;stop?:number};
+/** Completeness guidance for an editing draft; publication still uses server validation. */
+export function publicationReadiness(payload:DraftPayload):{dayCount:number;stopCount:number;issues:PublicationIssue[]}{
+ const issues:PublicationIssue[]=[];
+ for(const code of ['title','city','summary'] as const)if(!payload[code].trim())issues.push({code});
+ const days=payload.content.days;let stopCount=0;
+ if(!days.length)issues.push({code:'days'});
+ days.forEach((day,di)=>{
+  if(!day.stops.length)issues.push({code:'stops',day:di});
+  day.stops.forEach((stop,si)=>{stopCount++;if(!stop.title.trim())issues.push({code:'stopTitle',day:di,stop:si});});
+ });
+ return{dayCount:days.length,stopCount,issues};
+}
 export function parseTimeOfDay(value:string):{ok:true;minutes:number|null}|{ok:false}{
  if(value==='')return{ok:true,minutes:null};
  if(!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value))return{ok:false};

@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "auditDateHK": "2026-10-12",
+  "baselineCommit": "c5c73721c424f61121ce063c96fc9777e72b698c",
+  "production": {
+    "deploymentId": "dpl_B2yHiD6oCn2kVbqPgUJwJFAprnex",
+    "state": "READY",
+    "alias": "https://kinnso-os.vercel.app",
+    "commit": "c5c73721c424f61121ce063c96fc9777e72b698c"
+  },
+  "baselineCI": {
+    "journeysRun": 38144966477,
+    "unit": {
+      "pass": 544,
+      "fail": 0,
+      "skip": 0
+    },
+    "integration": {
+      "pass": 94,
+      "fail": 0,
+      "skip": 0
+    },
+    "nativeBrowser": {
+      "pass": 164
+    },
+    "jobs": [
+      {
+        "name": "verify",
+        "conclusion": "success"
+      },
+      {
+        "name": "connected",
+        "conclusion": "success"
+      },
+      {
+        "name": "auth-mailbox",
+        "conclusion": "success"
+      },
+      {
+        "name": "operations-performance",
+        "conclusion": "success"
+      }
+    ],
+    "performanceAssessment": "FAIL",
+    "performanceEnvironment": "Owned synthetic localhost lab; not production RUM"
+  },
+  "performanceSamples": {
+    "merchantCampaigns": {
+      "coldLcpMs": [
+        2827,
+        2869,
+        2854
+      ],
+      "warmLcpMs": [
+        1384,
+        1458,
+        1446
+      ],
+      "cls": 0.048912383035605786
+    },
+    "merchantReview": {
+      "coldLcpMs": [
+        2864,
+        2857,
+        2852
+      ],
+      "warmLcpMs": [
+        1425,
+        1381,
+        1435
+      ],
+      "cls": 0.048912383035605786
+    },
+    "creatorDetail": {
+      "coldLcpMs": [
+        2435,
+        2420,
+        2403
+      ],
+      "warmLcpMs": [
+        1104,
+        1043,
+        1190
+      ],
+      "cls": 0.0012724476320307501
+    },
+    "caveat": "Lighthouse trace-engine emitted TypeErrors on several warm navigations. Retain full report validity/denominators; successful collector execution is not a passed performance gate."
+  },
+  "liveAnonymousReads": [
+    {
+      "path": "/api/creator/missions",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/merchant/campaigns",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/inbox",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/session",
+      "status": 200,
+      "data": null,
+      "cache": "private, no-store"
+    }
+  ],
+  "backendReadOnly": {
+    "projectName": "Remix-Kinnso",
+    "projectRef": "scryfkefedzuetfdtrvl",
+    "targetEvidence": "apps/scan/DEPLOYMENT.md and apps/scan/.env.example",
+    "productionBinding": "NOT_VERIFIED; Vercel environment metadata read denied (403)",
+    "migrationLedgerLastVersion": "20260718093422",
+    "missingRpcs": [
+      "query_kinnso_creator_missions",
+      "query_kinnso_merchant_campaigns",
+      "apply_kinnso_merchant_campaign_command"
+    ],
+    "presentRpcs": [
+      "kinnso_actor",
+      "kinnso_guide",
+      "apply_kinnso_support_command",
+      "get_kinnso_support",
+      "get_kinnso_inbox",
+      "publish_kinnso_guide_draft"
+    ],
+    "interpretation": "Migration ledger is not a full schema inventory. Some newer functions exist despite no October history. Reconcile catalog/definition/grant/policy hashes before any hosted migration; no hosted mutation performed."
+  },
+  "localContinuation": {
+    "node": "24.19.0",
+    "baselineUnitPass": 544,
+    "currentUnitPass": 555,
+    "currentUnitFail": 0,
+    "currentUnitSkip": 0,
+    "build": "PASS",
+    "typecheck": "PASS",
+    "sourcePackagePythonTests": 6,
+    "connectedBrowser": "NOT_RUN_LOCALLY; no Docker CLI available",
+    "hostedRoleUAT": "BLOCKED; no designated approved role accounts/staging target"
+  },
+  "openPRs": [
+    {
+      "number": 74,
+      "head": "2400da159281070c7b191fb76f71068c084f7840",
+      "scope": "Merchant initial recovery and standalone source SQL contracts"
+    },
+    {
+      "number": 76,
+      "head": "773f91c12fc49ac43e413313c4fc3dff0a433eb4",
+      "scope": "Merchant workspace lazy loading; based on PR 74"
+    }
+  ],
+  "writes": {
+    "hostedDatabase": 0,
+    "productionConfiguration": 0,
+    "messagesSent": 0,
+    "realPublishedGuides": 0
+  }
+}
