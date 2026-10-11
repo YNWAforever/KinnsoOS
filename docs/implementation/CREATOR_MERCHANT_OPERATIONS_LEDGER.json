@@ -1462,6 +1462,13 @@
           "result": "503_UNAVAILABLE_private_no-store_vary_Cookie_noindex; no signed-in acceptance",
           "run_artifact": "Purpose-built protected deployment fetch; source metadata matches candidate; private receipt retained",
           "observed_at": "2026-10-10T21:53:18Z"
+        },
+        {
+          "environment": "local_isolated",
+          "scenario": "Initial finance membership outage read retry",
+          "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
+          "observed_at": "2026-10-11T05:56:17.722508+00:00",
+          "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
         }
       ],
       "blockers": [
@@ -2714,6 +2721,13 @@
           "scenario": "Fresh mandatory recovery and full source acceptance",
           "result": "510 unit/94 integration/136 actual native browser/4 isolated SMTP PASS0 FAIL0 SKIP, clean tested merge with parents68df/552 and tree equals552. Source/type/build/extracted rebuild and CI grouping/cancellation contracts PASS. Native u10 and both u11 locales selected and PASS. Root552 fails2 new script lint errors, corrected under exact repository ESLint0 errors3 old warnings. Performance still IN_PROGRESS, not all Journeys PASS.",
           "observed_at": "2026-10-11T03:15:57.838982+00:00"
+        },
+        {
+          "environment": "local_isolated",
+          "scenario": "Initial finance membership outage read retry",
+          "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
+          "observed_at": "2026-10-11T05:56:17.722508+00:00",
+          "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
         }
       ],
       "blockers": [
@@ -3073,5 +3087,46 @@
         "cost_if_wrong": "A later diagnosis may need raw sample route mapping; an allowlist extension must include privacy regression coverage."
       }
     }
+  },
+  "finance_membership_retry_continuation": {
+    "parent_pr": 67,
+    "parent_sha": "dd172e287b216a7d78361ad312117f6ab7fba5c2",
+    "branch": "codex/finance-read-retry-20261011",
+    "observed_at": "2026-10-11T05:56:17.722508+00:00",
+    "source_status": "Implemented; fresh review and exact-source native pending",
+    "local_tests": {
+      "red": {
+        "pass": 1,
+        "fail": 5
+      },
+      "focused": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit": {
+        "pass": 531,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS"
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Create a separate P03/P17 continuation from reviewed PR67 dd172e287b216a7d78361ad312117f6ab7fba5c2; preserve P16 source history and all existing core workflows.",
+        "cost_if_wrong": "New-head native/root and source-package evidence is required; parent acceptance cannot substitute for this change."
+      },
+      {
+        "decision": "Retry only the failed initial membership GET through the existing service-state UI, actor/generation and in-flight guards. Filter owner/finance before selecting company; show empty-membership explanation only after successful reads and return AUTH_REQUIRED to the same task.",
+        "cost_if_wrong": "Incorrect lifecycle handling could select a stale company or present a false empty result. Existing actor/session/RLS remains authoritative; no command, requestId/payload, CAS, financial capability or provider changes."
+      },
+      {
+        "decision": "Use actual compiled component tests and add EN/zh-HK native keyboard retry at320px against real owned local reads, foreign-company exclusion and zero finance POST.",
+        "cost_if_wrong": "Native cases remain pending until actual new-source CI; browser emulation does not prove physical device or assistive technology acceptance."
+      }
+    ]
   }
 }
