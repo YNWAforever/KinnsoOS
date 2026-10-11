@@ -84,7 +84,7 @@ export function prepareOwnedBlankReset(page,origin) {
   try{type=value.type();owned=new URL(page.url()).origin===origin;}catch{counts.handlingFailures++;return;}
   if(type==='beforeunload')counts.beforeUnloadDialogs++;
   if(type!=='beforeunload'||!owned){counts.unhandledDialogs++;return;}
-  Promise.resolve().then(async()=>{if(stopped)return;await value.accept();if(!stopped)counts.acceptedBeforeUnloadDialogs++;}).catch(()=>{if(!stopped)counts.handlingFailures++;});
+  Promise.resolve().then(async()=>{if(stopped||counts.blankCompleted)return;await value.accept();if(!stopped)counts.acceptedBeforeUnloadDialogs++;}).catch(()=>{if(!stopped)counts.handlingFailures++;});
  };
  const navigated=frame=>{if(frame.parentFrame()===null&&frame.url()==='about:blank'){counts.blankCompleted=true;detach();}};
  page.on('dialog',dialog);page.on('framenavigated',navigated);

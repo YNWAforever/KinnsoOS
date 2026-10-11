@@ -64,3 +64,24 @@ test('stopping the reset observation prevents an acceptance still queued at the 
  assert.equal(retained.acceptedBeforeUnloadDialogs,0);assert.deepEqual(reset.stop(),retained);
  for(const event of ['dialog','framenavigated'])assert.equal(page.listenerCount(event),0);
 });
+
+
+test('first main-frame blank prevents queued acceptance but retains acceptance already dispatched',async()=>{
+ const page=new EventEmitter();page.url=()=>origin+'/en/merchant';let accepted=0;
+ const reset=lab.prepareOwnedBlankReset(page,origin);
+ page.emit('dialog',{type:()=> 'beforeunload',accept:async()=>{accepted++;}});
+ page.emit('framenavigated',frame('about:blank'));
+ await Promise.resolve();await Promise.resolve();await Promise.resolve();
+ assert.equal(accepted,0,'no queued action may begin after the initial blank handoff');
+ const retained=reset.stop();assert.equal(retained.blankCompleted,true);assert.equal(retained.acceptedBeforeUnloadDialogs,0);
+ for(const event of ['dialog','framenavigated'])assert.equal(page.listenerCount(event),0);
+
+ const active=new EventEmitter();active.url=()=>origin+'/en/merchant';let finish,started=0;
+ const sent=lab.prepareOwnedBlankReset(active,origin);
+ active.emit('dialog',{type:()=> 'beforeunload',accept:()=>{started++;return new Promise(resolve=>{finish=resolve;});}});
+ await Promise.resolve();assert.equal(started,1,'this action was dispatched before the handoff');
+ active.emit('framenavigated',frame('about:blank'));finish();
+ await Promise.resolve();await Promise.resolve();
+ assert.equal(sent.stop().acceptedBeforeUnloadDialogs,1,'a previously dispatched acceptance may settle normally');
+ for(const event of ['dialog','framenavigated'])assert.equal(active.listenerCount(event),0);
+});

@@ -3318,4 +3318,31 @@
       }
     }
   }
+,
+  "operations_blank_reset_review_checkpoint": {
+    "reviewed_sha": "100effa1dc5f918ff4d7e1575e855689ccf4e162",
+    "review": "0 Critical, 1 Important, 0 Minor; source scope only; one fix pass; no re-review",
+    "finding": "First main-frame blank must prevent queued acceptance from starting, while already-dispatched acceptance may settle normally.",
+    "tdd": {
+      "red": {
+        "pass": 4,
+        "fail": 1,
+        "skip": 0
+      },
+      "focused_green": {
+        "pass": 28,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit_green": {
+        "pass": 542,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "typecheck": "PASS",
+    "independent_review_validation": "27 focused tests and five additional boundary checks passed on reviewed100; not transferred to fixed head",
+    "current_source_ci": "PENDING_NOT_TRANSFERRED",
+    "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  }
 }
