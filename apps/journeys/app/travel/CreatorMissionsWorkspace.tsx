@@ -6,6 +6,8 @@ import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {creatorMissions,type CreatorMission,type CreatorMissionDetail,type CreatorMissionCommand,type Evidence,type MissionScope} from '../../lib/creators/collaboration';
 import {evidenceUrl} from '../../lib/creators/collaboration-validation';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {CollaborationListFilters} from './CollaborationListFilters';
+import {changeListFilter,readListLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
 import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 type EvidenceForm={milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofText:string;notes:string};
@@ -13,29 +15,33 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
  const {t,href,locale}=useApp();
  const missionId=/^studio\/missions\/[0-9a-f-]{36}$/i.test(path)?path.split('/')[2]:null;
  const [scope,setScope]=useState<MissionScope>(path==='studio/outcomes'?'mine':'available');
+ const [filters,setFilters]=useState<CollaborationListQuery>({});const applied=useRef<CollaborationListQuery>({});
  const [items,setItems]=useState<CreatorMission[]|null>(null),[cursor,setCursor]=useState<string|null>(null),[detail,setDetail]=useState<CreatorMissionDetail|null>(null);
  const [busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [applicationNote,setApplicationNote]=useState(''),[agreed,setAgreed]=useState(false),[form,setForm]=useState<EvidenceForm|null>(null);
  const generation=useRef(0),pending=useRef<{command:CreatorMissionCommand;requestId:string}|null>(null);
  const reference=useRef<string|undefined>(undefined);
- function clear(){setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
+ function clear(){setFilters({});applied.current={};setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
  function denied(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){clear();if(code==='AUTH_REQUIRED')setValid(false);}}
- async function load(after?:string,nextScope=scope){
+ async function load(after?:string,nextScope=scope,nextQuery:CollaborationListQuery=applied.current){
   const own=++generation.current;setBusy(true);setError('');
   if(missionId){
    const r=await creatorMissions.get(missionId,after);if(own!==generation.current)return;setBusy(false);
    if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setDetail(null);return;}
    setDetail(previous=>after&&previous?{...r.data,submissions:[...previous.submissions,...r.data.submissions].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index)}:r.data);
   }else{
-   const r=await creatorMissions.list(nextScope,after);if(own!==generation.current)return;setBusy(false);
+   const {after:restoredCursor,...currentQuery}=nextQuery;applied.current=currentQuery;
+   const r=await creatorMissions.list(nextScope,after,currentQuery);if(own!==generation.current)return;setBusy(false);
    if(!r.ok){reference.current=r.requestId;denied(r.code);setError(r.code);if(!after)setItems(null);return;}
+   writeListLocation({...nextQuery,...after?{after}:{}},nextScope);
    setItems(previous=>after?[...(previous??[]),...r.data.items].filter((row,index,all)=>all.findIndex(x=>x.id===row.id)===index):r.data.items);setCursor(r.data.nextCursor);
   }
  }
  useEffect(()=>{
-  setValid(true);clear();setError('');setMessage('');const initial:MissionScope=path==='studio/outcomes'?'mine':'available';setScope(initial);
+  setValid(true);clear();setError('');setMessage('');const selected=new URLSearchParams(window.location.search).get('scope');const initial:MissionScope=path==='studio/outcomes'?'mine':selected==='mine'?'mine':'available';setScope(initial);
+  let entry:CollaborationListQuery={};try{if(!missionId)entry=readListLocation(initial);}catch{setError('INVALID');return;}setFilters(entry);applied.current=entry;
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){++generation.current;setValid(false);setBusy(false);clear();}});
-  if(actorId&&enabled)void load(undefined,initial);
+  if(actorId&&enabled)void load(entry.after,initial,entry);
   return()=>{++generation.current;unsubscribe();};
  },[actorId,enabled,path]);
  async function send(command?:CreatorMissionCommand){
@@ -75,9 +81,12 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   {busy&&<p role="status">{t('Loading collaboration records…','正在載入合作紀錄…')}</p>}
   <button className="k-btn" disabled={locked} onClick={()=>load()}>{t('Refresh collaborations','重新載入合作')}</button>
   {!missionId&&<>
-   <div className="k-actions" aria-label={t('Collaboration views','合作檢視')}><button className="k-btn" aria-pressed={scope==='available'} disabled={locked} onClick={()=>{setScope('available');void load(undefined,'available');}}>{t('Available collaborations','可參加的合作')}</button><button className="k-btn" aria-pressed={scope==='mine'} disabled={locked} onClick={()=>{setScope('mine');void load(undefined,'mine');}}>{t('My collaborations','我的合作')}</button></div>
-   {items?.length===0&&<div className="k-card"><h2>{scope==='mine'?t('Your next collaboration starts here.','從這裡開始下一次合作。'):t('No open collaborations yet.','暫未有開放的合作。')}</h2><p>{scope==='mine'?t('Browse open briefs or return when a merchant invites you.','瀏覽開放的合作簡介，或在收到商戶邀請後返回。'):t('Check back for briefs that match your interests.','稍後再來尋找符合你興趣的合作。')}</p></div>}
-   {items?.map(item=><article className="k-card" key={item.id}><p className="k-eyebrow">{item.merchantName??item.missionSource}</p><h2><Link href={href('studio/missions/'+item.id)}>{item.title}</Link></h2><p>{item.summary}</p><p>{status(item.participant?.status??item.status)}</p>{item.minTier&&!item.eligible&&<p>{t('Required creator tier: ','所需創作者級別：')}{item.minTier}</p>}<Link className="k-btn" href={href('studio/missions/'+item.id)}>{t('View collaboration','查看合作')}</Link></article>)}
+   <div className="k-actions" aria-label={t('Collaboration views','合作檢視')}><button className="k-btn" aria-pressed={scope==='available'} disabled={locked} onClick={()=>{setScope('available');setFilters({});applied.current={};void load(undefined,'available',{});}}>{t('Available collaborations','可參加的合作')}</button><button className="k-btn" aria-pressed={scope==='mine'} disabled={locked} onClick={()=>{setScope('mine');setFilters({});applied.current={};void load(undefined,'mine',{});}}>{t('My collaborations','我的合作')}</button></div>
+   <CollaborationListFilters locale={locale} scope={scope} value={filters} disabled={locked} onChange={setFilters} onSearch={()=>{const next=changeListFilter(applied.current,filters);setFilters(next);void load(undefined,scope,next);}} onClear={()=>{setFilters({});void load(undefined,scope,{});}}/>
+   <p>{t('Each page is current when read. Status or deadline changes can move records; refresh to start again.','每頁顯示讀取時的資料。狀態或期限變動可能改變順序，請重新載入以重新開始。')}</p>
+   {items?.length===0&&(applied.current.q||applied.current.status)&&<p role="status">{t('No collaborations match these filters.','沒有符合篩選的合作。')}</p>}
+   {items?.length===0&&!applied.current.q&&!applied.current.status&&<div className="k-card"><h2>{scope==='mine'?t('Your next collaboration starts here.','從這裡開始下一次合作。'):t('No open collaborations yet.','暫未有開放的合作。')}</h2><p>{scope==='mine'?t('Browse open briefs or return when a merchant invites you.','瀏覽開放的合作簡介，或在收到商戶邀請後返回。'):t('Check back for briefs that match your interests.','稍後再來尋找符合你興趣的合作。')}</p></div>}
+   {items?.map(item=><article className="k-card" key={item.id}><p className="k-eyebrow">{item.merchantName??item.missionSource}</p><h2><Link href={href('studio/missions/'+item.id)}>{item.title}</Link></h2><p>{item.summary}</p>{item.nextDueAt&&<p>{t('Next unfinished due date: ','下一個待完成期限：')}<time dateTime={item.nextDueAt}>{scheduleDate(item.nextDueAt,item.scheduleTimeZone??'UTC',locale)}</time></p>}<p>{status(item.listState??item.participant?.status??item.status)}</p>{item.minTier&&!item.eligible&&<p>{t('Required creator tier: ','所需創作者級別：')}{item.minTier}</p>}<Link className="k-btn" href={href('studio/missions/'+item.id)}>{t('View collaboration','查看合作')}</Link></article>)}
    {cursor&&<button className="k-btn" disabled={locked} onClick={()=>load(cursor)}>{t('Load more collaborations','載入更多合作')}</button>}
   </>}
   {detail&&<>

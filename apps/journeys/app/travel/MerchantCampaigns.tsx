@@ -1,4 +1,5 @@
 'use client';
+import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -8,13 +9,16 @@ import {parseCommissionPercent} from '../../lib/merchants/access';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {CollaborationTasks} from './CollaborationTasks';
 import {campaignTasks} from '../../lib/collaboration/tasks';
+import {CollaborationListFilters} from './CollaborationListFilters';
+import {changeListFilter,readListLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
 import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUrl:'',affiliateRate:null,kinnsoRate:null,creatorRate:null,requirements:[],deliverables:[],milestones:[],applicationOpensAt:null,applicationClosesAt:null,scheduleTimeZone:'UTC'};}
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
- const {t,locale}=useApp();
+ const {t,locale}=useApp();const entryQuery=useSearchParams(),requestedCampaign=entryQuery.getAll('campaign').length===1&&(!entryQuery.has('company')||entryQuery.get('company')===merchantId)?entryQuery.get('campaign'):null;const routeCampaign=requestedCampaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedCampaign)?requestedCampaign:null;
  const [data,setData]=useState<CampaignDirectory|null>(null),[loading,setLoading]=useState(true),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [draft,setDraft]=useState<CampaignInput>(blank),[rates,setRates]=useState(['','','']),[editing,setEditing]=useState<CampaignDetail|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
+ const [filters,setFilters]=useState<CollaborationListQuery>({});
  const [feedback,setFeedback]=useState<Record<string,string>>({}),[branchEdits,setBranchEdits]=useState<Record<string,{name:string;reason:string}>>({});
  const generation=useRef(0),scope=useRef(0),running=useRef(false),pending=useRef<{command:CampaignCommand;requestId:string}|null>(null),query=useRef<CampaignQuery>({});
  const editorBaseline=useRef({input:JSON.stringify(blank()),rates:['','',''].join('|')});
@@ -25,21 +29,23 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  const status=(value:string)=>labels[value]?t(...labels[value]):t('Recorded state','已記錄狀態');
  const date=(value:string|null)=>value?new Date(value).toLocaleDateString(locale==='en'?'en-GB':'zh-HK'):t('Not recorded','未記錄');
  function resetEditor(){const empty=blank();editorBaseline.current={input:JSON.stringify(empty),rates:['','',''].join('|')};setDraft(empty);setRates(['','','']);setEditing(null);}
- function deny(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){scope.current++;generation.current++;pending.current=null;running.current=false;setBusy(false);setUnknown(false);setData(null);resetEditor();setFeedback({});setBranchEdits({});setValid(false);onDenied(code);}}
- async function load(next:CampaignQuery=query.current,keepInput=false){
+ function deny(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){scope.current++;generation.current++;pending.current=null;running.current=false;setBusy(false);setUnknown(false);setData(null);setFilters({});resetEditor();setFeedback({});setBranchEdits({});setValid(false);onDenied(code);}}
+ async function load(next:CampaignQuery=query.current,keepInput=false,append=false){
   const own=++generation.current;setLoading(true);setError('');
   let result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;
   if(result.ok&&!next.campaignId&&result.data.items.length){next={...next,campaignId:result.data.items[0].id};result=await merchantCampaigns.list(merchantId,next);if(own!==generation.current)return;}
   setLoading(false);if(!result.ok){reference.current=result.requestId;setError(result.code);setData(null);deny(result.code);return;}
-  query.current=next;setData(result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
+  query.current=next;writeListLocation(next);setData(old=>append&&old?{...result.data,items:[...old.items,...result.data.items].filter((row,index,all)=>all.findIndex(i=>i.id===row.id)===index)}:result.data);if(!keepInput){setFeedback({});setBranchEdits({});}
  }
  useEffect(()=>{
   scope.current++;setValid(true);resetEditor();setData(null);pending.current=null;running.current=false;setBusy(false);setUnknown(false);
   const entry=new URLSearchParams(window.location.search),campaign=entry.get('campaign');
-  query.current=entry.getAll('campaign').length===1&&(!entry.has('company')||entry.get('company')===merchantId)&&campaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaign)?{campaignId:campaign}:{};void load();
-  const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){scope.current++;generation.current++;setValid(false);setData(null);resetEditor();setFeedback({});setBranchEdits({});pending.current=null;running.current=false;setBusy(false);setUnknown(false);}});
+  let filter:CollaborationListQuery={};try{filter=readListLocation('merchant');}catch{setError('INVALID');setLoading(false);return;}setFilters(filter);
+  query.current=entry.getAll('campaign').length===1&&(!entry.has('company')||entry.get('company')===merchantId)&&campaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(campaign)?{...filter,campaignId:campaign}:{...filter};void load();
+  const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){scope.current++;generation.current++;setValid(false);setData(null);setFilters({});resetEditor();setFeedback({});setBranchEdits({});pending.current=null;running.current=false;setBusy(false);setUnknown(false);}});
   return()=>{scope.current++;generation.current++;unsubscribe();};
  },[actorId,merchantId]);
+ useEffect(()=>{if(!routeCampaign||routeCampaign===query.current.campaignId)return;if(pending.current||dirty){setError('CONFLICT');return;}void load({...query.current,campaignId:routeCampaign,participantsAfter:undefined,submissionsAfter:undefined});},[routeCampaign]);
  useEffect(()=>{if(refreshKey>0&&!pending.current)void load();},[refreshKey]);
  useEffect(()=>{onLockChange(busy||unknown);return()=>onLockChange(false);},[busy,unknown,onLockChange]);
  useEffect(()=>{const prevent=(event:BeforeUnloadEvent)=>{if(valid&&(dirty||busy||unknown)){event.preventDefault();event.returnValue='';}};window.addEventListener('beforeunload',prevent);return()=>window.removeEventListener('beforeunload',prevent);},[valid,dirty,busy,unknown]);
@@ -48,7 +54,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   if(!pending.current){if(!command)return;try{pending.current={command:campaignCommand(command),requestId:crypto.randomUUID()};}catch{setError('INVALID');return;}}
   const request=pending.current,own=scope.current,wasUnknown=unknown;running.current=true;setBusy(true);setMessage('');
   if(wasUnknown){
-   const saved=await merchantCampaigns.list(merchantId,query.current);if(own!==scope.current)return;
+   const saved=await merchantCampaigns.list(merchantId,{campaignId:query.current.campaignId});if(own!==scope.current)return;
    if(!saved.ok){running.current=false;setBusy(false);reference.current=saved.requestId;setError(saved.code);deny(saved.code);return;}
   }
   const result=await merchantCampaigns.command(merchantId,request.command,request.requestId);if(own!==scope.current)return;
@@ -57,7 +63,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   pending.current=null;setUnknown(false);setError('');setMessage(t('Saved on the server.','已儲存至伺服器。'));
   if(['createDraft','updateDraft'].includes(request.command.type))resetEditor();
   const campaignId=['createDraft','updateDraft','publish','close'].includes(request.command.type)?request.command.id:query.current.campaignId;
-  await load({...query.current,campaignId,participantsAfter:undefined,submissionsAfter:undefined});
+  await load({...query.current,after:undefined,campaignId,participantsAfter:undefined,submissionsAfter:undefined,branchesAfter:undefined});
   if(own===scope.current)await onChanged();
  }
  function save(publish:boolean){
@@ -72,7 +78,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}
   <h2>{t('Create coupon promotion brief','建立優惠推廣簡報')}</h2>
   <p>{t('Save a draft, describe the work creators should deliver, then publish when the brief is ready. Published terms stay fixed; closing stops new applications while accepted creators can finish their work.','先儲存草稿，說明創作者需要提交的作品，準備好後再發布。發布後條款會鎖定；關閉只停止新申請，已接受的創作者仍可完成作品。')}</p>
-  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load(query.current,true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
+  {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load({...query.current,after:undefined},true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
   {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
   {message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>
@@ -105,14 +111,16 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
    {(editing||dirty)&&<button className="k-btn" type="button" disabled={blocked} onClick={resetEditor}>{editing?t('Cancel draft edits','取消草稿修改'):t('Discard unsaved draft','放棄未儲存草稿')}</button>}
   </form>
   <h2>{t('Promotion progress','推廣進度')}</h2>
+  <CollaborationListFilters locale={locale} scope="merchant" value={filters} disabled={blocked||loading||dirty} onChange={setFilters} onSearch={()=>{const next=changeListFilter(query.current,filters);setFilters(next);void load(next);}} onClear={()=>{setFilters({});void load({});}}/>
+  <p>{t('Each page is current when read. Status or deadline changes can move records; refresh to start again.','每頁顯示讀取時的資料。狀態或期限變動可能改變順序，請重新載入以重新開始。')}</p>
   {loading&&<p role="status">{t('Loading promotions…','正在載入推廣…')}</p>}
-  <button className="k-btn" disabled={blocked||loading} onClick={()=>void load()}>{t('Reload promotion','重新載入推廣')}</button>
+  <button className="k-btn" disabled={blocked||loading} onClick={()=>void load({...changeListFilter(query.current,query.current),campaignId:query.current.campaignId},true)}>{t('Reload promotion','重新載入推廣')}</button>
   {data&&<>
    <dl className="k-merchant-summary">{([['draft','Drafts','草稿'],['published','Open promotions','開放推廣'],['applications','Applications awaiting review','待審申請'],['activeCreators','Accepted creators','已接受創作者'],['submitted','Submitted deliverables','已提交作品'],['approved','Approved deliverables','已批准作品']] as const).map(([key,en,zh])=><div key={key}><dt>{t(en,zh)}</dt><dd>{data.summary[key]}</dd></div>)}</dl>
    <p>{t('Counts cover this company, including records on other pages. Approved work is a delivery result; it does not represent a payment.','數量涵蓋此公司，包括其他頁面的紀錄。已批准作品代表交付結果，並不代表付款。')}</p>
-   {data.items.length===0?<p>{t('No promotions yet. Save your first draft above.','尚未有推廣，請在上方儲存第一份草稿。')}</p>:data.items.map(item=><article className="k-card" key={item.id}><h3>{item.title}</h3><p>{item.summary}</p><p>{status(item.status)}</p><button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({...query.current,campaignId:item.id,participantsAfter:undefined,submissionsAfter:undefined});}}>{t('Manage promotion','管理推廣')} · {item.title}</button></article>)}
-   {data.nextCursor&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({after:data.nextCursor!});}}>{t('Next promotions','下一頁推廣')}</button>}
-   {query.current.after&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({});}}>{t('First promotions','第一頁推廣')}</button>}
+   {data.items.length===0?<p>{query.current.q||query.current.status?t('No promotions match these filters.','沒有符合篩選的推廣。'):t('No promotions yet. Save your first draft above.','尚未有推廣，請在上方儲存第一份草稿。')}</p>:data.items.map(item=><article className="k-card" key={item.id}><h3>{item.title}</h3><p>{item.summary}</p><p>{status(item.listState??item.status)}</p>{item.nextDueAt&&<p>{t('Next unfinished due date: ','下一個待完成期限：')}<time dateTime={item.nextDueAt}>{scheduleDate(item.nextDueAt,'UTC',locale)}</time></p>}<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({...query.current,campaignId:item.id,participantsAfter:undefined,submissionsAfter:undefined});}}>{t('Manage promotion','管理推廣')} · {item.title}</button></article>)}
+   {data.nextCursor&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load({...query.current,after:data.nextCursor!,campaignId:undefined,participantsAfter:undefined,submissionsAfter:undefined},false,true);}}>{t('Load more promotions','載入更多推廣')}</button>}
+   {query.current.after&&<button className="k-btn" disabled={blocked||loading||dirty} onClick={()=>{resetEditor();void load(changeListFilter(query.current,query.current));}}>{t('First promotions','第一頁推廣')}</button>}
    {data.detail&&<section className="k-card"><h3>{t('Promotion details','推廣詳情')} · {data.detail.title}</h3><p>{status(data.detail.status)}</p>
     {data.detail.applicationOpensAt&&<p>{t('Applications open: ','申請開始：')}<time dateTime={data.detail.applicationOpensAt}>{scheduleDate(data.detail.applicationOpensAt,data.detail.scheduleTimeZone,locale)}</time></p>}
     {data.detail.applicationClosesAt&&<p>{t('Applications close: ','申請截止：')}<time dateTime={data.detail.applicationClosesAt}>{scheduleDate(data.detail.applicationClosesAt,data.detail.scheduleTimeZone,locale)}</time></p>}
