@@ -9,6 +9,18 @@
   --foreground: #171717;
 }
 
+/* Metric-matched fallback for Fraunces (app/layout.tsx). next/font/local would derive
+   these from the font file's default instance, which is the Black (900) weight; these
+   are the values next/font/google used, so headings shift as little as before. */
+@font-face {
+  font-family: 'Fraunces Fallback';
+  src: local('Times New Roman');
+  ascent-override: 84.71%;
+  descent-override: 22.09%;
+  line-gap-override: 0%;
+  size-adjust: 115.45%;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
