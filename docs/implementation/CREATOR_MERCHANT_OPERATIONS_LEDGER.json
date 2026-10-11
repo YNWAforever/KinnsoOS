@@ -3317,8 +3317,7 @@
         "skip_reason": "Windows symlink privilege unavailable; actual Linux gate remains pending"
       }
     }
-  }
-,
+  },
   "operations_blank_reset_review_checkpoint": {
     "reviewed_sha": "100effa1dc5f918ff4d7e1575e855689ccf4e162",
     "review": "0 Critical, 1 Important, 0 Minor; source scope only; one fix pass; no re-review",
@@ -3343,6 +3342,49 @@
     "typecheck": "PASS",
     "independent_review_validation": "27 focused tests and five additional boundary checks passed on reviewed100; not transferred to fixed head",
     "current_source_ci": "PENDING_NOT_TRANSFERRED",
+    "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  },
+  "workspace_loading_layout_checkpoint": {
+    "parent_pr": 70,
+    "parent_source": "3650fd7adc60477ebe142fd24708395c7f4e564b",
+    "scope": "P16/P17 isolated role loading geometry",
+    "behavior": "stable creator loading status geometry, disabled pending company select, scoped first-read campaign paint, private-role viewport footer spacing",
+    "tdd": {
+      "browser_red": {
+        "pass": 0,
+        "fail": 24,
+        "skip": 0
+      },
+      "focused_unit_red": {
+        "pass": 0,
+        "fail": 2,
+        "skip": 0
+      },
+      "browser_green": {
+        "pass": 24,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit_green": {
+        "pass": 544,
+        "fail": 0,
+        "skip": 0
+      },
+      "all_component_browser_green": {
+        "pass": 38,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "typecheck": "PASS",
+    "windows_package_tests": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 1,
+      "reason": "existing symlink permission case"
+    },
+    "source_archive_and_current_ci": "PENDING_NEW_SOURCE_NOT_TRANSFERRED",
+    "root_manifest_diagnosis": "invalid snapshot retained; installed Next dev static-path writer identified as possible non-atomic write path, historical writer not proven; no root configuration change",
     "release": "M1/M2 NO_GO; production NOT_RELEASED"
   }
 }

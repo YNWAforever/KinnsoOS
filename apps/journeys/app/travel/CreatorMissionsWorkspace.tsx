@@ -83,7 +83,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   {error==='INVALID'&&<p>{errorText}</p>}{error==='FORBIDDEN'&&<Link href={href('studio')}>{t('Open creator profile','開啟創作者檔案')}</Link>}
   {recovery.saved&&<p role="status">{t('Draft kept on this device for this account.','草稿已保存在此裝置，僅供此帳戶使用。')}</p>}{recovery.error&&<p role="alert">{t('Device recovery is unavailable. Keep this page open and copy your unsent text.','裝置恢復暫時無法使用。請保持本頁開啟並複製未送出的文字。')}</p>}
   {message&&<p role="status">{message}</p>}
-  {busy&&<p role="status">{t('Loading collaboration records…','正在載入合作紀錄…')}</p>}
+  <p role="status" aria-hidden={!busy} style={{visibility:busy?'visible':'hidden'}}>{t('Loading collaboration records…','正在載入合作紀錄…')}</p>
   <button className="k-btn" disabled={locked} onClick={()=>load()}>{t('Refresh collaborations','重新載入合作')}</button>
   {!missionId&&<>
    <div className="k-actions" aria-label={t('Collaboration views','合作檢視')}><button className="k-btn" aria-pressed={scope==='available'} disabled={locked} onClick={()=>{setScope('available');setFilters({});applied.current={};void load(undefined,'available',{});}}>{t('Available collaborations','可參加的合作')}</button><button className="k-btn" aria-pressed={scope==='mine'} disabled={locked} onClick={()=>{setScope('mine');setFilters({});applied.current={};void load(undefined,'mine',{});}}>{t('My collaborations','我的合作')}</button></div>
