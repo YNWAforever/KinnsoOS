@@ -321,6 +321,7 @@
     "tests/e2e/u06-workspace-service-state.spec.ts",
     "tests/e2e/u09-collaboration-support.spec.ts",
     "tests/feasibility.test.mjs",
+    "tests/finance-explanations.test.mjs",
     "tests/finance-reconciliation.test.mjs",
     "tests/frontend-model.test.mjs",
     "tests/guest-draft-recovery.test.mjs",
