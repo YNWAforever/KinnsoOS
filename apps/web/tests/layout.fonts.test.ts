@@ -1,17 +1,19 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { describe, it, expect, vi } from 'vitest'
 
-// next/font/google factories are not callable under vitest (no SWC font
-// transform) — stub them, same pattern as tests/layout.siteChrome.test.tsx.
-// Each stub echoes the `variable` option it was called with, so the assertions
-// below bind layout.tsx's option strings to the var(--font-*) references that
-// globals.css uses.
-vi.mock('next/font/google', () => ({
-  JetBrains_Mono: (o: { variable: string }) => ({ variable: o.variable }),
-  Fraunces: (o: { variable: string }) => ({ variable: o.variable }),
-  Inter: (o: { variable: string }) => ({ variable: o.variable }),
+// next/font/local is not callable under vitest (no SWC font transform) — stub
+// it, same pattern as tests/layout.siteChrome.test.tsx. The stub echoes the
+// `variable` option it was called with, so the assertions below bind
+// layout.tsx's option strings to the var(--font-*) references that globals.css
+// uses.
+vi.mock('next/font/local', () => ({
+  default: (o: { variable: string }) => ({ variable: o.variable }),
 }))
 
 import { fontVariables } from '@/app/layout'
+
+const layoutSource = readFileSync(resolve(process.cwd(), 'app/layout.tsx'), 'utf8')
 
 describe('R1C typography wiring', () => {
   it('exposes JetBrains Mono, Fraunces, and Inter variables', () => {
@@ -23,5 +25,12 @@ describe('R1C typography wiring', () => {
   it('no longer exposes the retired Bricolage / DM Sans variables', () => {
     expect(fontVariables).not.toContain('--font-bricolage')
     expect(fontVariables).not.toContain('--font-dm-sans')
+  })
+
+  it('self-hosts every face instead of fetching from Google Fonts at build time', () => {
+    expect(layoutSource).not.toMatch(/from 'next\/font\/google'/)
+    const sources = [...layoutSource.matchAll(/src: '(\.\/fonts\/[^']+\.woff2)'/g)].map((m) => m[1])
+    expect(sources).toHaveLength(3)
+    for (const src of sources) expect(existsSync(resolve(process.cwd(), 'app', src)), src).toBe(true)
   })
 })
