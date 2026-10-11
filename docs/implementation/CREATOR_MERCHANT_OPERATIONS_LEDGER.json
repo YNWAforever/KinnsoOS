@@ -2314,7 +2314,7 @@
       "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+      "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
       "evidence": [
         {
           "environment": "isolated-local",
@@ -2354,7 +2354,14 @@
           "decision": "Existing self/foreign/branch scope and no-invented-settlement DB regressions are reused, rather than fabricating financial outcomes or broadening money conversions. Native EN/zh-HK, offline/hard-refresh, real-device and hosted evidence remain separate P17/target gates.",
           "cost_if_wrong": "UI unit success alone does not prove actual browser or hosted acceptance; unknown intent across navigation/reload still needs P17 work."
         }
-      ]
+      ],
+      "review": {
+        "critical": 0,
+        "important": 0,
+        "minor": 0,
+        "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+        "scope": "One fresh read-only wholeP15 branch review; no independent runtime acceptance."
+      }
     },
     {
       "id": "P16",
@@ -2390,14 +2397,39 @@
         "N18",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_LOCAL_BASELINE_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+      "evidence": [
+        {
+          "environment": "isolated-local",
+          "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+          "scenario": "P16 operations performance completeness",
+          "result": "Valid baseline RED:4/4 assertions fail because traveller-only evidence or wrong private roles could pass. GREEN:4/4 plus15 prior performance cases pass; combined488 unit PASS/0 FAIL/0 SKIP and typecheck PASS. Runtime lab NOT_RUN locally because no owned Docker is available; dedicated owned CI collection added, no metric/capacity acceptance inferred."
+        }
+      ],
       "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "next_action": "Collect exact-candidate owned creator/merchant cold/warm and API/PostgREST/read-only PostgreSQL baselines; retain incomplete/failed groups, select at most one reproducible bottleneck after actual evidence.",
+      "rulings": [
+        {
+          "decision": "Compose existing owned lab and latency completeness rules with four mandatory private workspace routes; existing traveller/foundation reports retain their original denominator. Operations reports require matching measured role and owned55-campaign dataset.",
+          "cost_if_wrong": "Older traveller-only reports cannot certify new private workspaces; lab availability and real runtime identity checks are still required."
+        },
+        {
+          "decision": "Use owned Ubuntu CI because no verified local Docker runtime is available. Keep platform/cache/throttle/source metadata and source-archive hashes; do not compare different hosts or invent production budgets.",
+          "cost_if_wrong": "Synthetic owned CI cannot prove hosted capacity, concurrency, covers, field CWV, physical devices or a production SLO."
+        },
+        {
+          "decision": "Preserve READ ONLY/ROLLBACK SQL measurements and shared authorization locks. An incompatible RPC or missing sample remains a collection failure rather than weakening a guard or silently excluding the denominator.",
+          "cost_if_wrong": "Some SQL groups may remain incomplete and require an explicit safe equivalent measurement method; API/PostgREST measurements are separate evidence."
+        },
+        {
+          "decision": "No performance optimization before a reproducible measured baseline. A complete baseline is the accepted deliverable if no bottleneck reproduces.",
+          "cost_if_wrong": "Known fixture creation overhead and potential excessive private fetches are not product bottleneck acceptance until measured under retained conditions."
+        }
+      ]
     },
     {
       "id": "P17",
@@ -2450,14 +2482,22 @@
         "U04",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IN_PROGRESS",
+      "ci_status": "PENDING_COMBINED_BASELINE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+      "evidence": [
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "ad6350b99a93f60f29094d7e750fa0cd2f3a0b3d",
+          "run": 38098113582,
+          "scenario": "Preserved same-head push failures for P17 diagnosis",
+          "result": "124 browser PASS/2 existingU04 FAIL: private-invitation create button became disabled, and company-switch draft fields disappeared behindFORBIDDEN. These are not waived by the same-head PR run passing. Failure logs and native snapshots retained."
+        }
+      ],
       "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "next_action": "Reproduce preserved native failures and hard-reload/unknown-intent loss with actual tests; complete bilingual widths/200% keyboard/private-role/source checks on the combined final candidate. Real devices and human AT remain NOT_RUN."
     },
     {
       "id": "P18",

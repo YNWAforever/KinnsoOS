@@ -1,4 +1,7 @@
 export const pages = ['home', 'explore', 'guide', 'trip'];
+export const workspacePages=['creatorList','creatorDetail','merchantCampaigns','merchantReview'];
+export const operationRole=page=>page.startsWith('merchant')?'merchant_owner':page==='trip'||page.startsWith('creator')?'creator':'anonymous';
+const requiredPages=report=>['operations','operations-latency'].includes(report.kind)?[...pages,...workspacePages]:pages;
 export const foundationRevision = 'f181cff22d28a480120c2abaa2dde91c573582bf';
 const metrics = ['lcpMs', 'cls', 'tbtMs', 'jsTransferBytes', 'imageTransferBytes'];
 const median = values => { const sorted = [...values].sort((a,b) => a-b); const m = sorted.length >> 1; return sorted.length % 2 ? sorted[m] : (sorted[m-1]+sorted[m])/2; };
@@ -8,11 +11,12 @@ export function localOrigin(value) {
     throw Error('Only a loopback HTTP origin without credentials or a path is allowed');
   return url.origin;
 }
-export function assessLab(samples) {
-  const groups = pages.flatMap(page => ['cold', 'warm'].map(cache => {
+export function assessLab(samples,operations=false) {
+  const groups = (operations?[...pages,...workspacePages]:pages).flatMap(page => ['cold', 'warm'].map(cache => {
     const selected = samples.filter(s => s.page === page && s.cache === cache);
     const valid = selected.length >= 3 && new Set(selected.map(s => s.run)).size === selected.length &&
       selected.every(s => Number.isInteger(s.run) && s.run > 0 && s.status === 200 && s.verified === true &&
+      (!operations||s.role===operationRole(page))&&
         metrics.every(key => typeof s[key] === 'number' && Number.isFinite(s[key]) && s[key] >= 0));
     if (!valid) return {page, cache, samples: selected.length, status: 'INCOMPLETE'};
     const values = Object.fromEntries(metrics.map(key => [key, median(selected.map(s => s[key]))]));
@@ -37,15 +41,15 @@ export function compareLab(current, baseline) {
   return {status: groups.some(g => g.status === 'NOT_COMPARABLE') ? 'PARTIAL' : 'COMPARED', groups};
 }
 export function assessRun(report) {
-  const navigation=assessLab(report.samples), missing=[];
+  const navigation=assessLab(report.samples,report.kind==='operations'), missing=[];
   if(report.error)missing.push('Run failed: '+report.error);
   if(report.cleanup!=='PASS_OWNED_SYNTHETIC_ACTORS_REMOVED')missing.push('Owned cleanup not confirmed');
   if(report.kind!=='foundation'){
-    for(const page of pages){
-      if(!report.interactions?.some(i=>i.page===page&&i.status==='PASS'&&typeof i.traceFile==='string'&&i.traceFile))missing.push(page+' interaction');
+    for(const page of requiredPages(report)){
+      if(!report.interactions?.some(i=>i.page===page&&i.status==='PASS'&&(report.kind!=='operations'||i.role===operationRole(page))&&typeof i.traceFile==='string'&&i.traceFile))missing.push(page+' interaction');
       const queries=report.queryLatency?.samples?.filter(q=>q.page===page)??[];
       if(report.queryLatency?.status!=='MEASURED_LOCAL_BACKEND_ROUNDTRIPS'||queries.length<3||new Set(queries.map(q=>q.run)).size!==queries.length||
-        queries.some(q=>q.status!=='PASS'||typeof q.durationMs!=='number'||!Number.isFinite(q.durationMs)||q.durationMs<0))missing.push(page+' backend read timings');
+        queries.some(q=>q.status!=='PASS'||(report.kind==='operations'&&q.role!==operationRole(page))||typeof q.durationMs!=='number'||!Number.isFinite(q.durationMs)||q.durationMs<0))missing.push(page+' backend read timings');
     }
   }
   return {status:missing.length||navigation.status==='INCOMPLETE'?'INCOMPLETE':navigation.status,
@@ -66,16 +70,18 @@ export function assessLatency(report, budgets) {
   if (!(Number.isInteger(dataset.observedRowCap) && dataset.observedRowCap > 0 &&
       Number.isInteger(dataset.guides) && dataset.guides > dataset.observedRowCap * 2 &&
       dataset.tripDays === 1 && dataset.tripStops === 1)) missing.push('Verified scale dataset');
+  if(report.kind==='operations-latency'&&!(dataset.operations?.campaigns>=55&&dataset.operations.acceptedCreatorWork>=55&&dataset.operations.reviewSubmissions>=1&&['creator','merchant_owner'].every(role=>dataset.operations.roles?.includes(role))))missing.push('Verified owned collaboration dataset and roles');
   if (report.error) missing.push('Collection failed');
   if (report.cleanup !== 'PASS_OWNED_SYNTHETIC_ACTORS_REMOVED') missing.push('Owned cleanup');
   const validBudgets = budgets && typeof budgets === 'object' && !Array.isArray(budgets) &&
     layers.every(layer => typeof budgets[layer] === 'number' && Number.isFinite(budgets[layer]) && budgets[layer] > 0);
   if (budgets !== undefined && !validBudgets) missing.push('Finite positive budgets for all layers');
   const samples = Array.isArray(report.samples) ? report.samples.filter(s => s && typeof s === 'object') : [];
-  const groups = layers.flatMap(layer => pages.map(operation => {
+  const groups = layers.flatMap(layer => requiredPages(report).map(operation => {
     const selected = samples.filter(s => s.layer === layer && s.operation === operation);
     const valid = selected.length >= 40 && new Set(selected.map(s => s.run)).size === selected.length &&
       selected.every(s => Number.isInteger(s.run) && s.run > 0 && s.status === 'PASS' && s.verified === true &&
+        (report.kind!=='operations-latency'||s.role===operationRole(operation))&&
         typeof s.durationMs === 'number' && Number.isFinite(s.durationMs) && s.durationMs >= 0);
     if (!valid) {missing.push(layer+'/'+operation+' measurements'); return {layer, operation, samples: selected.length, status: 'INCOMPLETE'};}
     const values = selected.map(s => s.durationMs).sort((a,b) => a-b);

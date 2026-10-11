@@ -10,7 +10,9 @@ import os from 'node:os';
 import {createClient} from '@supabase/supabase-js';
 import {createServerClient} from '@supabase/ssr';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessLatency, validateLatencyBudget, localOrigin, pages} from './report.mjs';
+import {assessLatency, validateLatencyBudget, localOrigin, pages,workspacePages,operationRole} from './report.mjs';
+import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
+const operations=process.argv.includes('--operations'),measuredPages=operations?[...pages,...workspacePages]:pages;
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const origin = localOrigin('http://127.0.0.1:3523');
@@ -53,9 +55,9 @@ const log = createWriteStream(path.join(out,'server.log'));
 const server = spawn(process.execPath,[path.join(app,'node_modules/next/dist/bin/next'),'start','--hostname','127.0.0.1','--port','3523'],
   {cwd:app,env,windowsHide:true,stdio:['ignore','pipe','pipe']});
 server.stdout.pipe(log); server.stderr.pipe(log);
-const report = {schemaVersion:1,kind:'latency',sourceSha,sourceDiff:execFileSync('git',['diff','--name-only'],{cwd:app,encoding:'utf8'}).trim().split('\n').filter(Boolean),
+const report = {schemaVersion:1,kind:operations?'operations-latency':'latency',sourceSha,sourceDiff:execFileSync('git',['diff','--name-only'],{cwd:app,encoding:'utf8'}).trim().split('\n').filter(Boolean),
   environment:'owned isolated local',project:target.projectRef,observedAt:new Date().toISOString(),
-  conditions:{region:'same Windows host, loopback app/PostgREST and owned Docker PostgreSQL',concurrency:1,
+  conditions:{region:'same owned '+process.platform+' host, loopback app/PostgREST and owned Docker PostgreSQL',concurrency:1,
     warmupReads:3,measuredReads:40,node:process.version,platform:process.platform,cpu:os.cpus()[0]?.model,
     databaseImage:inspect.Config.Image,buildId:(await readFile(path.join(app,'.next/BUILD_ID'),'utf8')).trim(),
     sourceArchiveSha256:createHash('sha256').update(await readFile(archivePath)).digest('hex'),
@@ -73,7 +75,7 @@ const report = {schemaVersion:1,kind:'latency',sourceSha,sourceDiff:execFileSync
 const options={auth:{persistSession:false,autoRefreshToken:false}};
 const admin=createClient(target.apiOrigin,process.env.SUPABASE_SERVICE_ROLE_KEY,options);
 const publicClient=createClient(target.apiOrigin,process.env.SUPABASE_ANON_KEY,options);
-let ownerId, guideId, tripId, actor, claims;
+let ownerId, guideId, tripId, actor, claims,workFixture;const additionalActors=[];
 const jar=new Map(), tag='Latency'+randomUUID().replaceAll('-','');
 const checked=r=>{if(r.error)throw Error('Local fixture/read rejected: '+(r.error.code??'unknown'));return r.data;};
 const sql=text=>execFileSync('docker',['exec','-i',target.dbContainer,'psql','-X','-qAt','-v','ON_ERROR_STOP=1','-U','postgres','-d','postgres'],
@@ -85,6 +87,7 @@ const catalog=filtered=>publicClient.from('guides').select(projection).eq('statu
   .match(filtered?{city:tag}:{});
 const catalogSQL=filtered=>`select ${projection} from public.guides where status='published' ${filtered?'and city='+literal(tag):''} order by published_at desc nulls last,id asc limit 13`;
 function verify(operation, data, api=false) {
+  if(workspacePages.includes(operation)){if(api&&data.ok!==true)throw Error('Workspace BFF failed');verifyOperation(operation,api?data.data:data,workFixture);return;}
   if (operation==='home'||operation==='explore') {
     const rows=api?data.items:data;
     if (api&&data.status!=='ready'||!Array.isArray(rows)||rows.length!==(api?12:13)||rows.some(r=>r.city!==tag)) throw Error('Bounded catalog identity mismatch');
@@ -97,7 +100,7 @@ function verify(operation, data, api=false) {
 }
 async function timed(layer,operation,run,warmup,read) {
   const start=performance.now();
-  const sample={layer,operation,run,status:'FAIL',verified:false};
+  const sample={layer,operation,run,role:operationRole(operation),status:'FAIL',verified:false};
   try {await read();sample.status='PASS';sample.verified=true;} finally {
     sample.durationMs=performance.now()-start;(warmup?report.warmups:report.samples).push(sample);
     await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));
@@ -135,26 +138,30 @@ try {
   if(count!==2401||capped.length<=0||count<=capped.length*2)throw Error('Scale must exceed the observed PostgREST cap by more than two times');
   if(baselineReport && (JSON.stringify(baselineReport.conditions)!==JSON.stringify(report.conditions) ||
     JSON.stringify(baselineReport.dataset)!==JSON.stringify(report.dataset))) throw Error('Budget comparison requires unchanged measured conditions and dataset');
+  if(operations){workFixture=await setupOperations({admin,creatorId:ownerId,target,onActor:id=>additionalActors.push(id)});report.dataset.operations=workFixture.dataset;}
   const cookie=[...jar].map(([name,value])=>name+'='+value).join('; ');
-  for(const layer of ['api','postgrest']) for(const operation of pages) for(let i=1;i<=43;i++) {
+  for(const layer of ['api','postgrest']) for(const operation of measuredPages) for(let i=1;i<=43;i++) {
     await timed(layer,operation,i<=3?i:i-3,i<=3,async()=>{
       if(layer==='postgrest') {
-        const data=checked(await (operation==='home'||operation==='explore'?catalog(operation==='explore'):
+        const spec=workspacePages.includes(operation)?operationRead(operation,workFixture):null;
+        const data=checked(await (spec?(spec.role==='merchant_owner'?workFixture.merchantActor:actor).rpc(spec.rpc,spec.args):operation==='home'||operation==='explore'?catalog(operation==='explore'):
           operation==='guide'?publicClient.rpc('kinnso_guide',{p_guide_id:guideId}):actor.rpc('get_trip_snapshot',{p_trip_id:tripId})));
         verify(operation,data);
       } else {
-        const route=operation==='home'?'/api/catalog':operation==='explore'?'/api/catalog?city='+tag:
+        const spec=workspacePages.includes(operation)?operationRead(operation,workFixture):null;
+        const route=spec?spec.route:operation==='home'?'/api/catalog':operation==='explore'?'/api/catalog?city='+tag:
           operation==='guide'?'/api/guides/'+guideId:'/api/trips/'+tripId;
-        const response=await fetch(origin+route,{headers:operation==='trip'?{cookie}:{},redirect:'error',cache:'no-store',signal:AbortSignal.timeout(8000)});
+        const response=await fetch(origin+route,{headers:spec?{cookie:spec.role==='merchant_owner'?workFixture.merchantCookie():cookie}:operation==='trip'?{cookie}:{},redirect:'error',cache:'no-store',signal:AbortSignal.timeout(8000)});
         const data=await response.json();if(!response.ok)throw Error('BFF '+operation+' returned '+response.status);verify(operation,data,true);
       }
     });
   }
-  for(const operation of pages) {
-    const statement=operation==='home'||operation==='explore'?catalogSQL(operation==='explore'):
+  for(const operation of measuredPages) {
+    const spec=workspacePages.includes(operation)?operationRead(operation,workFixture):null;
+    const statement=spec?`select public.${spec.rpc}(${Object.entries(spec.args).map(([key,value])=>key+' => '+(value===null?'null':literal(typeof value==='object'?JSON.stringify(value):value)+(key==='p_query'?'::jsonb':key.endsWith('_id')||key.endsWith('_after')?'::uuid':''))).join(',')})`:operation==='home'||operation==='explore'?catalogSQL(operation==='explore'):
       operation==='guide'?`select public.kinnso_guide(${literal(guideId)}::uuid)`:`select public.get_trip_snapshot(${literal(tripId)}::uuid)`;
-    const role=operation==='trip'?'authenticated':'anon';
-    const jwt=operation==='trip'?JSON.stringify(claims):JSON.stringify({role:'anon'});
+    const role=spec||operation==='trip'?'authenticated':'anon';
+    const jwt=spec?JSON.stringify(spec.role==='merchant_owner'?workFixture.merchantClaims:claims):operation==='trip'?JSON.stringify(claims):JSON.stringify({role:'anon'});
     let input=`begin read only; set local statement_timeout='8s'; set local role ${role}; set local "request.jwt.claims"=${literal(jwt)};\n`;
     for(let i=1;i<=43;i++)input+=`\\echo SAMPLE_${i}\nexplain (analyze, buffers, format json) ${statement};\n`;
     input+='rollback;';
@@ -163,11 +170,12 @@ try {
     if(chunks.length!==86)throw Error('Missing PostgreSQL measurements');
     for(let i=0;i<chunks.length;i+=2) {
       const n=Number(chunks[i]),plan=JSON.parse(chunks[i+1].trim())[0];
-      const sample={layer:'postgres',operation,run:n<=3?n:n-3,status:'PASS',verified:plan.Plan['Actual Rows']===(operation==='home'||operation==='explore'?13:1),durationMs:plan['Execution Time'],planningMs:plan['Planning Time']};
+      const sample={layer:'postgres',operation,role:operationRole(operation),run:n<=3?n:n-3,status:'PASS',verified:plan.Plan['Actual Rows']===(operation==='home'||operation==='explore'?13:1),durationMs:plan['Execution Time'],planningMs:plan['Planning Time']};
       (n<=3?report.warmups:report.samples).push(sample);
       // Never retain claims, SQL values, private aggregate bodies or owner IDs.
       const redacted=JSON.stringify(plan).replaceAll(ownerId,'OWNED_ACTOR').replaceAll(guideId,'OWNED_GUIDE').replaceAll(tripId,'OWNED_TRIP').replaceAll(tag,'OWNED_CITY');
-      await writeFile(path.join(out,`postgres-${operation}-${n}.json`),redacted);
+      const safePlan=workFixture?[workFixture.merchantId,workFixture.merchantUserId,...workFixture.campaignIds].reduce((value,id)=>value.replaceAll(id,'OWNED_OPERATIONS_ID'),redacted):redacted;
+      await writeFile(path.join(out,`postgres-${operation}-${n}.json`),safePlan);
     }
     await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));
   }
@@ -175,6 +183,8 @@ try {
   report.error=error instanceof Error?error.message:'Collection failed';process.exitCode=1;
 } finally {
   const errors=[];
+  try{await cleanupOperations(admin,workFixture);}catch(error){errors.push(error.message);}
+  for(const id of additionalActors)try{checked(await admin.auth.admin.deleteUser(id));}catch(error){errors.push(error.message);}
   if(ownerId) {
     try {checked(await admin.auth.admin.deleteUser(ownerId));
       const remaining=Number(sql(`begin read only; select (select count(*) from auth.users where id=${literal(ownerId)}::uuid)+(select count(*) from public.guides where creator_id=${literal(ownerId)}::uuid)+(select count(*) from public.trips where owner_user_id=${literal(ownerId)}::uuid); rollback;`).trim());
