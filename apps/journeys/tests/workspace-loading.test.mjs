@@ -8,6 +8,7 @@ for(const locale of ['en','zh-HK'])test(`P16 ${locale}: first campaign read hold
  assert.equal(h.field(locale==='en'?'Brief title':'簡報標題'),undefined,'first read must complete before painting the editor below private next actions');
  assert.ok(h.text().includes(locale==='en'?'Loading promotions':'正在載入推廣'));
  finish({ok:false,code:'UNAVAILABLE',requestId:'22222222-2222-4222-8222-222222222222'});await tick();h.render();
+ assert.equal(h.field(locale==='en'?'Brief title':'簡報標題'),undefined,'recoverable first-read failure must keep the unauthorised editor absent');
  const retry=h.find('button',locale==='en'?'Retry loading':'重試載入');assert.ok(retry,'first read failure still exposes the existing recovery action');retry.props.onClick();h.render();
  finish({ok:true,data:directory});await tick();h.render();assert.equal(calls.length,2);assert.deepEqual(writes,[]);
  const title=h.field(locale==='en'?'Brief title':'簡報標題');assert.ok(title);title.props.onChange({target:{value:'Retained original draft'}});h.render();

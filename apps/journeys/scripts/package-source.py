@@ -1,6 +1,7 @@
 """Package only the reviewed, explicit corresponding-source manifest."""
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path, PurePosixPath
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
@@ -29,6 +30,30 @@ def build_archive(root: Path):
         if not candidate.resolve().is_relative_to(root) or not candidate.is_file():
             raise ValueError(f'Missing or out-of-root source file: {name}')
         contents[name] = candidate.read_bytes()
+    repository_files = manifest.get('repositoryFiles', {})
+    if not isinstance(repository_files, dict):
+        raise ValueError('Invalid repository source manifest')
+    extracted = (root / 'SOURCE_METADATA.json').is_file() and not (root / '.git').exists()
+    prior = json.loads((root / 'SOURCE_METADATA.json').read_text(encoding='utf-8')) if extracted else None
+    for destination, source in repository_files.items():
+        # Only explicitly reviewed migration inputs for source-distributed tests.
+        # Never package arbitrary parent files or read a parent after extraction.
+        if (not isinstance(source, str) or not isinstance(destination, str) or
+                not re.fullmatch(r'supabase/migrations/[0-9]{14}_[a-z0-9_]+\.sql', source) or
+                destination != 'tests/contracts/' + PurePosixPath(source).name or destination in contents):
+            raise ValueError('Invalid or colliding repository SQL input')
+        input_root = root if extracted else root.parents[1]
+        name = destination if extracted else source
+        if not extracted and (root.parent.name != 'apps' or root.name != 'journeys' or not (input_root / '.git').exists()):
+            raise ValueError('Repository SQL requires the Journeys Git checkout')
+        candidate = input_root.joinpath(*PurePosixPath(name).parts)
+        if (not candidate.resolve().is_relative_to(input_root) or not candidate.is_file() or
+                any(parent.is_symlink() for parent in [candidate, *candidate.parents] if parent != input_root)):
+            raise ValueError('Missing or unsafe repository SQL input')
+        data = candidate.read_bytes()
+        if extracted and prior.get('sha256', {}).get(destination) != hashlib.sha256(data).hexdigest():
+            raise ValueError('Archived repository SQL hash mismatch')
+        contents[destination] = data
     revision = 'UNKNOWN'
     dirty = None
     if (root / 'SOURCE_METADATA.json').exists() and not (root / '.git').exists():

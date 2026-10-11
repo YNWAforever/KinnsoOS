@@ -3445,5 +3445,62 @@
     "newExactSourceCI": "PENDING_ORIGINAL_RUN",
     "standaloneWholeUnit": "542_PASS_2_FAIL_MISSING_MONOREPO_SQL",
     "release": "NO_GO_NOT_RELEASED"
+  },
+  "workspace_first_read_source_contract_checkpoint": {
+    "baselineMain": "be1ead3000dc0217f59ad70d8aa1158db88d2b3c",
+    "originalPlan": "P03/P16/P17 source-only continuation; preserve historical N/P evidence",
+    "sourcePreflight": {
+      "pr55": "MERGED 097b505 via bc9e655",
+      "pr73": "MERGED 8781cf7 via be1ead3",
+      "externalChanges": "7 workflow/artifact pin files only since c764; all product changes preserved"
+    },
+    "productionObserved": {
+      "sourceSha": "be1ead3000dc0217f59ad70d8aa1158db88d2b3c",
+      "readOnlyRun": 38139716659,
+      "scope": "credential-free GET/source binding/anonymous fences only",
+      "signedInAcceptance": "NOT_RUN",
+      "privateRoleAPI": "ops monitoring/creator profile/inbox 503",
+      "packagingWorkspaceDirty": true,
+      "sourceFilesVerified": 422
+    },
+    "behavior": "First campaign read remains in the service-state shell through recoverable failure/retry until a successful scoped response. Later authorized reads retain authored input/editor. No commands added.",
+    "sourceArchive": "Two explicit canonical repository SQL test inputs are copied only into archive tests/contracts; no committed duplicate SQL. Extraction repacks from internal hash-bound inputs without parent fallback. CI now runs the full standalone Node suite.",
+    "localEvidence": {
+      "baselineUnit": {
+        "pass": 544,
+        "fail": 0,
+        "skip": 0
+      },
+      "handlerRed": {
+        "pass": 0,
+        "fail": 2
+      },
+      "handlerGreen": {
+        "pass": 2,
+        "fail": 0
+      },
+      "browserRed": {
+        "pass": 0,
+        "fail": 6
+      },
+      "completeFixture": {
+        "pass": 46,
+        "fail": 0,
+        "skip": 0
+      },
+      "packager": "8 PASS/1 named Windows symlink-privilege SKIP; Linux current source pending",
+      "standaloneIntermediate": {
+        "pass": 543,
+        "fail": 1,
+        "skip": 0,
+        "failure": "finance SQL outside source archive"
+      },
+      "workflowContract": "2 PASS/1 RED ->3 PASS; full standalone unit gate"
+    },
+    "currentSourceCI": "PENDING until the new head original workflows complete; prior main544/94/164/4 remains independent",
+    "staging": "BLOCKED_TARGET; named environment/roles/config/catalog/recovery packet still absent",
+    "production": "BASELINE_MAIN_SERVING; this increment not released or merged by this task; role UAT NOT_RUN",
+    "performance": "No cold-LCP completion claim. Normal successful-read path and collector budgets/denominators unchanged. Re-read original current-head lab separately.",
+    "financialCapabilities": "Booking/payment/withdrawal remain disabled; no DB/reset/flags/config or provider mutation"
   }
 }

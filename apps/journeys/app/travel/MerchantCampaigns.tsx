@@ -79,7 +79,9 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
  }
  function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones,applicationOpensAt:detail.applicationOpensAt??null,applicationClosesAt:detail.applicationClosesAt??null,scheduleTimeZone:detail.scheduleTimeZone??'UTC'};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing({id:detail.id,title:detail.title,updatedAt:detail.updatedAt});setDraft(input);setRates(nextRates);setMessage('');}
  if(!valid)return <WorkspaceServiceState locale={locale} code={error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
- if(firstRead.current&&loading)return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}><p role="status">{t('Loading promotions…','正在載入推廣…')}</p></section>;
+ if(firstRead.current)return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
+  {loading?<p role="status">{t('Loading promotions…','正在載入推廣…')}</p>:<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={reference.current} retryState="read" onRetry={()=>void load({...query.current,after:undefined},true)} returnPath={`/${locale}/merchant`}/>}
+ </section>;
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}
   <h2>{t('Create coupon promotion brief','建立優惠推廣簡報')}</h2>

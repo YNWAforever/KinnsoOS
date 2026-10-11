@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync} from 'node:fs';
+import {readFileSync,existsSync} from 'node:fs';
 import {build} from 'esbuild';
 import {toMinorUnits,displayMinorUnits} from '../lib/finance/money.ts';
 
@@ -36,7 +36,7 @@ test('review transport never writes financial tables and preserves reason, sourc
  assert.deepEqual(calls,[{capability:'merchant',write:true},{name:'apply_kinnso_reconciliation_review',args:{p_request_id:requestId,p_command:command}}]);
 });
 test('candidate migration preserves proof distinction, branch authority, aggregate scope and immutable operational history',()=>{
- const sql=readFileSync(new URL('../../../supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql',import.meta.url),'utf8');
+ const sql=readFileSync(new URL(existsSync(new URL('../SOURCE_METADATA.json',import.meta.url))?'./contracts/20261003220203_kinnso_financial_reconciliation_reads.sql':'../../../supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql',import.meta.url),'utf8');
  assert.match(sql,/merchant_role\(merchant,a,null,array\['owner','finance'\]\)/);
  assert.match(sql,/p_ops or p_owner or r\.kinnso_branch_id=any\(p_branches\)/);
  assert.match(sql,/group by currency,basis,state/);assert.match(sql,/from filtered group by/);

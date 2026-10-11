@@ -107,3 +107,20 @@ for(const locale of ['en','zh-HK'])test(`P17 ${locale}: A draft is quarantined u
  await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await expect(title).toHaveValue('PRIVATE_A_TITLE');await expect(page.getByRole('textbox',{name:label(locale,'Brief description','簡報內容'),exact:true})).toHaveValue('PRIVATE_A_DESCRIPTION');await expect(page.getByLabel(label(locale,'Coupon code','優惠碼'),{exact:true})).toHaveValue('PRIVATE_A_COUPON');
  await page.evaluate(()=>window.dispatchEvent(new Event('fixture-invalidate')));await expect(title).toHaveCount(0);
 });
+
+for(const locale of ['en','zh-HK'])for(const width of [320,640,1280])test(`P03 ${locale} ${width}: first-read recovery keeps the shell through retry`,async({page},testInfo)=>{
+ await mount(page,'campaigns',locale,width);await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(1);
+ const title=page.getByLabel(label(locale,'Brief title','簡報標題'),{exact:true});await expect(title).toHaveCount(0);
+ await page.evaluate(()=>(window as any).fixtureResolve('campaigns',{ok:false,code:'UNAVAILABLE',requestId:'22222222-2222-4222-8222-222222222222'}));
+ const retry=page.getByRole('button',{name:label(locale,'Retry loading','重試載入'),exact:true});await expect(retry).toBeVisible();
+ await expect(title).toHaveCount(0);await expect(page.locator('.k-campaigns form')).toHaveCount(0);
+ const failure=(await page.locator('.k-campaigns').boundingBox())!;await retry.focus();await page.keyboard.press('Enter');
+ await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(2);await expect(title).toHaveCount(0);
+ await expect(page.getByRole('status')).toContainText(label(locale,'Loading promotions','正在載入推廣'));
+ await settle(page,'campaigns',{...directory,items:[],summary:{...directory.summary,draft:0}});await expect(title).toBeEnabled();await title.fill('Original scoped input');
+ await page.getByRole('button',{name:label(locale,'Reload promotion','重新載入推廣'),exact:true}).click();
+ await page.evaluate(()=>(window as any).fixtureResolve('campaigns',{ok:false,code:'UNAVAILABLE'}));await expect(retry).toBeVisible();await expect(title).toHaveValue('Original scoped input');
+ await retry.click();await expect(title).toHaveValue('Original scoped input');await settle(page,'campaigns',{...directory,items:[]});await expect(title).toBeEnabled();await expect(title).toHaveValue('Original scoped input');
+ await testInfo.attach('first-read-recovery-shell',{body:Buffer.from(JSON.stringify({locale,width,failure,reads:4})),contentType:'application/json'});
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
