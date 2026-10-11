@@ -1255,7 +1255,14 @@
     "P10 review bounded rulings: hosted/production requires designated release gates; final CI pending exact candidate; real-device/assistive technology NOT_RUN under P17; production EXPLAIN/performance under P16; cross-page snapshot consistency is explicitly unavailable; preserved legacy UUID RPCs remain compatible while native older bookmarks require Refresh. Costs: hosted/device/scale findings can still block release, and stale bookmarks need one refresh.",
     "P10 minor (deferred): malformed URL skips local invalidation subscription; actual Workbench actor key and MerchantWorkspace invalidation clear/remount this private workspace. Cost if those parent protections change: local lifecycle handling must be corrected. No current cross-account disclosure established.",
     "P10 native navigation Ruling: reflect authorized same-company campaign URL changes and update selection URL after reads; do not reset an authored or uncertain write when a link changes. Cost: a blocked selection remains visibly conflicted until existing work is reconciled or discarded.",
-    "P10 browser evidence Ruling: wait for the URL condition after an async refresh; an unchanged count of20 can belong to the preceding page and is insufficient completion evidence. Cost: native stories depend on completed actor-scoped reads rather than DOM count alone."
+    "P10 browser evidence Ruling: wait for the URL condition after an async refresh; an unchanged count of20 can belong to the preceding page and is insufficient completion evidence. Cost: native stories depend on completed actor-scoped reads rather than DOM count alone.",
+    "P11 Ruling: service-only scan uses participant/milestone UUID tuple cursor; emitted facts are excluded, so a bounded partial or crashed job may restart cold and safely progress. Cost if wrong: additional rescan cost; no actor-facing cursor or private evidence is exposed.",
+    "P11 Ruling: a scan hitting page/time budget records incomplete as job failure and returns retryable 503, preserving last success; it does not claim full success from partial work. Cost if wrong: busy periods may surface repeated job alerts until backlog is drained.",
+    "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence.",
+    "P11 final review Ruling: suppress terminal rejected nonrepeatable work in scan and fresh emit; pending/revision/unsubmitted remain eligible, repeatable uses receipt cap. Cost: final rejection requires a separately authorized future workflow to reopen.",
+    "P11 final review Ruling: apply cursor, processed facts and lookahead inside the SQL candidate query; verify substantial processed history with EXPLAIN ANALYZE before any index proposal. Cost: query still scans eligible ownership joins as chosen by current indexes; no hosted performance claim.",
+    "P11 final review declined hosted target compatibility, scheduler ownership/registration, external providers, human hosted acceptance, and unchanged P01-P10 beyond required dependencies. Cost: these gates remain NOT_RUN, no schedule enabled.",
+    "P11 minor deferred: identical mission-level inbox title/link for two deadlines remains safe but less specific; a future allowlisted milestone title/deadline projection needs its own native inbox contract coverage."
   ],
   "tasks": [
     {
@@ -1846,11 +1853,20 @@
           "result": "Selector test8PASS_1FAIL before fix,9PASS after; full441unitPASS_0FAIL_0SKIP, TypeScriptPASS. Added explicit select accessible name; only invited creator RLS fixture activated, existing owned/foreign assertions retained. Browser and root CI pending.",
           "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-operations/p09-label-unit.log",
           "observed_at": "2026-10-10T23:18:49.162541+00:00"
+        },
+        {
+          "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "P09 current whole regression",
+          "result": "441unit_72integration_126browser_4mailbox_PASS_0FAIL_0SKIP;typecheck/build/source extraction rebuildPASS; testedmerge0da35a34e1d42847fd6e4004e538a82df445d89d tree57b9b246b1fd8b2f7c25fb7ec9ae4f48a695fed9 equals current head tree; root quality/image/E2EPASS. PR59 ready for review; unmerged; hosted AuthUATNOT_RUN.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38094594052; root38094594072",
+          "observed_at": "2026-10-10T23:45:08.461705+00:00"
         }
       ],
       "blockers": [
         "CURRENT_CI_PENDING: owner discovery/private notes/CAS/receipts/quota/inbox/browser require current whole-batch regression.",
-        "HOSTED_UAT_NOT_RUN: staging target/actor/recovery packet absent."
+        "HOSTED_UAT_NOT_RUN: staging target/actor/recovery packet absent.",
+        "HOSTED_UAT_NOT_RUN: designated target/actors/recovery packet absent."
       ],
       "next_action": "Verify current committed review fix CI, owner role/browser regressions and exact merge source; continue independent P10."
     },
@@ -1999,9 +2015,27 @@
             "browser": 128,
             "mailbox": 4
           }
+        },
+        {
+          "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reminder baseline after required fixture fields were supplied",
+          "result": "72existingintegrationPASS_3newFAIL_0SKIP; two reminder cases reach missing due RPC; distinct scheduled health row absent. Earlier7ff6632/b9aa8ba two cases NOT_REACHED due mandatory milestone description/participant source; those failures are not reminder RED. Unit3newFAIL before interface; now local445unitPASS_0FAIL_0SKIP, typecheck/build/source packPASS. Bounded runtime independent RED to GREEN. Six current DB cases and two new native EN/zh-HK browser stories pending.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095349058; .superpowers/sdd/2026-10-11-creator-merchant-reminders/unit-candidate.log; build-candidate.log",
+          "observed_at": "2026-10-10T23:45:08.461721+00:00"
+        },
+        {
+          "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Fresh final review terminal rejection and bounded internal query",
+          "result": "CI38096569994 reaches rejected scan true expected false and missing bounded helper interface; prior candidate also exposes record/table alias collision55000 in emit. Fixed nonrepeatable terminal rejected suppression, cursor/dedupe/limit inside SQL helper, and record name. Added1001-row processed-history query plan verification; GREEN pending. No Critical; two Important fixed in one pass.",
+          "observed_at": "2026-10-11T00:01:06.230697+00:00"
         }
       ],
-      "blockers": [],
+      "blockers": [
+        "HOSTED_SCHEDULE_NOT_ENABLED: no designated environment, named owner, token/config/recovery packet or schedule authorization.",
+        "CURRENT_CI_AND_REVIEW_PENDING: service-only reminder transaction and native inbox links require matching whole regression and fresh review."
+      ],
       "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
     },
     {
@@ -2106,7 +2140,8 @@
       ],
       "blockers": [
         "BLOCKED_CONTENT: no three author-consented real structured guides, source/cover rights or author acceptance supplied.",
-        "BLOCKED_TARGET: designated hosted target and approved test actors not supplied."
+        "BLOCKED_TARGET: designated hosted target and approved test actors not supplied.",
+        "BLOCKED_CONTENT: no author-approved three-guide pilot supplied."
       ],
       "next_action": "Obtain three author-consented real guides with source/cover rights and designated target; run explicit content pilot without treating fixtures as content."
     },

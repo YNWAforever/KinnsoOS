@@ -41,3 +41,6 @@ P10 revised source-only candidate: SQL SHA-256 `ab1e0eaf634f179ebba8830cdd5b5a06
 P10 repeatable deadline fix source-only hash: `c1ce4581f6e4c4482c354a0d81d6dd60abef38bb1377b233fe7f84f1b8531bb1`. Hosted SQL NOT_EXECUTED; cap2 owned-CI RED observed; matching GREEN pending.
 
 P10 final review fix source-only migration SHA256 `c020a1c7d9c8d5fd1b91459405b2e4645bea20ca0b4aa12efda3882e3bcefb16`; NOT_EXECUTED on hosted DB. Fresh review Important fixes have valid RED; final GREEN remains pending.
+P11 source-only migration `20261010233500_kinnso_collaboration_reminders.sql` SHA256 `930e8074097586eed7bee855a4a47b2ab476eed1f95c6da994a5806c13d16efe`. Hosted NOT_EXECUTED; cron NOT_REGISTERED; email UNCONFIGURED. Service-only transaction, six DB tests, two native browser stories await current CI.
+
+P11 review-fixed source-only packet: `20261010233500_kinnso_collaboration_reminders.sql` SHA-256 `9d83d3d9b947a069f1d63d14e96684a77f0e5541a467cf6c21a96cc694aec788`; owned CI GREEN pending. Hosted SQL, scheduler registration and provider sending: NOT_EXECUTED.
