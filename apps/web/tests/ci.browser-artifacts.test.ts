@@ -35,7 +35,7 @@ function phaseEvidenceContract(source: string, [name, id, artifact, phase]: read
   ]
   return scalar(suite, 'id') === id
     && scalar(collector, 'if') === condition && scalar(collector, 'run') === command
-    && scalar(upload, 'uses') === 'actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a'
+    && scalar(upload, 'uses') === 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9'
     && scalar(upload, 'if') === condition && scalar(upload, 'name', 10) === artifact
     && paths.length === expected.length && expected.every(path => paths.includes(path))
     && [suite, collector, upload].every(step => !/^ {8}continue-on-error:/m.test(step))
