@@ -2561,6 +2561,11 @@
           "run": 38110152206,
           "scenario": "Measured layout improvement and actual semantic-heading contract failure",
           "result": "Source515/Linux6/workflow2/extraction and SMTP4 PASS; DB94 PASS0FAIL0SKIP, native134PASS2FAIL0SKIP. Both native failures are EN/zh-HK u06 obsolete exact mission level1 assertions after the intentional full-title card h2 change; schedule/owner steps were not reached in these cases, so136 PASS is not claimed. Current rootPR38110194132 and push38110152147 all jobs SUCCESS. Raw lab48started/46valid/48required,7/8 interactions and24/24 backend reads despite2 retained merchantReview warm deadline failures;880/960 latency with2 READ ONLY/shared-lock groups missing; both cleanup PASS. Matching browser/CPU/throttle/data: all6 creator detail CLS0.16685243479704767 ->0.06302391996372786. Narrow layout observation is not full lab, field CWV, production SLO or controlled general latency acceptance."
+        },
+        {
+          "environment": "local-worktree",
+          "scenario": "Generated lock-compatible read batches and redacted per-page collector diagnostics",
+          "result": "Actual collector SQL assertion4 RED ->4 GREEN; actual navigation diagnostics2 RED ->2 GREEN; pathname secret redaction3 PASS1 RED ->4 GREEN; focused17/full523 PASS0 FAIL0 SKIP and typecheck PASS. Current-source realSQL/browser/core/Linux extraction/root results pending. Parent fca3 actual515/94/136/4 core/root PASS and45/48 browser plus880/960 SQL remain independent historical evidence."
         }
       ],
       "blockers": [
@@ -2982,5 +2987,58 @@
       }
     ],
     "verification_followup": "The same single fix pass corrects existing native EN/zh heading assertions to require BOTH stable localized h1 and exact full-title authorized article h2. Owned link/date/merchant/schedule/width checks remain; actual134/2 failure logs retained. Updated exact-source native result pending, no second review or source-product change."
+  },
+  "sql_measurement_continuation": {
+    "parent_pr": 66,
+    "parent_sha": "fca3eb2a9bc13ea9feffbfc014d0ab7c5c895a86",
+    "branch": "codex/operations-sql-measurement-20261011",
+    "observed_at": "2026-10-11T05:31:36.387231+00:00",
+    "source_status": "Implemented; isolated runtime pending",
+    "local_tests": {
+      "unit": {
+        "pass": 523,
+        "fail": 0,
+        "skip": 0
+      },
+      "focused": {
+        "pass": 17,
+        "fail": 0,
+        "skip": 0
+      },
+      "sql_red": {
+        "pass": 0,
+        "fail": 4
+      },
+      "diagnostic_red": {
+        "pass": 0,
+        "fail": 2
+      },
+      "privacy_red": {
+        "pass": 3,
+        "fail": 1
+      },
+      "typecheck": "PASS"
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Continue on a new focused stacked branch from verified fca3eb2a PR66, reusing its clean isolated checkout while preserving parent refs and prior raw evidence. Fresh main/PR55/PR66/deployment reads confirm the dependency remains open.",
+        "cost_if_wrong": "The stack must be reconciled against any later parent change before integration; no force push or main merge is authorized."
+      },
+      {
+        "decision": "Replace the two merchant-only READ ONLY measurement failures with generated allowlisted query_kinnso_merchant_campaigns READ WRITE/ROLLBACK batches on the verified owned local target. Keep actual actor claims, authenticated role, shared authorization locks,43 calls and all other READ ONLY profiles.",
+        "cost_if_wrong": "READ WRITE permits row locks; safety depends on the current reviewed read RPC and callees staying side-effect free. A future callee change requires review. These samples cannot be pooled with the older failed method or claimed as controlled latency improvement."
+      },
+      {
+        "decision": "Instrument the per-page DOM/load and owned request lifecycle before proposing a warm Lighthouse fix. Keep45s page-load/60s audit deadline, null failed metrics, independent pairs and no late backfill. Do not attribute all timeouts to trace-engine warnings also present on successful samples.",
+        "cost_if_wrong": "Actual lab may remain incomplete; diagnosis adds a versioned observation condition and cannot replace raw trace or actual runtime acceptance."
+      },
+      {
+        "decision": "Retain only explicit safe route shapes, redact UUIDs, classify Next assets/unknown paths, cap pending summaries at10 and detach page listeners on every completion. Never export query/headers/body/claims.",
+        "cost_if_wrong": "Unknown endpoints are identified only by counts and a generic marker; a future allowlist extension needs a privacy test."
+      }
+    ]
   }
 }

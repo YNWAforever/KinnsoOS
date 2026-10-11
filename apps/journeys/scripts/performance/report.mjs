@@ -73,6 +73,38 @@ export async function withCollectionDeadline(collect,milliseconds,message){
   }finally{clearTimeout(timer);}
 }
 
+/** Per-page evidence only: no global Lighthouse logger, URLs/headers/claims or bodies. */
+export function observeNavigation(page,origin,clock=()=>performance.now()) {
+ const started=clock(),pending=new Map();let retained;
+ const counts={startedRequests:0,finishedRequests:0,failedRequests:0,domContentLoaded:0,load:0,ignoredExternalRequests:0};
+ const types=new Set(['document','stylesheet','image','media','font','script','texttrack','xhr','fetch','eventsource','websocket','manifest','other']);
+ const owned=request=>{try{return new URL(request.url()).origin===origin;}catch{return false;}};
+ const handlers={
+  request:request=>{
+   if(!owned(request)){counts.ignoredExternalRequests++;return;}
+   counts.startedRequests++;
+   if(pending.size>=256)return;
+   const candidate=new URL(request.url()).pathname.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,'OWNED_ID');
+   const safe=/^\/api\/(?:catalog|guides\/OWNED_ID|trips\/OWNED_ID|creator\/missions(?:\/OWNED_ID)?|merchant\/campaigns)$/.test(candidate)||/^\/(?:en|zh-HK)(?:\/explore|\/guides\/OWNED_ID|\/trips\/OWNED_ID|\/studio\/missions(?:\/OWNED_ID)?|\/merchant\/campaigns)?$/.test(candidate);
+   const path=safe?candidate:candidate.startsWith('/_next/')?'/_next/ASSET':'OTHER_OWNED_REQUEST';
+   const type=request.resourceType();pending.set(request,{path,type:types.has(type)?type:'other',started:clock()});
+  },
+  requestfinished:request=>{if(owned(request)){counts.finishedRequests++;pending.delete(request);}},
+  requestfailed:request=>{if(owned(request)){counts.failedRequests++;pending.delete(request);}},
+  domcontentloaded:()=>{counts.domContentLoaded++;},load:()=>{counts.load++;},
+ };
+ for(const[event,handler]of Object.entries(handlers))page.on(event,handler);
+ return{stop(){
+  if(retained)return retained;
+  for(const[event,handler]of Object.entries(handlers))page.off(event,handler);
+  const ended=clock(),pendingRequestCount=Math.max(0,counts.startedRequests-counts.finishedRequests-counts.failedRequests);
+  retained={elapsedMs:Math.max(0,ended-started),...counts,pendingRequestCount,
+   pendingRequestsTruncated:pendingRequestCount>10,
+   pendingRequests:[...pending.values()].slice(0,10).map(({path,type,started})=>({path,type,elapsedMs:Math.max(0,ended-started)}))};
+  pending.clear();return retained;
+ }};
+}
+
 /** A controlled warm-read baseline, kept separate from browser/field metrics. */
 export function assessLatency(report, budgets) {
   const layers = ['api', 'postgrest', 'postgres'], missing = [];

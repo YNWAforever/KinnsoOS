@@ -11,7 +11,7 @@ import {createClient} from '@supabase/supabase-js';
 import {createServerClient} from '@supabase/ssr';
 import {verifyTestTarget} from '../verify-test-target.mjs';
 import {assessLatency, validateLatencyBudget, localOrigin, pages,workspacePages,operationRole} from './report.mjs';
-import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
+import{setupOperations,operationRead,verifyOperation,cleanupOperations,postgresReadBatch}from'./operations-fixture.mjs';
 const operations=process.argv.includes('--operations'),measuredPages=operations?[...pages,...workspacePages]:pages;
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -63,7 +63,7 @@ const report = {schemaVersion:1,kind:operations?'operations-latency':'latency',s
     sourceArchiveSha256:createHash('sha256').update(await readFile(archivePath)).digest('hex'),
     buildSourceVerified:true,
     databaseCache:'warm/shared; no cache flush, database restart, reset or ANALYZE mutation',
-    postgresMethod:'EXPLAIN ANALYZE FORMAT JSON in READ ONLY/ROLLBACK with anon or authenticated role; function internals included in total, not expanded',
+    postgresMethod:'EXPLAIN ANALYZE FORMAT JSON; READ ONLY/ROLLBACK except the two allowlisted merchant read profiles use READ WRITE/ROLLBACK to preserve shared authorization locks; anon/authenticated role; function internals included in total, not expanded',
     apiMethod:'BFF fetch through consumed/verified JSON; includes auth and projection overhead',
     postgrestMethod:'Supabase SDK read through consumed/verified JSON; includes loopback transport'},
   dataset:null,samples:[],warmups:[],cleanup:'PENDING',
@@ -85,7 +85,6 @@ const projection='id,slug,title,city,summary,cover_url,creator_handle,creator_na
 const catalog=filtered=>publicClient.from('guides').select(projection).eq('status','published')
   .order('published_at',{ascending:false,nullsFirst:false}).order('id').limit(13)
   .match(filtered?{city:tag}:{});
-const catalogSQL=filtered=>`select ${projection} from public.guides where status='published' ${filtered?'and city='+literal(tag):''} order by published_at desc nulls last,id asc limit 13`;
 function verify(operation, data, api=false) {
   if(workspacePages.includes(operation)){if(api&&data.ok!==true)throw Error('Workspace BFF failed');verifyOperation(operation,api?data.data:data,workFixture);return;}
   if (operation==='home'||operation==='explore') {
@@ -157,20 +156,13 @@ try {
     });
   }
   for(const operation of measuredPages) {
-    const spec=workspacePages.includes(operation)?operationRead(operation,workFixture):null;
-    const statement=spec?`select public.${spec.rpc}(${Object.entries(spec.args).map(([key,value])=>key+' => '+(value===null?'null':literal(typeof value==='object'?JSON.stringify(value):value)+(key==='p_query'?'::jsonb':key.endsWith('_id')||key.endsWith('_after')?'::uuid':''))).join(',')})`:operation==='home'||operation==='explore'?catalogSQL(operation==='explore'):
-      operation==='guide'?`select public.kinnso_guide(${literal(guideId)}::uuid)`:`select public.get_trip_snapshot(${literal(tripId)}::uuid)`;
-    const role=spec||operation==='trip'?'authenticated':'anon';
-    const jwt=spec?JSON.stringify(spec.role==='merchant_owner'?workFixture.merchantClaims:claims):operation==='trip'?JSON.stringify(claims):JSON.stringify({role:'anon'});
-    let input=`begin read only; set local statement_timeout='8s'; set local role ${role}; set local "request.jwt.claims"=${literal(jwt)};\n`;
-    for(let i=1;i<=43;i++)input+=`\\echo SAMPLE_${i}\nexplain (analyze, buffers, format json) ${statement};\n`;
-    input+='rollback;';
-    const result=sql(input);
+    const batch=postgresReadBatch({operation,fixture:workFixture,creatorId:ownerId,creatorClaims:claims,guideId,tripId,city:tag});
+    const result=sql(batch.sql);
     const chunks=result.split(/SAMPLE_(\d+)\r?\n/).slice(1);
     if(chunks.length!==86)throw Error('Missing PostgreSQL measurements');
     for(let i=0;i<chunks.length;i+=2) {
       const n=Number(chunks[i]),plan=JSON.parse(chunks[i+1].trim())[0];
-      const sample={layer:'postgres',operation,role:operationRole(operation),run:n<=3?n:n-3,status:'PASS',verified:plan.Plan['Actual Rows']===(operation==='home'||operation==='explore'?13:1),durationMs:plan['Execution Time'],planningMs:plan['Planning Time']};
+      const sample={layer:'postgres',operation,role:operationRole(operation),transactionMode:batch.transactionMode,run:n<=3?n:n-3,status:'PASS',verified:plan.Plan['Actual Rows']===(operation==='home'||operation==='explore'?13:1),durationMs:plan['Execution Time'],planningMs:plan['Planning Time']};
       (n<=3?report.warmups:report.samples).push(sample);
       // Never retain claims, SQL values, private aggregate bodies or owner IDs.
       const redacted=JSON.stringify(plan).replaceAll(ownerId,'OWNED_ACTOR').replaceAll(guideId,'OWNED_GUIDE').replaceAll(tripId,'OWNED_TRIP').replaceAll(tag,'OWNED_CITY');

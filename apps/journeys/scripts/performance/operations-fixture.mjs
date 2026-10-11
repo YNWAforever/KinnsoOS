@@ -30,3 +30,38 @@ export async function cleanupOperations(admin,fixture){
  checked(await admin.from('merchant_profiles').delete().eq('id',fixture.merchantId));
  const left=checked(await admin.from('missions').select('id').eq('merchant_profile_id',fixture.merchantId));if(left.length)throw Error('Owned operations fixture records remain');
 }
+
+// This builds only the eight retained read profiles, never caller-supplied SQL/RPCs.
+// Merchant reads keep their existing shared authorization locks. Their transaction
+// must permit row locks, but the batch always rolls back on this owned local target.
+export function postgresReadBatch({operation,fixture,creatorId,creatorClaims,guideId,tripId,city}) {
+ const supported=['home','explore','guide','trip','creatorList','creatorDetail','merchantCampaigns','merchantReview'];
+ if(!supported.includes(operation))throw Error('Unsupported PostgreSQL read profile');
+ const uuid=value=>{if(typeof value!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value))throw Error('Invalid owned read identity');return value;};
+ const literal=value=>"'"+String(value).replaceAll("'","''")+"'";
+ const merchant=operation==='merchantCampaigns'||operation==='merchantReview';
+ const privateRead=merchant||operation==='trip'||operation==='creatorList'||operation==='creatorDetail';
+ let jwt={role:'anon'},statement;
+ if(privateRead){
+  const actor=merchant?fixture?.merchantUserId:creatorId,claims=merchant?fixture?.merchantClaims:creatorClaims;
+  if(!claims||claims.role!=='authenticated'||claims.sub!==actor)throw Error('Matching authenticated owned actor is required');
+  uuid(actor);jwt=claims;
+ }
+ if(operation==='home'||operation==='explore'){
+  if(typeof city!=='string')throw Error('Owned catalog identity is required');
+  statement=`select id,slug,title,city,summary,cover_url,creator_handle,creator_name,published_at from public.guides where status='published' ${operation==='explore'?'and city='+literal(city):''} order by published_at desc nulls last,id asc limit 13`;
+ }else if(operation==='guide')statement=`select public.kinnso_guide(${literal(uuid(guideId))}::uuid)`;
+ else if(operation==='trip')statement=`select public.get_trip_snapshot(${literal(uuid(tripId))}::uuid)`;
+ else{
+  if(merchant)uuid(fixture?.merchantId);
+  if(merchant||operation==='creatorDetail')uuid(fixture?.campaignId);
+  const spec=operationRead(operation,fixture);
+  // The sole lock-compatible exception is bound to this exact existing read RPC.
+  if(merchant&&spec.rpc!=='query_kinnso_merchant_campaigns')throw Error('Unsupported merchant read RPC');
+  statement=`select public.${spec.rpc}(${Object.entries(spec.args).map(([key,value])=>key+' => '+(value===null?'null':literal(typeof value==='object'?JSON.stringify(value):value)+(key==='p_query'?'::jsonb':key.endsWith('_id')||key.endsWith('_after')?'::uuid':''))).join(',')})`;
+ }
+ const transactionMode=merchant?'READ WRITE/ROLLBACK':'READ ONLY/ROLLBACK';
+ let sql=`begin ${merchant?'read write':'read only'}; set local statement_timeout='8s'; set local role ${privateRead?'authenticated':'anon'}; set local "request.jwt.claims"=${literal(JSON.stringify(jwt))};\n`;
+ for(let i=1;i<=43;i++)sql+=`\\echo SAMPLE_${i}\nexplain (analyze, buffers, format json) ${statement};\n`;
+ return{transactionMode,sql:sql+'rollback;'};
+}

@@ -11,18 +11,19 @@ test('P16 workspace latency requires matching roles and complete owned dataset r
 
 import {readFile} from 'node:fs/promises';import {workspaceHarness} from './helpers/workspace-harness.mjs';
 import * as performanceReport from '../scripts/performance/report.mjs';
+import {EventEmitter} from 'node:events';
 
 test('P16 stalled actual navigation records its failed sample and report within the owned collection deadline',async()=>{
  const source=await readFile(new URL('../scripts/performance/run.mjs',import.meta.url),'utf8'),start=source.indexOf('async function navigation('),end=source.indexOf('async function interaction(',start),samples=[],report={samples},saved=[];
  assert.ok(start>=0&&end>start);
  const origin='http://127.0.0.1:3521',result={lhr:{finalDisplayedUrl:origin+'/en',audits:{'network-requests':{details:{items:[{resourceType:'Document',url:origin+'/en',statusCode:200}]}},'largest-contentful-paint':{numericValue:2000},'cumulative-layout-shift':{numericValue:0.01},'total-blocking-time':{numericValue:10}}},artifacts:{Trace:{traceEvents:[]}}};
- const actual=new Function('lighthouse','origin','flags','operationRole','samples','path','out','report','retainNavigation','writeFile','ready','traceWithoutArguments','withCollectionDeadline',source.slice(start,end)+'return navigation')(
-  async()=>{await new Promise(resolve=>setTimeout(resolve,30));return result},origin,{maxWaitForLoad:45000},role,samples,{join:(...parts)=>parts.join('/')},'/owned/performance',report,performanceReport.retainNavigation,async(name,value)=>saved.push({name,value}),async()=>{},trace=>trace,performanceReport.withCollectionDeadline);
- await assert.rejects(actual({},'home','/en','cold',1,1),/collection.*timed out/i);
+ const actual=new Function('lighthouse','origin','flags','operationRole','samples','path','out','report','retainNavigation','writeFile','ready','traceWithoutArguments','withCollectionDeadline','observeNavigation',source.slice(start,end)+'return navigation')(
+  async()=>{await new Promise(resolve=>setTimeout(resolve,30));return result},origin,{maxWaitForLoad:45000},role,samples,{join:(...parts)=>parts.join('/')},'/owned/performance',report,performanceReport.retainNavigation,async(name,value)=>saved.push({name,value}),async()=>{},trace=>trace,performanceReport.withCollectionDeadline,performanceReport.observeNavigation);
+ await assert.rejects(actual(new EventEmitter(),'home','/en','cold',1,1),/collection.*timed out/i);
  assert.equal(samples.length,1);assert.equal(samples[0].verified,false);assert.equal(samples[0].lcpMs,null);
  assert.match(samples[0].failure,/timed out/i);assert.ok(saved.some(file=>file.name.endsWith('/report.json')));
  await new Promise(resolve=>setTimeout(resolve,40));assert.equal(samples[0].verified,false,'a late collector result must not backfill the failed sample');
- await actual({},'home','/en','warm',1,100);assert.equal(samples[1].verified,true);assert.equal(samples[1].lcpMs,2000);
+ await actual(new EventEmitter(),'home','/en','warm',1,100);assert.equal(samples[1].verified,true);assert.equal(samples[1].lcpMs,2000);
  assert.ok(saved.some(file=>file.name.endsWith('/home-1-warm.lhr.json')));assert.ok(saved.some(file=>file.name.endsWith('/home-1-warm.trace.json')));
 });
 
