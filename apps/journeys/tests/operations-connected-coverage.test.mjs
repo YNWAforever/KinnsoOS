@@ -1,0 +1,2 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {matchesGlob} from 'node:path';import config from '../playwright.connected.config.ts';
+test('operations connected gate actually includes the P14 insights and P17 recovery browser stories',()=>{for(const story of ['u10-merchant-insights.spec.ts','u11-workspace-recovery.spec.ts'])assert.ok(config.testMatch.some(pattern=>matchesGlob('tests/e2e/'+story,pattern)),story+' must be part of the executed native gate');});

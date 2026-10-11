@@ -1,0 +1,55 @@
+{
+  "version": 1,
+  "baseline_main": "ad2c8ceb11a57d07ffb27be91ad0011a46fab3c8",
+  "candidate_ref": "codex/operations-acceptance-20261011",
+  "pull_request": 65,
+  "target": null,
+  "status": "NOT_AUTHORIZED_NOT_EXECUTED",
+  "files": [
+    {
+      "path": "supabase/migrations/20261010190752_kinnso_creator_collaboration.sql",
+      "sha256": "2ee6af97838634aa0f38149152e88831b12a3cfc66e31f091216def7c5bdd881",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010190758_kinnso_merchant_campaign_lifecycle.sql",
+      "sha256": "f87e1cbb15cc7c2c9b03358a86e9d227a521dc4ddfb3b5582a05c51de7b38a26",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010190951_kinnso_merchant_onboarding_profile.sql",
+      "sha256": "12729159686cf5b8272b593d693540b5393d3ea7c4098916e066db79e0374ed2",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010213700_kinnso_campaign_schedule_terms.sql",
+      "sha256": "8eb3efca4c192bc8f2d11926cb0a4b9485d00f2aa5954c8c268ac3ee8548ba6e",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010223500_kinnso_creator_discovery.sql",
+      "sha256": "f09eabe33e2b840828117f73028eb97aab013d5fa31d6a2656ed55e6eec469f1",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010230000_kinnso_collaboration_list_queries.sql",
+      "sha256": "aa0dd7d70a729999caaa4386aec444e40ea98b4e1f30d8fc18fffeb9916807c7",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010233500_kinnso_collaboration_reminders.sql",
+      "sha256": "f9632046e880d49edf79496bada9298d6988ae50eb8d1dd3e71a8df4b826ffff",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261010234000_kinnso_collaboration_support_context.sql",
+      "sha256": "404e2c882d7f745304c66fdd4ba1ee0a952b752a3cb3a6f2a80b5ca202662181",
+      "hosted_execution": "NOT_RUN"
+    },
+    {
+      "path": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
+      "sha256": "fd8568daadd79140ad3a710d47cf4329652418ea7b099f8607b3fb5aab1ec46a",
+      "hosted_execution": "NOT_RUN"
+    }
+  ]
+}

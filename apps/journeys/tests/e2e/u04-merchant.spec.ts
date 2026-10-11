@@ -62,6 +62,7 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Milestone instructions', { exact: true }).fill('Submit the public guide URL and original supporting notes.');
     await page.getByRole('button', { name: 'Publish promotion brief', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toBeVisible();
+    await expect.poll(() => new URL(page.url()).searchParams.get('company')).toBe(companies[0]);
     const missions = await ok(admin.from('missions').select('id,status').eq('merchant_profile_id', companies[0]));
     expect(missions).toHaveLength(1); expect(missions[0].status).toBe('published');
     const application = await ok(admin.from('mission_participants').insert({ mission_id: missions[0].id, creator_id: creator.id, status: 'applied', source: 'open_join', application_note: 'Synthetic application for browser review' }).select('id').single());
@@ -74,13 +75,22 @@ test('U04 owner publishes and reviews; scoped clerk corrects invalid percentage 
     await page.getByLabel('Brief title', { exact: true }).fill('Draft belongs only to A');
     await page.getByLabel('Brief description', { exact: true }).fill('Private draft A');
     await page.getByLabel('Coupon code', { exact: true }).fill('DRAFT_A');
+    await expect(page.getByRole('status').filter({ hasText: 'Draft kept on this device for this account.' })).toBeVisible();
     await page.getByLabel('Company', { exact: true }).selectOption(companies[1]);
+    await expect(page.getByLabel('Brief title', { exact: true })).toBeEnabled();
     await expect(page.getByLabel('Brief title', { exact: true })).toHaveValue('');
+    await expect.poll(() => new URL(page.url()).searchParams.get('company')).toBe(companies[1]);
+    await expect.poll(() => new URL(page.url()).searchParams.has('campaign')).toBe(false);
     await expect(page.getByLabel('Brief description', { exact: true })).toHaveValue('');
     await expect(page.getByLabel('Coupon code', { exact: true })).toHaveValue('');
     await expect(page.getByRole('heading', { name: 'Synthetic U04 published brief', exact: true })).toHaveCount(0);
     await page.getByLabel('Company', { exact: true }).selectOption(companies[0]);
-    await expect(page.getByLabel('Brief title', { exact: true })).toHaveValue('');
+    // Returning to a freshly authorized scope restores its own saved device draft.
+    // The B assertions above still deny every A field and private campaign.
+    await expect(page.getByLabel('Brief title', { exact: true })).toBeEnabled();
+    await expect(page.getByLabel('Brief title', { exact: true })).toHaveValue('Draft belongs only to A');
+    await expect(page.getByRole('textbox', { name: 'Brief description', exact: true })).toHaveValue('Private draft A');
+    await expect(page.getByLabel('Coupon code', { exact: true })).toHaveValue('DRAFT_A');
     await command(owner.client, companies[0], { type: 'setMember', userId: clerk.id, role: 'clerk', branchIds: [branch.id], active: true });
     const otherBranch = randomUUID();
     await command(owner.client, companies[0], { type: 'createBranch', id: otherBranch, name: 'Synthetic U04 alternative branch' });
@@ -180,6 +190,8 @@ for (const locale of ['en', 'zh-HK'] as const) {
       if (locale !== 'en') await page.goto(`/${locale}/merchant`);
       const section = page.getByRole('heading', { name: text('Merchant workspace', '商戶工作區'), exact: true }).locator('..');
       await expect(section.getByLabel(text('Branch name', '分店名稱'), { exact: true })).toBeVisible();
+      // The campaign form paints only after its own first authorized read.
+      await expect(section.getByLabel(text('Brief title', '簡報標題'), { exact: true })).toBeEnabled();
       const measurements = [];
       for (const [width, enlarged] of [[320, false], [640, false], [1280, false], [320, true]] as const) {
         await page.setViewportSize({ width, height: 900 });

@@ -1248,6 +1248,14 @@
   "rulings": [
     "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
     "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
+    "P10: native list API uses v1 scope/filter/order-bound cursors; raw UUID and v0 cursors are rejected with refresh required. Mature UUID RPCs remain unchanged as the explicit legacy interface. Cost if wrong: an already-open pre-upgrade native page must refresh once.",
+    "P10 draft creation-time guard has current GREEN and was written after its test, but missing required fixture summary blocked a valid draft-specific pre-implementation RED; do not claim that RED. Automatic approval review rejected temporary guard removal for a pushed test checkpoint; retained guard and used safe fixture correction instead.",
+    "P10 Ruling: workload filters use independent current active-participant EXISTS predicates, while a single priority badge remains display-only; lifecycle filters use underlying state. Cost if wrong: additional query cost or status semantics require a scoped correction; P16 measurement still required.",
+    "P10 Ruling: merchant unfinished deadline fallback is only a nonterminal campaign with no participant history; finished/cancelled work has no unfinished deadline. Cost if wrong: a historical cancelled-only campaign may need a separately defined future-work label.",
+    "P10 review bounded rulings: hosted/production requires designated release gates; final CI pending exact candidate; real-device/assistive technology NOT_RUN under P17; production EXPLAIN/performance under P16; cross-page snapshot consistency is explicitly unavailable; preserved legacy UUID RPCs remain compatible while native older bookmarks require Refresh. Costs: hosted/device/scale findings can still block release, and stale bookmarks need one refresh.",
+    "P10 minor (deferred): malformed URL skips local invalidation subscription; actual Workbench actor key and MerchantWorkspace invalidation clear/remount this private workspace. Cost if those parent protections change: local lifecycle handling must be corrected. No current cross-account disclosure established.",
+    "P10 native navigation Ruling: reflect authorized same-company campaign URL changes and update selection URL after reads; do not reset an authored or uncertain write when a link changes. Cost: a blocked selection remains visibly conflicted until existing work is reconciled or discarded.",
+    "P10 browser evidence Ruling: wait for the URL condition after an async refresh; an unchanged count of20 can belong to the preceding page and is insufficient completion evidence. Cost: native stories depend on completed actor-scoped reads rather than DOM count alone.",
     "P11 Ruling: service-only scan uses participant/milestone UUID tuple cursor; emitted facts are excluded, so a bounded partial or crashed job may restart cold and safely progress. Cost if wrong: additional rescan cost; no actor-facing cursor or private evidence is exposed.",
     "P11 Ruling: a scan hitting page/time budget records incomplete as job failure and returns retryable 503, preserving last success; it does not claim full success from partial work. Cost if wrong: busy periods may surface repeated job alerts until backlog is drained.",
     "P11 Ruling: reuse existing collaboration/submission events and native mission entity links; only due_soon/overdue are new facts. Provider remains unconfigured and no hosted cron is registered. Cost if wrong: live scheduling/recipient delivery remains unaccepted and requires designated-environment evidence.",
@@ -1454,6 +1462,21 @@
           "result": "503_UNAVAILABLE_private_no-store_vary_Cookie_noindex; no signed-in acceptance",
           "run_artifact": "Purpose-built protected deployment fetch; source metadata matches candidate; private receipt retained",
           "observed_at": "2026-10-10T21:53:18Z"
+        },
+        {
+          "environment": "local_isolated",
+          "scenario": "Initial finance membership outage read retry",
+          "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
+          "observed_at": "2026-10-11T05:56:17.722508+00:00",
+          "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
+        },
+        {
+          "source_sha": "84e9c729fdac079dbcfb02b031705139078f8e66",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Native keyboard read-retry stories and test-selector correction",
+          "result": "PR/push136PASS2FAIL0SKIP; DB94PASS0FAIL0SKIP. Actual retry and matching totals appear in both failure DOM snapshots; corrected exact accessible combobox selector, new-source native pending.",
+          "observed_at": "2026-10-11T06:19:43.889392+00:00",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38116568892; https://github.com/YNWAforever/KinnsoOS/actions/runs/38116565815"
         }
       ],
       "blockers": [
@@ -1791,11 +1814,11 @@
         "U03",
         "U04"
       ],
-      "code_status": "VERIFIED_OWNED_CI",
-      "ci_status": "PASS",
+      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
+      "ci_status": "CURRENT_FIX_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+      "source_sha": "b0d5e05039b48e1f6f5f807eeb2607d6f8f92396",
       "evidence": [
         {
           "source_sha": "ded8dd03f28ec466bb39bc1be12a65a5228483f8",
@@ -1863,9 +1886,11 @@
         }
       ],
       "blockers": [
+        "CURRENT_CI_PENDING: owner discovery/private notes/CAS/receipts/quota/inbox/browser require current whole-batch regression.",
+        "HOSTED_UAT_NOT_RUN: staging target/actor/recovery packet absent.",
         "HOSTED_UAT_NOT_RUN: designated target/actors/recovery packet absent."
       ],
-      "next_action": "Review stack in dependency order; obtain designated staging packet; continue P10-P17 isolated tasks."
+      "next_action": "Verify current committed review fix CI, owner role/browser regressions and exact merge source; continue independent P10."
     },
     {
       "id": "P10",
@@ -1895,14 +1920,76 @@
         "U03",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_VERIFIED_QUERY_CONTRACTS",
+      "ci_status": "MIXED_SAME_HEAD_RUNS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "ad6350b99a93f60f29094d7e750fa0cd2f3a0b3d",
+      "evidence": [
+        {
+          "source_sha": "81b4dbbbc785e5d0bd6c1e78faf8b9be0a879bd4",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Test-first list query baseline",
+          "result": "436unit432PASS_4newFAIL_0SKIP;68integration65existingPASS_3newFAIL_0SKIP (new query RPCs absent).",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38092915404",
+          "observed_at": "2026-10-10T23:02:46.861337+00:00"
+        },
+        {
+          "source_sha": "uncommitted_candidate_on_9150a79",
+          "environment": "local_isolated",
+          "scenario": "Native query/URL/filter implementation",
+          "result": "437unitPASS_0FAIL_0SKIP and TypeScript PASS. Four initial unit tests RED to GREEN; URL restoration refresh independently RED to GREEN. Initial build refused cross-worktree dependency junction; replaced only verified junction with own lockfile install; fresh build pending. New repeatable receipt completion and native EN/zh-HK stories pending CI.",
+          "run_artifact": ".superpowers/sdd/2026-10-11-creator-merchant-query/p10-unit-green.log; p10-url-red.log; p10-types.log",
+          "observed_at": "2026-10-10T23:02:46.861351+00:00"
+        },
+        {
+          "source_sha": "9150a79a973869d66d4211002d196a11dc6a960b",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Published creation-time control audit",
+          "result": "65/69 integration PASS. Published edit rejected by existing immutable_campaign_terms; mismatched expected error is not a new immutability gap. Added separate unpublished draft test and retained the mature published denial.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38093358873",
+          "observed_at": "2026-10-10T23:09:43.799671+00:00"
+        },
+        {
+          "source_sha": "a3af83f0114fd1012287d49e9b49e20494524ed9",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Reachable repeatable deadline RED and draft creation-time control",
+          "result": "437unitPASS;71integration70PASS_1FAIL_0SKIP. Repeatable milestone lost nextDueAt after first approved receipt below cap2: valid RED. Draft creation-time denial and allowed owned title edit PASS. Previous supplemental checkpoint fixture omitted summary: assertions NOT_REACHED, not behavior RED. Guard retained; temporary guard-removal commit/push rejected by automatic approval review and not retried. Local TypeScript/build/source pack PASS at unchanged candidate application code.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38094168084; .superpowers/sdd/2026-10-11-creator-merchant-query/p10-a3-failed.log",
+          "observed_at": "2026-10-10T23:18:53.916517+00:00"
+        },
+        {
+          "source_sha": "21f51583fb767b76884dd0328dc56f9c817150e2",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Four Important final review regressions, one fix pass",
+          "result": "439unit437PASS_2FAIL_0SKIP;73integration71PASS_2FAIL_0SKIP. Actual stale URL refresh replayed cursor; unknown merchant acknowledgement blocked retry; submitted mixed-state merchant filter returned0 expected1; completed participant regained historical deadline. All valid RED. Original repeatable receipt cap test now PASS. Candidate439unitPASS_0FAIL_0SKIP; typecheck/build/source pack PASS. Fresh review completed; four fixes applied; current DB/browser whole CI pending.",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38095133707; .superpowers/sdd/2026-10-11-creator-merchant-query/review-fix-unit.log; review-fix-build.log",
+          "observed_at": "2026-10-10T23:38:18.920565+00:00"
+        },
+        {
+          "source_sha": "4f5d5af0d53144d6bf10c3cd359183bd132e14b7",
+          "environment": "owned_CI_isolated_stack_and_local_component",
+          "scenario": "Current query SQL GREEN and native URL navigation regression",
+          "result": "CI38095730340:439unitPASS_73DBPASS_123browserPASS3FAIL_4mailboxPASS; two P10 URL assertions inspected before async read completed, changed to await actual URL condition; existing zh-HK same-page campaign task failed. Added actual component native query navigation regression:7PASS1FAIL old campaign remains selected. Implemented reactive authorized same-company campaign selection and URL detail synchronization, retaining pending/dirty input; current440unitPASS_0FAIL_0SKIP, exact candidate CI pending.",
+          "observed_at": "2026-10-11T00:03:16.877701+00:00"
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "ae8a116380ccff47aa9464af236ae7ab7d0169e4",
+          "scenario": "Exact EN/zh-HK list selector accessible names independent of nested option text",
+          "result": "RED: eight existing cases pass; new exact localized aria-label case fails. CI38097159580 two browser cases fail at exact List status selector. Fix adds explicit labels to status/order controls without changing filters."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "ad6350b99a93f60f29094d7e750fa0cd2f3a0b3d",
+          "run": 38098115905,
+          "result": "PR merge run PASS:441unit/73DB/126browser/4mailbox zero failed/skipped. RootPRCI38098115845PASS. Same-head pushrun38098113582 has2 existing U04 merchant browser failures; retained for P17, not silently dropped."
+        }
+      ],
+      "blockers": [
+        "HOSTED_UAT_NOT_RUN: staging/Auth/recovery actors not supplied."
+      ],
+      "next_action": "Verify current query SQL and native browser stories in owned CI; repeatable receipt completion control must be proven before acceptance; then whole-batch review."
     },
     {
       "id": "P11",
@@ -1933,12 +2020,24 @@
         "U04",
         "U05"
       ],
-      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "VERIFIED_SEPARATE_STACK",
+      "ci_status": "OWNED_CI_PASS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "742aca0d79875fb6d35af7908ba2165bcea5dd57",
+      "source_sha": "6a621af4091eb2a9e8297f3e98e07c37a489d621",
       "evidence": [
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "6a621af4091eb2a9e8297f3e98e07c37a489d621",
+          "run": 38096999870,
+          "result": "PASS: zero failed/skipped; sibling implementation is not inherited by this P14 branch.",
+          "counts": {
+            "unit": 445,
+            "db": 80,
+            "browser": 128,
+            "mailbox": 4
+          }
+        },
         {
           "source_sha": "0604116022642470ccbdd6eb792ee06711f47de8",
           "environment": "owned_CI_isolated_stack",
@@ -1959,7 +2058,7 @@
         "HOSTED_SCHEDULE_NOT_ENABLED: no designated environment, named owner, token/config/recovery packet or schedule authorization.",
         "CURRENT_CI_AND_REVIEW_PENDING: service-only reminder transaction and native inbox links require matching whole regression and fresh review."
       ],
-      "next_action": "Verify exact current reminder CI and fresh review; retain hosted job registration and provider delivery as separate gates."
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
     },
     {
       "id": "P12",
@@ -1991,12 +2090,24 @@
         "U04",
         "U05"
       ],
-      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "VERIFIED_SEPARATE_STACK",
+      "ci_status": "OWNED_CI_PASS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "b39a0d3551b43172916d38ea50eee5ddcf659094",
+      "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
       "evidence": [
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+          "run": 38097953291,
+          "result": "PASS: zero failed/skipped; sibling implementation is not inherited by this P14 branch.",
+          "counts": {
+            "unit": 455,
+            "db": 74,
+            "browser": 128,
+            "mailbox": 4
+          }
+        },
         {
           "source_sha": "f25e0e9ed1c3ffee47b86256abdc771bc730b258",
           "environment": "owned_CI_isolated_stack_and_local_component",
@@ -2016,7 +2127,7 @@
         "BLOCKED_TARGET: no designated staging ownership, configuration, schema/recovery or approved test actors supplied.",
         "CURRENT_CI_AND_REVIEW_PENDING"
       ],
-      "next_action": "Verify full current owned CI and one fresh final review; hosted target remains separately blocked."
+      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
     },
     {
       "id": "P13",
@@ -2052,16 +2163,26 @@
         "U01",
         "U03"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "EXISTING_CONTRACTS_REUSED",
+      "ci_status": "PENDING_COMBINED_CONTINUATION",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "source_sha": "4b4c4ed",
+      "evidence": [
+        {
+          "source_sha": "c2203731827c613fae45dfb689fa8dcc0ccc5d16",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Existing explicit publication/adoption/private-copy and native/legacy recovery contracts retained",
+          "result": "Complete P09 Journeys38094594052 browser126PASS0FAIL0SKIP includes existing content stories; combined4b4c4ed current CI pending; real content and hosted publication NOT_RUN.",
+          "observed_at": "2026-10-11T00:11:30.709008+00:00"
+        }
+      ],
       "blockers": [
+        "BLOCKED_CONTENT: no three author-consented real structured guides, source/cover rights or author acceptance supplied.",
+        "BLOCKED_TARGET: designated hosted target and approved test actors not supplied.",
         "BLOCKED_CONTENT: no author-approved three-guide pilot supplied."
       ],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "next_action": "Obtain three author-consented real guides with source/cover rights and designated target; run explicit content pilot without treating fixtures as content."
     },
     {
       "id": "P14",
@@ -2090,14 +2211,105 @@
         "N18",
         "U04"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_OWNED_DB_VERIFIED_NATIVE_PENDING",
+      "ci_status": "MIXED_BROWSER_DENOMINATOR_RETAINED",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "9f2350c9683030e52c4db279eecd03b979d588b5",
+      "evidence": [
+        {
+          "environment": "isolated-local",
+          "source_sha": "4b4c4edd37b79f8417be9d2e2a014475f063637e",
+          "scenario": "P14 bounded dates, aggregate CSV formula/private-field defense, invitation numerator/denominator coverage",
+          "result": "RED: 3/3 missing-helper behavior tests fail before implementation; four owned DB cases added, not yet executed."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "71fade9f211db74542f92fbff4397c5f6914547a",
+          "tested_merge_sha": "3bab4126a85d7cb630654571ea5c1c8a490e5be1",
+          "run": 38098142373,
+          "scenario": "P14 baseline with complete owned fixtures",
+          "result": "RED: 449 unit PASS / 3 new FAIL; 80 DB PASS / 4 new FAIL / 0 SKIP. Every new DB case reached missing insights RPC. Not hosted acceptance."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "71fade9f211db74542f92fbff4397c5f6914547a",
+          "scenario": "Actual insights BFF, UI filtering and delayed old-actor read",
+          "result": "RED 0/6 -> GREEN 6/6 before complete candidate commit; no current complete CI claim."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "1cfe6f3d180e6e4d63441096872a2b3d8a3e7d4d",
+          "scenario": "One fresh final review: live-user SQL denial passed through actual backend mapper and loaded report",
+          "result": "Valid RED:7 existing cases pass, new behavior observes503 instead of401. Minimal fix uses mature unauthenticated contract; expected GREEN includesAUTH_REQUIRED/nonretryable and clearing prior report. First harness attempt hit bundled Next __dirname and is not behavioral RED."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "9f2350c9683030e52c4db279eecd03b979d588b5",
+          "run": 38099233449,
+          "scenario": "Complete current P14 candidate",
+          "result": "Verify build/type/source-package and mailbox passed; integration 83 PASS/1 FAIL/0 SKIP. The5001-row export fixture timed out inserting500-row batches before invoking its RPC, so browser job was not reached. Three other insights DB cases passed. Original failure retained; fixture batches reduced to100 without reducing5001 rows, export bounds or authorization assertions."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+          "run": 38099788314,
+          "scenario": "Final P14 isolated gate retained",
+          "result": "DB gate PASS;127 browser PASS/1 company-switch FAIL. P14 u10 browser stories were NOT_SELECTED by u0 glob, therefore no P14 native acceptance claimed. P17 adds executed-denominator regression and fixes stale company denial after valid component RED."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+          "run": 38099788314,
+          "scenario": "P14 current independent candidate",
+          "result": "458 unit84 integration127 browser PASS1 existing company-switch FAIL4 mailbox PASS0 SKIP; type/build/source/extracted rebuild PASS. Actual u10 merchant report browser tests NOT_SELECTED under prior u0 glob, corrected to u0/u1 in combined061 candidate; no omitted test PASS claim."
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: designated staging configuration, test actors and recovery proof have not been supplied."
+      ],
+      "next_action": "Execute unchanged behavior assertions after smaller fixture batches; no hosted SQL, capacity or human acceptance.",
+      "rulings": [
+        {
+          "decision": "Date range selects campaigns by immutable stored creation timestamp, while the selected campaigns current statuses and invitation/application/review records use separate definitions. Dates are UTC inclusive/exclusive and bounded to366 days.",
+          "cost_if_wrong": "Product may prefer an event-only date selection; change definitions and add matching UI/DB filter regressions before release."
+        },
+        {
+          "decision": "Historical submission events and campaign-level redemption/visit attribution lack complete source contracts. Emit null/unknown and preserve existing authorized redemption outcome records. No invented zero, income or ROI.",
+          "cost_if_wrong": "Additional event/attribution sources may support more metrics; evaluate them with scoped evidence before extending the report."
+        },
+        {
+          "decision": "Read and export use mature owner-only merchant authority and live Auth/session verification. Marketing/finance/ops do not gain global company reporting access. CSV has authorized aggregate columns and5000 hard cap.",
+          "cost_if_wrong": "Additional reporting roles require a separately specified scope contract and foreign-denial matching-success tests."
+        },
+        {
+          "decision": "Candidate SQL/query-plan/production-scale latency are not verified by read-only final review. Owned CI must execute candidate SQL; P16 measures actual isolated paths and preserves field/hosted limits.",
+          "cost_if_wrong": "Unmeasured large datasets may time out; do not mark hosted capacity or SLO passed."
+        },
+        {
+          "decision": "Direct RPC export insertion race was not reproduced. The BFF independently enforces5000 returned rows; owned export bounds must still be verified, without assuming snapshot consistency across separate statements.",
+          "cost_if_wrong": "Concurrent direct-RPC writes may change row count; preserve unknown/asOf and require a reproducible race test before any snapshot-export promise."
+        },
+        {
+          "decision": "Native EN/zh-HK download and320 layout, hosted revocation/race/deployment parity require their own gates; none was established by review.",
+          "cost_if_wrong": "Source review cannot establish runtime/browser/hosted acceptance."
+        },
+        {
+          "decision": "Missing history/attribution remains unknown; cancelled invitations without acceptance timestamps conservatively make acceptance unknown; creation-date selection is an explicit scoped product ruling.",
+          "cost_if_wrong": "Additional authoritative events or a different date model require new source-contract and regression work."
+        },
+        {
+          "decision": "P13 content/consent/rights/publication/adoption remainBLOCKED_CONTENT; prior P10/core workflows are not re-reviewed; payment/booking/withdrawal delivery is outside this candidate.",
+          "cost_if_wrong": "Real-content and hosted story gates stay open; isolated report code cannot close them."
+        }
+      ],
+      "deferred_minors": [
+        {
+          "finding": "Workspace refresh reloads campaigns but not the insights report; report still shows its original asOf and can be refreshed by applying filters.",
+          "ruling": "Minor retained; no additional feature/test added in this fix pass.",
+          "cost_if_wrong": "Recoverable report can remain stale after other workspace changes; wire applied-filter reload into a future explicit refresh contract before any claim that workspace refresh refreshes every section."
+        }
+      ]
     },
     {
       "id": "P15",
@@ -2127,11 +2339,11 @@
         "U04",
         "U05"
       ],
-      "code_status": "IMPLEMENTED_LOCAL",
-      "ci_status": "PENDING_CURRENT_CANDIDATE",
+      "code_status": "IMPLEMENTED_OWNED_JOURNEYS_VERIFIED",
+      "ci_status": "MIXED_INDEPENDENT_ROOT_RUNS",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+      "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
       "evidence": [
         {
           "environment": "isolated-local",
@@ -2144,6 +2356,20 @@
           "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
           "scenario": "P15 source distribution and build",
           "result": "Updated source manifest includes actual new test. npm run build/source pack PASS after463-unit/typecheck PASS; full extracted rebuild and owned role DB/browser remain exact-candidate CI gates."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+          "run": 38099937802,
+          "scenario": "Journeys P15 current source",
+          "result": "463 unit/74 DB/128 browser/4 mailbox PASS;0 FAIL/0 SKIP. Root PR38099937798 font build FAIL/e2e SKIPPED, root push38099934629 PASS; mixed root gate is retained."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+          "run": 38099937802,
+          "scenario": "P15 independent native/source gates",
+          "result": "463 unit74 DB128 browser4 mailbox PASS0 FAIL0 SKIP; source/type/build/extracted rebuild PASS. Root PR38099937798 FAIL GoogleFontFileReplacer while same-head root push38099934629 PASS; failure retained. Combined061 root38102213747 all jobs PASS is separate current-source evidence."
         }
       ],
       "blockers": [
@@ -2170,8 +2396,75 @@
         {
           "decision": "Existing self/foreign/branch scope and no-invented-settlement DB regressions are reused, rather than fabricating financial outcomes or broadening money conversions. Native EN/zh-HK, offline/hard-refresh, real-device and hosted evidence remain separate P17/target gates.",
           "cost_if_wrong": "UI unit success alone does not prove actual browser or hosted acceptance; unknown intent across navigation/reload still needs P17 work."
+        },
+        {
+          "decision": "Keep scoped GET plus mature immutable receipt replay for off-page finance sources.",
+          "cost_if_wrong": "GET is not receipt-specific committed proof; backend auth/digest/receipt contracts must remain valid."
+        },
+        {
+          "decision": "Address component-only unknown/draft refresh loss in P17.",
+          "cost_if_wrong": "P15 alone does not prove navigation/refresh recovery."
+        },
+        {
+          "decision": "Authorization/account denial clears private UI and exact sign-in task links.",
+          "cost_if_wrong": "Restoration requires fresh authorization; explicit sign-out clears device private drafts."
+        },
+        {
+          "decision": "New source/support links stay locked for dirty or unknown work; wider navigation protection belongs to P17.",
+          "cost_if_wrong": "Browser/global navigation still needs final native coverage."
+        },
+        {
+          "decision": "Do not redesign membership choices on report FORBIDDEN without a proven private-record disclosure.",
+          "cost_if_wrong": "Read authorizations remain mandatory; residual account membership metadata is existing behavior."
+        },
+        {
+          "decision": "Membership lookup outage is a P17 recovery gap, not a new finance outcome contract.",
+          "cost_if_wrong": "Refresh-report alone cannot recover initial membership fetch failure; remains an open limit."
+        },
+        {
+          "decision": "Finance-only and ops users use generic support; P12 mission context remains creator/owner only.",
+          "cost_if_wrong": "Users may need to copy safe source references manually."
+        },
+        {
+          "decision": "Historical creator support links reauthorize at destination.",
+          "cost_if_wrong": "Suspended activity can deny new context; affiliate edges are not claimed as proven."
+        },
+        {
+          "decision": "Reuse mature owner company/campaign selection in activity links.",
+          "cost_if_wrong": "Link construction unit tests do not prove every hosted destination."
+        },
+        {
+          "decision": "Show actual updatedAt/recorded payout time and explicit missing time.",
+          "cost_if_wrong": "A creation timestamp is not completion, payout delivery or a financial audit as-of time."
+        },
+        {
+          "decision": "Retain exact raw negatives and block unsupported conversion without money movement.",
+          "cost_if_wrong": "No new adjustment, refund or live settlement capability exists."
+        },
+        {
+          "decision": "Keep manual support reference explanation rather than extending P12 context to finance source IDs.",
+          "cost_if_wrong": "Cases are mission-linked or generic, not automatically finance-record attached."
+        },
+        {
+          "decision": "Do not polish existing compact JSX/raw recorded states without an acceptance defect.",
+          "cost_if_wrong": "Readability cleanup remains optional future work."
+        },
+        {
+          "decision": "Eight P15 actual-handler tests do not replace merchant/native browser acceptance.",
+          "cost_if_wrong": "Final combined native and target gates remain required."
+        },
+        {
+          "decision": "Ledger base SHA plus changes is local provenance; append final CI source/tree separately.",
+          "cost_if_wrong": "Never substitute prior counts or a base SHA for final candidate acceptance."
         }
-      ]
+      ],
+      "review": {
+        "critical": 0,
+        "important": 0,
+        "minor": 0,
+        "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+        "scope": "One fresh read-only wholeP15 branch review; no independent runtime acceptance."
+      }
     },
     {
       "id": "P16",
@@ -2207,14 +2500,119 @@
         "N18",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "MEASURED_P16_FOLLOWUP_LOCAL_GREEN",
+      "ci_status": "CURRENT_62BD_PARTIAL_LAB_FOLLOWUP_CI_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+      "evidence": [
+        {
+          "environment": "isolated-local",
+          "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+          "scenario": "P16 operations performance completeness",
+          "result": "Valid baseline RED:4/4 assertions fail because traveller-only evidence or wrong private roles could pass. GREEN:4/4 plus15 prior performance cases pass; combined488 unit PASS/0 FAIL/0 SKIP and typecheck PASS. Runtime lab NOT_RUN locally because no owned Docker is available; dedicated owned CI collection added, no metric/capacity acceptance inferred."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
+          "run": 38100760304,
+          "scenario": "First real operations lab",
+          "result": "Both latency and cold/warm collectors INCOMPLETE: setup PGRST204,0 samples. Cleanup PASS_OWNED_SYNTHETIC_ACTORS_REMOVED. Incorrect proof_notes fixture field corrected to mature notes; no product bottleneck or metric acceptance inferred."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "run": 38102213699,
+          "scenario": "Preserved real operations collection denominator",
+          "result": "880 verified latency samples: all8 API/all8 PostgREST plus6/8 PostgreSQL groups. Merchant PostgreSQL stops on SELECT FOR SHARE in READ ONLY transaction; cold/warm browser0 samples due No usable sandbox. Both assessments INCOMPLETE; cleanup PASS. Source review fixes actual proof interaction and complete-dataset comparison; Ubuntu22 sandbox-preserving repair requires new evidence."
+        },
+        {
+          "source_sha": "c6416ab98c741efada04e5fe169c5491b36e693f",
+          "tested_merge": "566ccb91992bb76d39ec133b54cabcf1d2a9a208",
+          "run": 38103094640,
+          "environment": "owned-localhost-ci",
+          "scenario": "Sandbox-preserving Ubuntu22 collection and actual metadata RED",
+          "result": "880 verified latency samples again;2 merchant SQL groups INCOMPLETE under unchanged READ ONLY guard. Browser sandbox starts, then0 navigation samples due newly introduced missing os import. Both cleanup PASS. Exact metadata runtime reproduction6 PASS1 valid RED ReferenceError before minimum import fix; next source must execute full lab. Linux CI archive a673ee0868edf1c614ddbf97ba27f88f76004a4f4132f448e7cdbcf2c39d1339, separate from local Windows archive."
+        },
+        {
+          "source_sha": "a83ce9db63524e01804bcec7967998398e1c8ef8",
+          "tested_merge": "9e0c1a1b4714f42da3276448580211aeff0d5461",
+          "run": 38103592954,
+          "environment": "owned-localhost-ci",
+          "scenario": "Bounded lab cancellation and missing artifact denominator",
+          "result": "Browser collection exceeds configured45-minute window; normal cancel and official force-cancel requests accepted, fresh API still IN_PROGRESS. No final performance artifact/log is available yet; samples/traces/cleanup NOT_VERIFIED and cannot be backfilled. Same-source push run38103590358 remains independent.",
+          "observed_at": "2026-10-11T02:56:35.994238+00:00"
+        },
+        {
+          "source_sha": "411993017e28c2a47166fdafe6c27d7176b33938",
+          "environment": "local-source",
+          "scenario": "Actual navigation deadline RED-to-GREEN",
+          "result": "Actual navigation fixture7 PASS1 valid assertion RED (late collector incorrectly accepted) ->8 GREEN. Timeout retains null/unverified failed sample and report; late result cannot backfill; normal returned result keeps LHR/trace. Full511 PASS0 FAIL0 SKIP/typecheck PASS; build passed separately before commit. Current-owned lab still required."
+        },
+        {
+          "source_sha": "62bd40959ce3200706bf2ebfc46b43758f8f9cca",
+          "tested_merge": "2705272ddb1b93f122388ac33921017b3033edaa",
+          "run": 38108031054,
+          "environment": "owned-localhost-ci",
+          "scenario": "Complete current artifact readback before measured P16 follow-up",
+          "result": "Core511/94/136/4 PASS0 FAIL0 SKIP; source/type/build/extraction PASS. RootPR38108031053 all jobs SUCCESS; root push attempt1 Deno500 before browser retained, one failed-job-only retry after decoded exact public module200. Lab39 verified navigation/48 required,40 started;6/8 interactions;0/24 separate backend reads;880/960 latency. merchantCampaigns run2 warm deadline failure and2 merchant SQL READ ONLY/shared-lock groups retained. Cleanup PASS. Creator detail6 cold/warm CLS0.16685243479704767; LHR attributes0.16425906053805492 to action links shifted by the asynchronous title. Linux lab archivea84169d472a46054298116fd12ac551e66bdb4da35ea078ebb3be2309280360a; Windows bytes separate.",
+          "observed_at": "2026-10-11T03:48:07.830150+00:00"
+        },
+        {
+          "environment": "local-source",
+          "scenario": "Focused measured-layout and collection-continuation follow-up",
+          "result": "EN/zh actual component heading replacement2 valid assertion RED ->2 GREEN; full authorized title remains readable in its card and denial clears it. Actual collector continuation8 PASS1 valid RED ->9 GREEN; corrected fixture revalidated RED against frozen62bd source without removing guards. Collection failures remain failures, later pairs/interactions/backend reads proceed independently; pre-measurement actor mismatch remains fatal. Full suite/type/build/new candidate lab pending. Whole514 PASS0 FAIL0 SKIP, typecheck/build PASS. Local source package6 cases:5 PASS1 existing Windows symlink-creation SKIP (Host does not grant symlink creation; CI runs this case on Linux) after sandbox temp ACL errors; actual native source extraction gate remains required, no tooling failure is counted as behavioral RED.",
+          "local_skip_correction": "The initial description of an opt-in extracted-build skip was inaccurate; actual source_package_test.py skip reason is Windows symlink creation unavailable.5 PASS1 SKIP is unchanged; no new skip was introduced."
+        },
+        {
+          "environment": "local-source",
+          "reviewed_source_sha": "1223bd02cc0007c5b85a132f9625ae0648dca915",
+          "scenario": "Single fresh focused P16 review and one fix pass",
+          "result": "Fresh read-only review0 Critical1 Important0 Minor: actual readiness still required the moved detail h1. Component-backed actual ready predicate2 PASS1 valid assertion RED ->3 GREEN including pending/denial negative controls. Strict full authorized article heading now matches h2; actor/origin checks unchanged. Focused12 PASS/full515 PASS0 FAIL0 SKIP/typecheck/build PASS. New-source owned CI and same-condition runtime measurements pending; previous39/48 and880/960 denominators preserved."
+        },
+        {
+          "source_sha": "00453a634a4591610f045c6066839f11beb288a0",
+          "environment": "owned-localhost-ci",
+          "run": 38110152206,
+          "scenario": "Measured layout improvement and actual semantic-heading contract failure",
+          "result": "Source515/Linux6/workflow2/extraction and SMTP4 PASS; DB94 PASS0FAIL0SKIP, native134PASS2FAIL0SKIP. Both native failures are EN/zh-HK u06 obsolete exact mission level1 assertions after the intentional full-title card h2 change; schedule/owner steps were not reached in these cases, so136 PASS is not claimed. Current rootPR38110194132 and push38110152147 all jobs SUCCESS. Raw lab48started/46valid/48required,7/8 interactions and24/24 backend reads despite2 retained merchantReview warm deadline failures;880/960 latency with2 READ ONLY/shared-lock groups missing; both cleanup PASS. Matching browser/CPU/throttle/data: all6 creator detail CLS0.16685243479704767 ->0.06302391996372786. Narrow layout observation is not full lab, field CWV, production SLO or controlled general latency acceptance."
+        },
+        {
+          "environment": "local-worktree",
+          "scenario": "Generated lock-compatible read batches and redacted per-page collector diagnostics",
+          "result": "Actual collector SQL assertion4 RED ->4 GREEN; actual navigation diagnostics2 RED ->2 GREEN; pathname secret redaction3 PASS1 RED ->4 GREEN; focused17/full523 PASS0 FAIL0 SKIP and typecheck PASS. Current-source realSQL/browser/core/Linux extraction/root results pending. Parent fca3 actual515/94/136/4 core/root PASS and45/48 browser plus880/960 SQL remain independent historical evidence."
+        }
+      ],
+      "blockers": [
+        "MEASUREMENT_METHOD: merchant authorization RPC uses shared locks incompatible with existing READ ONLY SQL collector; preserve locks/read-only and incomplete SQL groups."
+      ],
+      "next_action": "Verify the focused continuation source, native/root and same-condition measured CLS; retain incomplete SQL groups and all failed/missing lab slots before release.",
+      "rulings": [
+        {
+          "decision": "Compose existing owned lab and latency completeness rules with four mandatory private workspace routes; existing traveller/foundation reports retain their original denominator. Operations reports require matching measured role and owned55-campaign dataset.",
+          "cost_if_wrong": "Older traveller-only reports cannot certify new private workspaces; lab availability and real runtime identity checks are still required."
+        },
+        {
+          "decision": "Use owned Ubuntu CI because no verified local Docker runtime is available. Keep platform/cache/throttle/source metadata and source-archive hashes; do not compare different hosts or invent production budgets.",
+          "cost_if_wrong": "Synthetic owned CI cannot prove hosted capacity, concurrency, covers, field CWV, physical devices or a production SLO."
+        },
+        {
+          "decision": "Preserve READ ONLY/ROLLBACK SQL measurements and shared authorization locks. An incompatible RPC or missing sample remains a collection failure rather than weakening a guard or silently excluding the denominator.",
+          "cost_if_wrong": "Some SQL groups may remain incomplete and require an explicit safe equivalent measurement method; API/PostgREST measurements are separate evidence."
+        },
+        {
+          "decision": "No performance optimization before a reproducible measured baseline. A complete baseline is the accepted deliverable if no bottleneck reproduces.",
+          "cost_if_wrong": "Known fixture creation overhead and potential excessive private fetches are not product bottleneck acceptance until measured under retained conditions."
+        },
+        {
+          "decision": "Use a stable creator page heading above navigation; render the full authorized collaboration title as a card heading. Retained six-navigation LHR shifts justify this narrow P16 change; no clamp, new private fetch or workbench redesign.",
+          "cost_if_wrong": "The specific mission title is now an h2 inside the detail card rather than the page h1. Runtime CLS improvement and unchanged owned workflows must be established at the new source; no layout success is inferred from the component test alone."
+        },
+        {
+          "decision": "A measurement-phase navigation/interaction failure is retained while later independent owned pairs and equivalent backend reads proceed. Failed cold skips that pair warm slot and does not retry or backfill; authority/setup failures remain fatal before measurement.",
+          "cost_if_wrong": "A partial report can contain more useful data but remains INCOMPLETE. Fresh contexts and actual actor matching remain required; no business command is replayed and a timed-out Lighthouse result is never accepted later."
+        }
+      ]
     },
     {
       "id": "P17",
@@ -2267,14 +2665,110 @@
         "U04",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_LOCAL_REVIEW_FIXES_NATIVE_PENDING",
+      "ci_status": "CURRENT_CANDIDATE_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
+      "evidence": [
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "ad6350b99a93f60f29094d7e750fa0cd2f3a0b3d",
+          "run": 38098113582,
+          "scenario": "Preserved same-head push failures for P17 diagnosis",
+          "result": "124 browser PASS/2 existingU04 FAIL: private-invitation create button became disabled, and company-switch draft fields disappeared behindFORBIDDEN. These are not waived by the same-head PR run passing. Failure logs and native snapshots retained."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8 plus scoped P17 working-tree changes",
+          "scenario": "Draft/unknown/role and native test-denominator TDD",
+          "result": "Finance draft/unknown original baseline1 PASS2 FAIL; creator/campaign/support remount and stale company denial3 PASS4 FAIL ->7 PASS. Terminal conflict18 PASS1 FAIL ->19 PASS. Actual connected config omitted u10 ->RED0 PASS1 FAIL, added u1 glob. Full500 unit PASS0 FAIL0 SKIP,typecheck/build PASS; native and archive rebuild pending. Three strict IDB regressions enforce transaction participation, same UUID/payload preservation and account switch/logout clearing."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c plus single final review fix pass",
+          "scenario": "Final review RED to GREEN",
+          "result": "7 valid new failures ->19/19 focused PASS;508 unit PASS0 FAIL0 SKIP;4 strict actual IDB tests PASS;typecheck PASS. Conflict draft release is atomic, unknown auth denial keeps original, context denial leaves owned support usable, company finance isolation and duplicate receipt clear corrected. Native u10/u11 current source pending."
+        },
+        {
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "run": 38102211658,
+          "environment": "owned-localhost-ci",
+          "scenario": "Actual selected u10/u11 denominator",
+          "result": "94 DB PASS;133 native browser PASS3 FAIL0 SKIP. u10 actual EN/zh controlled CSV tests PASS. Existing offline snapshot test requested IDBversion2 after schema3 upgrade (VersionError); corrected test opens current existing version. Both u11 failed early length2 assertion while only1 campaign POST observed: retry button disappears during busy before async replay completes. Require positive server confirmation before unchanged strict2 POST/same UUID/payload/one durable row assertions; no business duplicate was established. Full next-source native gate required."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "a83ce9db63524e01804bcec7967998398e1c8ef8",
+          "tested_merge": "9e0c1a1b4714f42da3276448580211aeff0d5461",
+          "run": 38103592954,
+          "scenario": "Final native readiness window",
+          "result": "94 DB PASS;134 browser PASS2 u11 FAIL0 SKIP at initial merchant device-save predicate. Existing snapshot version regression now PASS. Valid deferred-initial-directory actual component reproduction13 PASS1 FAIL: editor accepted input before fresh authority/device restoration. Minimum fix locks authoring until current directory and restoration are ready; keep actual-page diagnostics, strict original command/durable-row assertions and full native denominator."
+        },
+        {
+          "source_sha": "04221db07f7b641b9978e96d9103970618e92a6d",
+          "run": 38106233258,
+          "environment": "owned-localhost-ci",
+          "scenario": "Fresh root candidate gate",
+          "result": "Root PR quality fails at Next16.3.8 Turbopack NextFontGoogleFontFileReplacer import-map; downstream E2E NOT_RUN. Log retained. Same-source push quality38106230732 passed web build and is running pnpm tests; not a PR success substitute. Journeys38106233270 pending behind unresponsive old group.",
+          "observed_at": "2026-10-11T02:56:35.994238+00:00"
+        },
+        {
+          "source_sha": "552bdec067ec66a6fe05402c79eb84c50d81431c",
+          "run": 38106799665,
+          "environment": "owned-localhost-ci",
+          "scenario": "Repository root lint catches new CI contract script defects",
+          "result": "Two errors: missing explicit node:url URL import/no-regex-spaces. Minimum corrections retain both workflow scenarios;2 Node contracts PASS0 SKIP. Repository ESLint exact configured pass:0 errors3 preexisting scan warnings. Fresh full root CI still required; no compiler or test gate disabled."
+        },
+        {
+          "source_sha": "552bdec067ec66a6fe05402c79eb84c50d81431c",
+          "tested_merge": "367c4eb2bfd52e975659062f631b4858142940c5",
+          "tested_tree": "d492a49039283157bad0ac2c68f5334630900a0b",
+          "run": 38106799650,
+          "environment": "owned-localhost-ci",
+          "scenario": "Fresh mandatory recovery and full source acceptance",
+          "result": "510 unit/94 integration/136 actual native browser/4 isolated SMTP PASS0 FAIL0 SKIP, clean tested merge with parents68df/552 and tree equals552. Source/type/build/extracted rebuild and CI grouping/cancellation contracts PASS. Native u10 and both u11 locales selected and PASS. Root552 fails2 new script lint errors, corrected under exact repository ESLint0 errors3 old warnings. Performance still IN_PROGRESS, not all Journeys PASS.",
+          "observed_at": "2026-10-11T03:15:57.838982+00:00"
+        },
+        {
+          "environment": "local_isolated",
+          "scenario": "Initial finance membership outage read retry",
+          "result": "Baseline1PASS5RED ->6GREEN0FAIL0SKIP; full531PASS0FAIL0SKIP; typecheckPASS; native2cases added NOT_RUN_CURRENT_SOURCE",
+          "observed_at": "2026-10-11T05:56:17.722508+00:00",
+          "run_artifact": ".superpowers/sdd/2026-10-11-finance-read-retry/red.log; green.log; unit.log"
+        },
+        {
+          "source_sha": "84e9c729fdac079dbcfb02b031705139078f8e66",
+          "environment": "owned_CI_isolated_stack",
+          "scenario": "Native keyboard read-retry stories and test-selector correction",
+          "result": "PR/push136PASS2FAIL0SKIP; DB94PASS0FAIL0SKIP. Actual retry and matching totals appear in both failure DOM snapshots; corrected exact accessible combobox selector, new-source native pending.",
+          "observed_at": "2026-10-11T06:19:43.889392+00:00",
+          "run_artifact": "https://github.com/YNWAforever/KinnsoOS/actions/runs/38116568892; https://github.com/YNWAforever/KinnsoOS/actions/runs/38116565815"
+        }
+      ],
+      "blockers": [
+        "HUMAN_DEVICE_AT_NOT_RUN: physical iOS/Android/VoiceOver/NVDA owners not supplied.",
+        "Raw invite/redemption tokens not journaled; explicit logout/account switch clears device original; no all-workspace lossless claim."
+      ],
+      "next_action": "Run actual u10/u11 owned native browser stories and all final source gates; retain physical iOS/Android/VoiceOver/NVDA NOT_RUN and hosted target blockers.",
+      "rulings": [
+        {
+          "decision": "Reuse existing actor-bound IndexedDB identity, account invalidation and explicit logout clearing. Restore creator/campaign/support/finance drafts only after fresh authorized reads. Persist original UUID and exact command before POST; clear only its confirmed or definite terminal result.",
+          "cost_if_wrong": "Device storage denial blocks a new write; forced shutdown before an async save can still lose newest keystrokes. Explicit logout/account switch intentionally clears private drafts; server request receipts remain, but device originals are not a cross-device or post-logout journal."
+        },
+        {
+          "decision": "Keep mature server receipts and per-workspace reconciliation rather than adding a new hosted command journal/schema. Scope remount storage to actor and task/company; private raw invitation tokens and redemption codes are not newly persisted.",
+          "cost_if_wrong": "Broader invitation/redemption/account-switch unknown recovery remains a precise P17 acceptance limitation; do not mark all-workspace hard-refresh acceptance complete."
+        },
+        {
+          "decision": "Reject stale company callbacks and suppress old-company data during a selected-company render. Fix native selector scope u0 plus u1 instead of treating omitted tests as passed.",
+          "cost_if_wrong": "Native current-head execution is still necessary to connect the valid parent-component reproduction to intermittent U04 races; old failed runs remain evidence."
+        },
+        {
+          "decision": "No physical devices or human assistive-technology sessions are available; retain NOT_RUN rather than infer them from Chromium width/keyboard tests.",
+          "cost_if_wrong": "U06/P17 hosted human acceptance and release remain open."
+        }
+      ]
     },
     {
       "id": "P18",
@@ -2313,16 +2807,643 @@
         "U05",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
-      "staging_status": "NOT_RUN",
-      "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [
-        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
+      "code_status": "RELEASE_PACKET_PREPARED",
+      "ci_status": "NOT_A_RUNTIME_GATE",
+      "staging_status": "BLOCKED_TARGET",
+      "release_status": "NO_GO",
+      "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
+      "evidence": [
+        {
+          "environment": "source-only",
+          "scenario": "M2 exact operations release preparation",
+          "result": "Nine source SQL hashes against observed main frozen separately from Journeys ZIP; ownership, pilot sequence, missing actors/content/devices, job/unknown recovery and rollback packet prepared. No hosted request or capability mutation executed."
+        }
       ],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied.",
+        "P13 content/cover rights, consenting pilot actors, physical devices/AT and current recovery rehearsal not supplied.",
+        "P16 full SQL baseline remains INCOMPLETE; no measured approved production SLO."
+      ],
+      "next_action": "After exact-current code/CI gates, receive designated staging, consented pilot actors/content and current recovery owner/evidence; reconcile target read-only before a concrete scoped mutation approval."
     }
-  ]
+  ],
+  "final_review": {
+    "reviewed_source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+    "base_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+    "critical": 0,
+    "important": 6,
+    "minor": 1,
+    "regraded_important": 1,
+    "review_count": 1,
+    "fix_pass_count": 1,
+    "findings": [
+      {
+        "id": "I1",
+        "severity": "Important",
+        "problem": "Terminal conflict erased the journal with the unsent draft.",
+        "decision": "Atomic exact-UUID release keeps the actor/scope draft and removes only a definite terminal command.",
+        "cost_if_wrong": "A receipt mistakenly treated as terminal could lose original unknown intent; release is restricted to the first definite response, not a replay.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I2",
+        "severity": "Important",
+        "problem": "Finance/support replay auth denial deleted an unresolved original request.",
+        "decision": "Preserve unknown UUID/payload in the device journal across replay denial while clearing private views.",
+        "cost_if_wrong": "Explicit logout or account change still clears private device data; fresh same-actor authorization is required for restoration.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I3",
+        "severity": "Important",
+        "problem": "A denied mission context blocked owned support replies and receipt recovery.",
+        "decision": "Authorize restoration from the fresh owned case list; context denial blocks only creation of a new contextual case.",
+        "cost_if_wrong": "Backend receipt and case ownership checks remain mandatory; this grants no lost mission access.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I4",
+        "severity": "Important",
+        "problem": "Company A finance reason could become company B draft.",
+        "decision": "Reset reason/review state on scope change and gate both restore and private rendering on the matching company.",
+        "cost_if_wrong": "A draft save queued immediately before navigation can still fail in denied device storage; no cross-company fallback is allowed.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I5",
+        "severity": "Important",
+        "problem": "The operations lab requested Prepare evidence although its sole nonrepeatable milestone already had a submitted proof.",
+        "decision": "Exercise the actual Edit and resubmit evidence editor and cancel without a new write.",
+        "cost_if_wrong": "A component reproduction is not the actual browser lab; current candidate native collection is required.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I6",
+        "severity": "Important",
+        "problem": "Latency budget compared datasets before adding mandatory operations fixture metadata.",
+        "decision": "Compare the complete dataset after owned operations setup.",
+        "cost_if_wrong": "Same source, archive, OS, conditions and data are still required; no production budget is invented.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      },
+      {
+        "id": "I7",
+        "severity": "Important (regraded from Minor)",
+        "problem": "A second device clear after a confirmed support receipt could leave busy true and freeze the workspace.",
+        "decision": "Clear the confirmed receipt once before loading cases; valid failure injection proves no redundant transaction.",
+        "cost_if_wrong": "A first legitimate device transaction can fail, retaining retry state. Regrade is based on user-visible loss of recovery, not formatting.",
+        "result": "FIXED_IN_ONE_PASS_LOCAL_GREEN_CURRENT_CI_PENDING"
+      }
+    ],
+    "verification": {
+      "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
+      "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending",
+      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required. Root552 native lint exposes2 script errors; minimum URL import/regex correction is GREEN under repository ESLint0 errors3 existing warnings and both2 contracts PASS. Earlier042 root push38106230732 all jobs SUCCESS is retained independently; its PR font failure is not overwritten. Actual navigation-deadline fixture1 valid RED ->8/8 GREEN with positive retained result and late-result no-backfill controls; whole511 PASS0 FAIL0 SKIP/typecheck/build PASS.552 current native94/136/4 and510 unit/source/type/build/extraction PASS, but new collector source must run exact gates; no second review."
+    },
+    "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
+    "rulings": [
+      {
+        "decision": "Hosted migrations, effective config, actor pilot, release and rollback are not authorized or verified without the designated target.",
+        "cost_if_wrong": "P04/P05/P06/P18 remain open; source/CI cannot certify hosted acceptance."
+      },
+      {
+        "decision": "Real guides and lawful cover consent remain P13 inputs.",
+        "cost_if_wrong": "No publication or claim of real content acceptance."
+      },
+      {
+        "decision": "Physical iOS/Android/VoiceOver/NVDA sessions are unavailable.",
+        "cost_if_wrong": "Emulated width/zoom Chromium tests cannot close human device/AT acceptance."
+      },
+      {
+        "decision": "Final native/root/source extraction CI must execute on the new candidate.",
+        "cost_if_wrong": "One source review is not runtime acceptance; omitted and failed groups remain in the denominator."
+      },
+      {
+        "decision": "Keep shared merchant authorization locks and READ ONLY SQL measurements.",
+        "cost_if_wrong": "Merchant SQL groups remain INCOMPLETE until a reviewed safe equivalent method exists; do not drop groups, weaken guards or infer them from API p95."
+      },
+      {
+        "decision": "Pin only owned performance job to Ubuntu22.04, keep Chromium sandbox and retain ImageOS/kernel metadata.",
+        "cost_if_wrong": "This environment repair is untested until CI; Ubuntu24 measurements cannot be used for before/after against22."
+      },
+      {
+        "decision": "Do not infer production capacity, concurrency, field CWV or SLO from the synthetic lab.",
+        "cost_if_wrong": "An observed local baseline does not grant release thresholds or hosted operational acceptance."
+      },
+      {
+        "decision": "Retain established explicit logout/account-switch private cache clearing.",
+        "cost_if_wrong": "Device original payload is unavailable after logout; server receipts remain but no cross-device or post-logout recovery guarantee."
+      },
+      {
+        "decision": "Do not newly persist raw invitation or redemption secrets.",
+        "cost_if_wrong": "Broader invitation/redemption hard-refresh acceptance remains a stated P17 limitation, not ALL_PASS."
+      },
+      {
+        "decision": "Force kill before asynchronous local save remains a device limitation.",
+        "cost_if_wrong": "Newest keystrokes may be lost; this does not excuse ordinary terminal-conflict draft deletion, which is fixed."
+      },
+      {
+        "decision": "Keep unrelated generic inbox/delivery retry and broader support reply-editor redesign outside this review fix pass.",
+        "cost_if_wrong": "Those workflows do not acquire a new lossless recovery guarantee; preserve existing tests and release blockers."
+      },
+      {
+        "decision": "Keep previous P10/P11/P14 Minor rulings unchanged.",
+        "cost_if_wrong": "Malformed URL invalidation edge, indistinguishable same-campaign milestone cards, and explicit-Apply report freshness remain deferred with their recorded costs."
+      },
+      {
+        "decision": "Use actual owned CI failures to correct the collector runtime import and native observation assumptions; retain strict exact-command replay and durable-row assertions, waiting for positive server success rather than disappearing busy controls. Existing IDB test reads the application-created current version.",
+        "cost_if_wrong": "A future native failure still blocks acceptance; this does not waive133/3 or substitute a replay count for confirmed durable ownership. No new product behavior is inferred from these test repairs."
+      },
+      {
+        "decision": "Merchant authoring must wait for fresh current-company directory authority and completed actor-bound device restoration; service retry remains available through its existing state action. Real native storage failure and valid deferred-read RED justify this correction within the unfinished single fix pass.",
+        "cost_if_wrong": "Initial outage prevents new authoring until an authorized read/recovery succeeds; native evidence is still required to establish the actual failed storage story cause, not inferred from this unit reproduction."
+      },
+      {
+        "decision": "Isolate owned Journeys acceptance concurrency by event/PR-or-ref/source SHA; duplicate same-source runs retain one group. Long browser collection remains required after latency failure but is cancellation-aware. Actual accepted cancellation remains unconfirmed, not assumed successful.",
+        "cost_if_wrong": "Multiple source SHAs may consume more isolated CI runners; failed/cancelled old denominators and missing cleanup remain evidence. All localhost ownership guards, sample counts and mandatory gates remain; this repair cannot certify the new source until CI executes."
+      },
+      {
+        "decision": "Bound the entire Lighthouse gather/audit call to60 seconds while preserving its45-second page-load setting,48 navigations/all interactions/backend reads/latency groups. Start a sample before collection and retain failed/null metrics/report on expiry; late results cannot backfill. Keep the bound in comparison conditions.",
+        "cost_if_wrong": "A slower valid lab call may become an explicit INCOMPLETE sample; it never becomes PASS or silently lowers the denominator. Actual owned context shutdown, cleanup and artifacts still need CI proof; new-bound measurements cannot be compared blindly with old conditions. This evidence-runner repair does not change business-command retry or browser-story timeouts."
+      }
+    ]
+  },
+  "measured_performance_review": {
+    "base_sha": "62bd40959ce3200706bf2ebfc46b43758f8f9cca",
+    "reviewed_source_sha": "1223bd02cc0007c5b85a132f9625ae0648dca915",
+    "review_count": 1,
+    "fix_pass_count": 1,
+    "critical": 0,
+    "important": 1,
+    "minor": 0,
+    "finding": "I1 actual creator detail readiness requires removed h1",
+    "red": "Actual ready function and compiled component:2 PASS1 valid assertion FAIL",
+    "green": "Same3 PASS; focused12/full515/typecheck/build PASS; owned CI pending",
+    "rulings": [
+      {
+        "decision": "Keep exact authorized fixture title readiness and point it to the actual detail card h2; preserve pre-measurement actor mismatch fatal guard.",
+        "cost_if_wrong": "A future semantic heading change must update and test the actual readiness contract; generic page presence never grants measurement readiness."
+      },
+      {
+        "decision": "New-source native/root CI was declined by the reviewer; require actual exact-source results rather than extend parent65 success.",
+        "cost_if_wrong": "Local515 and parent511 are separate evidence and cannot certify this candidate until CI executes."
+      },
+      {
+        "decision": "Before/after CLS improvement was declined; retain six original0.16685243479704767 values and await matching new-source lab.",
+        "cost_if_wrong": "Component layout invariance does not prove measured improvement; no performance acceptance before current artifacts."
+      },
+      {
+        "decision": "Linux extraction and sixth source-packaging case remain native gates; Windows5 PASS1 symlink SKIP does not establish them.",
+        "cost_if_wrong": "Unsupported Windows symlink privileges are not enabled; Linux failure still blocks source acceptance."
+      },
+      {
+        "decision": "Merchant READ ONLY/shared-lock SQL incompatibility stays outside the measured-layout delta.",
+        "cost_if_wrong": "Both SQL groups remain incomplete and P16 full baseline cannot pass; mature shared authorization locks are retained."
+      },
+      {
+        "decision": "Hosted/production latency, mutations and release readiness remain unexecuted separate gates.",
+        "cost_if_wrong": "Owned synthetic measurements do not authorize migration, deployment, promotion, config or provider operations."
+      },
+      {
+        "decision": "Physical devices, accessibility, human acceptance and field CWV/SLO remain unverified.",
+        "cost_if_wrong": "Source/native automation does not establish physical-device or human acceptance and no production SLO is invented."
+      },
+      {
+        "decision": "Parent onboarding, collaboration and earnings contracts remain excluded from focused reimplementation/review.",
+        "cost_if_wrong": "Combined owned suites remain required to detect regressions; this focused review provides no separate new parent acceptance."
+      },
+      {
+        "decision": "Align the actual native next-action story with the intentional stable page h1/full mission card h2 semantics; require both exact headings while preserving owned route, both roles, schedule identity and320 width assertions. Actual current134 PASS2 FAIL is the retained RED, not a waived test.",
+        "cost_if_wrong": "Until the corrected native story runs at the new source, its owner/date continuation is unverified. This is a test contract correction within the single unfinished fix pass; no new product layout change or old136 acceptance is inferred."
+      }
+    ],
+    "verification_followup": "The same single fix pass corrects existing native EN/zh heading assertions to require BOTH stable localized h1 and exact full-title authorized article h2. Owned link/date/merchant/schedule/width checks remain; actual134/2 failure logs retained. Updated exact-source native result pending, no second review or source-product change."
+  },
+  "sql_measurement_continuation": {
+    "parent_pr": 66,
+    "parent_sha": "fca3eb2a9bc13ea9feffbfc014d0ab7c5c895a86",
+    "branch": "codex/operations-sql-measurement-20261011",
+    "observed_at": "2026-10-11T05:31:36.387231+00:00",
+    "source_status": "Implemented; isolated runtime pending",
+    "local_tests": {
+      "unit": {
+        "pass": 523,
+        "fail": 0,
+        "skip": 0
+      },
+      "focused": {
+        "pass": 17,
+        "fail": 0,
+        "skip": 0
+      },
+      "sql_red": {
+        "pass": 0,
+        "fail": 4
+      },
+      "diagnostic_red": {
+        "pass": 0,
+        "fail": 2
+      },
+      "privacy_red": {
+        "pass": 3,
+        "fail": 1
+      },
+      "typecheck": "PASS",
+      "review_red": {
+        "pass": 4,
+        "fail": 2
+      },
+      "reviewed_focused": {
+        "pass": 19,
+        "fail": 0,
+        "skip": 0
+      },
+      "reviewed_unit": {
+        "pass": 525,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Continue on a new focused stacked branch from verified fca3eb2a PR66, reusing its clean isolated checkout while preserving parent refs and prior raw evidence. Fresh main/PR55/PR66/deployment reads confirm the dependency remains open.",
+        "cost_if_wrong": "The stack must be reconciled against any later parent change before integration; no force push or main merge is authorized."
+      },
+      {
+        "decision": "Replace the two merchant-only READ ONLY measurement failures with generated allowlisted query_kinnso_merchant_campaigns READ WRITE/ROLLBACK batches on the verified owned local target. Keep actual actor claims, authenticated role, shared authorization locks,43 calls and all other READ ONLY profiles.",
+        "cost_if_wrong": "READ WRITE permits row locks; safety depends on the current reviewed read RPC and callees staying side-effect free. A future callee change requires review. These samples cannot be pooled with the older failed method or claimed as controlled latency improvement."
+      },
+      {
+        "decision": "Instrument the per-page DOM/load and owned request lifecycle before proposing a warm Lighthouse fix. Keep45s page-load/60s audit deadline, null failed metrics, independent pairs and no late backfill. Do not attribute all timeouts to trace-engine warnings also present on successful samples.",
+        "cost_if_wrong": "Actual lab may remain incomplete; diagnosis adds a versioned observation condition and cannot replace raw trace or actual runtime acceptance."
+      },
+      {
+        "decision": "Retain only explicit safe route shapes, redact UUIDs, classify Next assets/unknown paths, cap pending summaries at10 and detach page listeners on every completion. Never export query/headers/body/claims.",
+        "cost_if_wrong": "Unknown endpoints are identified only by counts and a generic marker; a future allowlist extension needs a privacy test."
+      },
+      {
+        "decision": "Accept the independent Important finding: only terminal events for request identities started inside this navigation can decrement active counts. Track identities beyond the retained-detail cap, ignore duplicate terminals, and mark unretained pending detail as truncated. Two real event-sequence assertions failed before the fix; same6 diagnostic tests and focused19/full525 pass afterward.",
+        "cost_if_wrong": "Stage diagnostics could falsely claim no pending network work and lead to a speculative product fix; actual same-source runtime evidence remains required."
+      }
+    ],
+    "review": {
+      "base": "fca3eb2a9bc13ea9feffbfc014d0ab7c5c895a86",
+      "reviewed_head": "a639ecfa0f5ad2006283035d6c41a5949e57a968",
+      "critical": 0,
+      "important": 1,
+      "minor": 1,
+      "fix_pass": "CLOSED_SINGLE_PASS",
+      "result": "Important fixed with4 PASS2 RED ->6 GREEN; SQL/callees inspected by independent reviewer, no writes or external side effects found. Actual CI/runtime pending.",
+      "deferred_minor": {
+        "file": "apps/journeys/scripts/performance/report.mjs",
+        "finding": "Safe path allowlist currently classifies measured /en/merchant, /en/studio/outcomes and /en/g/<uuid> documents as OTHER_OWNED_REQUEST.",
+        "rationale": "Actual sample route/page and document resource type remain retained; counts and metrics stay correct. This reduces diagnostic specificity without blocking measurement.",
+        "cost_if_wrong": "A later diagnosis may need raw sample route mapping; an allowlist extension must include privacy regression coverage."
+      }
+    }
+  },
+  "finance_membership_retry_continuation": {
+    "parent_pr": 67,
+    "parent_sha": "dd172e287b216a7d78361ad312117f6ab7fba5c2",
+    "branch": "codex/finance-read-retry-20261011",
+    "observed_at": "2026-10-11T05:56:17.722508+00:00",
+    "source_status": "Implemented; fresh review and exact-source native pending",
+    "local_tests": {
+      "red": {
+        "pass": 1,
+        "fail": 5
+      },
+      "focused": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit": {
+        "pass": 531,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS"
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Create a separate P03/P17 continuation from reviewed PR67 dd172e287b216a7d78361ad312117f6ab7fba5c2; preserve P16 source history and all existing core workflows.",
+        "cost_if_wrong": "New-head native/root and source-package evidence is required; parent acceptance cannot substitute for this change."
+      },
+      {
+        "decision": "Retry only the failed initial membership GET through the existing service-state UI, actor/generation and in-flight guards. Filter owner/finance before selecting company; show empty-membership explanation only after successful reads and return AUTH_REQUIRED to the same task.",
+        "cost_if_wrong": "Incorrect lifecycle handling could select a stale company or present a false empty result. Existing actor/session/RLS remains authoritative; no command, requestId/payload, CAS, financial capability or provider changes."
+      },
+      {
+        "decision": "Use actual compiled component tests and add EN/zh-HK native keyboard retry at320px against real owned local reads, foreign-company exclusion and zero finance POST.",
+        "cost_if_wrong": "Native cases remain pending until actual new-source CI; browser emulation does not prove physical device or assistive technology acceptance."
+      }
+    ],
+    "native_selector_correction": {
+      "observed_at": "2026-10-11T06:19:43.889392+00:00",
+      "source": "84e9c729fdac079dbcfb02b031705139078f8e66",
+      "tested_merge": "c7ecde9862233235de908f7272245eb76df924ac",
+      "native_pr": {
+        "pass": 136,
+        "fail": 2,
+        "skip": 0
+      },
+      "native_push": {
+        "pass": 136,
+        "fail": 2,
+        "skip": 0
+      },
+      "integration": {
+        "pass": 94,
+        "fail": 0,
+        "skip": 0
+      },
+      "cause": "Both retained DOM snapshots contain the correct owned selected combobox and Matching totals after actual GET retry. Exact getByLabel includes populated option text and stops matching. Actual local locked Chromium probe confirms exact-label0 versus exact-role1 for both locales. Minimum test locator changes to accessible combobox name; product unchanged.",
+      "current_source_native": "PENDING_AFTER_TEST_CORRECTION",
+      "review": "One source review at84e9,0 Critical/Important/Minor; no re-review or new native PASS claimed."
+    },
+    "current_source_checkpoint": {
+      "source_sha": "4f3bd8c705f60c1e16ffcb194fa23b8dbb779134",
+      "tested_merge": "5a449306a470e7eca7356ad1108c468114b18321",
+      "observed_at": "2026-10-11T14:58:29.82062+08:00",
+      "pr_run": 38117764755,
+      "push_run": 38117762713,
+      "unit": {
+        "pass": 531,
+        "fail": 0,
+        "skip": 0
+      },
+      "integration": {
+        "pass": 94,
+        "fail": 0,
+        "skip": 0
+      },
+      "native_pr": {
+        "pass": 138,
+        "fail": 0,
+        "skip": 0
+      },
+      "native_push": {
+        "pass": 137,
+        "fail": 1,
+        "skip": 0
+      },
+      "finance_locale_cases": "PASS_BOTH_RUNS",
+      "push_failure": "Existing U04 company switching carries unscoped old campaign into new company; selected B/FORBIDDEN in retained DOM. No source or U04 test diff from PR67. Separate failing-test continuation repairs this defect.",
+      "root": "PR/push all jobs SUCCESS; OFF184+1 named mode SKIP/profile1/ON3+1 named mode SKIP",
+      "source_package": "Current Linux6PASS0SKIP; extraction rebuild PASS; current Windows419entries/418files/all hashes match/dirty=false",
+      "performance": "PR45/48nav6/8interaction24/24reads; push43/48nav6/8interaction24/24reads; both960/960latency24groups72warmups and both owned cleanup PASS. Both browser INCOMPLETE, no pooling.",
+      "staging": "NOT_RUN_BLOCKED_TARGET",
+      "production": "NOT_RELEASED"
+    }
+  },
+  "merchant_company_route_continuation": {
+    "parent_pr": 68,
+    "parent_sha": "4f3bd8c705f60c1e16ffcb194fa23b8dbb779134",
+    "branch": "codex/merchant-company-route-20261011",
+    "references": [
+      "P03",
+      "P10",
+      "P17",
+      "U04"
+    ],
+    "observed_at": "2026-10-11T14:58:29.82062+08:00",
+    "source_status": "Implemented; fresh review/current-source CI pending",
+    "local_tests": {
+      "red": {
+        "pass": 1,
+        "fail": 5
+      },
+      "focused": {
+        "pass": 6,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit": {
+        "pass": 537,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "source_package": "5 PASS/1 named host symlink-permission SKIP; Linux current-source CI pending"
+    },
+    "ci": "PENDING_CURRENT_SOURCE",
+    "staging": "NOT_RUN_BLOCKED_TARGET",
+    "production": "NOT_RELEASED",
+    "rulings": [
+      {
+        "decision": "Create a separate continuation from PR68 verified4f3 equal-tree PR138PASS, retaining its independent push137PASS1FAIL and incomplete lab. Bind only successfully authorized merchant list locations to the current company; remove previous selected campaign on empty success, and drop opaque cursors and campaign selectors when the explicit company differs or is duplicated. Preserve legacy unscoped first-entry links, same-company cursors, creator location behavior and authored scope recovery.",
+        "cost_if_wrong": "A route hint could otherwise become accidental authority or erase intended filters. The URL is only a selection hint; fresh actor/RPC/RLS remains authoritative, existing generation/account invalidation and all command/requestId/reconcile/receipt contracts remain unchanged."
+      },
+      {
+        "decision": "Confirm the retained U04 failure with actual compiled component EN/zh-HK tests plus query contract tests: baseline1PASS5FAIL ->6PASS; current full537PASS0FAIL0SKIP/typecheck PASS. Add opt-in browser-history observation to the existing harness and retain every U04 command/denial/cleanup assertion, adding exact company/empty-campaign URL checks. New-head actual native execution is still required.",
+        "cost_if_wrong": "An emulated history boundary may miss Next router scheduling or real RPC behavior; source review, actual locked-Chromium CI and current native/source-package gates remain independent."
+      }
+    ],
+    "next_action": "Fresh review and exact-source native/source/root/lab evidence; never waive parent U04 failure or point reset/cleanup at hosted target."
+  },
+  "operations_blank_reset_continuation": {
+    "parent_pr": 69,
+    "parent_sha": "ddded5a8e1136477e128b9b98544d407bb6ea53c",
+    "scope": "P16 owned Lighthouse initial blank reset only",
+    "reason": "Actual locked Lighthouse blank reset blocks on an unhandled beforeunload dialog before its own dialog handler is installed. Pending fetch/zero DOM alone did not identify a product API.",
+    "implementation": "Accept only owned fixture beforeunload until the initial main-frame about:blank; detach there and on timeout, retain safe immutable counts without messages or origins. Other dialogs and foreign pages remain untouched.",
+    "tdd": {
+      "compiled_collector_red": {
+        "pass": 0,
+        "fail": 3
+      },
+      "same_green": {
+        "pass": 3,
+        "fail": 0,
+        "skip": 0
+      },
+      "focused_regression": {
+        "pass": 26,
+        "fail": 0,
+        "skip": 0
+      },
+      "baseline_unit": {
+        "pass": 537,
+        "fail": 0,
+        "skip": 0
+      },
+      "queued_stop_red": {
+        "pass": 3,
+        "fail": 1,
+        "skip": 0
+      },
+      "final_focused": {
+        "pass": 27,
+        "fail": 0,
+        "skip": 0
+      },
+      "final_new_tests": {
+        "pass": 4,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "runtime_probe": "owned synthetic loopback Chromium145.0.7632.6/Lighthouse13.5.0 blank-stage reproduction; not full application/lab or hosted acceptance",
+    "current_source_ci": "PENDING_NOT_TRANSFERRED",
+    "historical_lab": "PR69 PR42/48 and push45/48 remain INCOMPLETE; no backfill or inferred cause",
+    "release": "M1/M2 NO_GO; staging NOT_RUN_BLOCKED_TARGET; production NOT_RELEASED",
+    "unchanged": [
+      "product beforeunload/draft protection",
+      "actor/session/RLS and source/ownership gates",
+      "45s load/60s audit deadlines",
+      "48/8/24/960 denominators",
+      "requests/payload/reconcile/CAS/receipts",
+      "SQL/flags/providers/financial boundaries"
+    ],
+    "local": {
+      "unit": {
+        "pass": 541,
+        "fail": 0,
+        "skip": 0
+      },
+      "typecheck": "PASS",
+      "build": "PASS",
+      "windows_source_package": {
+        "pass": 5,
+        "fail": 0,
+        "skip": 1,
+        "skip_reason": "Windows symlink privilege unavailable; actual Linux gate remains pending"
+      }
+    }
+  },
+  "operations_blank_reset_review_checkpoint": {
+    "reviewed_sha": "100effa1dc5f918ff4d7e1575e855689ccf4e162",
+    "review": "0 Critical, 1 Important, 0 Minor; source scope only; one fix pass; no re-review",
+    "finding": "First main-frame blank must prevent queued acceptance from starting, while already-dispatched acceptance may settle normally.",
+    "tdd": {
+      "red": {
+        "pass": 4,
+        "fail": 1,
+        "skip": 0
+      },
+      "focused_green": {
+        "pass": 28,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit_green": {
+        "pass": 542,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "typecheck": "PASS",
+    "independent_review_validation": "27 focused tests and five additional boundary checks passed on reviewed100; not transferred to fixed head",
+    "current_source_ci": "PENDING_NOT_TRANSFERRED",
+    "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  },
+  "workspace_loading_layout_checkpoint": {
+    "parent_pr": 70,
+    "parent_source": "3650fd7adc60477ebe142fd24708395c7f4e564b",
+    "scope": "P16/P17 isolated role loading geometry",
+    "behavior": "stable creator loading status geometry, disabled pending company select, scoped first-read campaign paint, private-role viewport footer spacing",
+    "tdd": {
+      "browser_red": {
+        "pass": 0,
+        "fail": 24,
+        "skip": 0
+      },
+      "focused_unit_red": {
+        "pass": 0,
+        "fail": 2,
+        "skip": 0
+      },
+      "browser_green": {
+        "pass": 24,
+        "fail": 0,
+        "skip": 0
+      },
+      "unit_green": {
+        "pass": 544,
+        "fail": 0,
+        "skip": 0
+      },
+      "all_component_browser_green": {
+        "pass": 38,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    "typecheck": "PASS",
+    "windows_package_tests": {
+      "pass": 5,
+      "fail": 0,
+      "skip": 1,
+      "reason": "existing symlink permission case"
+    },
+    "source_archive_and_current_ci": "PENDING_NEW_SOURCE_NOT_TRANSFERRED",
+    "root_manifest_diagnosis": "invalid snapshot retained; installed Next dev static-path writer identified as possible non-atomic write path, historical writer not proven; no root configuration change",
+    "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  },
+  "workspace_layout_packaging_checkpoint": {
+    "reviewed_source": "414f8522e52d99d91c81589c311059de5add127e",
+    "review_findings": {
+      "critical": 0,
+      "important": 0,
+      "minor": 0
+    },
+    "independent_review_validation": "16 focused/24 real React browser PASS plus two in-memory boundary checks on414",
+    "self_verification_finding": "explicit source allowlist omitted both new tests; package completeness guard now covers active unit and configured no-DB browser fixtures",
+    "one_fix_pass": "packager RED4PASS1FAIL1existingWindowsSKIP -> GREEN5PASS0FAIL1existingWindowsSKIP",
+    "product_delta_after_review": "UNCHANGED",
+    "second_review": "NOT_RUN_NOT_CLAIMED",
+    "current_source_ci": "PENDING_NEW_HEAD_NOT_TRANSFERRED",
+    "release": "M1/M2 NO_GO; production NOT_RELEASED"
+  },
+  "workspace_layout_native_checkpoint": {
+    "observedAt": "2026-10-11T10:30:00Z",
+    "parentSource": "7a1041267417475430cdda80637e702621efed53",
+    "productReviewedSource": "414f8522e52d99d91c81589c311059de5add127e",
+    "originalCurrentNative": {
+      "pr": 38130610288,
+      "push": 38130607368,
+      "passed": 160,
+      "failed": 2,
+      "skipped": 0,
+      "preserved": true
+    },
+    "fixedAssertions": [
+      "U04 waits for saved scoped draft; denies all A text in B; fresh return restores A text",
+      "N14 waits for authorized campaign editor; preserves >=12 fields and original geometry keyboard 200pct checks"
+    ],
+    "newCases": [
+      "EN A-B-A slow first-read draft quarantine/restoration",
+      "zh-HK A-B-A slow first-read draft quarantine/restoration"
+    ],
+    "local": {
+      "unit": {
+        "passed": 544,
+        "failed": 0,
+        "skipped": 0
+      },
+      "componentBrowser": {
+        "passed": 40,
+        "failed": 0,
+        "skipped": 0
+      },
+      "typecheck": "PASS",
+      "windowsPackage": {
+        "passed": 5,
+        "failed": 0,
+        "skipped": 1,
+        "reason": "symlink creation privilege unavailable"
+      }
+    },
+    "productDeltaAfterReviewedSource": "UNCHANGED",
+    "newExactSourceCI": "PENDING_ORIGINAL_RUN",
+    "standaloneWholeUnit": "542_PASS_2_FAIL_MISSING_MONOREPO_SQL",
+    "release": "NO_GO_NOT_RELEASED"
+  }
 }

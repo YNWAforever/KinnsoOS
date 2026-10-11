@@ -4484,3 +4484,12 @@ body:has(.k-app) {
 .k-collaboration-tasks li { margin-block: .7rem; overflow-wrap: anywhere; }
 .k-collaboration-tasks .k-btn { max-width: 100%; white-space: normal; text-align: start; }
 .k-collaboration-tasks section { border-top: 1px solid var(--border, #ddd); padding-top: .5rem; margin-top: .8rem; }
+
+/* Private role loading can grow after an authorized read. Keep the footer
+   outside the initial viewport; loaded task/editor ordering stays intact. */
+.k-main:has(> .os-loading),
+.k-main:has(> .k-merchant),
+.k-main:has(> [data-testid="creator-collaborations"]) {
+  min-height: 100vh;
+  min-height: 100svh;
+}

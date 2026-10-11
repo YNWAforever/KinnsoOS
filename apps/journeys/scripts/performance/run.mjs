@@ -1,8 +1,9 @@
 import {mkdir, writeFile, readFile} from 'node:fs/promises';
 import {existsSync, createWriteStream} from 'node:fs';
 import {execFileSync, spawn} from 'node:child_process';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import path from 'node:path';
+import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {loadEnvFile} from 'node:process';
 import lighthouse from './node_modules/lighthouse/core/index.js';
@@ -11,13 +12,15 @@ import {chromium} from '@playwright/test';
 import {createClient} from '@supabase/supabase-js';
 import {transform} from 'esbuild';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessRun, compareLab, localOrigin, retainNavigation, foundationRevision} from './report.mjs';
+import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, observeNavigation, prepareOwnedBlankReset, foundationRevision,workspacePages,operationRole} from './report.mjs';
+import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const foundationSha = foundationRevision;
 const foundation = process.argv.includes('--foundation');
 const probeTrip = process.argv.includes('--probe-trip');
 const tripOnly = process.argv.includes('--trip-only');
+const operations=process.argv.includes('--operations');if(operations&&(foundation||probeTrip||tripOnly))throw Error('Operations lab requires the complete current source and route set');
 const origin = localOrigin(foundation ? 'http://127.0.0.1:3522' : 'http://127.0.0.1:3521');
 const buildApp = foundation ? path.join(app, 'evidence/performance/foundation') : app;
 const out = path.join(app, 'evidence/performance', `${foundation ? 'foundation' : 'current'}-${new Date().toISOString().replace(/[:.]/g, '-')}`);
@@ -30,6 +33,13 @@ if (!db.State.Running || db.Config.Labels['com.supabase.cli.project'] !== target
 if (!existsSync(path.join(buildApp, '.next/BUILD_ID'))) throw Error('Build the selected local app before measuring');
 if (foundation && (await readFile(path.join(buildApp, 'FOUNDATION_SHA'), 'utf8')).trim() !== foundationSha)
   throw Error('Foundation must be the frozen source archive');
+if(operations){
+ const source=execFileSync('git',['rev-parse','HEAD'],{cwd:app,encoding:'utf8'}).trim(),archive=path.join(app,'public/source/kinnsoos-source.zip');
+ const metadata=JSON.parse(execFileSync('python',['-c','import json,sys,zipfile; print(json.dumps(json.loads(zipfile.ZipFile(sys.argv[1]).read("SOURCE_METADATA.json"))))',archive],{encoding:'utf8'}));
+ if(metadata.sourceRevision!==source)throw Error('Operations build archive must bind current source');
+ for(const[name,hash]of Object.entries(metadata.sha256))if(createHash('sha256').update(await readFile(path.join(app,name))).digest('hex')!==hash)throw Error('Operations source differs from packaged source');
+}
+
 // Refuse an occupied port: this runner never attaches to or terminates somebody else's server.
 const {createServer} = await import('node:net');
 await new Promise((resolve, reject) => {
@@ -43,9 +53,9 @@ const server = spawn(process.execPath, [path.join(buildApp, 'node_modules/next/d
   'start', '--hostname', '127.0.0.1', '--port', new URL(origin).port],
   {cwd: buildApp, env: environment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe']});
 server.stdout.pipe(serverLog); server.stderr.pipe(serverLog);
-let browser, admin, actor, fixture;
+let browser, admin, actor, fixture,workFixture;
 const ownedActors = [], samples = [], interactions = [], blockedOrigins = new Set();
-const report = {schemaVersion: 1,kind:foundation?'foundation':'current', environment: 'owned isolated local production build',
+const report = {schemaVersion: 1,kind:foundation?'foundation':operations?'operations':'current', environment: 'owned isolated local production build',
   sourceSha: foundation ? foundationSha : execFileSync('git', ['rev-parse', 'HEAD'], {cwd: app, encoding: 'utf8'}).trim(),
   sourceDiff: execFileSync('git', ['diff', '--name-only'], {cwd: app, encoding: 'utf8'}).trim().split('\n').filter(Boolean),
   conditions: null, samples, interactions, notComparable: foundation ? ['guide', 'trip'] : [],
@@ -74,7 +84,8 @@ async function setup() {
   let trip = checked(await actor.rpc('create_trip_v2', {p_request_id: randomUUID(), p_payload: {title: 'Synthetic mobile lab trip', timezone: 'UTC'}}));
   trip = checked(await actor.rpc('adopt_guide_to_trip', {p_guide_id: guide.id, p_version: 1, p_trip_id: trip.id,
     p_expected_revision: trip.revision, p_request_id: randomUUID()}));
-  return {email, password, guideId: guide.id, tripId: trip.id};
+  if(operations)workFixture=await setupOperations({admin,creatorId:user.id,target,onActor:id=>ownedActors.push(id)});
+  return {email, password,creatorId:user.id, guideId: guide.id, tripId: trip.id};
 }
 const flags = {logLevel: 'error', onlyCategories: ['performance'], disableStorageReset: true,
   throttlingMethod: 'devtools', formFactor: 'mobile',
@@ -112,6 +123,7 @@ async function ready(page, kind) {
     else await page.waitForSelector('h1');
     return;
   }
+  if(workspacePages.includes(kind)){await page.waitForFunction((name,title)=>{const body=document.body.textContent;if(!body.includes(title))return false;if(name==='creatorDetail')return[...document.querySelectorAll('article.k-card h2')].some(h=>h.textContent===title+' 0');if(name==='merchantReview')return[...document.querySelectorAll('textarea')].some(e=>e.closest('label')?.textContent.includes('Deliverable review feedback'));if(name==='merchantCampaigns')return body.includes('Synthetic operations lab company')&&body.includes('Counts cover this company');return document.querySelector('[data-testid=creator-collaborations]')&&body.includes('Load more collaborations');},{},kind,workFixture.title);return;}
   if (kind === 'home' || kind === 'explore') await page.waitForFunction(() => document.body.textContent.includes('Synthetic mobile lab guide'));
   else if (kind === 'guide') await page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Plan as a device-only draft'));
   else await page.waitForSelector('textarea[id^="note-"]');
@@ -120,30 +132,32 @@ function traceWithoutArguments(trace) {
   return {traceEvents: trace.traceEvents.map(({args, ...event}) => event),
     redaction: 'All event arguments omitted; actual categories/timestamps/durations retained. No network headers or credentials exported.'};
 }
-async function navigation(page, kind, route, cache, run) {
-  const result = await lighthouse(origin+route, flags, undefined, page);
-  const lhr = result.lhr;
-  const requests = lhr.audits['network-requests']?.details?.items ?? [];
-  const bytes = type => requests.filter(r => r.resourceType === type).reduce((sum,r) => sum+(r.transferSize ?? 0),0);
-  const metrics = key => lhr.audits[key]?.numericValue ?? null;
-  const finalPath = new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl ?? origin).pathname;
-  const main = requests.find(r => r.resourceType === 'Document' && new URL(r.url).pathname === route);
-  const sample = {page: kind, route, cache, run, status: main?.statusCode ?? null,
-    verified: false, lcpMs: metrics('largest-contentful-paint'), cls: metrics('cumulative-layout-shift'),
-    tbtMs: metrics('total-blocking-time'), jsTransferBytes: bytes('Script'), imageTransferBytes: bytes('Image'),
-    api: requests.filter(r => new URL(r.url).pathname.startsWith('/api/')).map(r => ({path: new URL(r.url).pathname,
-      durationMs: r.networkEndTime-r.networkRequestTime, status: r.statusCode})),
-    auditErrors: Object.entries(lhr.audits).filter(([,audit]) => audit.errorMessage).map(([audit,value]) => ({audit,error:value.errorMessage})),
+async function navigation(page, kind, route, cache, run, deadlineMs=flags.maxWaitForLoad+15000) {
+  const sample = {page: kind, route, cache, run,role:operationRole(kind), status:null,
+    verified:false,lcpMs:null,cls:null,tbtMs:null,jsTransferBytes:null,imageTransferBytes:null,api:[],auditErrors:[],
     reportFile: `${kind}-${run}-${cache}.lhr.json`, traceFile: `${kind}-${run}-${cache}.trace.json`};
   samples.push(sample);
+  const observation=observeNavigation(page,origin),blankReset=prepareOwnedBlankReset(page,origin);
+  console.log(`${kind} ${run} ${cache}: collection START deadline=${deadlineMs}ms`);
   try {
+    const result=await withCollectionDeadline(()=>lighthouse(origin+route,flags,undefined,page),deadlineMs,
+      `Navigation collection timed out: ${kind} ${run} ${cache}; no returned metrics/trace verified`);
+    const lhr=result.lhr,requests=lhr.audits['network-requests']?.details?.items??[];
+    const bytes=type=>requests.filter(r=>r.resourceType===type).reduce((sum,r)=>sum+(r.transferSize??0),0);
+    const metrics=key=>lhr.audits[key]?.numericValue??null;
+    const finalPath=new URL(lhr.finalDisplayedUrl??lhr.finalUrl??origin).pathname;
+    const main=requests.find(r=>r.resourceType==='Document'&&new URL(r.url).pathname===new URL(origin+route).pathname);
+    Object.assign(sample,{status:main?.statusCode??null,lcpMs:metrics('largest-contentful-paint'),cls:metrics('cumulative-layout-shift'),
+      tbtMs:metrics('total-blocking-time'),jsTransferBytes:bytes('Script'),imageTransferBytes:bytes('Image'),
+      api:requests.filter(r=>new URL(r.url).pathname.startsWith('/api/')).map(r=>({path:new URL(r.url).pathname,durationMs:r.networkEndTime-r.networkRequestTime,status:r.statusCode})),
+      auditErrors:Object.entries(lhr.audits).filter(([,audit])=>audit.errorMessage).map(([audit,value])=>({audit,error:value.errorMessage}))});
     await retainNavigation(result,async value=>{
       await writeFile(path.join(out,sample.reportFile),JSON.stringify(value.lhr));
       if(value.artifacts?.Trace)await writeFile(path.join(out,sample.traceFile),JSON.stringify(traceWithoutArguments(value.artifacts.Trace)));
       else throw Error('Navigation trace missing');
-    },async()=>{await ready(page,kind);sample.verified=finalPath===route;});
+    },async()=>{await ready(page,kind);sample.verified=finalPath===new URL(origin+route).pathname;});
   }catch(error){sample.failure=error.message;throw error;}
-  finally{await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
+  finally{sample.blankResetDiagnostics=blankReset.stop();sample.collectorDiagnostics=observation.stop();await writeFile(path.join(out,'report.json'),JSON.stringify(report,null,2));}
   console.log(`${kind} ${run} ${cache}: LCP=${sample.lcpMs?.toFixed(0)}ms CLS=${sample.cls} TBT=${sample.tbtMs?.toFixed(0)}ms`);
 }
 async function interaction(page, kind) {
@@ -155,7 +169,11 @@ async function interaction(page, kind) {
   const started = performance.now();
   let assertion;
   try {
-    if (kind === 'home') {
+    if(workspacePages.includes(kind)){
+      if(kind==='creatorDetail'){await button(page,'Edit and resubmit evidence');await input(page,'Notes for reviewer','Synthetic lab draft retained');await button(page,'Cancel editing');await ready(page,kind);assertion='Owned evidence editor opened and cancelled without submitting a new record';}
+      else if(kind==='merchantReview'){await input(page,'Deliverable review feedback','Synthetic lab review draft');await page.waitForFunction(()=>[...document.querySelectorAll('button')].some(b=>b.textContent.trim()==='Approve deliverable'&&!b.disabled));await input(page,'Deliverable review feedback','');assertion='Owner private review feedback enables its action; no approval or money command sent';}
+      else {const search=kind==='merchantCampaigns'?'Search promotions':'Search collaborations';await input(page,search,workFixture.title);await button(page,search);await ready(page,kind);assertion='Title filter retains owned collaboration rows';}
+    } else if (kind === 'home') {
       await input(page, 'Destination or interest', 'Kyoto');
       await Promise.all([page.waitForNavigation(), button(page, 'Find guides')]);
       await ready(page, 'explore'); assertion = 'Search reached the published catalog';
@@ -177,7 +195,7 @@ async function interaction(page, kind) {
     const durationMs = performance.now()-started;
     const api = await page.evaluate(() => performance.getEntriesByType('resource').filter(e => new URL(e.name).pathname.startsWith('/api/'))
       .map(e => ({path: new URL(e.name).pathname, durationMs: e.duration})));
-    interactions.push({page: kind, status: 'PASS', assertion, durationMs, api, traceFile: `${kind}-interaction.trace.json`,
+    interactions.push({page: kind,role:operationRole(kind), status: 'PASS', assertion, durationMs, api, traceFile: `${kind}-interaction.trace.json`,
       metric: 'Elapsed lab interaction; not field INP'});
   } catch (error) {
     report.interactionFailure = {page:kind,error:error.message,
@@ -200,18 +218,21 @@ try {
   if (!foundation) fixture = await setup();
   browser = await puppeteer.launch({executablePath: chromium.executablePath(), headless: true,
     args: ['--no-first-run', '--disable-background-networking', '--disable-component-update']});
-  report.conditions = {browser: await browser.version(), lighthouse: '13.5.0',
-    region: 'same local Windows host; loopback app and isolated database', ...flags,
+  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',lighthouseDeadlineMs:flags.maxWaitForLoad+15000,collectorDiagnostics:'per-page owned lifecycle/network counts v1',blankResetPolicy:'owned beforeunload only until initial blank v1',
+    region: 'same owned '+process.platform+' host; loopback app and isolated database', ...flags,
     cacheDefinition: 'HTTP cache cleared before cold; retained before warm; fresh context for each pair'};
   const routes = {home: '/en', explore: '/en/explore',
     guide: foundation ? '/en/g/kyoto-slow-days' : '/en/g/'+fixture.guideId,
     trip: foundation ? '/en/trips/demo-lab-trip' : '/en/trips/'+fixture.tripId};
+  if(operations)Object.assign(routes,{creatorList:'/en/studio/outcomes',creatorDetail:'/en/studio/missions/'+workFixture.campaignId,merchantCampaigns:'/en/merchant?company='+workFixture.merchantId,merchantReview:'/en/merchant?company='+workFixture.merchantId+'&campaign='+workFixture.campaignId});
+  report.dataset=operations?workFixture.dataset:null;
   const foundationModel = foundation ? (await transform(execFileSync('git',['show',foundationSha+':app/travel/model.ts'],{cwd:app,encoding:'utf8'}),
     {loader:'ts',format:'iife',globalName:'KinnsoFoundationModel'})).code : null;
   for (const [kind, initialRoute] of Object.entries(routes).filter(([kind])=>!(probeTrip||tripOnly)||kind==='trip')) for (const run of (probeTrip?[1]:[1,2,3])) {
     const context = await browser.createBrowserContext(), page = await context.newPage();
     await page.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});
     page.setDefaultTimeout(45000); await guardPage(page);
+    let collecting=false;
     try {
       let route=initialRoute;
       if (foundation && kind==='trip') {
@@ -219,27 +240,36 @@ try {
         const id=await page.evaluate(()=>{KinnsoFoundationModel.session('owner');return KinnsoFoundationModel.clone('kyoto-slow-days','Synthetic foundation demo trip','',crypto.randomUUID()).id;});
         route='/en/trips/'+id;
       }
-      if (!foundation && kind === 'trip') {
+      if (!foundation && (kind === 'trip'||workspacePages.includes(kind))) {
+        const login=kind.startsWith('merchant')?workFixture.merchantLogin:fixture;
         await page.goto(origin+'/en/sign-in?next='+encodeURIComponent(route));
-        await input(page,'Email',fixture.email); await input(page,'Password',fixture.password);
+        await input(page,'Email',login.email); await input(page,'Password',login.password);
         await Promise.all([page.waitForNavigation(),button(page,'Sign in')]); await ready(page,kind);
+        if(operations){const actual=await page.evaluate(async()=>{const r=await fetch('/api/session',{cache:'no-store'});return(await r.json()).data?.id;});if(actual!==(kind.startsWith('merchant')?workFixture.merchantUserId:fixture.creatorId))throw Error('Measured private navigation actor mismatch');}
       }
       const session = await page.createCDPSession(); await session.send('Network.clearBrowserCache'); await session.detach();
+      collecting=true;
       await navigation(page,kind,route,'cold',run); await navigation(page,kind,route,'warm',run);
       if (!foundation && run === (probeTrip?1:3)) await interaction(page,kind);
+    } catch(error) {
+      if(!collecting)throw error;
+      report.error??=error.message;
+      (report.collectionFailures??=[]).push({page:kind,run,error:error.message});
+      console.log(`${kind} ${run}: collection failed; retaining the failure and continuing other owned pairs`);
     } finally {await context.close();}
   }
   if (!foundation) {
     const querySamples = [];
     const client = createClient(target.apiOrigin, process.env.SUPABASE_ANON_KEY, {auth: {persistSession: false, autoRefreshToken: false}});
-    for (const kind of ['home','explore','guide','trip']) for (const run of [1,2,3]) {
+    for (const kind of (operations?['home','explore','guide','trip',...workspacePages]:['home','explore','guide','trip'])) for (const run of [1,2,3]) {
       const start = performance.now();
-      if (kind === 'home' || kind === 'explore') checked(await client.from('guides')
+      if(workspacePages.includes(kind)){const spec=operationRead(kind,workFixture),value=checked(await(spec.role==='merchant_owner'?workFixture.merchantActor:actor).rpc(spec.rpc,spec.args));verifyOperation(kind,value,workFixture);}
+      else if (kind === 'home' || kind === 'explore') checked(await client.from('guides')
         .select('id,slug,title,city,summary,cover_url,creator_handle,creator_name,published_at')
         .eq('status','published').order('published_at',{ascending:false,nullsFirst:false}).order('id').limit(13));
       else if (kind === 'guide') checked(await client.rpc('kinnso_guide',{p_guide_id:fixture.guideId}));
       else checked(await actor.rpc('get_trip_snapshot',{p_trip_id:fixture.tripId}));
-      querySamples.push({page:kind,run,durationMs:performance.now()-start,
+      querySamples.push({page:kind,role:operationRole(kind),run,durationMs:performance.now()-start,
         operation:kind==='trip'?'get_trip_snapshot':kind==='guide'?'kinnso_guide':'published catalog projection',status:'PASS'});
     }
     report.queryLatency = {status:'MEASURED_LOCAL_BACKEND_ROUNDTRIPS',samples:querySamples,
@@ -257,6 +287,7 @@ try {
 } catch (error) {report.error = error.message; process.exitCode = 1;}
 finally {
   const cleanupErrors = [];
+  try{await cleanupOperations(admin,workFixture);}catch(error){cleanupErrors.push('Owned operations cleanup: '+error.message);}
   try {await browser?.close();} catch (error) {cleanupErrors.push('Browser: '+error.message);}
   for (const id of ownedActors) try {const result = await admin.auth.admin.deleteUser(id); if (result.error) cleanupErrors.push(result.error.message);}
     catch (error) {cleanupErrors.push('Owned fixture: '+error.message);}

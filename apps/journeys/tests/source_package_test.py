@@ -1,4 +1,5 @@
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -55,6 +56,15 @@ class SourcePackageTests(unittest.TestCase):
         cases = {path.relative_to(source_root).as_posix(): path
                  for path in (source_root / 'tests/integration').glob('*.test.mjs')}
         self.assertTrue(cases, 'The integration runner must have distributable cases')
+        cases.update({path.relative_to(source_root).as_posix(): path
+                      for path in (source_root / 'tests').glob('*.test.mjs')})
+        fixture_config = (source_root / 'playwright.service-state.config.ts').read_text(encoding='utf-8')
+        fixture_names = re.findall(r"['\"]([^'\"]+\.spec\.ts)['\"]", fixture_config)
+        self.assertTrue(fixture_names, 'The no-database fixture gate must have distributable cases')
+        for name in fixture_names:
+            path = source_root / 'tests/e2e' / name
+            self.assertTrue(path.is_file(), name)
+            cases[path.relative_to(source_root).as_posix()] = path
         for name in source_manifest['files']:
             source = source_root / name
             target = self.root / name
@@ -66,7 +76,7 @@ class SourcePackageTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         with ZipFile(self.root / 'public/source/kinnsoos-source.zip') as archive:
             missing = set(cases) - set(archive.namelist())
-            self.assertFalse(missing, f'Runner cases missing from source archive: {sorted(missing)}')
+            self.assertFalse(missing, f'Active runner cases missing from source archive: {sorted(missing)}')
             for name, source in cases.items():
                 self.assertEqual(archive.read(name), source.read_bytes(), name)
 

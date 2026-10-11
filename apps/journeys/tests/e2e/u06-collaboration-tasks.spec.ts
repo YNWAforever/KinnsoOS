@@ -35,7 +35,9 @@ for(const locale of ['en','zh-HK'])test(`P07/P08 ${locale}: owned next actions a
   const continueWork=page.getByRole('link',{name:new RegExp(locale==='en'?'Continue collaboration · Synthetic next-action collaboration':'繼續合作 · Synthetic next-action collaboration')});
   await expect(continueWork).toHaveAttribute('href',`/${locale}/studio/missions/${active}`);
   await page.setViewportSize({width:320,height:800});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
-  await continueWork.click();await page.waitForURL(`**/${locale}/studio/missions/${active}`);await expect(page.getByRole('heading',{level:1,name:'Synthetic next-action collaboration',exact:true})).toBeVisible();
+  await continueWork.click();await page.waitForURL(`**/${locale}/studio/missions/${active}`);
+  await expect(page.getByRole('heading',{level:1,name:locale==='en'?'Creator collaborations':'創作者合作',exact:true})).toBeVisible();
+  await expect(page.locator('article.k-card').getByRole('heading',{level:2,name:'Synthetic next-action collaboration',exact:true})).toBeVisible();
   const creatorWindow=page.locator('time[datetime^="1999-12-31"]');await expect(creatorWindow).toContainText('Asia/Hong_Kong');const creatorDate=await creatorWindow.textContent();
   const ownerPage=await ownerContext.newPage();ownerPage.setDefaultTimeout(12_000);await signIn(ownerPage,locale,ownerEmail,password,'merchant');
   const task=ownerPage.getByRole('link',{name:new RegExp(locale==='en'?'Complete campaign draft · Synthetic next-action draft':'完成活動草稿 · Synthetic next-action draft')});
