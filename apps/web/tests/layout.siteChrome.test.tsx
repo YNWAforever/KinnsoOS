@@ -26,12 +26,10 @@ vi.mock('@/lib/auth/useViewerRole', () => ({ useViewerRole: () => viewerRole.val
 vi.mock('@/lib/product-state', () => ({
   getProductState: async () => productState,
 }))
-// app/layout.tsx calls next/font/google factories at module eval; they are not
-// callable under vitest (no Next SWC font transform). Stub them to {variable}.
-vi.mock('next/font/google', () => ({
-  JetBrains_Mono: () => ({ variable: 'font-jetbrains-mono' }),
-  Fraunces: () => ({ variable: 'font-fraunces' }),
-  Inter: () => ({ variable: 'font-inter' }),
+// app/layout.tsx calls next/font/local at module eval; it is not callable under
+// vitest (no Next SWC font transform). Stub it to {variable}.
+vi.mock('next/font/local', () => ({
+  default: (o: { variable: string }) => ({ variable: o.variable }),
 }))
 
 import LocaleLayout, { revalidate } from '@/app/[locale]/layout'
