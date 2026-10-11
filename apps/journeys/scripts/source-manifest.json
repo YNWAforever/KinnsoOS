@@ -394,6 +394,7 @@
     "tests/monthly-budget.test.mjs",
     "tests/notifications.delivery.test.mjs",
     "tests/operations-connected-coverage.test.mjs",
+    "tests/operations-layout.test.mjs",
     "tests/operations-performance.test.mjs",
     "tests/ops-filters.test.mjs",
     "tests/ops-routing-api.test.mjs",

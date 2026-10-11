@@ -77,7 +77,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
  if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href(path)}/></section>;
  return <section className="k-page" data-testid="creator-collaborations">
   <p className="k-eyebrow">{t('CREATOR STUDIO','創作者工作室')}</p>
-  <h1>{detail?.title??t('Creator collaborations','創作者合作')}</h1>
+  <h1>{t('Creator collaborations','創作者合作')}</h1>
   <div className="k-actions"><Link className="k-btn" href={href('studio/guides')}>{t('My guides','我的攻略')}</Link><Link className="k-btn" href={href('studio/earnings')}>{t('Earnings records','收益紀錄')}</Link><Link className="k-btn" href={href('inbox')}>{t('Inbox','收件匣')}</Link></div>
   {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load()} returnPath={href(path)}/>}
   {error==='INVALID'&&<p>{errorText}</p>}{error==='FORBIDDEN'&&<Link href={href('studio')}>{t('Open creator profile','開啟創作者檔案')}</Link>}
@@ -96,7 +96,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   </>}
   {detail&&<>
    <Link href={href('studio/missions')}>{t('All collaborations','所有合作')}</Link>{locked||form||applicationNote.trim()?<p>{t('Finish this edit or reconcile the current request before opening support.','請先完成修改或核對目前請求，再開啟客服。')}</p>:<Link className="k-btn" href={`/${locale}/support?mission=${detail.id}`}>{t('Ask support about this collaboration','向客服查詢此合作')}</Link>}
-   <article className="k-card"><p className="k-eyebrow">{detail.merchantName??detail.missionSource}</p><p>{detail.summary}</p><p>{status(detail.status)}{detail.participant&&' · '+status(detail.participant.status)}</p>
+   <article className="k-card"><p className="k-eyebrow">{detail.merchantName??detail.missionSource}</p><h2>{detail.title}</h2><p>{detail.summary}</p><p>{status(detail.status)}{detail.participant&&' · '+status(detail.participant.status)}</p>
     {(detail.applicationOpensAt??detail.startsAt)&&<p>{t('Applications open: ','申請開始：')}<time dateTime={(detail.applicationOpensAt??detail.startsAt)!}>{scheduleDate((detail.applicationOpensAt??detail.startsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}
     {(detail.applicationClosesAt??detail.endsAt)&&<p>{t('Applications close: ','申請截止：')}<time dateTime={(detail.applicationClosesAt??detail.endsAt)!}>{scheduleDate((detail.applicationClosesAt??detail.endsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}
     {detail.paidFeeAmount!==null&&<p>{t('Published fee: ','公布費用：')}{detail.paidFeeCurrency??t('Currency unspecified','未註明貨幣')} {detail.paidFeeAmount}</p>}

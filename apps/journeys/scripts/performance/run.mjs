@@ -231,6 +231,7 @@ try {
     const context = await browser.createBrowserContext(), page = await context.newPage();
     await page.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});
     page.setDefaultTimeout(45000); await guardPage(page);
+    let collecting=false;
     try {
       let route=initialRoute;
       if (foundation && kind==='trip') {
@@ -246,8 +247,14 @@ try {
         if(operations){const actual=await page.evaluate(async()=>{const r=await fetch('/api/session',{cache:'no-store'});return(await r.json()).data?.id;});if(actual!==(kind.startsWith('merchant')?workFixture.merchantUserId:fixture.creatorId))throw Error('Measured private navigation actor mismatch');}
       }
       const session = await page.createCDPSession(); await session.send('Network.clearBrowserCache'); await session.detach();
+      collecting=true;
       await navigation(page,kind,route,'cold',run); await navigation(page,kind,route,'warm',run);
       if (!foundation && run === (probeTrip?1:3)) await interaction(page,kind);
+    } catch(error) {
+      if(!collecting)throw error;
+      report.error??=error.message;
+      (report.collectionFailures??=[]).push({page:kind,run,error:error.message});
+      console.log(`${kind} ${run}: collection failed; retaining the failure and continuing other owned pairs`);
     } finally {await context.close();}
   }
   if (!foundation) {

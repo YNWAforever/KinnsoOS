@@ -2485,8 +2485,8 @@
         "N18",
         "U06"
       ],
-      "code_status": "IMPLEMENTED_LOCAL_REVIEW_FIXES",
-      "ci_status": "INCOMPLETE_BASELINE_NEW_CANDIDATE_PENDING",
+      "code_status": "MEASURED_P16_FOLLOWUP_LOCAL_GREEN",
+      "ci_status": "CURRENT_62BD_PARTIAL_LAB_FOLLOWUP_CI_PENDING",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
       "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
@@ -2533,12 +2533,26 @@
           "environment": "local-source",
           "scenario": "Actual navigation deadline RED-to-GREEN",
           "result": "Actual navigation fixture7 PASS1 valid assertion RED (late collector incorrectly accepted) ->8 GREEN. Timeout retains null/unverified failed sample and report; late result cannot backfill; normal returned result keeps LHR/trace. Full511 PASS0 FAIL0 SKIP/typecheck PASS; build passed separately before commit. Current-owned lab still required."
+        },
+        {
+          "source_sha": "62bd40959ce3200706bf2ebfc46b43758f8f9cca",
+          "tested_merge": "2705272ddb1b93f122388ac33921017b3033edaa",
+          "run": 38108031054,
+          "environment": "owned-localhost-ci",
+          "scenario": "Complete current artifact readback before measured P16 follow-up",
+          "result": "Core511/94/136/4 PASS0 FAIL0 SKIP; source/type/build/extraction PASS. RootPR38108031053 all jobs SUCCESS; root push attempt1 Deno500 before browser retained, one failed-job-only retry after decoded exact public module200. Lab39 verified navigation/48 required,40 started;6/8 interactions;0/24 separate backend reads;880/960 latency. merchantCampaigns run2 warm deadline failure and2 merchant SQL READ ONLY/shared-lock groups retained. Cleanup PASS. Creator detail6 cold/warm CLS0.16685243479704767; LHR attributes0.16425906053805492 to action links shifted by the asynchronous title. Linux lab archivea84169d472a46054298116fd12ac551e66bdb4da35ea078ebb3be2309280360a; Windows bytes separate.",
+          "observed_at": "2026-10-11T03:48:07.830150+00:00"
+        },
+        {
+          "environment": "local-source",
+          "scenario": "Focused measured-layout and collection-continuation follow-up",
+          "result": "EN/zh actual component heading replacement2 valid assertion RED ->2 GREEN; full authorized title remains readable in its card and denial clears it. Actual collector continuation8 PASS1 valid RED ->9 GREEN; corrected fixture revalidated RED against frozen62bd source without removing guards. Collection failures remain failures, later pairs/interactions/backend reads proceed independently; pre-measurement actor mismatch remains fatal. Full suite/type/build/new candidate lab pending. Whole514 PASS0 FAIL0 SKIP, typecheck/build PASS. Local source package6 cases:5 PASS1 existing opt-in extracted-build SKIP after sandbox temp ACL errors; actual native source extraction gate remains required, no tooling failure is counted as behavioral RED."
         }
       ],
       "blockers": [
         "MEASUREMENT_METHOD: merchant authorization RPC uses shared locks incompatible with existing READ ONLY SQL collector; preserve locks/read-only and incomplete SQL groups."
       ],
-      "next_action": "Run complete current-source browser baseline on pinned owned Ubuntu22 with sandbox; retain all8 SQL denominator, use measured same-condition evidence only before choosing a reproducible bottleneck.",
+      "next_action": "Verify the focused continuation source, native/root and same-condition measured CLS; retain incomplete SQL groups and all failed/missing lab slots before release.",
       "rulings": [
         {
           "decision": "Compose existing owned lab and latency completeness rules with four mandatory private workspace routes; existing traveller/foundation reports retain their original denominator. Operations reports require matching measured role and owned55-campaign dataset.",
@@ -2555,6 +2569,14 @@
         {
           "decision": "No performance optimization before a reproducible measured baseline. A complete baseline is the accepted deliverable if no bottleneck reproduces.",
           "cost_if_wrong": "Known fixture creation overhead and potential excessive private fetches are not product bottleneck acceptance until measured under retained conditions."
+        },
+        {
+          "decision": "Use a stable creator page heading above navigation; render the full authorized collaboration title as a card heading. Retained six-navigation LHR shifts justify this narrow P16 change; no clamp, new private fetch or workbench redesign.",
+          "cost_if_wrong": "The specific mission title is now an h2 inside the detail card rather than the page h1. Runtime CLS improvement and unchanged owned workflows must be established at the new source; no layout success is inferred from the component test alone."
+        },
+        {
+          "decision": "A measurement-phase navigation/interaction failure is retained while later independent owned pairs and equivalent backend reads proceed. Failed cold skips that pair warm slot and does not retry or backfill; authority/setup failures remain fatal before measurement.",
+          "cost_if_wrong": "A partial report can contain more useful data but remains INCOMPLETE. Fresh contexts and actual actor matching remain required; no business command is replayed and a timed-out Lighthouse result is never accepted later."
         }
       ]
     },
