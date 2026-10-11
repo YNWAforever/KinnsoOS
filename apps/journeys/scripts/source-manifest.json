@@ -419,7 +419,9 @@
     "tests/workspace-recovery.test.mjs",
     "tests/workspace-service-state.test.mjs",
     "tsconfig.json",
-    "tests/blank-reset-dialog.test.mjs"
+    "tests/blank-reset-dialog.test.mjs",
+    "tests/workspace-loading.test.mjs",
+    "tests/e2e/u16-workspace-loading-layout.spec.ts"
   ],
   "version": 1
 }
