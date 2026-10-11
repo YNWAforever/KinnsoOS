@@ -189,5 +189,16 @@
     "alias": "https://kinnso-os.vercel.app",
     "commit": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
     "observedAt": "2026-10-11T18:08:06.455Z"
+  },
+  "nativeCorrection": {
+    "failedCandidate": "d179505d6d27e52d1f9c0e17192159ce9a9eb20d",
+    "run": 38161841278,
+    "passed": 164,
+    "failed": 3,
+    "cause": "Per-case decision select lost explicit label; implicit label includes option text",
+    "fix": "Restore bilingual aria-label; add real DOM/IndexedDB two-language fixture",
+    "additionalFixtureContract": "Missing completeLocalWorkspaceRecovery boundary export reproduced by local esbuild and corrected",
+    "localBrowser": "NOT_RUN; Chromium download returned invalid ZIP",
+    "newExactSourceCI": "PENDING"
   }
 }

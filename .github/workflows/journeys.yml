@@ -6,6 +6,29 @@ concurrency:
   group: journeys-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  workspace-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - name: Install the locked Chromium runtime
+        run: npm exec playwright install -- --with-deps chromium
+      - name: Native workspace contracts without a database
+        run: npm exec playwright test -- --config=playwright.service-state.config.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: failure()
+        with:
+          name: journeys-workspace-fixture-results
+          path: apps/journeys/evidence/service-state-browser/
   verify:
     runs-on: ubuntu-latest
     defaults:
