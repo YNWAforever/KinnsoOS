@@ -2650,6 +2650,13 @@
           "scenario": "Fresh root candidate gate",
           "result": "Root PR quality fails at Next16.3.8 Turbopack NextFontGoogleFontFileReplacer import-map; downstream E2E NOT_RUN. Log retained. Same-source push quality38106230732 passed web build and is running pnpm tests; not a PR success substitute. Journeys38106233270 pending behind unresponsive old group.",
           "observed_at": "2026-10-11T02:56:35.994238+00:00"
+        },
+        {
+          "source_sha": "552bdec067ec66a6fe05402c79eb84c50d81431c",
+          "run": 38106799665,
+          "environment": "owned-localhost-ci",
+          "scenario": "Repository root lint catches new CI contract script defects",
+          "result": "Two errors: missing explicit node:url URL import/no-regex-spaces. Minimum corrections retain both workflow scenarios;2 Node contracts PASS0 SKIP. Repository ESLint exact configured pass:0 errors3 preexisting scan warnings. Fresh full root CI still required; no compiler or test gate disabled."
         }
       ],
       "blockers": [
@@ -2803,7 +2810,7 @@
     "verification": {
       "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
       "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending",
-      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required."
+      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required. Root552 native lint exposes2 script errors; minimum URL import/regex correction is GREEN under repository ESLint0 errors3 existing warnings and both2 contracts PASS. Earlier042 root push38106230732 all jobs SUCCESS is retained independently; its PR font failure is not overwritten."
     },
     "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
     "rulings": [

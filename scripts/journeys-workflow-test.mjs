@@ -1,12 +1,13 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {URL} from 'node:url';
 
 const workflow = await readFile(new URL('../.github/workflows/journeys.yml', import.meta.url), 'utf8');
 const evaluate = (expression, github, cancelled = false) =>
   Function('github', 'always', 'cancelled', `return (${expression.trim().replace(/^\$\{\{\s*|\s*\}\}$/g, '')})`)(github, () => true, () => cancelled);
 const group = github => {
-  const value = workflow.match(/^  group: (.+)$/m)?.[1];
+  const value = workflow.match(/^ {2}group: (.+)$/m)?.[1];
   assert.ok(value, 'workflow must declare its group');
   return value.replace(/\$\{\{(.*?)\}\}/g, (_, expression) => evaluate(expression, github));
 };
