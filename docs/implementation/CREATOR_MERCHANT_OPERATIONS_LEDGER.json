@@ -1247,7 +1247,10 @@
   },
   "rulings": [
     "No duplicate onboarding/collaboration/earnings implementation: PR55 exact source retained; pending table-boundary review is tracked separately.",
-    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed."
+    "Hosted target is unspecified: P04-P06 remain environment-blocked while isolated P07-P17 proceed.",
+    "P12 Ruling: contextual case authorization reuses native creator mission ACL and merchant owner role; ops access to a support queue alone grants no activity access. Cost: suspended activity access blocks new contextual cases.",
+    "P12 Ruling: stored case ownership and request digest allow reconciliation after activity role loss; a context never shares a customer case with merchant owners. Cost: old cases retain safe activity IDs and authored subjects while activities become inaccessible.",
+    "P12 Ruling: keep mature operations status/revision/audit/messages and quota; only title is prefilled, private message starts empty. Resolution does not settle any financial record. Cost: customers describe private evidence manually."
   ],
   "tasks": [
     {
@@ -1951,14 +1954,25 @@
         "U04",
         "U05"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_CI_AND_REVIEW_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "f25e0e9ed1c3ffee47b86256abdc771bc730b258",
+      "evidence": [
+        {
+          "source_sha": "f25e0e9ed1c3ffee47b86256abdc771bc730b258",
+          "environment": "owned_CI_isolated_stack_and_local_component",
+          "scenario": "P12 real context and original support receipt RED",
+          "result": "CI38095354627:72existingDBPASS_2newFAIL_missing_context/receiptRPC_0SKIP; actual context BFF400 and 3 UI missing-prefill/direct-retry/denied-context failures observed before candidate; current9unitPASS, whole candidate and EN/zh-HK native owned stories pending. Initial link test modeled Next Link incorrectly; corrected link coverage passes and is not counted as independent RED.",
+          "observed_at": "2026-10-11T00:00:27.889028+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, configuration, schema/recovery or approved test actors supplied.",
+        "CURRENT_CI_AND_REVIEW_PENDING"
+      ],
+      "next_action": "Verify full current owned CI and one fresh final review; hosted target remains separately blocked."
     },
     {
       "id": "P13",

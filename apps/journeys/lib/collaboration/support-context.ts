@@ -1,0 +1,5 @@
+export type SupportContext={type:'mission';id:string};
+export type SupportContextView=SupportContext&{title:string;workspace:'creator'|'merchant'};
+export function supportMissionQuery(query:URLSearchParams){const id=query.get('mission');if([...query.keys()].some(k=>k!=='mission')||query.getAll('mission').length!==1||!id||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id))throw Error('INVALID');return id;}
+export function supportSubject(context:SupportContextView,locale:string){return((locale==='zh-HK'?'合作：':'Collaboration: ')+context.title).slice(0,200);}
+export function supportNextStep(status:string,locale:string){const steps:Record<string,[string,string]>={open:['Waiting for support to take the case','等待客服接手案件'],in_progress:['Waiting for support to follow up','等待客服跟進'],waiting_customer:['Reply with the details support requested','請回覆客服要求的資料'],resolved:['This support case is closed; financial records keep their own status','此客服案件已結案；財務紀錄維持各自狀態']};return steps[status]?.[locale==='zh-HK'?1:0]??status;}

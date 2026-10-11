@@ -45,7 +45,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     onboarding:'export const merchantOnboarding=globalThis.__ports.merchantOnboarding;',
     repository:'export const request=(...args)=>globalThis.__ports.request(...args);',
     missing:'export const WorkspaceServiceState=()=>null;'};
-  const compiled=await build({entryPoints:[new URL('../../app/travel/'+name+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation'],plugins:[{name:'boundary-ports',setup(b){
+  const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation'],plugins:[{name:'boundary-ports',setup(b){
     b.onResolve({filter:/.*/},args=>{
       let path;
       if(args.path==='./ui')path='ui';
@@ -62,7 +62,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
   }}]});
   const session=new Map();const module={exports:{}};
   const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',reload(){}},addEventListener(){},removeEventListener(){},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
-    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}})};
+    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
   runInContext(compiled.outputFiles[0].text,context);
