@@ -63,6 +63,16 @@ export async function retainNavigation(result,persist,ready){
   await ready();
 }
 
+/** A stalled collector must reject while its owned cleanup/artifact window remains open. */
+export async function withCollectionDeadline(collect,milliseconds,message){
+  let timer;
+  try{
+    return await Promise.race([Promise.resolve().then(collect),new Promise((_,reject)=>{
+      timer=setTimeout(()=>reject(Error(message)),milliseconds);
+    })]);
+  }finally{clearTimeout(timer);}
+}
+
 /** A controlled warm-read baseline, kept separate from browser/field metrics. */
 export function assessLatency(report, budgets) {
   const layers = ['api', 'postgrest', 'postgres'], missing = [];

@@ -2527,6 +2527,12 @@
           "scenario": "Bounded lab cancellation and missing artifact denominator",
           "result": "Browser collection exceeds configured45-minute window; normal cancel and official force-cancel requests accepted, fresh API still IN_PROGRESS. No final performance artifact/log is available yet; samples/traces/cleanup NOT_VERIFIED and cannot be backfilled. Same-source push run38103590358 remains independent.",
           "observed_at": "2026-10-11T02:56:35.994238+00:00"
+        },
+        {
+          "source_sha": "411993017e28c2a47166fdafe6c27d7176b33938",
+          "environment": "local-source",
+          "scenario": "Actual navigation deadline RED-to-GREEN",
+          "result": "Actual navigation fixture7 PASS1 valid assertion RED (late collector incorrectly accepted) ->8 GREEN. Timeout retains null/unverified failed sample and report; late result cannot backfill; normal returned result keeps LHR/trace. Full511 PASS0 FAIL0 SKIP/typecheck PASS; build passed separately before commit. Current-owned lab still required."
         }
       ],
       "blockers": [
@@ -2657,6 +2663,16 @@
           "environment": "owned-localhost-ci",
           "scenario": "Repository root lint catches new CI contract script defects",
           "result": "Two errors: missing explicit node:url URL import/no-regex-spaces. Minimum corrections retain both workflow scenarios;2 Node contracts PASS0 SKIP. Repository ESLint exact configured pass:0 errors3 preexisting scan warnings. Fresh full root CI still required; no compiler or test gate disabled."
+        },
+        {
+          "source_sha": "552bdec067ec66a6fe05402c79eb84c50d81431c",
+          "tested_merge": "367c4eb2bfd52e975659062f631b4858142940c5",
+          "tested_tree": "d492a49039283157bad0ac2c68f5334630900a0b",
+          "run": 38106799650,
+          "environment": "owned-localhost-ci",
+          "scenario": "Fresh mandatory recovery and full source acceptance",
+          "result": "510 unit/94 integration/136 actual native browser/4 isolated SMTP PASS0 FAIL0 SKIP, clean tested merge with parents68df/552 and tree equals552. Source/type/build/extracted rebuild and CI grouping/cancellation contracts PASS. Native u10 and both u11 locales selected and PASS. Root552 fails2 new script lint errors, corrected under exact repository ESLint0 errors3 old warnings. Performance still IN_PROGRESS, not all Journeys PASS.",
+          "observed_at": "2026-10-11T03:15:57.838982+00:00"
         }
       ],
       "blockers": [
@@ -2810,7 +2826,7 @@
     "verification": {
       "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
       "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending",
-      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required. Root552 native lint exposes2 script errors; minimum URL import/regex correction is GREEN under repository ESLint0 errors3 existing warnings and both2 contracts PASS. Earlier042 root push38106230732 all jobs SUCCESS is retained independently; its PR font failure is not overwritten."
+      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required. Initial merchant readiness14/14 GREEN; full510 PASS0 FAIL0 SKIP/typecheck/build PASS. a83 root attempt1 Deno500 before browser is retained; exact import200 verified, one failed-job-only attempt2 all jobs PASS. Owned CI cancellation/concurrency2 valid contract RED ->2 GREEN; app whole suite510 PASS0 FAIL0 SKIP again. This repairs runtime orchestration without dropping a failed latency/browser group. New exact-head native/root/source evidence remains required. Root552 native lint exposes2 script errors; minimum URL import/regex correction is GREEN under repository ESLint0 errors3 existing warnings and both2 contracts PASS. Earlier042 root push38106230732 all jobs SUCCESS is retained independently; its PR font failure is not overwritten. Actual navigation-deadline fixture1 valid RED ->8/8 GREEN with positive retained result and late-result no-backfill controls; whole511 PASS0 FAIL0 SKIP/typecheck/build PASS.552 current native94/136/4 and510 unit/source/type/build/extraction PASS, but new collector source must run exact gates; no second review."
     },
     "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
     "rulings": [
@@ -2873,6 +2889,10 @@
       {
         "decision": "Isolate owned Journeys acceptance concurrency by event/PR-or-ref/source SHA; duplicate same-source runs retain one group. Long browser collection remains required after latency failure but is cancellation-aware. Actual accepted cancellation remains unconfirmed, not assumed successful.",
         "cost_if_wrong": "Multiple source SHAs may consume more isolated CI runners; failed/cancelled old denominators and missing cleanup remain evidence. All localhost ownership guards, sample counts and mandatory gates remain; this repair cannot certify the new source until CI executes."
+      },
+      {
+        "decision": "Bound the entire Lighthouse gather/audit call to60 seconds while preserving its45-second page-load setting,48 navigations/all interactions/backend reads/latency groups. Start a sample before collection and retain failed/null metrics/report on expiry; late results cannot backfill. Keep the bound in comparison conditions.",
+        "cost_if_wrong": "A slower valid lab call may become an explicit INCOMPLETE sample; it never becomes PASS or silently lowers the denominator. Actual owned context shutdown, cleanup and artifacts still need CI proof; new-bound measurements cannot be compared blindly with old conditions. This evidence-runner repair does not change business-command retry or browser-story timeouts."
       }
     ]
   }

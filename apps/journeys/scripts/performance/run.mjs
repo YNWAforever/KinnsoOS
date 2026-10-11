@@ -12,7 +12,7 @@ import {chromium} from '@playwright/test';
 import {createClient} from '@supabase/supabase-js';
 import {transform} from 'esbuild';
 import {verifyTestTarget} from '../verify-test-target.mjs';
-import {assessRun, compareLab, localOrigin, retainNavigation, foundationRevision,workspacePages,operationRole} from './report.mjs';
+import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, foundationRevision,workspacePages,operationRole} from './report.mjs';
 import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
@@ -132,23 +132,24 @@ function traceWithoutArguments(trace) {
   return {traceEvents: trace.traceEvents.map(({args, ...event}) => event),
     redaction: 'All event arguments omitted; actual categories/timestamps/durations retained. No network headers or credentials exported.'};
 }
-async function navigation(page, kind, route, cache, run) {
-  const result = await lighthouse(origin+route, flags, undefined, page);
-  const lhr = result.lhr;
-  const requests = lhr.audits['network-requests']?.details?.items ?? [];
-  const bytes = type => requests.filter(r => r.resourceType === type).reduce((sum,r) => sum+(r.transferSize ?? 0),0);
-  const metrics = key => lhr.audits[key]?.numericValue ?? null;
-  const finalPath = new URL(lhr.finalDisplayedUrl ?? lhr.finalUrl ?? origin).pathname;
-  const main = requests.find(r => r.resourceType === 'Document' && new URL(r.url).pathname === new URL(origin+route).pathname);
-  const sample = {page: kind, route, cache, run,role:operationRole(kind), status: main?.statusCode ?? null,
-    verified: false, lcpMs: metrics('largest-contentful-paint'), cls: metrics('cumulative-layout-shift'),
-    tbtMs: metrics('total-blocking-time'), jsTransferBytes: bytes('Script'), imageTransferBytes: bytes('Image'),
-    api: requests.filter(r => new URL(r.url).pathname.startsWith('/api/')).map(r => ({path: new URL(r.url).pathname,
-      durationMs: r.networkEndTime-r.networkRequestTime, status: r.statusCode})),
-    auditErrors: Object.entries(lhr.audits).filter(([,audit]) => audit.errorMessage).map(([audit,value]) => ({audit,error:value.errorMessage})),
+async function navigation(page, kind, route, cache, run, deadlineMs=flags.maxWaitForLoad+15000) {
+  const sample = {page: kind, route, cache, run,role:operationRole(kind), status:null,
+    verified:false,lcpMs:null,cls:null,tbtMs:null,jsTransferBytes:null,imageTransferBytes:null,api:[],auditErrors:[],
     reportFile: `${kind}-${run}-${cache}.lhr.json`, traceFile: `${kind}-${run}-${cache}.trace.json`};
   samples.push(sample);
+  console.log(`${kind} ${run} ${cache}: collection START deadline=${deadlineMs}ms`);
   try {
+    const result=await withCollectionDeadline(()=>lighthouse(origin+route,flags,undefined,page),deadlineMs,
+      `Navigation collection timed out: ${kind} ${run} ${cache}; no returned metrics/trace verified`);
+    const lhr=result.lhr,requests=lhr.audits['network-requests']?.details?.items??[];
+    const bytes=type=>requests.filter(r=>r.resourceType===type).reduce((sum,r)=>sum+(r.transferSize??0),0);
+    const metrics=key=>lhr.audits[key]?.numericValue??null;
+    const finalPath=new URL(lhr.finalDisplayedUrl??lhr.finalUrl??origin).pathname;
+    const main=requests.find(r=>r.resourceType==='Document'&&new URL(r.url).pathname===new URL(origin+route).pathname);
+    Object.assign(sample,{status:main?.statusCode??null,lcpMs:metrics('largest-contentful-paint'),cls:metrics('cumulative-layout-shift'),
+      tbtMs:metrics('total-blocking-time'),jsTransferBytes:bytes('Script'),imageTransferBytes:bytes('Image'),
+      api:requests.filter(r=>new URL(r.url).pathname.startsWith('/api/')).map(r=>({path:new URL(r.url).pathname,durationMs:r.networkEndTime-r.networkRequestTime,status:r.statusCode})),
+      auditErrors:Object.entries(lhr.audits).filter(([,audit])=>audit.errorMessage).map(([audit,value])=>({audit,error:value.errorMessage}))});
     await retainNavigation(result,async value=>{
       await writeFile(path.join(out,sample.reportFile),JSON.stringify(value.lhr));
       if(value.artifacts?.Trace)await writeFile(path.join(out,sample.traceFile),JSON.stringify(traceWithoutArguments(value.artifacts.Trace)));
@@ -216,7 +217,7 @@ try {
   if (!foundation) fixture = await setup();
   browser = await puppeteer.launch({executablePath: chromium.executablePath(), headless: true,
     args: ['--no-first-run', '--disable-background-networking', '--disable-component-update']});
-  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',
+  report.conditions = {runnerImage:process.env.ImageOS??null,kernel:os.release(),browser: await browser.version(), lighthouse: '13.5.0',lighthouseDeadlineMs:flags.maxWaitForLoad+15000,
     region: 'same owned '+process.platform+' host; loopback app and isolated database', ...flags,
     cacheDefinition: 'HTTP cache cleared before cold; retained before warm; fresh context for each pair'};
   const routes = {home: '/en', explore: '/en/explore',
