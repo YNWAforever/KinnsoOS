@@ -43,3 +43,17 @@ test('large pending request sets retain a bounded diagnostic with truthful trunc
  for(let i=0;i<300;i++)page.emit('request',request(origin+'/api/catalog?page='+i));
  const snapshot=observation.stop();assert.equal(snapshot.startedRequests,300);assert.equal(snapshot.pendingRequestCount,300);assert.equal(snapshot.pendingRequests.length,10);assert.equal(snapshot.pendingRequestsTruncated,true);
 });
+test('pre-existing request completions cannot hide network work started during this navigation',()=>{
+ const page=new EventEmitter(),previous=request(origin+'/api/catalog'),failedPrevious=request(origin+'/api/merchant/campaigns');
+ page.emit('request',previous);page.emit('request',failedPrevious);
+ const observation=lab.observeNavigation(page,origin,()=>0),current=request(origin+'/api/merchant/campaigns');
+ page.emit('request',current);page.emit('requestfinished',previous);page.emit('requestfailed',failedPrevious);
+ const snapshot=observation.stop();assert.equal(snapshot.pendingRequestCount,1);assert.equal(snapshot.finishedRequests,0);assert.equal(snapshot.failedRequests,0);assert.equal(snapshot.pendingRequests.length,1);
+});
+test('requests beyond the retained-detail cap still contribute correct terminal counts and truncation',()=>{
+ const page=new EventEmitter(),observation=lab.observeNavigation(page,origin,()=>0),requests=Array.from({length:300},()=>request(origin+'/api/catalog'));
+ for(const r of requests)page.emit('request',r);
+ for(const r of requests.slice(0,299))page.emit('requestfinished',r);
+ page.emit('requestfailed',requests[0]); // A second terminal event must not decrement twice.
+ const snapshot=observation.stop();assert.equal(snapshot.pendingRequestCount,1);assert.equal(snapshot.finishedRequests,299);assert.equal(snapshot.failedRequests,0);assert.equal(snapshot.pendingRequests.length,0);assert.equal(snapshot.pendingRequestsTruncated,true);
+});

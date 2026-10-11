@@ -3017,7 +3017,21 @@
         "pass": 3,
         "fail": 1
       },
-      "typecheck": "PASS"
+      "typecheck": "PASS",
+      "review_red": {
+        "pass": 4,
+        "fail": 2
+      },
+      "reviewed_focused": {
+        "pass": 19,
+        "fail": 0,
+        "skip": 0
+      },
+      "reviewed_unit": {
+        "pass": 525,
+        "fail": 0,
+        "skip": 0
+      }
     },
     "ci": "PENDING_CURRENT_SOURCE",
     "staging": "NOT_RUN_BLOCKED_TARGET",
@@ -3038,7 +3052,26 @@
       {
         "decision": "Retain only explicit safe route shapes, redact UUIDs, classify Next assets/unknown paths, cap pending summaries at10 and detach page listeners on every completion. Never export query/headers/body/claims.",
         "cost_if_wrong": "Unknown endpoints are identified only by counts and a generic marker; a future allowlist extension needs a privacy test."
+      },
+      {
+        "decision": "Accept the independent Important finding: only terminal events for request identities started inside this navigation can decrement active counts. Track identities beyond the retained-detail cap, ignore duplicate terminals, and mark unretained pending detail as truncated. Two real event-sequence assertions failed before the fix; same6 diagnostic tests and focused19/full525 pass afterward.",
+        "cost_if_wrong": "Stage diagnostics could falsely claim no pending network work and lead to a speculative product fix; actual same-source runtime evidence remains required."
       }
-    ]
+    ],
+    "review": {
+      "base": "fca3eb2a9bc13ea9feffbfc014d0ab7c5c895a86",
+      "reviewed_head": "a639ecfa0f5ad2006283035d6c41a5949e57a968",
+      "critical": 0,
+      "important": 1,
+      "minor": 1,
+      "fix_pass": "CLOSED_SINGLE_PASS",
+      "result": "Important fixed with4 PASS2 RED ->6 GREEN; SQL/callees inspected by independent reviewer, no writes or external side effects found. Actual CI/runtime pending.",
+      "deferred_minor": {
+        "file": "apps/journeys/scripts/performance/report.mjs",
+        "finding": "Safe path allowlist currently classifies measured /en/merchant, /en/studio/outcomes and /en/g/<uuid> documents as OTHER_OWNED_REQUEST.",
+        "rationale": "Actual sample route/page and document resource type remain retained; counts and metrics stay correct. This reduces diagnostic specificity without blocking measurement.",
+        "cost_if_wrong": "A later diagnosis may need raw sample route mapping; an allowlist extension must include privacy regression coverage."
+      }
+    }
   }
 }
