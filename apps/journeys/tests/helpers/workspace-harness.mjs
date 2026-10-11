@@ -39,12 +39,12 @@ export async function listFilterModule(jsx){
 
 /** Executes actual component handlers; only session/network/framework boundaries are doubles. */
 export async function workspaceHarness(name,ports={},initial={}) {
-  const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=0;
+  const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=initial.sequence??0;
   const props={actorId:'actor-A',enabled:true,path:'studio/missions',merchantId:'11111111-1111-4111-8111-111111111111',refreshKey:0,locked:false,onDenied:()=>{},onLockChange:()=>{},onChanged:async()=>{},...initial};
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
   const jsx=(type,props)=>typeof type==='function'?(initial.shallow?{type:type.name,props}:type(props)):({type,props});
   const snippets={ui:`export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:path=>'/'+globalThis.__locale+'/'+path});`,
-    drafts:'export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);',
+    drafts:`export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.read(...args)??null;export const saveLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.save(...args);export const clearLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.clear(...args);`,
     creator:'export const creatorMissions=globalThis.__ports.creatorMissions; export const creatorEarnings=globalThis.__ports.creatorEarnings;',
     campaigns:'export const merchantCampaigns=globalThis.__ports.merchantCampaigns;',
     insights:'export const merchantInsights=globalThis.__ports.merchantInsights;',
@@ -83,5 +83,11 @@ export async function workspaceHarness(name,ports={},initial={}) {
   function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
   const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||text(x)===label));
   const field=label=>{const row=elements().find(x=>x.type==='label'&&[x.props.children].flat(Infinity).includes(label));return row&&elements(row).find(x=>['input','textarea','select'].includes(x.type));};
-  render();await tick();render();return{props,render,find,field,elements,text,events,navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
+  render();for(let n=0;n<4;n++){await tick();render();}return{props,render,find,field,elements,text,events,navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
+}
+
+/** Legacy component suites execute the same recovery hook; persistence remains a device boundary. */
+export async function recoveryHookModule(react){
+ const source=await transform(await readFile(new URL('../../app/travel/useWorkspaceRecovery.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'}),module={exports:{}};
+ runInContext(source.code,createContext({module,exports:module.exports,window:{addEventListener(){},removeEventListener(){}},require:name=>{if(name==='react')return react;if(name.endsWith('/local-drafts'))return{synchronizeAccountCache:async()=>{},readLocalWorkspaceRecovery:async()=>null,saveLocalWorkspaceRecovery:async()=>{},clearLocalWorkspaceRecovery:async()=>{}};throw Error(name);}}));return module.exports;
 }

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import{useWorkspaceRecovery}from'./useWorkspaceRecovery';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {merchants,type Membership} from '../../lib/merchants/repository';
 import {finance} from '../../lib/finance/repository';
@@ -14,6 +15,8 @@ export function FinanceWorkspace({actorId,enabled,opsMode=false}:{actorId:string
  const [data,setData]=useState<Workspace|null>(null),[memberships,setMemberships]=useState<Membership[]>([]),[merchantId,setMerchantId]=useState(''),[state,setState]=useState(''),[exceptionsOnly,setExceptions]=useState(false),[reason,setReason]=useState(''),[reviewState,setReviewState]=useState<ReviewState>('investigating'),[error,setError]=useState(''),[busy,setBusy]=useState(false),[valid,setValid]=useState(true),[unknown,setUnknown]=useState(false);
  const generation=useRef(0),membersGeneration=useRef(0),allowedMerchants=useRef(new Set<string>()),pending=useRef<{command:Parameters<typeof finance.review>[0];id:string}|null>(null);
  const filter:FinanceFilter={...!opsMode&&merchantId?{merchantId}:{},...state?{state:state as MoneyState}:{},exceptionsOnly};
+ const recovery=useWorkspaceRecovery({actorId,scope:'finance:'+ (opsMode?'ops':merchantId),authorized:!!data&&valid,dirty:!!reason,draft:{reason,reviewState},pending:pending.current,restore:value=>{const draft=value.draft as {reason?:unknown;reviewState?:unknown};if(typeof draft?.reason!=='string'||draft.reason.length>2000||!['open','investigating','waiting_business_rules','closed'].includes(String(draft.reviewState)))throw Error('INVALID_RECOVERY');setReason(draft.reason);setReviewState(draft.reviewState as ReviewState);if(value.pending){if(typeof value.pending.id!=='string'||!value.pending.command||typeof value.pending.command!=='object')throw Error('INVALID_RECOVERY');pending.current=value.pending as NonNullable<typeof pending.current>;setUnknown(true);setError('UNAVAILABLE');}}});
+
  function clear(){setData(null);pending.current=null;setUnknown(false);}
  async function load(cursor?:FinanceCursor){
   if(!opsMode&&(!merchantId||!allowedMerchants.current.has(merchantId)))return;
@@ -31,13 +34,16 @@ export function FinanceWorkspace({actorId,enabled,opsMode=false}:{actorId:string
   if(!pending.current&&command)pending.current={command,id:crypto.randomUUID()};const p=pending.current;if(!p)return;
   const own=++generation.current;setBusy(true);
   if(unknown){const saved=await finance.get(filter);if(own!==generation.current)return;if(!saved.ok){setBusy(false);setError(saved.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(saved.code)){clear();setReason('');if(saved.code==='AUTH_REQUIRED')setValid(false);}return;}setData(saved.data);}
+  try{await recovery.retain(p);}catch{setBusy(false);setError('UNAVAILABLE');setUnknown(true);return;}
   const r=await finance.review(p.command,p.id);if(own!==generation.current)return;setBusy(false);
-  if(!r.ok){if(['AUTH_REQUIRED','FORBIDDEN'].includes(r.code)){clear();setReason('');if(r.code==='AUTH_REQUIRED')setValid(false);}setError(r.code);setUnknown(r.code==='UNAVAILABLE');if(r.code!=='UNAVAILABLE')pending.current=null;return;}
+  if(!r.ok){if(['AUTH_REQUIRED','FORBIDDEN'].includes(r.code)){clear();setReason('');if(r.code==='AUTH_REQUIRED')setValid(false);}setError(r.code);setUnknown(r.code==='UNAVAILABLE');if(r.code!=='UNAVAILABLE'){await recovery.clear(p.id);pending.current=null;}return;}
+  try{await recovery.clear(p.id);}catch{setError('UNAVAILABLE');setUnknown(true);return;}
   pending.current=null;setUnknown(false);setReason('');await load();
  }
- const locked=busy||unknown;
+ const locked=busy||unknown||!!data&&!recovery.ready;
  return <section className="k-page"><h1>{t('Financial reconciliation','財務對帳')}</h1>
  {!actorId||!valid?<Link href={`/${locale}/sign-in?next=${encodeURIComponent(href(opsMode?'ops/reconciliation':'merchant/reconciliation'))}`}>{t('Sign in','登入')}</Link>:!enabled?<p>{t('Reconciliation service is unavailable.','對帳服務尚未接通。')}</p>:<>
+ {recovery.error&&<p role="alert">{t('Device draft recovery is unavailable. Keep this page open; no new review is sent until the original request is retained.','裝置草稿恢復未能使用。請保持此頁開啟；保留原有請求前不會送出新的覆核。')}</p>}{recovery.saved&&<p role="status">{t('Draft kept on this device for this account.','草稿已保留在此裝置並綁定此帳戶。')}</p>}
  <p>{t('Historical records only. Payment, refunds, fee adjustments and financial dispute resolution remain disabled.','只顯示歷史紀錄；付款、退款、費用調整及金錢爭議裁決尚未開放。')}</p>
  {error&&<WorkspaceServiceState locale={locale} code={error} retryState={unknown?'immutable-command':busy?'blocked':'read'} returnPath={href(opsMode?'ops/reconciliation':'merchant/reconciliation')}/> }
  {!opsMode&&<><label>{t('Merchant','商戶')}<select disabled={locked} value={merchantId} onChange={e=>setMerchantId(e.target.value)}>{memberships.map(m=><option key={m.merchantId} value={m.merchantId}>{m.name}</option>)}</select></label>{memberships.length===0&&<p>{t('No merchant finance membership is available for this account.','此帳戶沒有可用的商戶財務成員權限。')}</p>}</>}

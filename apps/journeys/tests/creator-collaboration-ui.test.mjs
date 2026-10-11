@@ -1,4 +1,4 @@
-import {serviceStateModule,listFilterModule} from './helpers/workspace-harness.mjs';
+import {recoveryHookModule,serviceStateModule,listFilterModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import * as listQueries from '../lib/collaboration/list-query.ts';
 import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
@@ -17,8 +17,9 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
  const jsx=(type,props)=>typeof type==='function'&&type.name==='WorkspaceServiceState'?type(props):({type,props}),module={exports:{}};
  const service=await serviceStateModule(jsx);const filters=await listFilterModule(jsx);let sequence=0;
  const validation=await import('../lib/creators/collaboration-validation.ts');
+ const recoveryHook=await recoveryHookModule(react);
  runInContext(compiled.code,createContext({module,exports:module.exports,Date,URL,URLSearchParams,window:{location:{search:'',pathname:'/en/studio/missions'},history:{replaceState(){}},addEventListener(){},removeEventListener(){}},crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},require:name=>{
-  if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+  if(name==='./useWorkspaceRecovery')return recoveryHook;if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
   if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en',href:path=>'/en/'+path})};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;
@@ -30,7 +31,7 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
  function elements(node){if(arguments.length===0)node=tree;return!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
  function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
  const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||x.props.children===label));
- render();await tick();render();return{render,find,elements,text,invalidate:()=>invalidate?.(null),props};
+ render();for(let n=0;n<4;n++){await tick();render();}return{render,find,elements,text,invalidate:()=>invalidate?.(null),props};
 }
 
 test('creator unknown join retries one immutable command and clears private work on account invalidation',async()=>{

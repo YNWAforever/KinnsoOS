@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {useWorkspaceRecovery} from './useWorkspaceRecovery';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -21,6 +22,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
  const [applicationNote,setApplicationNote]=useState(''),[agreed,setAgreed]=useState(false),[form,setForm]=useState<EvidenceForm|null>(null);
  const generation=useRef(0),pending=useRef<{command:CreatorMissionCommand;requestId:string}|null>(null);
  const reference=useRef<string|undefined>(undefined);
+ const recovery=useWorkspaceRecovery({actorId,scope:'creator-mission:'+missionId,authorized:!!missionId&&!!detail&&valid,draft:{applicationNote,form},pending:pending.current,dirty:!!applicationNote||!!form,restore:value=>{const d=value.draft as {applicationNote?:string;form?:EvidenceForm|null};if(typeof d?.applicationNote==='string'&&d.applicationNote.length<=2000)setApplicationNote(d.applicationNote);if(d?.form&&typeof d.form.milestoneId==='string'&&typeof d.form.proofText==='string'&&d.form.proofText.length<=10244&&typeof d.form.notes==='string'&&d.form.notes.length<=4000)setForm(d.form);if(value.pending?.requestId&&value.pending.command&&typeof value.pending.command==='object'){pending.current=value.pending as {command:CreatorMissionCommand;requestId:string};setUnknown(true);setError('UNAVAILABLE');}}});
  function clear(){setFilters({});applied.current={};setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
  function denied(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){clear();if(code==='AUTH_REQUIRED')setValid(false);}}
  async function load(after?:string,nextScope=scope,nextQuery:CollaborationListQuery=applied.current){
@@ -54,12 +56,14 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
    const saved=await creatorMissions.get(missionId);if(own!==generation.current)return;
    if(!saved.ok){setBusy(false);reference.current=saved.requestId;denied(saved.code);setError(saved.code);return;}
   }
+  try{await recovery.retain(intent);}catch{setBusy(false);setUnknown(true);setError('UNAVAILABLE');return;}
   const result=await creatorMissions.command(missionId,intent.command,intent.requestId);if(own!==generation.current)return;setBusy(false);
-  if(!result.ok){reference.current=result.requestId;denied(result.code);setError(result.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(result.code))return;setUnknown(wasUnknown||result.retryable);if(!wasUnknown&&!result.retryable)pending.current=null;return;}
+  if(!result.ok){reference.current=result.requestId;denied(result.code);setError(result.code);if(['AUTH_REQUIRED','FORBIDDEN'].includes(result.code))return;setUnknown(wasUnknown||result.retryable);if(!wasUnknown&&!result.retryable){await recovery.clear(intent.requestId);pending.current=null;}return;}
+  try{await recovery.clear(intent.requestId);}catch{setUnknown(true);setError('UNAVAILABLE');return;}
   pending.current=null;setUnknown(false);setForm(null);setAgreed(false);setApplicationNote('');setMessage(t('Your update is saved.','更新已保存。'));await load();
  }
  function prepare(milestoneId:string,submission?:Evidence){setForm({milestoneId,submissionId:submission?.id??null,expectedUpdatedAt:submission?.updatedAt??null,proofText:submission?.proofUrls.join('\n')??'',notes:submission?.notes??''});setError('');setMessage('');}
- const locked=busy||unknown;
+ const locked=busy||unknown||!!detail&&!recovery.ready;
  const status=(value:string)=>{
   const labels:Record<string,[string,string]>={invited:['Invitation received','收到邀請'],applied:['Application under review','申請審核中'],active:['Active collaboration','合作進行中'],completed:['Completed','已完成'],cancelled:['Withdrawn','已撤回'],rejected:['Rejected','未獲接納'],submitted:['Submitted for review','已提交審核'],approved:['Approved','已核准'],revision_requested:['Revision requested','需要修改'],pending:['Draft evidence','證明草稿'],published:['Open','開放中'],paused:['Closed to new applications','已停止接受新申請']};
   return labels[value]?t(...labels[value]):value;
@@ -77,6 +81,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   <div className="k-actions"><Link className="k-btn" href={href('studio/guides')}>{t('My guides','我的攻略')}</Link><Link className="k-btn" href={href('studio/earnings')}>{t('Earnings records','收益紀錄')}</Link><Link className="k-btn" href={href('inbox')}>{t('Inbox','收件匣')}</Link></div>
   {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load()} returnPath={href(path)}/>}
   {error==='INVALID'&&<p>{errorText}</p>}{error==='FORBIDDEN'&&<Link href={href('studio')}>{t('Open creator profile','開啟創作者檔案')}</Link>}
+  {recovery.saved&&<p role="status">{t('Draft kept on this device for this account.','草稿已保存在此裝置，僅供此帳戶使用。')}</p>}{recovery.error&&<p role="alert">{t('Device recovery is unavailable. Keep this page open and copy your unsent text.','裝置恢復暫時無法使用。請保持本頁開啟並複製未送出的文字。')}</p>}
   {message&&<p role="status">{message}</p>}
   {busy&&<p role="status">{t('Loading collaboration records…','正在載入合作紀錄…')}</p>}
   <button className="k-btn" disabled={locked} onClick={()=>load()}>{t('Refresh collaborations','重新載入合作')}</button>

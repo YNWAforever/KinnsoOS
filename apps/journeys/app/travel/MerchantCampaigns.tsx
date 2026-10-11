@@ -1,5 +1,6 @@
 'use client';
 import {useSearchParams} from 'next/navigation';
+import {useWorkspaceRecovery} from './useWorkspaceRecovery';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -17,13 +18,14 @@ function blank():CampaignInput{return{title:'',summary:'',couponCode:'',couponUr
 export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockChange,onChanged,onDenied}:{actorId:string;merchantId:string;refreshKey:number;locked:boolean;onLockChange:(locked:boolean)=>void;onChanged:()=>Promise<void>;onDenied:(code:string)=>void}){
  const {t,locale}=useApp();const entryQuery=useSearchParams(),requestedCampaign=entryQuery.getAll('campaign').length===1&&(!entryQuery.has('company')||entryQuery.get('company')===merchantId)?entryQuery.get('campaign'):null;const routeCampaign=requestedCampaign&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(requestedCampaign)?requestedCampaign:null;
  const [data,setData]=useState<CampaignDirectory|null>(null),[loading,setLoading]=useState(true),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
- const [draft,setDraft]=useState<CampaignInput>(blank),[rates,setRates]=useState(['','','']),[editing,setEditing]=useState<CampaignDetail|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
+ const [draft,setDraft]=useState<CampaignInput>(blank),[rates,setRates]=useState(['','','']),[editing,setEditing]=useState<Pick<CampaignDetail,'id'|'title'|'updatedAt'>|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
  const [filters,setFilters]=useState<CollaborationListQuery>({});
  const [feedback,setFeedback]=useState<Record<string,string>>({}),[branchEdits,setBranchEdits]=useState<Record<string,{name:string;reason:string}>>({});
  const generation=useRef(0),scope=useRef(0),running=useRef(false),pending=useRef<{command:CampaignCommand;requestId:string}|null>(null),query=useRef<CampaignQuery>({});
  const editorBaseline=useRef({input:JSON.stringify(blank()),rates:['','',''].join('|')});
  const reference=useRef<string|undefined>(undefined);
- const blocked=locked||busy||unknown||!valid;
+ const recovery=useWorkspaceRecovery({actorId,scope:'merchant-campaign:'+merchantId,authorized:!!data&&valid,draft:{draft,rates,editing,feedback,branchEdits},pending:pending.current,dirty:JSON.stringify(draft)!==editorBaseline.current.input||rates.some(Boolean)||Object.values(feedback).some(Boolean)||Object.keys(branchEdits).length>0,restore:value=>{const d=value.draft as {draft?:CampaignInput;rates?:string[];editing?:Pick<CampaignDetail,'id'|'title'|'updatedAt'>|null;feedback?:Record<string,string>;branchEdits?:Record<string,{name:string;reason:string}>};if(d?.draft){try{if(typeof d.draft.title!=='string'||typeof d.draft.summary!=='string'||!Array.isArray(d.draft.milestones)||!Array.isArray(d.draft.requirements)||!Array.isArray(d.draft.deliverables))throw Error('INVALID');setDraft(d.draft);if(Array.isArray(d.rates)&&d.rates.length===3&&d.rates.every(x=>typeof x==='string'))setRates(d.rates);if(d.editing?.id&&typeof d.editing.updatedAt==='string')setEditing(d.editing);}catch{setError('INVALID');}}if(d?.feedback&&Object.values(d.feedback).every(x=>typeof x==='string'&&x.length<=4000))setFeedback(d.feedback);if(d?.branchEdits&&Object.values(d.branchEdits).every(x=>typeof x?.name==='string'&&typeof x.reason==='string'))setBranchEdits(d.branchEdits);if(value.pending?.requestId){try{const command=campaignCommand(value.pending.command);pending.current={command,requestId:value.pending.requestId};setUnknown(true);setError('UNAVAILABLE');}catch{setError('INVALID');}}}});
+ const blocked=locked||busy||unknown||!valid||!!data&&!recovery.ready;
  const dirty=JSON.stringify(draft)!==editorBaseline.current.input||rates.join('|')!==editorBaseline.current.rates;
  const labels:Record<string,[string,string]>={draft:['Draft','草稿'],published:['Open for applications','接受申請中'],paused:['Closed to new applications','已停止接受新申請'],completed:['Completed','已完成'],cancelled:['Cancelled','已取消'],applied:['Awaiting review','等待審核'],invited:['Invitation awaiting creator response','等待創作者回覆邀請'],active:['Accepted','已接受'],submitted:['Submitted for review','已提交審核'],pending:['Not submitted','尚未提交'],approved:['Approved','已批准'],rejected:['Rejected','已拒絕'],revision_requested:['Revision requested','需要修改']};
  const status=(value:string)=>labels[value]?t(...labels[value]):t('Recorded state','已記錄狀態');
@@ -57,9 +59,11 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
    const saved=await merchantCampaigns.list(merchantId,{campaignId:query.current.campaignId});if(own!==scope.current)return;
    if(!saved.ok){running.current=false;setBusy(false);reference.current=saved.requestId;setError(saved.code);deny(saved.code);return;}
   }
+  try{await recovery.retain(request);}catch{running.current=false;setBusy(false);setUnknown(true);setError('UNAVAILABLE');return;}
   const result=await merchantCampaigns.command(merchantId,request.command,request.requestId);if(own!==scope.current)return;
   running.current=false;setBusy(false);
-  if(!result.ok){reference.current=result.requestId;setError(result.code);setUnknown(wasUnknown||result.code==='UNAVAILABLE');if(!wasUnknown&&result.code!=='UNAVAILABLE')pending.current=null;deny(result.code);return;}
+  if(!result.ok){reference.current=result.requestId;setError(result.code);setUnknown(wasUnknown||result.code==='UNAVAILABLE');if(!wasUnknown&&result.code!=='UNAVAILABLE'){await recovery.clear(request.requestId);pending.current=null;}deny(result.code);return;}
+  try{await recovery.clear(request.requestId);}catch{setUnknown(true);setError('UNAVAILABLE');return;}
   pending.current=null;setUnknown(false);setError('');setMessage(t('Saved on the server.','已儲存至伺服器。'));
   if(['createDraft','updateDraft'].includes(request.command.type))resetEditor();
   const campaignId=['createDraft','updateDraft','publish','close'].includes(request.command.type)?request.command.id:query.current.campaignId;
@@ -72,7 +76,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   if(editing)void send({type:'updateDraft',id:editing.id,expectedUpdatedAt:editing.updatedAt,input,reason:t('Merchant saved an edited promotion draft','商戶儲存已修改的推廣草稿')});
   else void send({type:'createDraft',id:crypto.randomUUID(),input,publish,reason:publish?t('Merchant confirmed publication of the authored brief','商戶確認發布已填寫的推廣簡報'):t('Merchant saved an authored promotion draft','商戶儲存推廣草稿')});
  }
- function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones,applicationOpensAt:detail.applicationOpensAt??null,applicationClosesAt:detail.applicationClosesAt??null,scheduleTimeZone:detail.scheduleTimeZone??'UTC'};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing(detail);setDraft(input);setRates(nextRates);setMessage('');}
+ function edit(detail:CampaignDetail){const input={title:detail.title,summary:detail.summary,couponCode:detail.couponCode,couponUrl:detail.couponUrl,affiliateRate:detail.affiliateRate,kinnsoRate:detail.kinnsoRate,creatorRate:detail.creatorRate,requirements:detail.requirements,deliverables:detail.deliverables,milestones:detail.milestones,applicationOpensAt:detail.applicationOpensAt??null,applicationClosesAt:detail.applicationClosesAt??null,scheduleTimeZone:detail.scheduleTimeZone??'UTC'};const nextRates=[detail.affiliateRate,detail.kinnsoRate,detail.creatorRate].map(value=>value===null?'':String(value));editorBaseline.current={input:JSON.stringify(input),rates:nextRates.join('|')};setEditing({id:detail.id,title:detail.title,updatedAt:detail.updatedAt});setDraft(input);setRates(nextRates);setMessage('');}
  if(!valid)return <WorkspaceServiceState locale={locale} code={error||'AUTH_REQUIRED'} retryState="blocked" returnPath={`/${locale}/merchant`}/>;
  return <section className="k-card k-campaigns" aria-label={t('Promotion management','推廣管理')}>
   {data&&<CollaborationTasks locale={locale} actions={campaignTasks(data,locale,actorId)} disabled={blocked}/>}
@@ -80,7 +84,7 @@ export function MerchantCampaigns({actorId,merchantId,refreshKey,locked,onLockCh
   <p>{t('Save a draft, describe the work creators should deliver, then publish when the brief is ready. Published terms stay fixed; closing stops new applications while accepted creators can finish their work.','先儲存草稿，說明創作者需要提交的作品，準備好後再發布。發布後條款會鎖定；關閉只停止新申請，已接受的創作者仍可完成作品。')}</p>
   {(error||unknown)&&<WorkspaceServiceState locale={locale} code={error||'UNAVAILABLE'} requestId={pending.current?.requestId??reference.current} retryState={busy?'blocked':unknown?'immutable-command':'read'} onRetry={()=>unknown?void send():void load({...query.current,after:undefined},true)} returnPath={`/${locale}/merchant`} retryLabel={unknown?t('Retry promotion request','重試推廣請求'):undefined}/>}
   {error==='INVALID'&&<p>{t('Publishing requires coupon details, all commission rates and at least one complete milestone. Reviews need written feedback.','發布必須提供優惠資料、全部佣金比例及至少一個完整里程碑；審核必須填寫回饋。')}</p>}
-  {message&&<p role="status">{message}</p>}
+  {recovery.saved&&<p role="status">{t('Draft kept on this device for this account.','草稿已保存在此裝置，僅供此帳戶使用。')}</p>}{recovery.error&&<p role="alert">{t('Device recovery is unavailable. Keep this page open and copy your unsent text.','裝置恢復暫時無法使用。請保持本頁開啟並複製未送出的文字。')}</p>}{message&&<p role="status">{message}</p>}
   <form onSubmit={event=>{event.preventDefault();save((event.nativeEvent as SubmitEvent).submitter?.getAttribute('value')==='publish');}}>
    <fieldset disabled={blocked}><legend>{t('Application window','申請時段')}</legend>
     <p>{t('Times below use UTC. The selected display zone appears with the saved dates. Published dates stay fixed.','以下時間使用 UTC，儲存後會按所選時區顯示日期。發布後日期會鎖定。')}</p>

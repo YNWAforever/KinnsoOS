@@ -2234,6 +2234,13 @@
           "run": 38099233449,
           "scenario": "Complete current P14 candidate",
           "result": "Verify build/type/source-package and mailbox passed; integration 83 PASS/1 FAIL/0 SKIP. The5001-row export fixture timed out inserting500-row batches before invoking its RPC, so browser job was not reached. Three other insights DB cases passed. Original failure retained; fixture batches reduced to100 without reducing5001 rows, export bounds or authorization assertions."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "68df6906c1ec322f9f401ffb548879587dd0583a",
+          "run": 38099788314,
+          "scenario": "Final P14 isolated gate retained",
+          "result": "DB gate PASS;127 browser PASS/1 company-switch FAIL. P14 u10 browser stories were NOT_SELECTED by u0 glob, therefore no P14 native acceptance claimed. P17 adds executed-denominator regression and fixes stale company denial after valid component RED."
         }
       ],
       "blockers": [
@@ -2327,6 +2334,13 @@
           "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
           "scenario": "P15 source distribution and build",
           "result": "Updated source manifest includes actual new test. npm run build/source pack PASS after463-unit/typecheck PASS; full extracted rebuild and owned role DB/browser remain exact-candidate CI gates."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "750ac9c0f0f7523d9c4e4b0c564eadb82a0aa4b4",
+          "run": 38099937802,
+          "scenario": "Journeys P15 current source",
+          "result": "463 unit/74 DB/128 browser/4 mailbox PASS;0 FAIL/0 SKIP. Root PR38099937798 font build FAIL/e2e SKIPPED, root push38099934629 PASS; mixed root gate is retained."
         }
       ],
       "blockers": [
@@ -2353,6 +2367,66 @@
         {
           "decision": "Existing self/foreign/branch scope and no-invented-settlement DB regressions are reused, rather than fabricating financial outcomes or broadening money conversions. Native EN/zh-HK, offline/hard-refresh, real-device and hosted evidence remain separate P17/target gates.",
           "cost_if_wrong": "UI unit success alone does not prove actual browser or hosted acceptance; unknown intent across navigation/reload still needs P17 work."
+        },
+        {
+          "decision": "Keep scoped GET plus mature immutable receipt replay for off-page finance sources.",
+          "cost_if_wrong": "GET is not receipt-specific committed proof; backend auth/digest/receipt contracts must remain valid."
+        },
+        {
+          "decision": "Address component-only unknown/draft refresh loss in P17.",
+          "cost_if_wrong": "P15 alone does not prove navigation/refresh recovery."
+        },
+        {
+          "decision": "Authorization/account denial clears private UI and exact sign-in task links.",
+          "cost_if_wrong": "Restoration requires fresh authorization; explicit sign-out clears device private drafts."
+        },
+        {
+          "decision": "New source/support links stay locked for dirty or unknown work; wider navigation protection belongs to P17.",
+          "cost_if_wrong": "Browser/global navigation still needs final native coverage."
+        },
+        {
+          "decision": "Do not redesign membership choices on report FORBIDDEN without a proven private-record disclosure.",
+          "cost_if_wrong": "Read authorizations remain mandatory; residual account membership metadata is existing behavior."
+        },
+        {
+          "decision": "Membership lookup outage is a P17 recovery gap, not a new finance outcome contract.",
+          "cost_if_wrong": "Refresh-report alone cannot recover initial membership fetch failure; remains an open limit."
+        },
+        {
+          "decision": "Finance-only and ops users use generic support; P12 mission context remains creator/owner only.",
+          "cost_if_wrong": "Users may need to copy safe source references manually."
+        },
+        {
+          "decision": "Historical creator support links reauthorize at destination.",
+          "cost_if_wrong": "Suspended activity can deny new context; affiliate edges are not claimed as proven."
+        },
+        {
+          "decision": "Reuse mature owner company/campaign selection in activity links.",
+          "cost_if_wrong": "Link construction unit tests do not prove every hosted destination."
+        },
+        {
+          "decision": "Show actual updatedAt/recorded payout time and explicit missing time.",
+          "cost_if_wrong": "A creation timestamp is not completion, payout delivery or a financial audit as-of time."
+        },
+        {
+          "decision": "Retain exact raw negatives and block unsupported conversion without money movement.",
+          "cost_if_wrong": "No new adjustment, refund or live settlement capability exists."
+        },
+        {
+          "decision": "Keep manual support reference explanation rather than extending P12 context to finance source IDs.",
+          "cost_if_wrong": "Cases are mission-linked or generic, not automatically finance-record attached."
+        },
+        {
+          "decision": "Do not polish existing compact JSX/raw recorded states without an acceptance defect.",
+          "cost_if_wrong": "Readability cleanup remains optional future work."
+        },
+        {
+          "decision": "Eight P15 actual-handler tests do not replace merchant/native browser acceptance.",
+          "cost_if_wrong": "Final combined native and target gates remain required."
+        },
+        {
+          "decision": "Ledger base SHA plus changes is local provenance; append final CI source/tree separately.",
+          "cost_if_wrong": "Never substitute prior counts or a base SHA for final candidate acceptance."
         }
       ],
       "review": {
@@ -2408,6 +2482,13 @@
           "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
           "scenario": "P16 operations performance completeness",
           "result": "Valid baseline RED:4/4 assertions fail because traveller-only evidence or wrong private roles could pass. GREEN:4/4 plus15 prior performance cases pass; combined488 unit PASS/0 FAIL/0 SKIP and typecheck PASS. Runtime lab NOT_RUN locally because no owned Docker is available; dedicated owned CI collection added, no metric/capacity acceptance inferred."
+        },
+        {
+          "environment": "owned-localhost-ci",
+          "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
+          "run": 38100760304,
+          "scenario": "First real operations lab",
+          "result": "Both latency and cold/warm collectors INCOMPLETE: setup PGRST204,0 samples. Cleanup PASS_OWNED_SYNTHETIC_ACTORS_REMOVED. Incorrect proof_notes fixture field corrected to mature notes; no product bottleneck or metric acceptance inferred."
         }
       ],
       "blockers": [],
@@ -2482,11 +2563,11 @@
         "U04",
         "U06"
       ],
-      "code_status": "IN_PROGRESS",
-      "ci_status": "PENDING_COMBINED_BASELINE",
+      "code_status": "IMPLEMENTED_LOCAL_NATIVE_PENDING",
+      "ci_status": "PENDING_NEW_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": "1abfbe972bd16acf650dbf885b646af2a5b07bed",
+      "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
       "evidence": [
         {
           "environment": "owned-localhost-ci",
@@ -2494,10 +2575,34 @@
           "run": 38098113582,
           "scenario": "Preserved same-head push failures for P17 diagnosis",
           "result": "124 browser PASS/2 existingU04 FAIL: private-invitation create button became disabled, and company-switch draft fields disappeared behindFORBIDDEN. These are not waived by the same-head PR run passing. Failure logs and native snapshots retained."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8 plus scoped P17 working-tree changes",
+          "scenario": "Draft/unknown/role and native test-denominator TDD",
+          "result": "Finance draft/unknown original baseline1 PASS2 FAIL; creator/campaign/support remount and stale company denial3 PASS4 FAIL ->7 PASS. Terminal conflict18 PASS1 FAIL ->19 PASS. Actual connected config omitted u10 ->RED0 PASS1 FAIL, added u1 glob. Full500 unit PASS0 FAIL0 SKIP,typecheck/build PASS; native and archive rebuild pending. Three strict IDB regressions enforce transaction participation, same UUID/payload preservation and account switch/logout clearing."
         }
       ],
       "blockers": [],
-      "next_action": "Reproduce preserved native failures and hard-reload/unknown-intent loss with actual tests; complete bilingual widths/200% keyboard/private-role/source checks on the combined final candidate. Real devices and human AT remain NOT_RUN."
+      "next_action": "Run actual u10/u11 owned native browser stories and all final source gates; retain physical iOS/Android/VoiceOver/NVDA NOT_RUN and hosted target blockers.",
+      "rulings": [
+        {
+          "decision": "Reuse existing actor-bound IndexedDB identity, account invalidation and explicit logout clearing. Restore creator/campaign/support/finance drafts only after fresh authorized reads. Persist original UUID and exact command before POST; clear only its confirmed or definite terminal result.",
+          "cost_if_wrong": "Device storage denial blocks a new write; forced shutdown before an async save can still lose newest keystrokes. Explicit logout/account switch intentionally clears private drafts; server request receipts remain, but device originals are not a cross-device or post-logout journal."
+        },
+        {
+          "decision": "Keep mature server receipts and per-workspace reconciliation rather than adding a new hosted command journal/schema. Scope remount storage to actor and task/company; private raw invitation tokens and redemption codes are not newly persisted.",
+          "cost_if_wrong": "Broader invitation/redemption/account-switch unknown recovery remains a precise P17 acceptance limitation; do not mark all-workspace hard-refresh acceptance complete."
+        },
+        {
+          "decision": "Reject stale company callbacks and suppress old-company data during a selected-company render. Fix native selector scope u0 plus u1 instead of treating omitted tests as passed.",
+          "cost_if_wrong": "Native current-head execution is still necessary to connect the valid parent-component reproduction to intermittent U04 races; old failed runs remain evidence."
+        },
+        {
+          "decision": "No physical devices or human assistive-technology sessions are available; retain NOT_RUN rather than infer them from Chromium width/keyboard tests.",
+          "cost_if_wrong": "U06/P17 hosted human acceptance and release remain open."
+        }
+      ]
     },
     {
       "id": "P18",
@@ -2536,16 +2641,22 @@
         "U05",
         "U06"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
-      "staging_status": "NOT_RUN",
-      "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
+      "code_status": "RELEASE_PACKET_PREPARED",
+      "ci_status": "NOT_A_RUNTIME_GATE",
+      "staging_status": "BLOCKED_TARGET",
+      "release_status": "NO_GO",
+      "source_sha": "49a3580778016c4dfef7a220192019a5c5e0e2a8",
+      "evidence": [
+        {
+          "environment": "source-only",
+          "scenario": "M2 exact operations release preparation",
+          "result": "Nine source SQL hashes against observed main frozen separately from Journeys ZIP; ownership, pilot sequence, missing actors/content/devices, job/unknown recovery and rollback packet prepared. No hosted request or capability mutation executed."
+        }
+      ],
       "blockers": [
         "BLOCKED_TARGET: no designated staging ownership, schema/config reconciliation, recovery and approved test actors supplied."
       ],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "next_action": "After exact-current code/CI gates, receive designated staging, consented pilot actors/content and current recovery owner/evidence; reconcile target read-only before a concrete scoped mutation approval."
     }
   ]
 }
