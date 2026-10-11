@@ -81,7 +81,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
    {cursor&&<button className="k-btn" disabled={locked} onClick={()=>load(cursor)}>{t('Load more collaborations','載入更多合作')}</button>}
   </>}
   {detail&&<>
-   <Link href={href('studio/missions')}>{t('All collaborations','所有合作')}</Link>
+   <Link href={href('studio/missions')}>{t('All collaborations','所有合作')}</Link>{locked||form||applicationNote.trim()?<p>{t('Finish this edit or reconcile the current request before opening support.','請先完成修改或核對目前請求，再開啟客服。')}</p>:<Link className="k-btn" href={`/${locale}/support?mission=${detail.id}`}>{t('Ask support about this collaboration','向客服查詢此合作')}</Link>}
    <article className="k-card"><p className="k-eyebrow">{detail.merchantName??detail.missionSource}</p><p>{detail.summary}</p><p>{status(detail.status)}{detail.participant&&' · '+status(detail.participant.status)}</p>
     {(detail.applicationOpensAt??detail.startsAt)&&<p>{t('Applications open: ','申請開始：')}<time dateTime={(detail.applicationOpensAt??detail.startsAt)!}>{scheduleDate((detail.applicationOpensAt??detail.startsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}
     {(detail.applicationClosesAt??detail.endsAt)&&<p>{t('Applications close: ','申請截止：')}<time dateTime={(detail.applicationClosesAt??detail.endsAt)!}>{scheduleDate((detail.applicationClosesAt??detail.endsAt)!,detail.scheduleTimeZone??'UTC',locale)}</time></p>}

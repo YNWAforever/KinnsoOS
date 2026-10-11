@@ -1254,7 +1254,14 @@
     "P11 final review Ruling: suppress terminal rejected nonrepeatable work in scan and fresh emit; pending/revision/unsubmitted remain eligible, repeatable uses receipt cap. Cost: final rejection requires a separately authorized future workflow to reopen.",
     "P11 final review Ruling: apply cursor, processed facts and lookahead inside the SQL candidate query; verify substantial processed history with EXPLAIN ANALYZE before any index proposal. Cost: query still scans eligible ownership joins as chosen by current indexes; no hosted performance claim.",
     "P11 final review declined hosted target compatibility, scheduler ownership/registration, external providers, human hosted acceptance, and unchanged P01-P10 beyond required dependencies. Cost: these gates remain NOT_RUN, no schedule enabled.",
-    "P11 minor deferred: identical mission-level inbox title/link for two deadlines remains safe but less specific; a future allowlisted milestone title/deadline projection needs its own native inbox contract coverage."
+    "P11 minor deferred: identical mission-level inbox title/link for two deadlines remains safe but less specific; a future allowlisted milestone title/deadline projection needs its own native inbox contract coverage.",
+    "P12 Ruling: contextual case authorization reuses native creator mission ACL and merchant owner role; ops access to a support queue alone grants no activity access. Cost: suspended activity access blocks new contextual cases.",
+    "P12 Ruling: stored case ownership and request digest allow reconciliation after activity role loss; a context never shares a customer case with merchant owners. Cost: old cases retain safe activity IDs and authored subjects while activities become inaccessible.",
+    "P12 Ruling: keep mature operations status/revision/audit/messages and quota; only title is prefilled, private message starts empty. Resolution does not settle any financial record. Cost: customers describe private evidence manually.",
+    "P12 final review Ruling: preserve context and authored draft across unrelated unavailable case-list reads; require an authorized context whenever the URL names an activity; context generation is independent and has explicit retry. Cost: history and activity may show separate errors rather than a single refresh clearing both.",
+    "P12 final review Ruling: scope success continuations to the same actor/route after awaited history reload. Cost: a late old-actor confirmation is discarded even if its original command committed.",
+    "P12 final review Ruling: block the new creator/merchant support entry during authored edits or unknown writes; creator evidence has an explicit discard action only when no command is uncertain. Cost: opening support waits for reconciliation or a deliberate draft discard; broader navigation/storage restoration remains P17.",
+    "P12 final review declined current whole-stack CI until exact candidate, hosted migration/config/roles/rollback/production, real devices/assistive technology/full200percent/keyboard, concurrent role-revocation experiment and production locks, preexisting generic navigation/draft persistence beyond new entry, retained raw formatting/global reply input/pagination, email/booking/financial transitions/P13-P18. Cost: those distinct gates remain open and no second review is claimed."
   ],
   "tasks": [
     {
@@ -1984,14 +1991,32 @@
         "U04",
         "U05"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "REVIEW_FIXES_IMPLEMENTED_CI_PENDING",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "b39a0d3551b43172916d38ea50eee5ddcf659094",
+      "evidence": [
+        {
+          "source_sha": "f25e0e9ed1c3ffee47b86256abdc771bc730b258",
+          "environment": "owned_CI_isolated_stack_and_local_component",
+          "scenario": "P12 real context and original support receipt RED",
+          "result": "CI38095354627:72existingDBPASS_2newFAIL_missing_context/receiptRPC_0SKIP; actual context BFF400 and 3 UI missing-prefill/direct-retry/denied-context failures observed before candidate; current9unitPASS, whole candidate and EN/zh-HK native owned stories pending. Initial link test modeled Next Link incorrectly; corrected link coverage passes and is not counted as independent RED.",
+          "observed_at": "2026-10-11T00:00:27.889028+00:00"
+        },
+        {
+          "source_sha": "b39a0d3551b43172916d38ea50eee5ddcf659094",
+          "environment": "local_actual_component",
+          "scenario": "One final review fix pass: independent context/account generations and protected new support entry",
+          "result": "9PASS4FAIL observed before fixes: list unavailable removes context restriction, list refresh abandons held context, old actor continuation restores private case UUID, new creator link discards open evidence. Additional transient-context retry1FAIL before action. Candidate14focusedPASS; matching full unit/type/build/owned CI pending.",
+          "observed_at": "2026-10-11T00:10:15.565914+00:00"
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: no designated staging ownership, configuration, schema/recovery or approved test actors supplied.",
+        "CURRENT_CI_AND_REVIEW_PENDING"
+      ],
+      "next_action": "Verify full current owned CI and one fresh final review; hosted target remains separately blocked."
     },
     {
       "id": "P13",
@@ -2102,14 +2127,51 @@
         "U04",
         "U05"
       ],
-      "code_status": "NOT_STARTED",
-      "ci_status": "NOT_RUN",
+      "code_status": "IMPLEMENTED_LOCAL",
+      "ci_status": "PENDING_CURRENT_CANDIDATE",
       "staging_status": "NOT_RUN",
       "release_status": "NOT_RELEASED",
-      "source_sha": null,
-      "evidence": [],
-      "blockers": [],
-      "next_action": "Execute saved plan after dependency code gates; retain hosted blockers separately."
+      "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+      "evidence": [
+        {
+          "environment": "isolated-local",
+          "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+          "scenario": "P15 actual earnings and finance component handlers",
+          "result": "Corrected Next Link boundary baseline:1 existing PASS/7 new FAIL/0 SKIP; minimum source changes:8/8 PASS, complete463 unit PASS/0 FAIL/0 SKIP and typecheck PASS. Existing large exact decimals/currency boundaries were already GREEN, not newly fixed. Source/archive/build and owned DB/browser require the committed candidate."
+        },
+        {
+          "environment": "isolated-local",
+          "source_sha": "4ea044db93ec546b72207f1784c8a135e1543532",
+          "scenario": "P15 source distribution and build",
+          "result": "Updated source manifest includes actual new test. npm run build/source pack PASS after463-unit/typecheck PASS; full extracted rebuild and owned role DB/browser remain exact-candidate CI gates."
+        }
+      ],
+      "blockers": [
+        "BLOCKED_TARGET: designated staging configuration, test actors and recovery proof not supplied."
+      ],
+      "next_action": "Run complete exact-head owned CI and one fresh whole-branch review; retain per-currency/no-invented-settlement and actor scopes. P17 checks broader navigation/hard reload unknown intent recovery.",
+      "rulings": [
+        {
+          "decision": "Reuse existing source references and updatedAt; do not invent a report asOf, financial history or new payment/withdrawal command. Raw negative/unknown amounts remain exact and blocked from conversion.",
+          "cost_if_wrong": "Source timestamps can be absent or historical; UI explicitly says not recorded. Current payable or withdrawal claims require authoritative contracts and separate release authority."
+        },
+        {
+          "decision": "Tracked provider paid events, creator settlement paid status and historical payout decisions remain distinct. Existing per-currency NUMERIC aggregates and decimal strings are unchanged.",
+          "cost_if_wrong": "Readers may still need support to interpret historical events; no delivery, current balance or money movement acceptance is implied."
+        },
+        {
+          "decision": "Unknown review preserves original command/UUID/reason and reads the fresh scoped report before immutable backend replay. Unavailable reads prevent POST; denied authorization clears private state.",
+          "cost_if_wrong": "Fresh report is a reconciliation read, not a receipt-specific committed proof; replay relies on mature backend request digest, locking and receipt deduplication."
+        },
+        {
+          "decision": "Owner activity/support context uses only authorized mission IDs; scoped finance employees and ops use generic support. Existing source-reference fields are explicitly allowlisted.",
+          "cost_if_wrong": "Finance-only staff cannot acquire creator/merchant-owner support context through this UI; some context must be explained manually."
+        },
+        {
+          "decision": "Existing self/foreign/branch scope and no-invented-settlement DB regressions are reused, rather than fabricating financial outcomes or broadening money conversions. Native EN/zh-HK, offline/hard-refresh, real-device and hosted evidence remain separate P17/target gates.",
+          "cost_if_wrong": "UI unit success alone does not prove actual browser or hosted acceptance; unknown intent across navigation/reload still needs P17 work."
+        }
+      ]
     },
     {
       "id": "P16",
