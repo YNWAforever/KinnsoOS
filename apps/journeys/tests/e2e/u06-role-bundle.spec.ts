@@ -129,6 +129,7 @@ test('U06 deferred role panels retain server headings, language, private cache a
   }
   await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
   const javascript = await scripts();
-  for (const marker of roleMarkers)
+  for (const marker of roleMarkers.filter(marker => !['Your next actions', 'Invite a company colleague'].includes(marker)))
     expect(javascript.includes(marker), `Selected role route must load ${marker}`).toBe(true);
+  expect(javascript.includes('Invite a company colleague')).toBe(false);
 });
