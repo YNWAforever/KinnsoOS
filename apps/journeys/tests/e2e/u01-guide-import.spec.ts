@@ -111,7 +111,7 @@ test('superseded offline snapshot read cannot overwrite a fresh server load',asy
  await page.goto('/en/trips/'+trip.id);await expect(page.getByRole('heading',{name:trip.title,exact:true})).toBeVisible();
  const key=a.id+':'+trip.id;
  await expect.poll(()=>page.evaluate(key=>new Promise<number>((resolve,reject)=>{
-  const opening=indexedDB.open('kinnso_account_cache_v1',2);opening.onerror=()=>reject(opening.error);opening.onsuccess=()=>{const db=opening.result,read=db.transaction('snapshots').objectStore('snapshots').get(key);read.onsuccess=()=>{resolve(read.result?.snapshot.revision??0);db.close()};read.onerror=()=>reject(read.error)};
+  const opening=indexedDB.open('kinnso_account_cache_v1');opening.onerror=()=>reject(opening.error);opening.onsuccess=()=>{const db=opening.result,read=db.transaction('snapshots').objectStore('snapshots').get(key);read.onsuccess=()=>{resolve(read.result?.snapshot.revision??0);db.close()};read.onerror=()=>reject(read.error)};
  }),key)).toBe(1);
  await page.evaluate(key=>{
   const originalGet=IDBObjectStore.prototype.get,success=Object.getOwnPropertyDescriptor(IDBRequest.prototype,'onsuccess')!;

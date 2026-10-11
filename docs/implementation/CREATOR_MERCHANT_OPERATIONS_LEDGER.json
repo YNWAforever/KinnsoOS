@@ -2510,6 +2510,14 @@
           "run": 38102213699,
           "scenario": "Preserved real operations collection denominator",
           "result": "880 verified latency samples: all8 API/all8 PostgREST plus6/8 PostgreSQL groups. Merchant PostgreSQL stops on SELECT FOR SHARE in READ ONLY transaction; cold/warm browser0 samples due No usable sandbox. Both assessments INCOMPLETE; cleanup PASS. Source review fixes actual proof interaction and complete-dataset comparison; Ubuntu22 sandbox-preserving repair requires new evidence."
+        },
+        {
+          "source_sha": "c6416ab98c741efada04e5fe169c5491b36e693f",
+          "tested_merge": "566ccb91992bb76d39ec133b54cabcf1d2a9a208",
+          "run": 38103094640,
+          "environment": "owned-localhost-ci",
+          "scenario": "Sandbox-preserving Ubuntu22 collection and actual metadata RED",
+          "result": "880 verified latency samples again;2 merchant SQL groups INCOMPLETE under unchanged READ ONLY guard. Browser sandbox starts, then0 navigation samples due newly introduced missing os import. Both cleanup PASS. Exact metadata runtime reproduction6 PASS1 valid RED ReferenceError before minimum import fix; next source must execute full lab. Linux CI archive a673ee0868edf1c614ddbf97ba27f88f76004a4f4132f448e7cdbcf2c39d1339, separate from local Windows archive."
         }
       ],
       "blockers": [
@@ -2610,6 +2618,13 @@
           "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c plus single final review fix pass",
           "scenario": "Final review RED to GREEN",
           "result": "7 valid new failures ->19/19 focused PASS;508 unit PASS0 FAIL0 SKIP;4 strict actual IDB tests PASS;typecheck PASS. Conflict draft release is atomic, unknown auth denial keeps original, context denial leaves owned support usable, company finance isolation and duplicate receipt clear corrected. Native u10/u11 current source pending."
+        },
+        {
+          "source_sha": "061c5f4d717157e31ff1d785da4f20a347959b2c",
+          "run": 38102211658,
+          "environment": "owned-localhost-ci",
+          "scenario": "Actual selected u10/u11 denominator",
+          "result": "94 DB PASS;133 native browser PASS3 FAIL0 SKIP. u10 actual EN/zh controlled CSV tests PASS. Existing offline snapshot test requested IDBversion2 after schema3 upgrade (VersionError); corrected test opens current existing version. Both u11 failed early length2 assertion while only1 campaign POST observed: retry button disappears during busy before async replay completes. Require positive server confirmation before unchanged strict2 POST/same UUID/payload/one durable row assertions; no business duplicate was established. Full next-source native gate required."
         }
       ],
       "blockers": [
@@ -2762,7 +2777,8 @@
     ],
     "verification": {
       "red": "19 tests:12 PASS7 valid assertion FAIL0 SKIP against reviewed source",
-      "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending"
+      "green": "Same19 tests PASS0 FAIL0 SKIP; actual IDB boundary4 PASS; full508 PASS0 FAIL0 SKIP; typecheck PASS; build/owned native/source CI pending",
+      "ci_followup": "One fix pass remains open until final suite/current-source native gates; no second review. Correct actual collector os dependency and native evidence wait/version assumptions from retained CI failures, without reducing route/test/sample assertions. Local corrected-source509 unit PASS0 FAIL0 SKIP, typecheck PASS; metadata runtime7/7 GREEN. New native/root/lab evidence required."
     },
     "candidate_binding": "The final exact head, tested merge/tree and archive hash must be resolved from PR65 and native CI artifacts at freeze; this reviewed SHA is not the final acceptance SHA.",
     "rulings": [
@@ -2813,6 +2829,10 @@
       {
         "decision": "Keep previous P10/P11/P14 Minor rulings unchanged.",
         "cost_if_wrong": "Malformed URL invalidation edge, indistinguishable same-campaign milestone cards, and explicit-Apply report freshness remain deferred with their recorded costs."
+      },
+      {
+        "decision": "Use actual owned CI failures to correct the collector runtime import and native observation assumptions; retain strict exact-command replay and durable-row assertions, waiting for positive server success rather than disappearing busy controls. Existing IDB test reads the application-created current version.",
+        "cost_if_wrong": "A future native failure still blocks acceptance; this does not waive133/3 or substitute a replay count for confirmed durable ownership. No new product behavior is inferred from these test repairs."
       }
     ]
   }

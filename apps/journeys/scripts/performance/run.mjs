@@ -3,6 +3,7 @@ import {existsSync, createWriteStream} from 'node:fs';
 import {execFileSync, spawn} from 'node:child_process';
 import {randomUUID,createHash} from 'node:crypto';
 import path from 'node:path';
+import os from 'node:os';
 import {fileURLToPath} from 'node:url';
 import {loadEnvFile} from 'node:process';
 import lighthouse from './node_modules/lighthouse/core/index.js';
