@@ -33,3 +33,15 @@ test('standalone corresponding source runs its entire Node suite after locked in
   assert.ok(step, 'source extraction gate must exist');
   assert.match(step, /npm ci[\s\S]*npm test[\s\S]*npm run build[\s\S]*npm run typecheck/);
 });
+
+test('operations release assessment is required after collection and retains evidence on rejection',()=>{
+ const job=workflow.split('  operations-performance:')[1];
+ const gate=job?.split('- name: Enforce the source-bound operations assessment')[1]?.split('- uses:')[0];
+ assert.ok(gate,'collector success alone must not pass the operations prerequisite');
+ assert.match(gate,/if:.*!cancelled\(\)/);
+ assert.match(gate,/assert-operations-assessment\.mjs/);
+ assert.match(gate,/GITHUB_SHA/);assert.match(gate,/CANDIDATE_HEAD/);assert.match(gate,/CANDIDATE_BASE/);
+ assert.doesNotMatch(gate,/continue-on-error/);
+ assert.match(job,/Enforce the source-bound operations assessment[\s\S]*if: always\(\)[\s\S]*journeys-operations-performance/);
+ assert.match(job,/fetch-depth: 2/,'the PR mapping needs both verified parents and their trees');
+});

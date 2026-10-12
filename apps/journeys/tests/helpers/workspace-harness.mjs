@@ -39,7 +39,7 @@ export async function listFilterModule(jsx){
 
 /** Executes actual component handlers; only session/network/framework boundaries are doubles. */
 export async function workspaceHarness(name,ports={},initial={}) {
-  const states=[],refs=[],effects=[],events=[],invalidators=new Set();let cursor=0,changed=false,tree,sequence=initial.sequence??0;
+  const states=[],refs=[],effects=[],events=[],invalidators=new Set(),listeners=new Map();let cursor=0,changed=false,tree,sequence=initial.sequence??0;
   const props={actorId:'actor-A',enabled:true,path:'studio/missions',merchantId:'11111111-1111-4111-8111-111111111111',refreshKey:0,locked:false,onDenied:()=>{},onLockChange:()=>{},onChanged:async()=>{},...initial};
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
   const jsx=(type,props)=>typeof type==='function'?(initial.shallow?{type:type.name,props}:type(props)):({type,props});
@@ -73,7 +73,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     b.onLoad({filter:/.*/,namespace:'test'},args=>({loader:'js',contents:snippets[args.path]}));
   }}]});
   const session=new Map();const module={exports:{}};
-  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',reload(){}},addEventListener(){},removeEventListener(){},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
+  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,document:initial.document,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',hash:initial.hash??'',reload(){}},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
     if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return'a';if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
@@ -84,7 +84,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
   function text(node){if(arguments.length===0)node=tree;return typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(child=>text(child)).join(' '):'';}
   const find=(type,label)=>elements().find(x=>x.type===type&&(x.props['aria-label']===label||text(x)===label));
   const field=label=>{const row=elements().find(x=>x.type==='label'&&[x.props.children].flat(Infinity).includes(label));return row&&elements(row).find(x=>['input','textarea','select'].includes(x.type));};
-  render();for(let n=0;n<4;n++){await tick();render();}return{props,render,find,field,elements,text,events,location:()=>new URLSearchParams(context.window.location.search),navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
+  render();for(let n=0;n<4;n++){await tick();render();}return{props,render,find,field,elements,text,events,location:()=>new URLSearchParams(context.window.location.search),setHash:hash=>{context.window.location.hash=hash;for(const fn of [...(listeners.get('hashchange')??[])])fn();},navigate:search=>{context.window.location.search=search;render();},invalidate:()=>{for(const invalidate of [...invalidators])invalidate(null);render();}};
 }
 
 /** Legacy component suites execute the same recovery hook; persistence remains a device boundary. */

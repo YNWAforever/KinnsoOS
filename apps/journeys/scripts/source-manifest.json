@@ -258,6 +258,7 @@
     "scripts/local-auth-mailbox.mjs",
     "scripts/package-source.py",
     "scripts/performance/README.md",
+    "scripts/performance/assert-operations-assessment.mjs",
     "scripts/performance/operations-fixture.mjs",
     "scripts/performance/package-lock.json",
     "scripts/performance/package.json",
@@ -410,6 +411,7 @@
     "tests/ops-filters.test.mjs",
     "tests/ops-routing-api.test.mjs",
     "tests/performance-lab.test.mjs",
+    "tests/performance-release-gate.test.mjs",
     "tests/photo-upload-lifetime.test.mjs",
     "tests/postgres-measurement.test.mjs",
     "tests/public-article.test.mjs",
@@ -436,6 +438,7 @@
   "version": 1,
   "repositoryFiles": {
     "tests/contracts/20261011004000_kinnso_merchant_insights.sql": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
-    "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql"
+    "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql",
+    "tests/contracts/20261012170745_kinnso_reminder_context.sql": "supabase/migrations/20261012170745_kinnso_reminder_context.sql"
   }
 }
