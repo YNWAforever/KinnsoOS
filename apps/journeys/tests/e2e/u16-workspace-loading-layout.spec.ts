@@ -142,7 +142,10 @@ for(const locale of ['en','zh-HK'])test(`W08 ${locale}: authorized async milesto
  await expect(page.locator('#milestone-'+second)).toHaveCount(0);
  await settle(page,'creator',work);await expect(page.locator('#milestone-'+second)).toBeFocused();
  const refresh=page.getByRole('button',{name:label(locale,'Refresh collaborations','重新載入合作'),exact:true});
- await refresh.focus();await page.keyboard.press('Enter');await expect(refresh).toBeDisabled();await settle(page,'creator',work);await expect(refresh).toBeFocused();
+ await refresh.focus();await page.keyboard.press('Enter');await expect(refresh).toBeDisabled();
+ // Chromium blurs a disabled native button. Move focus to an enabled sibling while
+ // the response is held, then prove completion does not steal that user focus.
+ const all=page.getByRole('link',{name:label(locale,'All collaborations','所有合作'),exact:true});await all.focus();await expect(all).toBeFocused();await settle(page,'creator',work);await expect(all).toBeFocused();
  await page.evaluate(hash=>{window.location.hash=hash;},'#milestone-'+first);await expect(page.locator('#milestone-'+first)).toBeFocused();
  await refresh.focus();await page.evaluate(()=>{window.location.hash='#milestone-44444444-4444-4444-8444-444444444444';});await expect(refresh).toBeFocused();
  await page.evaluate(hash=>{window.location.hash=hash;},'#milestone-'+first);await expect(page.locator('#milestone-'+first)).toBeFocused();
