@@ -20,10 +20,10 @@ test.beforeAll(async()=>{
  window.fixtureRead=(url,method)=>{if(method&&method!=='GET'){window.fixtureWrites++;throw Error('Unexpected command')};const kind=url.split('?')[0].split('/').pop();window.fixtureReads[kind]=(window.fixtureReads[kind]??0)+1;return new Promise(resolve=>(waiters[kind]??=[]).push(resolve));};
  window.fixtureResolve=(kind,result)=>{const done=waiters[kind]?.shift();if(!done)throw Error('No pending read '+kind);done(result)};
  const noop=()=>{},changed=async()=>{};
- function Fixture(){const[scope,setScope]=React.useState({actorId:'actor-A',merchantId:'${company}'}),[profileLock,setProfileLock]=React.useState(false),[campaignLock,setCampaignLock]=React.useState(false),[invitationLock,setInvitationLock]=React.useState(false),[refresh,setRefresh]=React.useState(0);
- window.fixtureScope=setScope;window.fixtureRefresh=()=>setRefresh(x=>x+1);
+ function Fixture(){const[scope,setScope]=React.useState({actorId:'actor-A',merchantId:'${company}'}),[profileLock,setProfileLock]=React.useState(false),[campaignLock,setCampaignLock]=React.useState(false),[invitationLock,setInvitationLock]=React.useState(false),[refresh,setRefresh]=React.useState(0),[showProfile,setShowProfile]=React.useState(!window.fixtureDelayProfile);
+ window.fixtureShowProfile=()=>setShowProfile(true);window.fixtureScope=setScope;window.fixtureRefresh=()=>setRefresh(x=>x+1);
  return <><MerchantInvitations key={scope.merchantId} {...scope} branches={[{id:scope.merchantId,name:'Owned branch'}]} locked={profileLock||campaignLock} onDenied={noop} onLockChange={setInvitationLock}/>
- <MerchantProfile key={'profile:'+scope.merchantId} {...scope} onLockChange={setProfileLock}/>
+ {showProfile&&<MerchantProfile key={'profile:'+scope.merchantId} {...scope} onLockChange={setProfileLock}/>}
  <MerchantCampaigns key={'campaign:'+scope.merchantId} {...scope} refreshKey={refresh} locked={profileLock||invitationLock} onDenied={noop} onLockChange={setCampaignLock} onChanged={changed}/></>;
  }
  createRoot(document.getElementById('fixture')).render(<Fixture/>);
@@ -36,13 +36,13 @@ const profile={companyName:'Owned company',contactName:'Owned contact',contactEm
 const campaigns=(id=company)=>({merchantId:id,role:'owner',items:[],nextCursor:null,detail:null,branches:[],summary:{draft:0,published:0,closed:0,applications:0,activeCreators:0,submitted:0,approved:0}});
 const invitations=(id=company)=>({merchantId:id,invitations:[],nextCursor:null});
 async function settle(page:Page,kind:string,data:unknown){await page.evaluate(({kind,data})=>(window as any).fixtureResolve(kind,{ok:true,data}),{kind,data});}
-async function mount(page:Page,locale:string){
+async function mount(page:Page,locale:string,delayedProfile=false){
  await page.route('http://127.0.0.1:3495/__retention**',route=>route.fulfill({contentType:'text/html',body:'<main id="fixture"></main>'}));
- await page.goto('http://127.0.0.1:3495/__retention');await page.evaluate(locale=>{(window as any).fixtureLocale=locale;},locale);await page.addScriptTag({content:script});
- await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.profile??0)).toBe(1);
+ await page.goto('http://127.0.0.1:3495/__retention');await page.evaluate(({locale,delayedProfile})=>{(window as any).fixtureLocale=locale;(window as any).fixtureDelayProfile=delayedProfile;},{locale,delayedProfile});await page.addScriptTag({content:script});
+ if(!delayedProfile)await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.profile??0)).toBe(1);
  await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns??0)).toBe(1);
  await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.invitations??0)).toBe(1);
- await settle(page,'invitations',invitations());await settle(page,'profile',profile);
+ await settle(page,'invitations',invitations());if(!delayedProfile)await settle(page,'profile',profile);
 }
 for(const locale of ['en','zh-HK']){
  const label=(en:string,zh:string)=>locale==='en'?en:zh;
@@ -56,7 +56,7 @@ for(const locale of ['en','zh-HK']){
   await expect(name).toHaveValue('Owned colleague');await expect(email).toHaveValue('owned@example.test');
   await page.getByLabel(label('Company introduction','公司簡介'),{exact:true}).fill('Owned profile draft');
   await page.getByRole('button',{name:label('Discard edits and reload','放棄修改並重新載入'),exact:true}).click();
-  await expect(name).toBeDisabled();await expect(name).toHaveValue('Owned colleague');
+  await expect(name).toBeEnabled();await expect(name).toHaveValue('Owned colleague');
   await settle(page,'profile',profile);await expect(name).toBeEnabled();await expect(name).toHaveValue('Owned colleague');
   await reason.fill('Owned review');await expect(reason).toHaveValue('Owned review');
   await page.getByRole('group',{name:label('Invitation branches','邀請分店'),exact:true}).getByLabel('Owned branch',{exact:true}).check();
@@ -65,6 +65,15 @@ for(const locale of ['en','zh-HK']){
   await expect(reason).toHaveValue('Owned review');await expect(email).toHaveValue('owned@example.test');await expect(name).toHaveValue('Owned colleague');
   await expect(page.getByRole('button',{name:label('Create private invitation','建立私人邀請'),exact:true})).toBeEnabled();
   expect(await page.evaluate(()=>(window as any).fixtureWrites)).toBe(0);
+ });
+ test(`W05 ${locale}: a late profile mount cannot blur an enabled invitation before its first input`,async({page})=>{
+  await mount(page,locale,true);
+  const email=page.getByLabel(label('Recipient email','收件人電郵'),{exact:true});await expect(email).toBeEnabled();await email.focus();
+  // Reproduce the recorded focus -> late profile GET -> disabled/blur window.
+  await page.evaluate(()=>(window as any).fixtureShowProfile());await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.profile??0)).toBe(1);
+  await expect(email).toBeEnabled();await expect(email).toBeFocused();await page.keyboard.insertText('owned@example.test');await expect(email).toHaveValue('owned@example.test');
+  await settle(page,'profile',profile);await settle(page,'campaigns',campaigns());
+  await expect(email).toBeFocused();await expect(email).toHaveValue('owned@example.test');expect(await page.evaluate(()=>(window as any).fixtureWrites)).toBe(0);
  });
  test(`W04 ${locale}: a changed company clears fields and ignores its previous pending directory`,async({page})=>{
   await mount(page,locale);await settle(page,'campaigns',campaigns());

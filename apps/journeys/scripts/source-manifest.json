@@ -401,6 +401,7 @@
     "tests/merchant-insights.test.mjs",
     "tests/merchant-invitation-ui.test.mjs",
     "tests/merchant-onboarding.test.mjs",
+    "tests/merchant-profile-lock.test.mjs",
     "tests/monitoring-partial.test.mjs",
     "tests/monthly-budget.test.mjs",
     "tests/navigation-diagnostics.test.mjs",
