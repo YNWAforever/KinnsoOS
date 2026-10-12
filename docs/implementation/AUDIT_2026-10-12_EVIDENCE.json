@@ -200,5 +200,27 @@
     "additionalFixtureContract": "Missing completeLocalWorkspaceRecovery boundary export reproduced by local esbuild and corrected",
     "localBrowser": "NOT_RUN; Chromium download returned invalid ZIP",
     "newExactSourceCI": "PENDING"
+  },
+  "nativeRestoredLabelCorrection": {
+    "failedCandidate": "f9d9bb8f780d4b76a60e5eaf2d70daeca864518d",
+    "originalRuns": [
+      {
+        "run": 38163924818,
+        "event": "push",
+        "passed": 177,
+        "failed": 2
+      },
+      {
+        "run": 38163927707,
+        "event": "pull_request",
+        "passed": 178,
+        "failed": 1
+      }
+    ],
+    "fastNativeFixtures": 52,
+    "consistentFailure": "Exact reply label unavailable after restoring nonempty textarea following GET 503",
+    "fix": "Explicit bilingual textarea labels; four real DOM/IndexedDB customer/ops recovery fixtures",
+    "additionalPushFailure": "Structured author GET socket hang up; same-source original PR run passed that story; root cause unconfirmed",
+    "nextSourceCI": "PENDING"
   }
 }

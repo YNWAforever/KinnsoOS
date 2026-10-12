@@ -82,12 +82,12 @@ export function SupportWorkspace({actorId,enabled,opsMode=false}:{actorId:string
   {c.messagesNextCursor&&<button className="k-btn" disabled={locked} onClick={()=>void older(c)}>{t('Load older messages','載入較早訊息')}</button>}{c.messages.map(m=><p key={m.id}>{m.message}</p>)}
   {opsMode?<form aria-labelledby={'case-'+c.id} onSubmit={e=>{e.preventDefault();if(locked||reason.trim().length<10||(['waiting_customer','resolved'].includes(status)&&!message.trim()))return;void send({type:'review',id:c.id,expectedRevision:c.revision,ownerId:actorId,status,reason,...message.trim()?{message}:{}});}}>
    <label>{t('Case decision','案件決定')}<select aria-label={t('Case decision','案件決定')} disabled={locked} value={status} onChange={e=>editCase(c.id,{status:e.target.value as CaseDraft['status']})}>{['in_progress','waiting_customer','resolved'].map(x=><option key={x} value={x}>{x==='in_progress'?t('In progress','處理中'):x==='waiting_customer'?t('Waiting for customer','等待客戶回覆'):t('Resolved','已解決')}</option>)}</select></label>
-   <label>{t('Internal decision reason','內部決定原因')}<textarea required disabled={locked} minLength={10} maxLength={2000} value={reason} onChange={e=>editCase(c.id,{reason:e.target.value})}/></label>
-   <label>{t('Response visible to the customer','客戶可見的回覆')}<textarea disabled={locked} required={status!=='in_progress'} maxLength={4000} value={message} onChange={e=>editCase(c.id,{message:e.target.value})}/></label>
+   <label>{t('Internal decision reason','內部決定原因')}<textarea aria-label={t('Internal decision reason','內部決定原因')} required disabled={locked} minLength={10} maxLength={2000} value={reason} onChange={e=>editCase(c.id,{reason:e.target.value})}/></label>
+   <label>{t('Response visible to the customer','客戶可見的回覆')}<textarea aria-label={t('Response visible to the customer','客戶可見的回覆')} disabled={locked} required={status!=='in_progress'} maxLength={4000} value={message} onChange={e=>editCase(c.id,{message:e.target.value})}/></label>
    <p>{t('A response is required when asking for details or resolving a case.','要求補充資料或結案時必須填寫回覆。')}</p>
    <button className="k-btn" disabled={locked||reason.trim().length<10||(['waiting_customer','resolved'].includes(status)&&!message.trim())}>{t('Assign to me and apply decision','指派予我並套用決定')}</button>
   </form>:c.status!=='resolved'&&<form aria-labelledby={'case-'+c.id} onSubmit={e=>{e.preventDefault();if(locked||!message.trim())return;void send({type:'reply',id:c.id,expectedRevision:c.revision,message});}}>
-   <label>{t('Reply to this case','回覆此案件')}<textarea required maxLength={4000} disabled={locked} value={message} onChange={e=>editCase(c.id,{message:e.target.value})}/></label>
+   <label>{t('Reply to this case','回覆此案件')}<textarea aria-label={t('Reply to this case','回覆此案件')} required maxLength={4000} disabled={locked} value={message} onChange={e=>editCase(c.id,{message:e.target.value})}/></label>
    <button className="k-btn" disabled={locked||!message.trim()}>{t('Send case reply','提交案件回覆')}</button>
   </form>}
  </article>})}{cursor&&<button className="k-btn" disabled={locked} onClick={()=>void load(cursor!)}>{t('Next cases','下一頁案件')}</button>}
