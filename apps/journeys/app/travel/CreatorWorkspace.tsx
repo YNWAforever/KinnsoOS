@@ -7,11 +7,13 @@ import { creators, emptyDraft, emptyProfile, type CreatorProgress, type DraftPay
 import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
 import {CreatorCollaborationTasks} from './CreatorCollaborationTasks';
+import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {publicationReadiness,formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
  const { t, href, locale } = useApp();
  const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true);
+ const [readVersion,setReadVersion]=useState(0);
  useEffect(() => {
   setProgress(null); setError(''); setValidAccount(true);
   if (!actorId || !enabled) return;
@@ -24,10 +26,10 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
    if (r.data.step === 'progress' || r.data.step === 'wait' || (r.data.step === 'review' && !r.data.profileReady)) timer = setTimeout(load, 2000);
   }
   void load(); return () => { active = false; clearTimeout(timer); unsubscribe(); };
- }, [actorId, enabled]);
+ }, [actorId, enabled, readVersion]);
+ if (!enabled) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="status">{t('Creator publishing is not connected yet.', '創作者發布服務尚未接通。')}</p><Link className="k-btn" href={href('explore')}>{t('Explore guides','探索攻略')}</Link></section>;
  if (!actorId || !validAccount) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><Link className="k-btn primary" href={`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`}>{t('Sign in to continue', '登入後繼續')}</Link></section>;
- if (!enabled) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="status">{t('Creator publishing is not connected yet.', '創作者發布服務尚未接通。')}</p></section>;
- if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="alert">{error === 'FORBIDDEN' ? t('This creator account is currently restricted.', '此創作者帳戶目前受限制。') : t('Could not load your studio. Refresh to retry.', '未能載入工作室，請重新整理。')}</p></section>;
+ if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><WorkspaceServiceState locale={locale} code={error} retryState="read" returnPath={href(path)} onRetry={()=>setReadVersion(value=>value+1)}/></section>;
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
  if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');

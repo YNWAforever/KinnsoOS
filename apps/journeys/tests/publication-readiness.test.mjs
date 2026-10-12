@@ -30,6 +30,7 @@ async function editor(payload,locale='en'){
   if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='zh-HK'?zh:en,href:p=>'/'+locale+'/'+p})};
   if(name==='../../lib/creators/contracts')return{emptyDraft:()=>ready(),creators:{get:async()=>({ok:true,data:{id:'guide',payload,revision:1,publishedVersion:0,sourceChanged:false}}),publish:async(...args)=>{writes.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}}};
   if(name==='../../lib/creators/editor-operations')return ops;
+  if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
   if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts'||name==='./CreatorCollaborationTasks')return{};
   throw Error(name);
  }}));

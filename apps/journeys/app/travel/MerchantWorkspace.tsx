@@ -9,6 +9,7 @@ import {MerchantInvitations} from './MerchantInvitations';
 import {MerchantCampaigns} from './MerchantCampaigns';
 import {MerchantCreatorDiscovery} from './MerchantCreatorDiscovery';
 import {MerchantInsights} from './MerchantInsights';
+import {WorkspaceServiceState} from './WorkspaceServiceState';
 export function MerchantWorkspace({actorId,enabled,onboarding,profile}:{actorId:string|null;enabled:boolean;onboarding?:ReactNode;profile?:(merchantId:string,onLockChange:(locked:boolean)=>void)=>ReactNode}){
  const{t,locale}=useApp();const[valid,setValid]=useState(true),[memberships,setMemberships]=useState<Membership[]|null>(null),[merchantId,setMerchantId]=useState(''),[data,setData]=useState<MerchantWorkspaceDTO|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[message,setMessage]=useState(''),[redemption,setRedemption]=useState<Redemption|null>(null);
  const[branchName,setBranchName]=useState(''),[branchId,setBranchId]=useState(''),[teamRefreshKey,setTeamRefreshKey]=useState(0),[code,setCode]=useState(''),[amount,setAmount]=useState('');
@@ -16,6 +17,7 @@ export function MerchantWorkspace({actorId,enabled,onboarding,profile}:{actorId:
  const epoch=useRef(0),workspaceEpoch=useRef(0),pending=useRef<{kind:'command'|'redeem';merchantId:string;command?:Record<string,unknown>;code?:string;branchId?:string;amount?:number|null;requestId:string}|null>(null);
  const [invitationLocked,setInvitationLocked]=useState(false);
  const [discoveryLocked,setDiscoveryLocked]=useState(false);
+ const [membershipReadVersion,setMembershipReadVersion]=useState(0);
  const locked=busy||unknown||invitationLocked||campaignLocked||profileLocked||discoveryLocked;
  const activeScope=useRef({actorId,merchantId});activeScope.current={actorId,merchantId};
  function denyCompany(code:string){if(activeScope.current.actorId!==actorId||activeScope.current.merchantId!==merchantId)return;workspaceEpoch.current++;setData(null);clearDrafts();setRedemption(null);setMessage('');setError(code);}
@@ -23,7 +25,7 @@ export function MerchantWorkspace({actorId,enabled,onboarding,profile}:{actorId:
  useEffect(()=>{const own=++epoch.current;setValid(true);setMemberships(null);setMerchantId('');setData(null);setError('');pending.current=null;setUnknown(false);setMessage('');setRedemption(null);setCode('');setAmount('');
   clearDrafts();const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){epoch.current++;workspaceEpoch.current++;setValid(false);setData(null);setMemberships(null);clearDrafts();}});
   if(actorId&&enabled)void merchants.memberships().then(r=>{if(own!==epoch.current)return;if(!r.ok){setError(r.code);return;}setMemberships(r.data);const entry=new URLSearchParams(window.location.search),requested=entry.getAll('company').length===1?entry.get('company'):null;setMerchantId(r.data.find(m=>m.merchantId===requested)?.merchantId??r.data[0]?.merchantId??'');});
-  return()=>{epoch.current++;unsubscribe();};},[actorId,enabled]);
+  return()=>{epoch.current++;unsubscribe();};},[actorId,enabled,membershipReadVersion]);
  useEffect(()=>{const own=++workspaceEpoch.current,account=epoch.current;setData(null);setBranchId('');setMessage('');setRedemption(null);pending.current=null;setUnknown(false);
   clearDrafts();
   if(merchantId)void merchants.workspace(merchantId).then(r=>{if(own!==workspaceEpoch.current||account!==epoch.current)return;if(!r.ok){setError(r.code);return;}setData(r.data);setBranchId(r.data.branches[0]?.id??'');setError('');});return()=>{workspaceEpoch.current++;};},[merchantId]);
@@ -34,8 +36,9 @@ export function MerchantWorkspace({actorId,enabled,onboarding,profile}:{actorId:
   if(!r.ok){setError(r.code);setUnknown(r.code==='UNAVAILABLE');if(r.code!=='UNAVAILABLE')pending.current=null;if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED'){setData(null);clearDrafts();setRedemption(null);}return;}
   pending.current=null;setUnknown(false);setError('');if(p.kind==='redeem'){setRedemption(r.data as Redemption);setCode('');setAmount('');}else{setMessage(t('Saved on the server.','已儲存至伺服器。'));setBranchName('');setTeamRefreshKey(value=>value+1);setCampaignRefreshKey(value=>value+1);}await refresh();
  }
+ if(!enabled)return <section className="k-page"><h1>{t('Merchant workspace','商戶工作區')}</h1><p role="status">{t('Merchant services are not connected yet.','商戶服務尚未接通。')}</p><Link className="k-btn" href={`/${locale}/explore`}>{t('Explore guides','探索攻略')}</Link></section>;
  if(!actorId||!valid)return <section className="k-page"><h1>{t('Merchant workspace','商戶工作區')}</h1><Link href={`/${locale}/sign-in?next=/${locale}/merchant`}>{t('Sign in to continue','登入後繼續')}</Link></section>;
- if(!enabled)return <section className="k-page"><h1>{t('Merchant workspace','商戶工作區')}</h1><p>{t('Merchant services are not connected yet.','商戶服務尚未接通。')}</p></section>;
+ if(!memberships&&error)return <section className="k-page"><h1>{t('Merchant workspace','商戶工作區')}</h1><WorkspaceServiceState locale={locale} code={error} retryState="read" returnPath={`/${locale}/merchant`} onRetry={()=>setMembershipReadVersion(value=>value+1)}/></section>;
  return <section className="k-page k-merchant"><h1>{t('Merchant workspace','商戶工作區')}</h1>{error&&<p role="alert">{error==='FORBIDDEN'?t('Your current company or branch access does not allow this action.','目前公司或分店權限不允許此操作。'):error==='INVALID'?t('Check the entered details or offer availability.','請核對資料或優惠有效狀態。'):t('Could not complete this request. Retry or refresh.','未能完成請求，請重試或重新整理。')}</p>}{message&&<p role="status">{message}</p>}
  {!memberships&&!error&&<label>{t('Company','公司')}<select aria-label={t('Company','公司')} disabled value=""><option value="">{t('Loading company access…','正在載入公司權限…')}</option></select><span className="k-sr-only" role="status">{t('Loading company access…','正在載入公司權限…')}</span></label>}{memberships?.length===0&&<>{onboarding??<p>{t('No active company access is assigned to this account.','此帳戶未獲分配有效公司權限。')}</p>}</>}
  {!!memberships?.length&&<label>{t('Company','公司')}<select aria-label={t('Company','公司')} value={merchantId} disabled={locked} onChange={e=>setMerchantId(e.target.value)}>{memberships.map(m=><option key={m.merchantId} value={m.merchantId}>{m.name}</option>)}</select></label>}
