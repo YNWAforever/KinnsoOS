@@ -416,6 +416,7 @@
     "tests/public-creator.test.mjs",
     "tests/publication-readiness.test.mjs",
     "tests/readiness.test.mjs",
+    "tests/reminder-context.test.mjs",
     "tests/seo-migration.test.mjs",
     "tests/sitemap-discovery.test.mjs",
     "tests/source-inputs.test.mjs",
