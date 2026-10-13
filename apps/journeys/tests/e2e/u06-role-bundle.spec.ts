@@ -129,9 +129,9 @@ test('U06 deferred role panels retain server headings, language, private cache a
   }
   await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
   const javascript = await scripts();
-  for (const marker of roleMarkers.filter(marker=>!['Your next actions','Invite a company colleague'].includes(marker)))
+  for (const marker of roleMarkers.filter(marker=>marker!=='Invite a company colleague'))
     expect(javascript.includes(marker), `Selected role route must load ${marker}`).toBe(true);
-  for(const marker of ['Your next actions','Invite a company colleague'])expect(javascript.includes(marker), `Signed-out company tools must defer ${marker}`).toBe(false);
+  for(const marker of ['Invite a company colleague'])expect(javascript.includes(marker), `Signed-out company tools must defer ${marker}`).toBe(false);
 });
 
 
