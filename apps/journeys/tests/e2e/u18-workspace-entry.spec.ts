@@ -1,8 +1,10 @@
 import {test,expect} from '@playwright/test';
 import {build} from 'esbuild';
 import {resolve} from 'node:path';
-let script='';
+import {readFile} from 'node:fs/promises';
+let script='',css='';
 test.beforeAll(async()=>{
+ css=await readFile('app/globals.css','utf8')+'\n'+await readFile('app/travel/workbench.css','utf8')+'\n'+await readFile('app/integration/integration.css','utf8');
  const ports:Record<string,string>={
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='en'?en:zh,href:path=>'/'+window.fixture.locale+'/'+path});`,
   session:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
@@ -23,7 +25,7 @@ for(const locale of ['en','zh-HK'])for(const kind of ['creator','merchant']){
  const label=(en:string,zh:string)=>locale==='en'?en:zh;
  for(const state of ['disabled','unavailable'])test(`W03 ${locale} ${kind}: ${state} entry is actionable at 320px and 200% text`,async({page})=>{
   await page.setViewportSize({width:320,height:844});
-  await page.setContent('<style>body{margin:16px;font-size:200%}*{box-sizing:border-box}button,a{font-size:inherit;white-space:normal}</style><main id="fixture"></main>');
+  await page.setContent(`<style>${css}html{font-size:200%}body:has(.k-app){margin:16px;overflow-x:visible}.k-app{font-size:1rem}button,a{white-space:normal}</style><div class="k-app"><main id="fixture"></main></div>`);
   await page.evaluate(f=>{(window as any).fixture=f;},{locale,kind,actorId:state==='disabled'?null:'actor-A',enabled:state!=='disabled',code:'UNAVAILABLE'});
   await page.addScriptTag({content:script});
   if(state==='disabled'){
@@ -40,6 +42,9 @@ for(const locale of ['en','zh-HK'])for(const kind of ['creator','merchant']){
    await expect(page.getByRole('link',{name:label('Sign in to continue','登入後繼續'),exact:true})).toHaveAttribute('href',`/${locale}/sign-in?next=${encodeURIComponent(next)}`);
    await expect(retry).toHaveCount(0);expect(await page.evaluate(()=>(window as any).fixtureReads)).toBe(2);
   }
+  // Root and app text are twice their 16px baseline; visible overflow cannot be hidden by shell CSS.
+  expect(await page.evaluate(()=>({root:getComputedStyle(document.documentElement).fontSize,app:getComputedStyle(document.querySelector('.k-app')!).fontSize}))).toEqual({root:'32px',app:'32px'});
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  expect(await page.locator('h1').evaluate(el=>{const r=document.createRange();r.selectNodeContents(el);return Array.from(r.getClientRects()).every(rect=>rect.left>=0&&rect.right<=innerWidth);})).toBe(true);
  });
 }

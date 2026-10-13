@@ -15,6 +15,8 @@ import {transform} from 'esbuild';
 import {verifyTestTarget} from '../verify-test-target.mjs';
 import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, observeNavigation, prepareOwnedBlankReset, foundationRevision,workspacePages,operationRole} from './report.mjs';
 import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
+import{firstUsableTasks,measureFirstUsable,summarizeFirstUsable}from'./first-usable.mjs';
+import{normalizeSchemaDump}from'./compare-operations.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const foundationSha = foundationRevision;
@@ -55,10 +57,12 @@ const server = spawn(process.execPath, [path.join(buildApp, 'node_modules/next/d
   {cwd: buildApp, env: environment, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe']});
 server.stdout.pipe(serverLog); server.stderr.pipe(serverLog);
 let browser, admin, actor, fixture,workFixture;
-const ownedActors = [], samples = [], interactions = [], blockedOrigins = new Set();
+const ownedActors = [], samples = [], interactions = [], firstUsableSamples=[], blockedOrigins = new Set();
+let measurementProvenance;
 const report = {schemaVersion: 1,kind:foundation?'foundation':operations?'operations':'current', environment: 'owned isolated local production build',
   sourceSha: foundation ? foundationSha : execFileSync('git', ['rev-parse', 'HEAD'], {cwd: app, encoding: 'utf8'}).trim(),
   sourceDiff: execFileSync('git', ['diff', '--name-only'], {cwd: app, encoding: 'utf8'}).trim().split('\n').filter(Boolean),
+  sourceTree:operations?execFileSync('git',['rev-parse','HEAD^{tree}'],{cwd:app,encoding:'utf8'}).trim():null,
   conditions: null, samples, interactions, notComparable: foundation ? ['guide', 'trip'] : [],
   limitations: ['Lab navigation and interaction results are not field INP or cloud API/query p95.',
     'Cold means cleared browser HTTP cache in a fresh context; signed-in cookies are retained. Server/database stay warm.',
@@ -227,6 +231,23 @@ try {
     trip: foundation ? '/en/trips/demo-lab-trip' : '/en/trips/'+fixture.tripId};
   if(operations)Object.assign(routes,{creatorList:'/en/studio/outcomes',creatorDetail:'/en/studio/missions/'+workFixture.campaignId,merchantCampaigns:'/en/merchant?company='+workFixture.merchantId,merchantReview:'/en/merchant?company='+workFixture.merchantId+'&campaign='+workFixture.campaignId});
   report.dataset=operations?workFixture.dataset:null;
+  if(operations){
+   const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
+   const cli=process.env.KINNSO_PERFORMANCE_SUPABASE_CLI;
+   const supabaseVersion=execFileSync(cli?process.execPath:'supabase',cli?[cli,'--version']:['--version'],{encoding:'utf8',stdio:['ignore','pipe','ignore']}).trim();
+   if(supabaseVersion!=='2.107.0')throw Error('Pinned Supabase CLI2.107.0 required for controlled operations comparison');
+   const cliFile=cli??execFileSync('which',['supabase'],{encoding:'utf8'}).trim();
+   const dockerServerVersion=execFileSync('docker',['version','--format','{{.Server.Version}}'],{encoding:'utf8'}).trim();
+   const toolFiles=['package-lock.json','scripts/performance/package-lock.json'];
+   const instrumentationFiles=['scripts/performance/run.mjs','scripts/performance/run-latency.mjs','scripts/performance/first-usable.mjs','scripts/performance/compare-operations.mjs','scripts/performance/report.mjs','scripts/performance/operations-fixture.mjs','scripts/verify-test-target.mjs','scripts/prepare-connected-ci.mjs'];
+   const tools={node:process.version,browser:report.conditions.browser,supabase:supabaseVersion,docker:dockerServerVersion,locks:await Promise.all(toolFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))}))),browserExecutableSha256:digest(await readFile(chromium.executablePath())),cliEntrySha256:digest(await readFile(cliFile))};
+   const instrumentation=await Promise.all(instrumentationFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))})));
+   const host={platform:process.platform,arch:process.arch,kernel:os.release(),cpuModels:[...new Set(os.cpus().map(cpu=>cpu.model))],cpuCount:os.cpus().length,hostNameHash:digest(os.hostname()),dockerServerVersion};
+   // Schema-only dump contains definitions/grants, never row data. PostgreSQL's random restore fence is not schema.
+   const schema=normalizeSchemaDump(execFileSync('docker',['exec',target.dbContainer,'pg_dump','-U','postgres','-d','postgres','--schema-only','--no-comments'],{encoding:'utf8',maxBuffer:8*1024*1024}));
+   const targetReceipt={environment:'owned isolated local',project:target.projectRef,apiOrigin:target.apiOrigin,dbContainer:target.dbContainer,schemaFingerprint:digest(schema)};
+   measurementProvenance={hostHash:digest(JSON.stringify(host)),toolHash:digest(JSON.stringify(tools)),instrumentationHash:digest(JSON.stringify(instrumentation)),conditionsHash:digest(JSON.stringify(report.conditions)),targetHash:digest(JSON.stringify(targetReceipt)),target:targetReceipt,host,tools,instrumentation};
+  }
   const foundationModel = foundation ? (await transform(execFileSync('git',['show',foundationSha+':app/travel/model.ts'],{cwd:app,encoding:'utf8'}),
     {loader:'ts',format:'iife',globalName:'KinnsoFoundationModel'})).code : null;
   for (const [kind, initialRoute] of Object.entries(routes).filter(([kind])=>!(probeTrip||tripOnly)||kind==='trip')) for (const run of (probeTrip?[1]:[1,2,3])) {
@@ -284,6 +305,29 @@ try {
       report.comparison = compareLab(report, JSON.parse(await readFile(resolved,'utf8')));
     } else report.comparison = {status:'NOT_RUN',reason:'Run the frozen foundation and supply its report path'};
   }
+  if(operations){
+   // Independent pages share the owned server/dataset; Lighthouse gets no extra typing.
+   for(const task of firstUsableTasks)for(const run of [1,2,3]){
+    const context=await browser.createBrowserContext(),login=await context.newPage();
+    const kind=task==='merchantReview'?'merchantReview':'merchantCampaigns',route=routes[kind];
+    try{
+     await login.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});login.setDefaultTimeout(45000);await guardPage(login);
+     await login.goto(origin+'/en/sign-in?next='+encodeURIComponent(route));await input(login,'Email',workFixture.merchantLogin.email);await input(login,'Password',workFixture.merchantLogin.password);
+     await Promise.all([login.waitForNavigation(),button(login,'Sign in')]);await ready(login,kind);await login.close();
+     for(const cache of ['cold','warm']){
+      const page=await context.newPage();let session;
+      try{
+       await page.setViewport({width:390,height:844,deviceScaleFactor:1,isMobile:true,hasTouch:true});page.setDefaultTimeout(45000);await guardPage(page);
+       session=await page.createCDPSession();await session.send('Network.enable');if(cache==='cold')await session.send('Network.clearBrowserCache');
+       await session.send('Emulation.setCPUThrottlingRate',{rate:4});await session.send('Network.emulateNetworkConditions',{offline:false,latency:150,downloadThroughput:1600*1024/8,uploadThroughput:750*1024/8});
+       firstUsableSamples.push(await measureFirstUsable(page,{task,cache,run,origin,route,companyId:workFixture.merchantId,actorId:workFixture.merchantUserId,campaignId:workFixture.campaignId}));
+      }catch{firstUsableSamples.push({task,cache,run,status:'FAIL',acceptedInputMs:null,retained:false,authorized:false,reason:'OWNED_PAGE_SETUP_FAILED'});}
+      finally{await session?.detach().catch(()=>{});await page.close();}
+     }
+    }catch{for(const cache of ['cold','warm'])firstUsableSamples.push({task,cache,run,status:'FAIL',acceptedInputMs:null,retained:false,authorized:false,reason:'OWNED_LOGIN_SETUP_FAILED'});}
+    finally{await context.close();}
+   }
+  }
   report.blockedOrigins = [...blockedOrigins];
 } catch (error) {report.error = error.message; process.exitCode = 1;}
 finally {
@@ -298,6 +342,11 @@ finally {
   serverLog.end();
   report.assessment=assessRun(report);
   if(report.assessment.status==='INCOMPLETE')process.exitCode=1;
+  if(operations){
+   const sidecar=summarizeFirstUsable(firstUsableSamples,{sourceSha:report.sourceSha,sourceTree:report.sourceTree,conditionsHash:measurementProvenance?.conditionsHash,cleanup:report.cleanup});
+   sidecar.provenance=measurementProvenance??null;report.firstUsableSidecar='first-usable.json';
+   await writeFile(path.join(out,'first-usable.json'),JSON.stringify(sidecar,null,2));
+  }
   await writeFile(path.join(out, 'report.json'), JSON.stringify(report,null,2));
   console.log(JSON.stringify({report:path.join(out,'report.json'), assessment:report.assessment?.status, error:report.error, cleanup:report.cleanup}));
 }

@@ -3,9 +3,10 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {execFileSync,spawnSync} from 'node:child_process';
 import {pages,workspacePages,operationRole,assessRun} from '../scripts/performance/report.mjs';
-const script=new URL('../scripts/performance/assert-operations-assessment.mjs',import.meta.url).pathname;
+const script=fileURLToPath(new URL('../scripts/performance/assert-operations-assessment.mjs',import.meta.url));
 function fixture(){
  const cwd=mkdtempSync(path.join(tmpdir(),'kinnso-performance-gate-'));
  const git=(...args)=>execFileSync('git',args,{cwd,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim();
