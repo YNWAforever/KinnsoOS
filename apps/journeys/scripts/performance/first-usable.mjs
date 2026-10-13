@@ -58,7 +58,13 @@ export async function measureFirstUsable(page,{task,cache,run,origin,route,compa
   if(u.pathname!=='/api/merchant'||u.searchParams.has('id')){if(u.searchParams.getAll('id').length!==1||u.searchParams.get('id')!==companyId)return;}
   const body=await r.json();if(ended)return;if(r.status()!==200||body.ok!==true){failed=true;await publish();return;}
   if(u.pathname==='/api/merchant'){if(u.searchParams.has('id')){workspace=body.data?.merchantId===companyId&&body.data?.role==='owner';if(!workspace)failed=true;}else{membership=Array.isArray(body.data)&&body.data.some(x=>x.merchantId===companyId&&x.role==='owner');if(!membership)failed=true;}}
-  else{if(task==='merchantReview'&&u.pathname==='/api/merchant/campaigns'&&(body.data?.detail?.id!==campaignId||body.data?.detail?.submissions?.length!==1))failed=true;related.add(u.pathname);}
+  else{if(u.pathname==='/api/merchant/campaigns'){
+   const items=body.data?.items,detail=body.data?.detail,selected=u.searchParams.get('campaignId');
+   if(!Array.isArray(items))failed=true;
+   // A populated directory starts a detail GET; it cannot complete retention yet.
+   else if(items.length===0||(selected&&detail?.id===selected))related.add(u.pathname);
+   if(task==='merchantReview'&&(detail?.id!==campaignId||detail?.submissions?.length!==1))failed=true;
+  }else related.add(u.pathname);}
   await publish();
  }catch{if(!ended){failed=true;await publish().catch(()=>{});}}};
  await page.evaluateOnNewDocument(installFirstUsableObserver,{task,companyId,token,label:labels[task],text});page.on('response',response);
