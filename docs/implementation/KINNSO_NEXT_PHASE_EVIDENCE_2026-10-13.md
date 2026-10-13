@@ -1,3 +1,18 @@
+# Locally qualified CI resource candidate — 2026-10-14
+
+Exact source `25e250d2d88649caafc07ce1286ca1a46db8777b`, tree `5f24de3e03ee9a2f6d14cb2b6674821c183805eb`: **664unit/97ownedDB/220native PASS0FAIL0SKIP**,88fixtures included in220. All eight source-package/workflow/deployment-scope/unit/DB/build/types/native steps passed. Existing named Windows symlink-permission source-package skip remains explicit. Original JSONs and hashes retained privately. These actual results belong to25e; this documentation revision must earn its own original CI before any remaining merge.
+
+The generated-CI-only DB/shadow port fix is4validRED→focused16GREEN (two real loopback binds), then full new-source664/97/220GREEN. API58421/Mailpit58424,approved project labels,key-role/local-origin/confirmation/seed guards and original developer/pilot defaults are preserved. Product/runtime/schema/measurement/workflow Git objects are exactly equal to measured0a2. ABBA10 stays bound to0a2; there is no new product performance claim or metric relabel. The changed CI startup profile must pass actual new owned Docker/DB/native/mailbox and numeric jobs.
+
+Original integratedf61a source is retained: push38482144573 **FAIL** at owned DB host-port58422 binding, occupantUNKNOWN, mailbox testsNOT_STARTED; originalPR38482148643 **PASS**. Both fullnumeric48/8/24/18/input/cleanupPASS; bothRoot38482144568/38482148669PASS. Raw artifacts/source trees/parents/ZIP and all-member hashes verified. No original run was cancelled,retried,filled or replaced. PR79 was merged after its own fully green52ab source; PR78/77 and main remain pending at this timestamp.
+
+**At this packet creation: new original CI not yet published; remaining source merge gate awaits it.** Each subsequent head/tree/base still requires all applicable original checks and raw numeric/input/cleanup evidence. Public PR/private stack-integration-receipt.json will record later actual checks/merges; this timestamped source packet does not predict them. Hosted/staging/role/content/device/recovery/scheduler/pilot gates remainNO_GO. No Vercel scheduler configuration delta; Booking/payment/withdrawal and provider activation stay disabled. All22W/38A-G/6U/21P-D and ten originalPR76 decisions remain unchanged.
+
+Next:publish the document-only packet onto existingPR78 by ordinary fast-forward, wait its actual new original CI including boot/mailbox/unchanged numeric gates, then authorize78→77feature and freshly qualify77 before main. Rollback is a compatible ordinary application/CI-profile revert preserving business data,drafts,receipts and the independent UX fixes; no hosted schema/config replay or downgrade.
+
+All sections below are historical timestamped snapshots; their PASS/FAILs remain attached to their own sources.
+
+---
 # Stack integration CI blocker and minimum fix — 2026-10-14
 
 PR79 was merged only after its actual52abfe0 original Root/Journeys push+PR and raw source/tree/base/numeric/input/cleanup gates passed. PR78 actual newhead f61a04baf9911464612dc1040985a6321ef58870 has exactly packet tree5b818015616c314332cfcb6df4596d8cfa4388c4, parents168f653/52abfe0. Main remains58d72e9 and PR78/77 are unmerged at this snapshot.
