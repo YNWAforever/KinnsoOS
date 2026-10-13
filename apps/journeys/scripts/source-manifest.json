@@ -343,6 +343,8 @@
     "tests/e2e/u10-merchant-insights.spec.ts",
     "tests/e2e/u11-workspace-recovery.spec.ts",
     "tests/e2e/u12-finance-membership-retry.spec.ts",
+    "tests/e2e/u16-merchant-native-bundle.spec.ts",
+    "tests/e2e/u16-merchant-panel-bundle.spec.ts",
     "tests/e2e/u16-workspace-loading-layout.spec.ts",
     "tests/e2e/u17-support-form-labels.spec.ts",
     "tests/e2e/u18-merchant-invitation-retention.spec.ts",
