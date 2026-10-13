@@ -368,6 +368,7 @@
     "tests/integration/bookmarks.test.mjs",
     "tests/integration/budget-reservations.test.mjs",
     "tests/integration/campaign-schedule.test.mjs",
+    "tests/integration/campaign-utc-catalog.test.mjs",
     "tests/integration/catalog.test.mjs",
     "tests/integration/collaboration-query.test.mjs",
     "tests/integration/collaboration-reminders.test.mjs",
