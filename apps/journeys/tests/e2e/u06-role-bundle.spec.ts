@@ -3,6 +3,7 @@ import {randomUUID} from 'node:crypto';
 import {loadEnvFile} from 'node:process';
 import {createClient} from '@supabase/supabase-js';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
+import {findOwnedToolChunk,fetchOwnedRoute} from '../helpers/owned-tool-asset.mjs';
 loadEnvFile('.env.test');
 const target = verifyTestTarget();
 const agentMarker = 'Source questions: read published sources and verification dates.';
@@ -137,6 +138,7 @@ test('U06 deferred role panels retain server headings, language, private cache a
 
 for(const locale of ['en','zh-HK'])test(`P17 ${locale}: actual Next failed owner chunk retries without losing a sibling draft or committed unknown receipt`,async({page,baseURL})=>{
  expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+ const insightChunk=await findOwnedToolChunk('.next/static/chunks','Historical acceptance timestamps are missing');
  const admin=createClient(target.apiOrigin,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
  const email=`synthetic-tool-recovery-${randomUUID()}@example.test`,password=`Synthetic!${randomUUID()}`;
  let actorId='',merchantId='',release!:()=>void,allow=false,held=0;const gate=new Promise<void>(resolve=>{release=resolve;});const writes:any[]=[];
@@ -145,14 +147,14 @@ for(const locale of ['en','zh-HK'])test(`P17 ${locale}: actual Next failed owner
   const created=await admin.auth.admin.createUser({email,password,email_confirm:true});expect(created.error).toBeNull();actorId=created.data.user!.id;
   const company=await admin.from('merchant_profiles').insert({user_id:actorId,company_name:'Owned chunk recovery company',contact_email:email}).select('id').single();expect(company.error).toBeNull();merchantId=company.data!.id;
   await page.goto(`/${locale}/sign-in?next=/${locale}/me`);await page.getByLabel(label('Email','電郵'),{exact:true}).fill(email);await page.getByLabel(label('Password','密碼'),{exact:true}).fill(password);await page.getByRole('button',{name:label('Sign in','登入'),exact:true}).click();await page.waitForURL(url=>url.pathname===`/${locale}/me`);
-  await page.route('**/_next/static/chunks/*.js',async route=>{
-   const response=await route.fetch();const body=await response.text();
+  await page.route(new URL('/_next/static/chunks/'+insightChunk,baseURL).href,async route=>{
+   const response=await fetchOwnedRoute(route,'asset');const body=await response.text();
    if(!allow&&body.includes('Historical acceptance timestamps are missing')){held++;await gate;if(!allow){await route.fulfill({status:503,contentType:'text/javascript',body:'Owned unavailable chunk'});return;}}
    await route.fulfill({response});
   });
   await page.route('**/api/merchant',async route=>{
    if(route.request().method()!=='POST'){await route.continue();return;}
-   writes.push(route.request().postDataJSON());const response=await route.fetch();expect(response.status()).toBe(200);
+   writes.push(route.request().postDataJSON());const response=await fetchOwnedRoute(route,'merchant-command');expect(response.status()).toBe(200);
    if(writes.length===1){await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'UNAVAILABLE'})});return;}
    await route.fulfill({response});
   });
