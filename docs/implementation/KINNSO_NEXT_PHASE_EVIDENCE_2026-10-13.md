@@ -1,3 +1,39 @@
+# Qualified continuation candidate — 2026-10-14
+
+Measured source `0a2d41a41ef7ccb28ee587539e67af89b9d915e6`, tree `adbd58a88f0d2d8d430048b9f6ad71964287d5e6`: **660 unit /97 owned DB /220 native PASS,0FAIL/0SKIP**.88 fixtures are included in220. Source-package/workflow/deployment-scope/build/types passed; the existing named Windows symlink-permission source-package skip remains explicit, and original Linux source/extraction checks passed. This document-only revision must earn fresh original CI before integration; no measured source SHA is relabeled.
+
+**Full frozen same-host ABBA10 PASS; minimum candidate adopted for owned source/CI scope.** A26888a/B0a2d41a, identical191migration schema fingerprint82200cae56744f93de44b296663fddfcaa4d62a32bc1146fa2583edbf269aecb. All four original runs contain48navigation/8interaction/24reads/18first-usable. B1/B2 numeric/input/ownedcleanupPASS; A1/A2 numericFAIL retained with input/cleanupPASS. Each six-group comparison contains6A/6B, using the original A+max(50ms,5%) limit. All tool/host/instrumentation/throttle hashes are bound before collection. No fill, retry, timeout increase, sample reduction, budget waiver or fastest-run selection.
+
+| Task | Cache | A median ms | B median ms | Original limit ms | Result |
+| --- | --- | ---: | ---: | ---: | --- |
+| merchantInvitation | cold | 3188.600 | 2970.150 | 3348.030 | PASS |
+| merchantInvitation | warm | 2065.550 | 1836.050 | 2168.828 | PASS |
+| merchantBrief | cold | 3685.300 | 3202.850 | 3869.565 | PASS |
+| merchantBrief | warm | 2553.900 | 2091.600 | 2681.595 | PASS |
+| merchantReview | cold | 3780.600 | 3134.100 | 3969.630 | PASS |
+| merchantReview | warm | 2610.550 | 2235.650 | 2741.078 | PASS |
+
+Protocol SHA256 `ca2d08b2c9953211a2a396325496026c0fe11c10ca3cfe07c770b627932533e0`; comparison SHA256 `4a0f9315f6dc829cd181ad3a5bc8892484164f88cfa0fd7f144cbbff8059f6c5`. Separate A/B latency each960measured/72warmups, ownedcleanupPASS, **MEASURED_BUDGET_NOT_SET**; no hosted SLO claim. All completed raw trace archives verified byte-exact by every member SHA256 before duplicate trace removal.
+
+Original source0a2 Journeys push38467021734 and PR38467028584 passed functional, numeric,18input and ownedcleanup gates. PR actualcheckoutd8abb22eaaaaa9ca8f84d469949bd127c1920437, parents168f653/0a2, exacttreeadbd. CreatorDetail coldmedian925.636/861.182ms with original2500msLCP/0.1CLS targets. Original Root CI38467021449/38467028191 passed. Attempt1 raw ZIPs and source/tree bindings retained privately. These qualify0a2; the documentation revision and each subsequent merge head require fresh original CI plus exact app/schema/test/workflow input equivalence.
+
+The minimum behavior changes reuse existing authenticated actor/session and user-client RPCs to initialize scoped Merchant and Creator private views. Creator brief remains readonly until the original fresh client GET succeeds; terminal denial prevents late initial reads resurrecting private controls, and uncertain writes retain the original requestId/payload and reconcile first. W03 service entry, W05 read-only profile form independence, W08 reminder/deadline/focus and W07 strict assessment remain. Journeys layout/CSS and all existing RLS/CAS/receipts/dedupe/quota/owner-only evidence/cross-currency contracts are retained.
+
+Creator19focusedcontrols were observed5PASS/14RED→19GREEN; two real EN/zh-HK native ownerHTML absence controls RED→GREEN. Intermediate compile collision is retained separately. The canonical UTC validation migration is source/local-only: actual100-row8ssetupFAIL and100catalogRED→0catalogGREEN; named/NULL/invalid-zone validation, original5001-row test and all other trigger/ACL/contracts retained. No hosted SQL/config change. The single fresh whole-stack review reported0Critical/1Important/0Minor; terminal-denial/transient-original-request/concurrent-ACK controls were fixed in the one TDD pass, with no re-review.
+
+Historical ABBA09 localPASS belongs to804 and is **not adopted because its original PR numericFAIL2672.868>2500**. Historical05REJECTED/06ENOSPC/07incomplete/08schema-change remain unchanged; original7aECONNRESET causeUNKNOWN, F46fixture216PASS/2FAIL and5caDB94PASS/1FAIL are preserved. Current660/97/220 and new full10/CI qualify the changed source, without rewriting any old FAIL.
+
+Conditional source integration is explicitly authorized: **79→78feature→77feature→main**, after each actual head/tree earns original Root/Journeys functional/numeric checks. At this packet's timestamp no PR is merged and main58d72e9 is unchanged. No force/admin bypass. Public PR and private stack-integration-receipt.json will record actual subsequent heads and CI; this timestamped snapshot does not predict their outcomes.
+
+Hosted operational release remains **NO_GO**: designated staging URL/project/branch/Auth target and owner; effective schema/grants/redirects and fresh restore/backup; named two-company/two-creator roles/mailbox; three real consented guides; scheduler scope/window/recovery; physical iOS/Android/VoiceOver/NVDA and pilot scope are missing. Source merge authorization does not activate these. Booking/payment/withdrawal and provider/scheduler activation remain disabled.22W/38A-G/6U/21P-D mappings and all ten original PR76 file decisions are preserved; individual NEXT source progress does not close entire stories or hosted acceptance.
+
+Rollback: ordinary compatible application revert of the specific initial-view/performance changes, preserving W03/W05/W08 fixes, business data,drafts,receipts,dedupe and history. Keep the canonical UTC source migration for review; no blind hosted downgrade or automatic replay. Source integration, automatic deployment observation and operational acceptance are separate.
+
+Next: qualify this documentation revision, then each newly integrated stack head with original CI before the authorized source merges. Independently obtain the concrete staging/role/content/device/recovery/scheduler inputs for NEXT04–11; no hosted action until its target/scope is authorized.
+
+The sections below are immutable historical snapshots, not current-candidate acceptance.
+
+---
 # Current continuation gate — 2026-10-14
 
 Source804513c13caaaccf6ab83cef020538cb256c6d44 (treef1a49286a73814384549a57241e4863427d84a24):641unit /97ownedDB /218native PASS0FAIL0SKIP;88fixtures are included in218. Source-package/workflow/deployment-scope/build/types checks passed. Existing named Windows symlink-permission source-package skip remains explicit; Linux source/extraction checks passed in original CI.
