@@ -135,6 +135,7 @@
     "app/travel/connected.tsx",
     "app/travel/editing.tsx",
     "app/travel/explore.tsx",
+    "app/travel/loadMerchantTool.tsx",
     "app/travel/model.ts",
     "app/travel/routes.ts",
     "app/travel/ui.tsx",
