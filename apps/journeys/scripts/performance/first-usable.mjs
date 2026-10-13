@@ -28,7 +28,9 @@ export function installFirstUsableObserver({task,companyId,token,label,text}){
  let authorized=false,invalid=false,stopped=false,field=null,expectedValue=null,acceptedInputMs=null,inputEvents=0,retainedSnapshot=null;
  const pathname=location.pathname;
  const scope=()=>{const q=new URL(location.href).searchParams;return location.pathname===pathname&&q.getAll('company').length===1&&q.get('company')===companyId;};
- const find=()=>{const all=[...document.querySelectorAll('input,textarea')].filter(el=>(el.getAttribute('aria-label')??[...(el.labels??[])].map(l=>l.textContent.trim()).join(' '))===label);return all.length===1?all[0]:null;};
+ // The associated control is excluded from its label name; preserved textarea text is a value.
+ const labelText=(node,control)=>node===control?'':node.nodeType===Node.TEXT_NODE?node.textContent:[...node.childNodes].map(child=>labelText(child,control)).join('');
+ const find=()=>{const all=[...document.querySelectorAll('input,textarea')].filter(el=>(el.getAttribute('aria-label')??[...(el.labels??[])].map(l=>labelText(l,el).trim()).join(' '))===label);return all.length===1?all[0]:null;};
  const enabled=el=>el?.isConnected&&!el.matches(':disabled')&&!el.readOnly;
  const live=()=>{if(!scope())invalid=true;return !stopped&&!invalid&&authorized&&scope();};
  const input=event=>{if(stopped||event.target!==field)return;inputEvents++;if(inputEvents===1&&event.isTrusted&&event.inputType==='insertText'&&event.data===text&&live()&&enabled(field)){acceptedInputMs=performance.now()-(performance.getEntriesByType('navigation')[0]?.startTime??0);expectedValue=field.value;}};

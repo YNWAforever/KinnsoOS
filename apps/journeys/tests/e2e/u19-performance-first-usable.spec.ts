@@ -37,3 +37,10 @@ test('NEXT02 a held owner insights denial cannot arrive after a falsely accepted
  try{await expect(page.getByLabel('Recipient email',{exact:true})).toHaveValue('synthetic-first-usable@example.test');await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));expect(settled,'all owner reads that can deny the workspace must still be awaited').toBe(false);}finally{release();}
  const row=await measured;expect(row.status).toBe('FAIL');expect(row.authorized).toBe(false);
 });
+
+test('NEXT02 restored textarea content cannot become part of its accessible label or block the only input',async({page})=>{
+ await page.route('http://127.0.0.1:3529/**',route=>route.fulfill({contentType:'text/html',body:'<label>Deliverable review feedback<textarea id="review">Retained original feedback</textarea></label>'}));await page.goto('http://127.0.0.1:3529/en/merchant?company='+company);
+ const field=page.getByRole('textbox',{name:'Deliverable review feedback',exact:true});await expect(field).toHaveValue('Retained original feedback');
+ await page.evaluate(observer.installFirstUsableObserver,{task:'merchantReview',companyId:company,token:'restored-review',label:'Deliverable review feedback',text:'One insertion'});await page.evaluate(()=>(window as any).__kinnsoFirstUsable.authorize('restored-review'));
+ expect(await page.evaluate(()=>(window as any).__kinnsoFirstUsable.candidateEnabled())).toBe(true);await field.focus();await field.evaluate((el:HTMLTextAreaElement)=>el.setSelectionRange(el.value.length,el.value.length));expect(await page.evaluate(()=>(window as any).__kinnsoFirstUsable.begin())).toBe(true);await page.keyboard.insertText('One insertion');await expect(field).toHaveValue('Retained original feedbackOne insertion');const result=await stop(page);expect(result.status).toBe('PASS');expect(result.inputEvents).toBe(1);
+});
