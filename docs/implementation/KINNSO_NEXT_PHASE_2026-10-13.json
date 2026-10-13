@@ -1982,17 +1982,22 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W06",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "MEASUREMENT_IMPLEMENTED_RED_GREEN",
-      "ownedStatus": "VALID_48_8_24_18_BASELINE_AND_FIXED_ABBA",
+      "sourceStatus": "MEASUREMENT_COMPLETION_RED_GREEN",
+      "ownedStatus": "HISTORICAL_BASELINE_SUPERSEDED_BY_NEW_INSTRUMENTATION",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "OWNED_BASELINE_VERIFIED",
+      "executionStatus": "OBSERVER_REVIEW_FIXED_CURRENT_BASELINE_NOT_REMEASURED",
       "evidence": [
         "private:protocol-05.json",
         "private:protocol05-comparison.json",
-        "private:protocol05-A-latency.log"
+        "private:protocol05-A-latency.log",
+        "private:post-review-measurement-qualification.json",
+        "private:final-review-campaign-followup-RED.log",
+        "private:final-review-observer-and-fixtures-GREEN.log"
       ],
-      "blockers": [],
+      "blockers": [
+        "CURRENT_OBSERVER_FULL_ABBA_NOT_RUN"
+      ],
       "executionUpdatedAt": "2026-10-13T13:10:21.005Z"
     },
     {
@@ -2337,12 +2342,12 @@
   "financialCapabilities": "Booking/payment/withdrawal disabled",
   "execution": {
     "currentSource": {
-      "sha": "d2de4f5527db524b5b83464f4bacda6cfbf2de39",
-      "tree": "50e8f0d17c1f1050e618c3686ee9b572c53fe1ff",
-      "status": "ROLLBACK_VERIFICATION_PENDING",
+      "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
+      "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4",
+      "status": "REVIEW_FIX_FULL_VERIFICATION_PENDING",
       "noHistoricalPassTransfer": true
     },
-    "updatedAt": "2026-10-13T13:10:21.006Z",
+    "updatedAt": "2026-10-13T13:26:56.937Z",
     "measuredCandidate": {
       "sourceSha": "3fab97da6bf2514ce65b6c0f3bd1065cafc0e6c8",
       "sourceTree": "29e36ea9f9a5592fe11d661e0231cebd284f8479"
@@ -2446,6 +2451,41 @@
     "financialCapabilities": "Booking/payment/withdrawal disabled",
     "releaseDecision": "NO_GO",
     "production": "NOT_CHANGED_NOT_ACCEPTED",
-    "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement."
+    "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement.",
+    "measurementQualification": {
+      "recordedAt": "2026-10-13T13:26:56.936Z",
+      "source": {
+        "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
+        "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4"
+      },
+      "observerSha256": "a9650c96901fb40837332f9d1f1ec44dbfbbca0031bdae06f147e40e685699f6",
+      "reviewedSource": "de6f7935b8157b03b1dfb3122e46014227349c55",
+      "reviewImportant": "Campaign directory initiated a second detail read; pathname-only completion could freeze a false PASS before denial",
+      "red": {
+        "failed": 2,
+        "passed": 1,
+        "log": "private:final-review-campaign-followup-RED.log"
+      },
+      "green": {
+        "allFixturePassed": 88,
+        "fail": 0,
+        "skip": 0,
+        "includedObserverCases": 16,
+        "log": "private:final-review-observer-and-fixtures-GREEN.log"
+      },
+      "historicalProtocols": [
+        "05",
+        "06",
+        "07"
+      ],
+      "historicalStatusPolicy": "Original raw metrics and assessments remain unchanged; their first-usable method lacks follow-up completion protection and is NOT qualification of the current observer",
+      "currentPerformanceQualification": "NOT_RUN_NEW_INSTRUMENTATION_FULL_ABBA_REQUIRED",
+      "productPerformanceDecision": "LAZY_REJECTED_SSR_INCOMPARABLE_BOTH_REVERTED",
+      "reviewCount": 1,
+      "noRereview": true,
+      "deferredMinor": "Reviewed matrix source-manifest decision wording still mentions retained SSR test entries; actual manifest is measurement only",
+      "currentFullValidation": "PENDING_CURRENT_HEAD_UNIT_BUILD_TYPES_NATIVE_AND_CI",
+      "release": "NO_GO"
+    }
   }
 }

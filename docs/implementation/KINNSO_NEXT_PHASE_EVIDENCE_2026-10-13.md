@@ -11,6 +11,12 @@ The optional merchant SSR initializer is **not adopted** and has been withdrawn 
 - Protocol07 strict comparator: **INCOMPARABLE**. B2 has no final report assessment or sidecar, and original cleanup is PENDING. The process was absent when refreshed; its disappearance has no proven cause. No missing sample was recollected or backfilled.
 - Adoption requires B1 and B2 numeric PASS, all18 inputs and owned cleanup in both, and six complete6A/6B medians within A + max(50ms,5%). B1 PASS alone cannot meet this contract. W07 remains OPEN; overall NO_GO.
 
+## Post-review measurement qualification
+
+The single fresh read-only review found a collector completion defect: a populated campaign directory starts a second detail GET, but the old observer could accept invitation retention before that GET later denied the company. Two actual-browser controls failed before the fix; the empty-directory control passed. The minimum correction now waits for matching detail completion, while an empty directory needs no invented GET. Full fixture suite88/88 PASS, including16 observer cases, with one trusted input and original deadlines. Fix source ac06a33afdc8024a29eb3628b7c85e84dc47fc8e; observer SHA256 a9650c96901fb40837332f9d1f1ec44dbfbbca0031bdae06f147e40e685699f6.
+
+**Historical protocol05/06/07 sidecar PASS is recorded under the old observer and does not qualify the corrected method.** Raw metrics/statuses remain untouched; no07 sample is recollected. Current instrumentation requires a newly justified, frozen, full ABBA before performance adoption. W07 remains OPEN and NO_GO. Current full-suite and exact-head CI results must be read separately after this change. The reviewed matrix has one deferred Minor wording issue mentioning SSR test entries; actual final manifest contains measurement entries only.
+
 ## Original runs
 
 | Run | Source | Navigation | Interactions | Reads | Input | Numeric | Input gate | Original cleanup |
