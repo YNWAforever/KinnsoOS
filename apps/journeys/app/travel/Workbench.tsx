@@ -11,7 +11,6 @@ import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
 import type { Actor } from '../../lib/auth/actor';
-import type{PrivateMerchantEntry}from '../../lib/merchants/private-entry';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 import type {PublicGuide} from '../../lib/seo/public-guide';
 import type {PublicCreator} from '../../lib/seo/public-creator';
@@ -252,7 +251,6 @@ export function Workbench({
   publicCreator = null,
   publicArticle = null,
   tripHeading = null,
-  merchantEntry = null,
   features={media:false,sharing:false},
 }: {
   locale: m.Locale;
@@ -263,7 +261,6 @@ export function Workbench({
   publicCreator?:PublicCreator|null;
   publicArticle?:PublicArticle|null;
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
-  merchantEntry?:PrivateMerchantEntry|null;
   features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
@@ -661,7 +658,7 @@ export function Workbench({
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
     else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
-    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
+    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else content=<WorkspacePanel/>;
     if(path.startsWith('studio')&&!path.endsWith('/edit')&&path!=='studio/guides/new'&&path!=='studio/adventures/new')content=<><nav className="k-collab-nav" aria-label={t('Creator workspace navigation','創作者工作區導航')}>{[['studio','Overview','總覽'],['studio/outcomes','My collaborations','我的合作'],['studio/opportunities','Find collaborations','尋找合作'],['studio/guides','Guides','攻略'],['studio/earnings','Earnings records','收益紀錄'],['studio/inbox','Inbox','收件匣']].map(([p,en,zh])=><Link key={p} href={href(p)} aria-current={path===p?'page':undefined}>{t(en,zh)}</Link>)}</nav>{content}</>;
