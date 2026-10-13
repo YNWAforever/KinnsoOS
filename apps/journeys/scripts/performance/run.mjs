@@ -16,6 +16,7 @@ import {verifyTestTarget} from '../verify-test-target.mjs';
 import {assessRun, compareLab, localOrigin, retainNavigation, withCollectionDeadline, observeNavigation, prepareOwnedBlankReset, foundationRevision,workspacePages,operationRole} from './report.mjs';
 import{setupOperations,operationRead,verifyOperation,cleanupOperations}from'./operations-fixture.mjs';
 import{firstUsableTasks,measureFirstUsable,summarizeFirstUsable}from'./first-usable.mjs';
+import{normalizeSchemaDump}from'./compare-operations.mjs';
 
 const app = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const foundationSha = foundationRevision;
@@ -242,7 +243,10 @@ try {
    const tools={node:process.version,browser:report.conditions.browser,supabase:supabaseVersion,docker:dockerServerVersion,locks:await Promise.all(toolFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))}))),browserExecutableSha256:digest(await readFile(chromium.executablePath())),cliEntrySha256:digest(await readFile(cliFile))};
    const instrumentation=await Promise.all(instrumentationFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))})));
    const host={platform:process.platform,arch:process.arch,kernel:os.release(),cpuModels:[...new Set(os.cpus().map(cpu=>cpu.model))],cpuCount:os.cpus().length,hostNameHash:digest(os.hostname()),dockerServerVersion};
-   measurementProvenance={hostHash:digest(JSON.stringify(host)),toolHash:digest(JSON.stringify(tools)),instrumentationHash:digest(JSON.stringify(instrumentation)),conditionsHash:digest(JSON.stringify(report.conditions)),host,tools,instrumentation};
+   // Schema-only dump contains definitions/grants, never row data. PostgreSQL's random restore fence is not schema.
+   const schema=normalizeSchemaDump(execFileSync('docker',['exec',target.dbContainer,'pg_dump','-U','postgres','-d','postgres','--schema-only','--no-comments'],{encoding:'utf8',maxBuffer:8*1024*1024}));
+   const targetReceipt={environment:'owned isolated local',project:target.projectRef,apiOrigin:target.apiOrigin,dbContainer:target.dbContainer,schemaFingerprint:digest(schema)};
+   measurementProvenance={hostHash:digest(JSON.stringify(host)),toolHash:digest(JSON.stringify(tools)),instrumentationHash:digest(JSON.stringify(instrumentation)),conditionsHash:digest(JSON.stringify(report.conditions)),targetHash:digest(JSON.stringify(targetReceipt)),target:targetReceipt,host,tools,instrumentation};
   }
   const foundationModel = foundation ? (await transform(execFileSync('git',['show',foundationSha+':app/travel/model.ts'],{cwd:app,encoding:'utf8'}),
     {loader:'ts',format:'iife',globalName:'KinnsoFoundationModel'})).code : null;

@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import {assessRun} from './report.mjs';
 import {summarizeFirstUsable,firstUsableTasks} from './first-usable.mjs';
+export function normalizeSchemaDump(value){return value.replace(/^\\(?:un)?restrict [A-Za-z0-9_]+\r?$/gm,'');}
 const hash=value=>typeof value==='string'&&/^[0-9a-f]{64}$/.test(value);
 const revision=value=>typeof value==='string'&&/^[0-9a-f]{40}$/.test(value);
 const median=values=>{const s=[...values].sort((a,b)=>a-b);return(s[2]+s[3])/2;};
@@ -9,7 +10,7 @@ export function compareOperationsBatch({protocol,runs}={}){
  const incomparable=reason=>blockers.push(reason);
  if(protocol?.schemaVersion!==1||JSON.stringify(protocol.order)!==JSON.stringify(['A1','B1','B2','A2'])||protocol?.nonRegression?.absoluteMs!==50||protocol?.nonRegression?.relative!==0.05)incomparable('PROTOCOL_NOT_FROZEN_ABBA');
  if(!Array.isArray(runs)||JSON.stringify(runs.map(x=>x?.id))!==JSON.stringify(['A1','B1','B2','A2']))incomparable('REQUIRED_ORDER_OR_RUNS_MISSING');
- if(['conditionsHash','toolHash','instrumentationHash','hostHash'].some(k=>!hash(protocol?.[k])))incomparable('PROTOCOL_HASHES_MISSING');
+ if(['conditionsHash','toolHash','instrumentationHash','hostHash','targetHash'].some(k=>!hash(protocol?.[k])))incomparable('PROTOCOL_HASHES_MISSING');
  if(blockers.length)return{status:'INCOMPARABLE',blockers,groups,sourceRefs};
  let candidateRejected=false;const refs={};
  for(const run of runs){
@@ -18,7 +19,8 @@ export function compareOperationsBatch({protocol,runs}={}){
   if(!revision(run.sourceSha)||!revision(run.sourceTree)||r?.sourceSha!==run.sourceSha||s?.sourceSha!==run.sourceSha||s?.sourceTree!==run.sourceTree)incomparable('SOURCE_BINDING_MISMATCH');
   if(refs[side]&&(refs[side].sourceSha!==run.sourceSha||refs[side].sourceTree!==run.sourceTree))incomparable('SIDE_SOURCE_DRIFT');refs[side]={sourceSha:run.sourceSha,sourceTree:run.sourceTree};
   if(side==='A'&&(run.sourceSha!==protocol.baseline?.sourceSha||run.sourceTree!==protocol.baseline?.sourceTree))incomparable('BASELINE_SOURCE_CHANGED');
-  if(['conditionsHash','toolHash','instrumentationHash','hostHash'].some(k=>run[k]!==protocol[k])||s?.conditionsHash!==protocol.conditionsHash)incomparable('HOST_TOOL_INSTRUMENTATION_CONDITIONS_DRIFT');
+  if(['conditionsHash','toolHash','instrumentationHash','hostHash','targetHash'].some(k=>run[k]!==protocol[k])||s?.conditionsHash!==protocol.conditionsHash)incomparable('HOST_TOOL_INSTRUMENTATION_CONDITIONS_DRIFT');
+  const target=s?.provenance?.target;if(!target||target.environment!=='owned isolated local'||target.apiOrigin!=='http://127.0.0.1:58421'||target.dbContainer!=='supabase_db_'+target.project||!hash(target.schemaFingerprint)||s?.provenance?.targetHash!==protocol.targetHash||createHash('sha256').update(JSON.stringify(target)).digest('hex')!==protocol.targetHash)incomparable('ACTUAL_TARGET_OR_SCHEMA_DRIFT');
   const c=r?.conditions,screen=c?.screenEmulation,t=c?.throttling;
   if(c?.formFactor!=='mobile'||c?.throttlingMethod!=='devtools'||screen?.width!==390||screen?.height!==844||screen?.mobile!==true||screen?.deviceScaleFactor!==1||screen?.disabled!==false||t?.requestLatencyMs!==150||t?.downloadThroughputKbps!==1600||t?.uploadThroughputKbps!==750||t?.cpuSlowdownMultiplier!==4)incomparable('MEASUREMENT_CONDITIONS_CHANGED');
   if(createHash('sha256').update(JSON.stringify(c??null)).digest('hex')!==protocol.conditionsHash)incomparable('ACTUAL_CONDITIONS_HASH_MISMATCH');
