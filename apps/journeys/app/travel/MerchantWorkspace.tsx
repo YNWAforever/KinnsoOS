@@ -1,23 +1,15 @@
 'use client';
 import Link from 'next/link';
-import dynamic from 'next/dynamic';
-import {loadMerchantTool} from './loadMerchantTool';
 import {useEffect,useRef,useState,type ReactNode} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {merchants,type Membership,type MerchantWorkspaceDTO,type Redemption} from '../../lib/merchants/repository';
-
+import {MerchantTeamAccess} from './MerchantTeamAccess';
+import {MerchantInvitations} from './MerchantInvitations';
+import {MerchantCampaigns} from './MerchantCampaigns';
+import {MerchantCreatorDiscovery} from './MerchantCreatorDiscovery';
+import {MerchantInsights} from './MerchantInsights';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
-function MerchantPanelLoading(){
- const{t}=useApp();
- return <div className="k-card"><p role="status">{t('Loading company tools…','正在載入公司工具…')}</p></div>;
-}
-// Load tools only when the fresh company read renders their permitted section.
-const MerchantTeamAccess=dynamic(()=>loadMerchantTool(()=>import('./MerchantTeamAccess').then(module=>module.MerchantTeamAccess)),{loading:MerchantPanelLoading});
-const MerchantInvitations=dynamic(()=>loadMerchantTool(()=>import('./MerchantInvitations').then(module=>module.MerchantInvitations)),{loading:MerchantPanelLoading});
-const MerchantCampaigns=dynamic(()=>loadMerchantTool(()=>import('./MerchantCampaigns').then(module=>module.MerchantCampaigns)),{loading:MerchantPanelLoading});
-const MerchantCreatorDiscovery=dynamic(()=>loadMerchantTool(()=>import('./MerchantCreatorDiscovery').then(module=>module.MerchantCreatorDiscovery)),{loading:MerchantPanelLoading});
-const MerchantInsights=dynamic(()=>loadMerchantTool(()=>import('./MerchantInsights').then(module=>module.MerchantInsights)),{loading:MerchantPanelLoading});
 export function MerchantWorkspace({actorId,enabled,onboarding,profile}:{actorId:string|null;enabled:boolean;onboarding?:ReactNode;profile?:(merchantId:string,onLockChange:(locked:boolean)=>void)=>ReactNode}){
  const{t,locale}=useApp();const[valid,setValid]=useState(true),[memberships,setMemberships]=useState<Membership[]|null>(null),[merchantId,setMerchantId]=useState(''),[data,setData]=useState<MerchantWorkspaceDTO|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[message,setMessage]=useState(''),[redemption,setRedemption]=useState<Redemption|null>(null);
  const[branchName,setBranchName]=useState(''),[branchId,setBranchId]=useState(''),[teamRefreshKey,setTeamRefreshKey]=useState(0),[code,setCode]=useState(''),[amount,setAmount]=useState('');

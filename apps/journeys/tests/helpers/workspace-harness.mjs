@@ -42,8 +42,8 @@ export async function workspaceHarness(name,ports={},initial={}) {
   const states=[],refs=[],effects=[],events=[],invalidators=new Set(),listeners=new Map();let cursor=0,changed=false,tree,sequence=initial.sequence??0;
   const props={actorId:'actor-A',enabled:true,path:'studio/missions',merchantId:'11111111-1111-4111-8111-111111111111',refreshKey:0,locked:false,onDenied:()=>{},onLockChange:()=>{},onChanged:async()=>{},...initial};
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
-  const jsx=(type,props)=>{if(typeof type==='function'){type.loadFixture?.();return initial.shallow?{type:type.name,props}:type(props);}return{type,props};};
-  const snippets={dynamic:'export default globalThis.__dynamic;',ui:`export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:path=>'/'+globalThis.__locale+'/'+path});`,
+  const jsx=(type,props)=>typeof type==='function'?(initial.shallow?{type:type.name,props}:type(props)):({type,props});
+  const snippets={ui:`export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:path=>'/'+globalThis.__locale+'/'+path});`,
     drafts:`export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.read(...args)??null;export const saveLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.save(...args);export const clearLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.clear(...args);export const releaseLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.release(...args);export const completeLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.complete?.(...args);`,
     creator:'export const creatorMissions=globalThis.__ports.creatorMissions; export const creatorEarnings=globalThis.__ports.creatorEarnings;',
     campaigns:'export const merchantCampaigns=globalThis.__ports.merchantCampaigns;',
@@ -57,8 +57,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
   const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation'],plugins:[{name:'boundary-ports',setup(b){
     b.onResolve({filter:/.*/},args=>{
       let path;
-      if(args.path==='next/dynamic')path='dynamic';
-      else if(args.path==='./ui')path='ui';
+      if(args.path==='./ui')path='ui';
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';
       else if(args.path.endsWith('/creators/collaboration'))path='creator';
       else if(args.path.endsWith('/merchants/campaign-repository'))path='campaigns';
@@ -74,7 +73,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     b.onLoad({filter:/.*/,namespace:'test'},args=>({loader:'js',contents:snippets[args.path]}));
   }}]});
   const session=new Map();const module={exports:{}};
-  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,document:initial.document,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',hash:initial.hash??'',reload(){}},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__dynamic:(loader,{loading}={})=>{let component,started=false;function DeferredPanel(props){DeferredPanel.loadFixture();return component?component(props):loading?.(props)??null;}DeferredPanel.loadFixture=()=>{if(started)return;started=true;void loader().then(mod=>{component=mod.default??mod;Object.defineProperty(DeferredPanel,'name',{value:component.name});changed=true;});};return DeferredPanel;},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
+  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,document:initial.document,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',hash:initial.hash??'',reload(){}},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
     if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return'a';if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
