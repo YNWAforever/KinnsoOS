@@ -182,6 +182,11 @@ jobs:
       - name: Collect all traveller and private workspace cold/warm navigation evidence
         if: ${{ !cancelled() }}
         run: node scripts/performance/run.mjs --operations
+      - name: Enforce independent first-usable evidence
+        if: ${{ !cancelled() }}
+        run: |
+          report=$(python -c 'import glob,json; rows=[p for p in glob.glob("evidence/performance/*/report.json") if json.load(open(p)).get("kind")=="operations"]; assert len(rows)==1, "Exactly one operations report required"; print(rows[0])')
+          node scripts/performance/first-usable.mjs "$report" "$GITHUB_SHA"
       - name: Enforce the source-bound operations assessment
         if: ${{ !cancelled() }}
         env:
