@@ -1,3 +1,14 @@
+# Stack integration CI blocker and minimum fix — 2026-10-14
+
+PR79 was merged only after its actual52abfe0 original Root/Journeys push+PR and raw source/tree/base/numeric/input/cleanup gates passed. PR78 actual newhead f61a04baf9911464612dc1040985a6321ef58870 has exactly packet tree5b818015616c314332cfcb6df4596d8cfa4388c4, parents168f653/52abfe0. Main remains58d72e9 and PR78/77 are unmerged at this snapshot.
+
+**Source integration gate closed again.** Original PR78 push38482144573 auth-mailbox failed before application tests: Docker could not bind DB host port58422 (address already in use; occupantUNKNOWN). Raw startup log SHA256162d64ed76e637f397f0065c21d5884656fb805402b4a0258d1ee3f44bc3a708 retained. Same-head PR mailbox job passed independently; it cannot erase the original push bootFAIL. Other original source/performance jobs were pending at this packet's timestamp. No failed workflow was retried.
+
+Four actual configuration controls fail before implementation (7PASS/4RED): generated canonical CI DB profile, mailbox variant, strict boolean option and changed canonical DB-port refusal. Minimal generated-CI-only DB/shadow ports are18422/18420; API58421,Mailpit58424,project labels,key roles,seeds/required confirmation,actor/origin guards and original developer/pilot profiles stay unchanged. Focused16GREEN0FAIL0SKIP includes two actual loopback binds; no DB/SMTP/provider connection. This commit requires full source qualification and fresh original push/PR CI before any remaining merge.
+
+ABBA10 remains bound to measured0a2/adbd; it is not relabeled onto the new CI-only change. Product/runtime/measurement files and owned baseline/profile defaults are unchanged; affected CI configuration/startup/DB/native/mailbox/performance evidence must be freshly verified. Hosted mutations, target/role/content/device/recovery/scheduler/pilot acceptance remain NOT_RUN/NO_GO. The timestamped snapshots below and private integration receipts retain all original outcomes.
+
+---
 # Qualified continuation candidate — 2026-10-14
 
 Measured source `0a2d41a41ef7ccb28ee587539e67af89b9d915e6`, tree `adbd58a88f0d2d8d430048b9f6ad71964287d5e6`: **660 unit /97 owned DB /220 native PASS,0FAIL/0SKIP**.88 fixtures are included in220. Source-package/workflow/deployment-scope/build/types passed; the existing named Windows symlink-permission source-package skip remains explicit, and original Linux source/extraction checks passed. This document-only revision must earn fresh original CI before integration; no measured source SHA is relabeled.

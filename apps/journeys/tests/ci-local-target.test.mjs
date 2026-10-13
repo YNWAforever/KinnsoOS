@@ -52,3 +52,29 @@ test('local setup refuses arbitrary project overrides rather than authorizing an
   assert.throws(()=>localConfiguration(canonical,{projectRef}));assert.throws(()=>localTestEnvironment(status(),projectRef,{projectRef}));
  }
 });
+
+// Original f61a push could not start Docker: its DB host port58422 was occupied.
+// A bounded generated CI DB profile must leave API/Mailpit and developer/pilot contracts intact.
+const databaseMailConfig = mailConfig.replace('[inbucket]', '[db]\nport = 54422\nshadow_port = 54420\n[db.seed]\nenabled = true\n[inbucket]');
+for (const mailbox of [false, true]) test(`generated CI database ports avoid the original collision range (mailbox=${mailbox})`, async () => {
+ const output=localConfiguration(databaseMailConfig,{mailbox,ciDatabasePorts:true});
+ const database=output.split('[db]\n')[1].split('[')[0];
+ assert.match(database,/^port = 18422$/m);assert.match(database,/^shadow_port = 18420$/m);
+ assert.match(output,/\[api\]\nport = 58421/);assert.match(output,/\[inbucket\]\nenabled = (?:true|false)\nport = 58424/);
+ assert.match(output,/\[db.seed\]\nenabled = false/);assert.match(output,/project_id = "kinnsoos-b1-20261002"/);
+ if(mailbox)assert.match(output,/\[auth.email\]\nenable_confirmations = true/);
+ // Actual loopback bind, no DB/SMTP connection or change to an existing listener.
+ const {createServer}=await import('node:net');const probe=createServer();
+ await new Promise((resolve,reject)=>{probe.once('error',reject);probe.listen({host:'127.0.0.1',port:18422},resolve);});
+ await new Promise((resolve,reject)=>probe.close(error=>error?reject(error):resolve()));
+});
+test('CI port profile is explicit boolean and keeps named developer/pilot profiles unchanged',()=>{
+ for(const projectRef of ['kinnsoos-b1-20261002','kinnsoos-pilot-20261013']){
+  const output=localConfiguration(databaseMailConfig,{projectRef});assert.match(output,/\[db\]\nport = 58422\nshadow_port = 58420/);
+ }
+ for(const ciDatabasePorts of ['yes',null,18422])assert.throws(()=>localConfiguration(databaseMailConfig,{ciDatabasePorts}));
+});
+test('generated CI DB profile rejects changed canonical database ports instead of broadening the target',()=>{
+ for(const source of [databaseMailConfig.replace('port = 54422','port = 54425'),databaseMailConfig.replace('shadow_port = 54420','shadow_port = 54425')])assert.throws(()=>localConfiguration(source,{ciDatabasePorts:true}));
+ assert.throws(()=>localConfiguration(databaseMailConfig,{ciDatabasePorts:true,projectRef:'production'}));
+});

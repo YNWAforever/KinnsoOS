@@ -5,15 +5,20 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { verifyTestTarget, approvedLocalProjects } from './verify-test-target.mjs';
 import { verifyMailboxRuntime } from './local-auth-mailbox.mjs';
 const project = 'kinnsoos-b1-20261002', api = 'http://127.0.0.1:58421';
-export function localConfiguration(source, {mailbox = false, projectRef = project} = {}) {
+export function localConfiguration(source, {mailbox = false, projectRef = project, ciDatabasePorts = false} = {}) {
  if (!approvedLocalProjects.includes(projectRef)) throw Error('Explicit owned local project required');
+ if (typeof ciDatabasePorts !== 'boolean') throw Error('Explicit CI database port profile required');
+ if (ciDatabasePorts) {
+  const database = source.split(/^\[db\]\r?\n/m)[1]?.split(/^\[/m)[0] ?? '';
+  if (!/^port = 54422$/m.test(database) || !/^shadow_port = 54420$/m.test(database)) throw Error('Canonical local database ports required');
+ }
  if (mailbox && (!/\[inbucket\]\r?\n(?:[^[]*\n)?enabled = false/m.test(source) || !/\[auth.email\]\r?\n[\s\S]*?enable_confirmations = false/m.test(source) || /^\[auth\.(?:email\.smtp|hook\.send_email)\]/m.test(source))) throw Error('Canonical local-only email configuration required');
  if (!/^project_id = "kinnso-v3"$/m.test(source) || !/^port = 54421$/m.test(source)) throw Error('Canonical local config required');
  let section = '';
  return source.split(/\r?\n/).map(line => {
   if (line.startsWith('[')) section = line;
   if (line === 'project_id = "kinnso-v3"') return `project_id = "${projectRef}"`;
-  const port = line.match(/^(port|shadow_port) = (544\d\d)$/); if (port) return `${port[1]} = ${Number(port[2]) + 4000}`;
+  const port = line.match(/^(port|shadow_port) = (544\d\d)$/); if (port) return `${port[1]} = ${Number(port[2]) + (ciDatabasePorts && section === '[db]' ? -36000 : 4000)}`;
   if (section === '[db.seed]' && /^enabled =/.test(line)) return 'enabled = false';
   if (mailbox && section === '[inbucket]' && /^enabled =/.test(line)) return 'enabled = true';
   if (mailbox && section === '[auth.email]' && /^enable_confirmations =/.test(line)) return 'enable_confirmations = true';
@@ -44,7 +49,8 @@ export function prepare(command, env = process.env) {
  const mailbox = command === 'config-mailbox' || command === 'env-mailbox';
  if (command === 'config' || command === 'config-mailbox') {
   if (fs.existsSync(stack)) throw Error('Fresh owned CI stack directory required');
-  const config = localConfiguration(fs.readFileSync(path.join(root, 'supabase/config.toml'), 'utf8'), {mailbox});
+  // CI DB bindings avoid the original58422 host-port collision; developer/pilot defaults stay unchanged.
+  const config = localConfiguration(fs.readFileSync(path.join(root, 'supabase/config.toml'), 'utf8'), {mailbox, ciDatabasePorts: true});
   fs.mkdirSync(path.join(stack, 'supabase/migrations'), { recursive: true });
   fs.writeFileSync(path.join(stack, 'supabase/config.toml'), config, { flag: 'wx' });
   for (const file of fs.readdirSync(path.join(root, 'supabase/migrations'))) if (/^\d{14}_[a-z0-9_]+\.sql$/.test(file)) fs.copyFileSync(path.join(root, 'supabase/migrations', file), path.join(stack, 'supabase/migrations', file), fs.constants.COPYFILE_EXCL);
