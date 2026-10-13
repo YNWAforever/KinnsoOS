@@ -1,3 +1,5 @@
+import {verifyTestTarget as verifyOwnedTarget} from '../../scripts/verify-test-target.mjs';
+const ownedTarget=verifyOwnedTarget();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -17,7 +19,7 @@ test('merchant content prerequisite preserves existing brief content, fills abse
   const session=await owner.client.auth.getSession();assert.equal(session.error,null);
   const jwt=JSON.parse(Buffer.from(session.data.session.access_token.split('.')[1],'base64url').toString());assert.equal(jwt.sub,owner.id);assert.match(jwt.session_id,/^[0-9a-f-]{36}$/i);
   const claims=JSON.stringify({sub:owner.id,session_id:jwt.session_id,role:'authenticated',is_anonymous:false});
-  const inspect=spawnSync('docker',['inspect',process.env.KINNSO_TEST_DB_CONTAINER],{encoding:'utf8'});assert.equal(inspect.status,0,inspect.stderr);assert.equal(JSON.parse(inspect.stdout)[0].Config.Labels['com.supabase.cli.project'],'kinnsoos-b1-20261002');
+  const inspect=spawnSync('docker',['inspect',process.env.KINNSO_TEST_DB_CONTAINER],{encoding:'utf8'});assert.equal(inspect.status,0,inspect.stderr);assert.equal(JSON.parse(inspect.stdout)[0].Config.Labels['com.supabase.cli.project'],ownedTarget.projectRef);
   const id=randomUUID(),original=randomUUID();
   const brief={type:'createBrief',id,title:'Synthetic preserved requirements',summary:'Real structured input is retained',couponCode:'TEST',couponUrl:'https://example.test/offer',affiliateRate:0,kinnsoRate:0,creatorRate:0,publish:true,requirements:['Original source needed'],deliverables:['One authored report']};
   const probe=`BEGIN; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='10s';

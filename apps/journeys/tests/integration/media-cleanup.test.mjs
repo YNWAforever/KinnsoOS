@@ -1,3 +1,5 @@
+import {verifyTestTarget as verifyOwnedTarget} from '../../scripts/verify-test-target.mjs';
+const ownedTarget=verifyOwnedTarget();
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
@@ -76,7 +78,7 @@ test('real local cleanup removes expired/deleted private uploads and retains rea
   assert.equal(late.error,null,'exercise a still-valid pre-claim signed upload against real Storage');
   assert.equal((await admin.storage.from('kinnso-trip-private').download(paths[0])).error,null);
   const target=verifyTestTarget(),container=JSON.parse(execFileSync('docker',['inspect',target.dbContainer],{encoding:'utf8'}))[0];
-  assert.equal(container.Config.Labels['com.supabase.cli.project'],'kinnsoos-b1-20261002');
+  assert.equal(container.Config.Labels['com.supabase.cli.project'],ownedTarget.projectRef);
   for(const path of paths)assert.match(path,/^[0-9a-f-]{36}\/[0-9a-f-]{36}\/[0-9a-f-]{36}$/);
   // Advance only these synthetic tombstones; never wait for or change real clocks.
   execFileSync('docker',['exec','-i',target.dbContainer,'psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1'],{input:"update kinnso_internal.media_cleanup set queued_at=now()-interval '3 hours' where object_path in ("+paths.slice(0,2).map(path=>"'"+path+"'").join(',')+");",stdio:['pipe','pipe','pipe']});
