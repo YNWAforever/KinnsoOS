@@ -16,7 +16,7 @@ export function compareOperationsBatch({protocol,runs}={}){
  for(const run of runs){
   const side=run.id[0],r=run.report,s=run.sidecar;
   sourceRefs.push({id:run.id,sourceSha:run.sourceSha,sourceTree:run.sourceTree});
-  if(!revision(run.sourceSha)||!revision(run.sourceTree)||r?.sourceSha!==run.sourceSha||s?.sourceSha!==run.sourceSha||s?.sourceTree!==run.sourceTree)incomparable('SOURCE_BINDING_MISMATCH');
+  if(!revision(run.sourceSha)||!revision(run.sourceTree)||r?.sourceSha!==run.sourceSha||r?.sourceTree!==run.sourceTree||s?.sourceSha!==run.sourceSha||s?.sourceTree!==run.sourceTree)incomparable('SOURCE_BINDING_MISMATCH');
   if(refs[side]&&(refs[side].sourceSha!==run.sourceSha||refs[side].sourceTree!==run.sourceTree))incomparable('SIDE_SOURCE_DRIFT');refs[side]={sourceSha:run.sourceSha,sourceTree:run.sourceTree};
   if(side==='A'&&(run.sourceSha!==protocol.baseline?.sourceSha||run.sourceTree!==protocol.baseline?.sourceTree))incomparable('BASELINE_SOURCE_CHANGED');
   if(['conditionsHash','toolHash','instrumentationHash','hostHash','targetHash'].some(k=>run[k]!==protocol[k])||s?.conditionsHash!==protocol.conditionsHash)incomparable('HOST_TOOL_INSTRUMENTATION_CONDITIONS_DRIFT');

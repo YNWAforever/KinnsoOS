@@ -18,7 +18,7 @@ const context={sourceSha:shaA,sourceTree:treeA,conditionsHash:hash,cleanup};
 const samples=()=>tasks.flatMap(task=>['cold','warm'].flatMap(cache=>[1,2,3].map(run=>({task,cache,run,acceptedInputMs:[100,120,140][run-1],retained:true,authorized:true,status:'PASS'}))));
 function summarize(rows,ctx=context){assert.equal(typeof first.summarizeFirstUsable,'function','first-usable evaluator must exist');return first.summarizeFirstUsable(rows,ctx);}
 function report(sourceSha){
- const r={kind:'operations',sourceSha,sourceDiff:[],cleanup,samples:[],interactions:[],queryLatency:{status:'MEASURED_LOCAL_BACKEND_ROUNDTRIPS',samples:[]},dataset:{campaigns:55,acceptedCreatorWork:55,reviewSubmissions:1,roles:['creator','merchant_owner']},conditions:{formFactor:'mobile',throttlingMethod:'devtools',screenEmulation:{mobile:true,width:390,height:844,deviceScaleFactor:1,disabled:false},throttling:{requestLatencyMs:150,downloadThroughputKbps:1600,uploadThroughputKbps:750,cpuSlowdownMultiplier:4}}};
+ const r={kind:'operations',sourceSha,sourceTree:sourceSha===shaA?treeA:treeB,sourceDiff:[],cleanup,samples:[],interactions:[],queryLatency:{status:'MEASURED_LOCAL_BACKEND_ROUNDTRIPS',samples:[]},dataset:{campaigns:55,acceptedCreatorWork:55,reviewSubmissions:1,roles:['creator','merchant_owner']},conditions:{formFactor:'mobile',throttlingMethod:'devtools',screenEmulation:{mobile:true,width:390,height:844,deviceScaleFactor:1,disabled:false},throttling:{requestLatencyMs:150,downloadThroughputKbps:1600,uploadThroughputKbps:750,cpuSlowdownMultiplier:4}}};
  for(const page of [...pages,...workspacePages]){const role=operationRole(page);r.interactions.push({page,role,status:'PASS',traceFile:page+'.trace.json'});for(const run of [1,2,3]){r.queryLatency.samples.push({page,role,run,status:'PASS',durationMs:20});for(const cache of ['cold','warm'])r.samples.push({page,role,cache,run,status:200,verified:true,lcpMs:2000,cls:0.05,tbtMs:10,jsTransferBytes:100,imageTransferBytes:0});}}
  r.assessment=assessRun(r);return r;
 }
@@ -64,3 +64,5 @@ test('NEXT02 PostgreSQL restore fences cannot create schema drift and actual def
  assert.notEqual(comparison.normalizeSchemaDump(one),comparison.normalizeSchemaDump(two.replace('TO authenticated','TO anon')));
  assert.notEqual(comparison.normalizeSchemaDump(one),comparison.normalizeSchemaDump(two.replace('stable','changed')));
 });
+
+test('NEXT02 report tree is bound as strictly as sidecar and source labels',()=>{for(const tree of ['f'.repeat(40),undefined]){const b=batch();b.runs[1].report.sourceTree=tree;assert.equal(compare(b).status,'INCOMPARABLE');}});

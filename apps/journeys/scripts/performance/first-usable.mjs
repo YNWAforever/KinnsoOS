@@ -43,7 +43,7 @@ export async function measureFirstUsable(page,{task,cache,run,origin,route,compa
  const labels={merchantInvitation:'Recipient email',merchantBrief:'Brief title',merchantReview:'Deliverable review feedback'};
  const local=new URL(origin);if(local.protocol!=='http:'||local.hostname!=='127.0.0.1'||!local.port||!firstUsableTasks.includes(task))throw Error('Owned loopback task required');
  const token=globalThis.crypto.randomUUID(),text=task==='merchantInvitation'?'synthetic-first-usable@example.test':'Synthetic first usable input';
- let actor=false,membership=false,workspace=false,failed=false,ended=false;const related=new Set(),required=['/api/merchant/profile','/api/merchant/invitations','/api/merchant/campaigns'];
+ let actor=false,membership=false,workspace=false,failed=false,ended=false;const related=new Set(),required=['/api/merchant/profile','/api/merchant/invitations','/api/merchant/campaigns','/api/merchant/team','/api/merchant/creators','/api/merchant/insights'];
  const publish=async()=>{if(ended)return;await page.evaluate(({token,allowed,complete,failed})=>{const o=globalThis.__kinnsoFirstUsable;if(o?.token!==token)return;if(failed)o.invalidate(token);else if(allowed)o.authorize(token);o.relatedReadsComplete||=complete;o.readFailure||=failed;},{token,allowed:actor&&membership&&workspace,complete:required.every(x=>related.has(x)),failed});};
  const response=async r=>{try{const u=new URL(r.url());if(ended||u.origin!==origin||r.request().method()!=='GET'||!['/api/merchant',...required].includes(u.pathname))return;
   if(u.pathname!=='/api/merchant'||u.searchParams.has('id')){if(u.searchParams.getAll('id').length!==1||u.searchParams.get('id')!==companyId)return;}
