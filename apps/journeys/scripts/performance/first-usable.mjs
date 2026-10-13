@@ -38,6 +38,13 @@ export function installFirstUsableObserver({task,companyId,token,label,text}){
  globalThis.__kinnsoFirstUsable={token,documentTimeOrigin:performance.timeOrigin,authorize:own=>{if(own===token&&!invalid&&!stopped&&scope())authorized=true;else if(own===token&&!scope())leave();},invalidate:own=>{if(own===token)leave();},candidateEnabled:()=>live()&&enabled(find()),begin:()=>{const candidate=find();if(!live()||!enabled(candidate))return false;field=candidate;expectedValue=field.value+text;field.focus();return document.activeElement===field;},stop,dispose:stop};
 }
 
+/** Both drivers dispatch one native CDP Input.insertText; select before insertion, never retry. */
+export async function insertFirstUsableText(keyboard,text){
+ const method=typeof keyboard.insertText==='function'?'insertText':typeof keyboard.sendCharacter==='function'?'sendCharacter':null;
+ if(!method)throw Error('Native single-event insertion unavailable');
+ await keyboard[method](text);
+}
+
 /** One independent page, one keyboard insertion, no submit/retry/backfill. */
 export async function measureFirstUsable(page,{task,cache,run,origin,route,companyId,actorId,campaignId}){
  const labels={merchantInvitation:'Recipient email',merchantBrief:'Brief title',merchantReview:'Deliverable review feedback'};
@@ -62,7 +69,7 @@ export async function measureFirstUsable(page,{task,cache,run,origin,route,compa
   if(failed)return{...fallback,reason:'FRESH_AUTHORIZATION_OR_READ_REJECTED'};
   const focused=await page.evaluate(()=>globalThis.__kinnsoFirstUsable.begin());
   if(!focused)return{...fallback,reason:'FIELD_DISABLED_OR_SCOPE_CHANGED_BEFORE_INPUT'};
-  await page.keyboard.insertText(text);
+  await insertFirstUsableText(page.keyboard,text);
   await page.waitForFunction(()=>globalThis.__kinnsoFirstUsable?.readFailure||globalThis.__kinnsoFirstUsable?.relatedReadsComplete);
   const result=await page.evaluate(()=>globalThis.__kinnsoFirstUsable.stop());return{...result,task,cache,run,...failed?{status:'FAIL',reason:'RELATED_READ_REJECTED'}:{}};
  }catch{return{...fallback,reason:'FIRST_USABLE_COLLECTION_FAILED'};}

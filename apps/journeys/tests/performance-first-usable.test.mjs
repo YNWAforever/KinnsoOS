@@ -66,3 +66,10 @@ test('NEXT02 PostgreSQL restore fences cannot create schema drift and actual def
 });
 
 test('NEXT02 report tree is bound as strictly as sidecar and source labels',()=>{for(const tree of ['f'.repeat(40),undefined]){const b=batch();b.runs[1].report.sourceTree=tree;assert.equal(compare(b).status,'INCOMPARABLE');}});
+
+test('NEXT02 the actual Puppeteer keyboard contract sends one CDP insertion and never retries another API',async()=>{
+ assert.equal(typeof first.insertFirstUsableText,'function','one native input adapter must exist');const text='One complete native insertion',calls=[];
+ const puppeteer={sendCharacter:async value=>calls.push(['puppeteer',value])};await first.insertFirstUsableText(puppeteer,text);assert.deepEqual(calls,[['puppeteer',text]]);
+ const playwright={insertText:async value=>calls.push(['playwright',value])};await first.insertFirstUsableText(playwright,text);assert.deepEqual(calls,[['puppeteer',text],['playwright',text]]);
+ const failing={insertText:async()=>{calls.push(['failed']);throw Error('unknown native insertion outcome');},sendCharacter:async()=>calls.push(['forbidden retry'])};await assert.rejects(first.insertFirstUsableText(failing,text));assert.deepEqual(calls.at(-1),['failed']);assert.equal(calls.some(x=>x[0]==='forbidden retry'),false);await assert.rejects(first.insertFirstUsableText({},text));
+});
