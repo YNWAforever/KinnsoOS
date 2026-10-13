@@ -410,6 +410,7 @@
     "tests/merchant-profile-lock.test.mjs",
     "tests/merchant-ssr-initial-state.test.mjs",
     "tests/merchant-ssr-late-company.test.mjs",
+    "tests/merchant-ssr-terminal-denial.test.mjs",
     "tests/monitoring-partial.test.mjs",
     "tests/monthly-budget.test.mjs",
     "tests/navigation-diagnostics.test.mjs",
