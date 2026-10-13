@@ -1,3 +1,33 @@
+# Current continuation gate — 2026-10-14
+
+Source804513c13caaaccf6ab83cef020538cb256c6d44 (treef1a49286a73814384549a57241e4863427d84a24):641unit /97ownedDB /218native PASS0FAIL0SKIP;88fixtures are included in218. Source-package/workflow/deployment-scope/build/types checks passed. Existing named Windows symlink-permission source-package skip remains explicit; Linux source/extraction checks passed in original CI.
+
+Full fixed ABBA09 is **PASS in the owned same-host lab**. A26888a/B804513c, identical normalized191schema82200cae56744f93de44b296663fddfcaa4d62a32bc1146fa2583edbf269aecb, unchanged tools/instrumentation/throttling, original48navigation/8interaction/24reads/18first-usable in allfourruns. B1/B2 numeric+input+cleanup PASS; baselineA1/A2 numericFAIL remains. Allsixgroups have6A/6B samples; all original failures are retained, no fill/retry/timeout/sample/budget changes.
+
+| Task | Cache | A median ms | B median ms | Original limit ms | Result |
+| --- | --- | ---: | ---: | ---: | --- |
+| merchantInvitation | cold | 3278.350 | 2823.950 | 3442.267 | PASS |
+| merchantInvitation | warm | 1946.850 | 1804.250 | 2044.193 | PASS |
+| merchantBrief | cold | 3746.650 | 3142.050 | 3933.983 | PASS |
+| merchantBrief | warm | 2351.650 | 1907.350 | 2469.233 | PASS |
+| merchantReview | cold | 4020.200 | 3118.200 | 4221.210 | PASS |
+| merchantReview | warm | 2731.700 | 2132.300 | 2868.285 | PASS |
+
+Separate A/B latency each960measured/72warmups, ownedcleanupPASS, MEASURED_BUDGET_NOT_SET. Every completed raw trace archive was verified byte-exact by all-member SHA256 before duplicate trace removal.
+
+**Candidate NOT ADOPTED; source merge gate CLOSED.** Original Journeys push38453293294 numericPASS; original PR38453300077 numericFAIL:creatorDetail cold2672.868ms>2500ms, with full48/8/24/18 and input/cleanupPASS. PR actualcheckout7b831e73a93c6d86cff1df2630960b59dfe7703c has parents168f653/804513c and exactly candidate tree. Both original Root CI38453293266/38453300149 passed. No failed CI run was retried or replaced by faster local data.
+
+The minimum UTC validation migration was applied only to the verified owned loopback target. Original5ca10bc DB94PASS/1FAIL,100-row8s setup timeout, remains; actual catalog control100evaluations→0 with named/NULL/invalid zones unchanged and full5001-row test retained. Hosted migration/config/roles/provider/scheduler remain NOT_RUN.
+
+The single fresh whole-stack review reported0Critical/1Important/0Minor. Terminal denial and related transient/original-request controls were watched RED→GREEN in one TDD fix pass;27newcontrols are included in641. Original7a5ECONNRESET remains UNKNOWN; F46native216/2 fixture failures and08schema-change INCOMPARABLE remain historical.
+
+Conditional source integration is authorized after current gates:79→78feature→77feature→main, each actualhead/tree with fresh originalCI, no force/admin bypass. Source is still unmerged; main58d72e9/production observation is unchanged, hosted operational acceptance NO_GO. Booking/payment/withdrawal and provider/scheduler activation stay disabled.
+
+Next: reproduce the evidenced creatorDetail client-render/read delay with actual component/native RED controls, minimally initialize the same authorized private view while retaining the fresh client GET and command lock, then qualify the changed source with new full tests/CI/fixed ABBA. Designated staging/Auth target and owner, schema/grants/recovery, named roles, consented content, physical devices and scheduler/pilot scopes remain concrete blockers.
+
+The sections below are historical snapshots; their PASS/statuses belong to their own source and do not qualify a changed candidate.
+
+---
 # NEXT phase evidence and decision — 2026-10-13
 
 The optional merchant SSR initializer is **not adopted** and has been withdrawn by an ordinary commit. The earlier lazy-tool candidate was rejected by protocol05 and also withdrawn. Measurement, strict gates, target protections and the independent N14 geometry correction remain.

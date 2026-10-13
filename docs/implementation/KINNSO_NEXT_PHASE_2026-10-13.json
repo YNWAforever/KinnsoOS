@@ -1983,22 +1983,22 @@
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
       "sourceStatus": "MEASUREMENT_COMPLETION_RED_GREEN",
-      "ownedStatus": "HISTORICAL_BASELINE_SUPERSEDED_BY_NEW_INSTRUMENTATION",
+      "ownedStatus": "FOUR_ORIGINAL_RUNS_COMPLETE_18_INPUTS_EACH_OWNED_CLEANUP_PASS",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "OBSERVER_REVIEW_FIXED_CURRENT_BASELINE_NOT_REMEASURED",
+      "executionStatus": "CURRENT_METHOD_FULL_FIXED_ABBA09_VERIFIED",
       "evidence": [
         "private:protocol-05.json",
         "private:protocol05-comparison.json",
         "private:protocol05-A-latency.log",
         "private:post-review-measurement-qualification.json",
         "private:final-review-campaign-followup-RED.log",
-        "private:final-review-observer-and-fixtures-GREEN.log"
+        "private:final-review-observer-and-fixtures-GREEN.log",
+        "private:protocol-09.json",
+        "private:protocol09-comparison.json"
       ],
-      "blockers": [
-        "CURRENT_OBSERVER_FULL_ABBA_NOT_RUN"
-      ],
-      "executionUpdatedAt": "2026-10-13T13:10:21.005Z"
+      "blockers": [],
+      "executionUpdatedAt": "2026-10-13T20:45:09.387787+00:00"
     },
     {
       "task_id": "NEXT-03",
@@ -2022,11 +2022,11 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W05;W06;W07",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "LAZY_REJECTED_SSR_INCOMPARABLE_BOTH_REVERTED",
-      "ownedStatus": "INCOMPARABLE",
+      "sourceStatus": "CURRENT_MERCHANT_SSR_AND_UTC_FIX_FUNCTIONAL_GREEN_NOT_ADOPTED",
+      "ownedStatus": "FULL_LOCAL_NUMERIC_AND_SIX_NONREGRESSION_GROUPS_PASS",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "REVERTED_PERFORMANCE_NOT_ACCEPTED",
+      "executionStatus": "NOT_ADOPTED_CURRENT_ORIGINAL_PR_NUMERIC_FAIL",
       "evidence": [
         "private:protocol05-comparison.json",
         "private:SSR-final-unit-full.log",
@@ -2040,9 +2040,9 @@
         "private:protocol06-comparison.json"
       ],
       "blockers": [
-        "B2_INCOMPLETE_NO_BACKFILL; OPTIONAL_SSR_REVERTED; W07_OPEN"
+        "ORIGINAL_PR_38453300077_CREATOR_DETAIL_COLD_2672_868_OVER_2500"
       ],
-      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
+      "executionUpdatedAt": "2026-10-13T20:45:09.387787+00:00"
     },
     {
       "task_id": "NEXT-04",
@@ -2343,32 +2343,43 @@
   "financialCapabilities": "Booking/payment/withdrawal disabled",
   "execution": {
     "currentSource": {
-      "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
-      "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4",
-      "status": "OBSERVER_FIXED_WITH_LOCAL_NATIVE_FAILURE_AND_PERFORMANCE_GATE_OPEN",
+      "sha": "804513c13caaaccf6ab83cef020538cb256c6d44",
+      "tree": "f1a49286a73814384549a57241e4863427d84a24",
+      "status": "FUNCTIONAL_AND_LOCAL_ABBA09_PASS_ORIGINAL_PR_NUMERIC_FAIL",
       "noHistoricalPassTransfer": true
     },
-    "updatedAt": "2026-10-13T13:41:40.572Z",
+    "updatedAt": "2026-10-13T20:45:09.387787+00:00",
     "measuredCandidate": {
-      "sourceSha": "3fab97da6bf2514ce65b6c0f3bd1065cafc0e6c8",
-      "sourceTree": "29e36ea9f9a5592fe11d661e0231cebd284f8479"
+      "sourceSha": "804513c13caaaccf6ab83cef020538cb256c6d44",
+      "sourceTree": "f1a49286a73814384549a57241e4863427d84a24",
+      "adoption": "NOT_ADOPTED"
     },
     "sourceBoundLocalValidation": {
+      "sourceSha": "804513c13caaaccf6ab83cef020538cb256c6d44",
+      "sourceTree": "f1a49286a73814384549a57241e4863427d84a24",
       "unit": {
-        "pass": 628,
+        "pass": 641,
+        "fail": 0,
+        "skip": 0
+      },
+      "integration": {
+        "pass": 97,
         "fail": 0,
         "skip": 0
       },
       "native": {
-        "pass": 213,
+        "pass": 218,
         "fail": 0,
         "skip": 0,
-        "includedFixtures": 85
+        "includedFixtures": 88
       },
       "build": "PASS",
       "types": "PASS",
+      "sourcePackage": "PASS_WITH_NAMED_EXISTING_WINDOWS_SYMLINK_PERMISSION_SKIP",
+      "workflow": "PASS",
+      "deploymentScope": "PASS_METADATA_ONLY",
       "hosted": "NOT_RUN",
-      "note": "All results belong to 3fab97d; documentation/final source and CI must be independently bound."
+      "receipt": "private:candidate-utc-verification-receipt.json"
     },
     "experiments": [
       {
@@ -2385,6 +2396,89 @@
         "batch": "07",
         "status": "INCOMPARABLE",
         "evidence": "private:protocol07-comparison.json"
+      },
+      {
+        "batch": "08",
+        "status": "INCOMPARABLE_SCHEMA_CHANGE_BEFORE_B",
+        "originalA1": "COMPLETE_RETAINED",
+        "candidateRunsStarted": 0
+      },
+      {
+        "batch": "09",
+        "status": "PASS_OWNED_NOT_ADOPTED_PR_NUMERIC_FAIL",
+        "baseline": "26888a108ae7131915d40cae51ed322d6b499bbe",
+        "candidate": "804513c13caaaccf6ab83cef020538cb256c6d44",
+        "originalA1": "COMPLETE_NUMERIC_FAIL_INPUT_CLEANUP_PASS",
+        "originalB1": "COMPLETE_NUMERIC_INPUT_CLEANUP_PASS",
+        "originalB2": "COMPLETE_NUMERIC_INPUT_CLEANUP_PASS",
+        "originalA2": "COMPLETE_NUMERIC_FAIL_INPUT_CLEANUP_PASS",
+        "sixGroups": [
+          {
+            "task": "merchantInvitation",
+            "cache": "cold",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 3278.3499999940395,
+            "bMedianMs": 2823.949999988079,
+            "limitMs": 3442.2674999937417,
+            "status": "PASS"
+          },
+          {
+            "task": "merchantInvitation",
+            "cache": "warm",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 1946.8500000238419,
+            "bMedianMs": 1804.25,
+            "limitMs": 2044.192500025034,
+            "status": "PASS"
+          },
+          {
+            "task": "merchantBrief",
+            "cache": "cold",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 3746.6500000059605,
+            "bMedianMs": 3142.050000011921,
+            "limitMs": 3933.9825000062583,
+            "status": "PASS"
+          },
+          {
+            "task": "merchantBrief",
+            "cache": "warm",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 2351.6500000059605,
+            "bMedianMs": 1907.3499999940395,
+            "limitMs": 2469.2325000062583,
+            "status": "PASS"
+          },
+          {
+            "task": "merchantReview",
+            "cache": "cold",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 4020.2000000178814,
+            "bMedianMs": 3118.199999988079,
+            "limitMs": 4221.210000018776,
+            "status": "PASS"
+          },
+          {
+            "task": "merchantReview",
+            "cache": "warm",
+            "aSamples": 6,
+            "bSamples": 6,
+            "aMedianMs": 2731.7000000178814,
+            "bMedianMs": 2132.300000011921,
+            "limitMs": 2868.2850000187755,
+            "status": "PASS"
+          }
+        ],
+        "protocol": "private:protocol-09.json",
+        "denominators": "48 navigation /8 interaction /24 reads /18 first-usable per run;6A/6B each group",
+        "threshold": "B1/B2 numeric PASS and six medians <=A+max(50ms,5%);2500msLCP/0.1CLS",
+        "schemaOnBothSides": 191,
+        "comparison": "private:protocol09-comparison.json"
       }
     ],
     "externalInputs": [
@@ -2451,13 +2545,15 @@
     ],
     "financialCapabilities": "Booking/payment/withdrawal disabled",
     "releaseDecision": "NO_GO",
-    "production": "NOT_CHANGED_NOT_ACCEPTED",
+    "production": "MAIN58D_UNCHANGED_HOSTED_NOT_ACCEPTED",
     "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement.",
     "measurementQualification": {
       "recordedAt": "2026-10-13T13:26:56.936Z",
       "source": {
-        "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
-        "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4"
+        "sha": "804513c13caaaccf6ab83cef020538cb256c6d44",
+        "tree": "f1a49286a73814384549a57241e4863427d84a24",
+        "status": "FUNCTIONAL_AND_LOCAL_ABBA09_PASS_ORIGINAL_PR_NUMERIC_FAIL",
+        "noHistoricalPassTransfer": true
       },
       "observerSha256": "a9650c96901fb40837332f9d1f1ec44dbfbbca0031bdae06f147e40e685699f6",
       "reviewedSource": "de6f7935b8157b03b1dfb3122e46014227349c55",
@@ -2480,13 +2576,14 @@
         "07"
       ],
       "historicalStatusPolicy": "Original raw metrics and assessments remain unchanged; their first-usable method lacks follow-up completion protection and is NOT qualification of the current observer",
-      "currentPerformanceQualification": "NOT_RUN_NEW_INSTRUMENTATION_FULL_ABBA_REQUIRED",
-      "productPerformanceDecision": "LAZY_REJECTED_SSR_INCOMPARABLE_BOTH_REVERTED",
+      "currentPerformanceQualification": "FIXED_ABBA09_PASS_191_SCHEMA_SAME_HOST_6A_6B_ALL_GROUPS",
+      "productPerformanceDecision": "NOT_ADOPTED_CURRENT_PR_CREATOR_DETAIL_FAIL",
       "reviewCount": 1,
       "noRereview": true,
       "deferredMinor": "Reviewed matrix source-manifest decision wording still mentions retained SSR test entries; actual manifest is measurement only",
-      "currentFullValidation": "PENDING_CURRENT_HEAD_UNIT_BUILD_TYPES_NATIVE_AND_CI",
-      "release": "NO_GO"
+      "currentFullValidation": "CURRENT804_641_UNIT_97_DB_218_NATIVE_BUILD_TYPES_SOURCE_CHECKS_PASS",
+      "release": "NO_GO",
+      "currentOriginalCI": "PUSH_PASS_PR_NUMERIC_FAIL_2672_868_CREATOR_DETAIL"
     },
     "localValidationAsOf": {
       "recordedAt": "2026-10-13T13:41:40.570Z",
@@ -2530,6 +2627,267 @@
       },
       "qualification": "All results stay bound to7a5; documentation-only continuation must earn its own current CI, not inherit a PASS",
       "release": "NO_GO"
+    },
+    "priorSnapshots": [
+      {
+        "currentSource": {
+          "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
+          "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4",
+          "status": "OBSERVER_FIXED_WITH_LOCAL_NATIVE_FAILURE_AND_PERFORMANCE_GATE_OPEN",
+          "noHistoricalPassTransfer": true
+        },
+        "updatedAt": "2026-10-13T13:41:40.572Z",
+        "measuredCandidate": {
+          "sourceSha": "3fab97da6bf2514ce65b6c0f3bd1065cafc0e6c8",
+          "sourceTree": "29e36ea9f9a5592fe11d661e0231cebd284f8479"
+        },
+        "sourceBoundLocalValidation": {
+          "unit": {
+            "pass": 628,
+            "fail": 0,
+            "skip": 0
+          },
+          "native": {
+            "pass": 213,
+            "fail": 0,
+            "skip": 0,
+            "includedFixtures": 85
+          },
+          "build": "PASS",
+          "types": "PASS",
+          "hosted": "NOT_RUN",
+          "note": "All results belong to 3fab97d; documentation/final source and CI must be independently bound."
+        },
+        "experiments": [
+          {
+            "batch": "05",
+            "status": "REJECTED",
+            "evidence": "private:protocol05-comparison.json"
+          },
+          {
+            "batch": "06",
+            "status": "INCOMPARABLE",
+            "evidence": "private:protocol06-comparison.json"
+          },
+          {
+            "batch": "07",
+            "status": "INCOMPARABLE",
+            "evidence": "private:protocol07-comparison.json"
+          }
+        ],
+        "externalInputs": [
+          {
+            "id": "TARGET",
+            "owner": "platform/release owner",
+            "requestedAt": "2026-10-13",
+            "scope": "designated staging URL/Vercel project/branch and Supabase project/branch/Auth owner; no key values",
+            "unlocks": [
+              "NEXT-04",
+              "NEXT-05"
+            ]
+          },
+          {
+            "id": "RECOVERY",
+            "owner": "platform/release owner",
+            "scope": "target schema/grants/migration inventory, last-good source, backup coverage and restore rehearsal",
+            "unlocks": [
+              "NEXT-05",
+              "NEXT-10"
+            ]
+          },
+          {
+            "id": "ROLES",
+            "owner": "role owners",
+            "scope": "two companies/two creators plus owner/marketing/clerk/finance/ops and approved mailbox/actions",
+            "unlocks": [
+              "NEXT-06"
+            ]
+          },
+          {
+            "id": "CONTENT",
+            "owner": "content owner",
+            "scope": "three real structured guides, author consent, cover rights, verified sources/dates/locales and traveller",
+            "unlocks": [
+              "NEXT-07"
+            ]
+          },
+          {
+            "id": "SCHEDULER",
+            "owner": "operations owner",
+            "scope": "target/source/candidate/schema/window and enable/stop/recovery scope",
+            "unlocks": [
+              "NEXT-08"
+            ]
+          },
+          {
+            "id": "DEVICES",
+            "owner": "QA/accessibility owner",
+            "scope": "physical iOS/Safari/VoiceOver, Android/Chrome, Windows/NVDA and versions/operators",
+            "unlocks": [
+              "NEXT-09"
+            ]
+          },
+          {
+            "id": "RELEASE_PILOT",
+            "owner": "release/product owner",
+            "scope": "exact candidate/environment/capabilities/owners and concrete merge/deploy/pilot scope after gates",
+            "unlocks": [
+              "NEXT-10",
+              "NEXT-11"
+            ]
+          }
+        ],
+        "financialCapabilities": "Booking/payment/withdrawal disabled",
+        "releaseDecision": "NO_GO",
+        "production": "NOT_CHANGED_NOT_ACCEPTED",
+        "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement.",
+        "measurementQualification": {
+          "recordedAt": "2026-10-13T13:26:56.936Z",
+          "source": {
+            "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
+            "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4"
+          },
+          "observerSha256": "a9650c96901fb40837332f9d1f1ec44dbfbbca0031bdae06f147e40e685699f6",
+          "reviewedSource": "de6f7935b8157b03b1dfb3122e46014227349c55",
+          "reviewImportant": "Campaign directory initiated a second detail read; pathname-only completion could freeze a false PASS before denial",
+          "red": {
+            "failed": 2,
+            "passed": 1,
+            "log": "private:final-review-campaign-followup-RED.log"
+          },
+          "green": {
+            "allFixturePassed": 88,
+            "fail": 0,
+            "skip": 0,
+            "includedObserverCases": 16,
+            "log": "private:final-review-observer-and-fixtures-GREEN.log"
+          },
+          "historicalProtocols": [
+            "05",
+            "06",
+            "07"
+          ],
+          "historicalStatusPolicy": "Original raw metrics and assessments remain unchanged; their first-usable method lacks follow-up completion protection and is NOT qualification of the current observer",
+          "currentPerformanceQualification": "NOT_RUN_NEW_INSTRUMENTATION_FULL_ABBA_REQUIRED",
+          "productPerformanceDecision": "LAZY_REJECTED_SSR_INCOMPARABLE_BOTH_REVERTED",
+          "reviewCount": 1,
+          "noRereview": true,
+          "deferredMinor": "Reviewed matrix source-manifest decision wording still mentions retained SSR test entries; actual manifest is measurement only",
+          "currentFullValidation": "PENDING_CURRENT_HEAD_UNIT_BUILD_TYPES_NATIVE_AND_CI",
+          "release": "NO_GO"
+        },
+        "localValidationAsOf": {
+          "recordedAt": "2026-10-13T13:41:40.570Z",
+          "sourceSha": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+          "sourceTree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+          "unit": {
+            "passed": 614,
+            "failed": 0,
+            "skipped": 0,
+            "cancelled": 0,
+            "todo": 0
+          },
+          "build": "PASS",
+          "types": "PASS",
+          "native": {
+            "passed": 214,
+            "failed": 1,
+            "skipped": 0,
+            "cancelled": 0,
+            "todo": 0,
+            "result": "FAIL",
+            "includedFixtureCases": 88,
+            "failedCase": "agent-workspace.spec.ts:87 foreign actor private snapshot GET",
+            "error": "ECONNRESET",
+            "cause": "UNKNOWN",
+            "cleanup": "test finally executed; no cleanup error reported",
+            "raw": "private:final-review-fixed-native.log",
+            "safe": "private:final-review-fixed-native.safe.log",
+            "noRetryOrBackfill": true
+          },
+          "CIPush": {
+            "run": 38405381703,
+            "source": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+            "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+          },
+          "CIPR": {
+            "run": 38405390776,
+            "source": "fa88079864960812c97689540ab2ee6bbbea9a03",
+            "tree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+            "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+          },
+          "qualification": "All results stay bound to7a5; documentation-only continuation must earn its own current CI, not inherit a PASS",
+          "release": "NO_GO"
+        }
+      }
+    ],
+    "conditionalSourceIntegration": {
+      "authorized": true,
+      "request": "fix and merge all left pr if all go green first",
+      "order": [
+        "79->78 feature",
+        "78->77 feature",
+        "77->main"
+      ],
+      "status": "BLOCKED_CURRENT_PR_NUMERIC_FAIL",
+      "noForceOrAdminBypass": true,
+      "hostedChangesAuthorized": false
+    },
+    "currentCI": {
+      "source": {
+        "sha": "804513c13caaaccf6ab83cef020538cb256c6d44",
+        "tree": "f1a49286a73814384549a57241e4863427d84a24",
+        "status": "FUNCTIONAL_GREEN_PR_NUMERIC_FAIL_FIXED_ABBA09_IN_PROGRESS",
+        "noHistoricalPassTransfer": true
+      },
+      "push": {
+        "run": 38453293294,
+        "functional": "PASS_641_UNIT_97_DB_218_NATIVE",
+        "numeric": "PASS",
+        "input": 18,
+        "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+      },
+      "pr": {
+        "run": 38453300077,
+        "checkout": "7b831e73a93c6d86cff1df2630960b59dfe7703c",
+        "tree": "f1a49286a73814384549a57241e4863427d84a24",
+        "parents": [
+          "168f653475b421efaeb9dc29356f0a84deb5ec49",
+          "804513c13caaaccf6ab83cef020538cb256c6d44"
+        ],
+        "functional": "PASS_641_UNIT_97_DB_218_NATIVE",
+        "numeric": "FAIL",
+        "failure": {
+          "page": "creatorDetail",
+          "cache": "cold",
+          "medianLcpMs": 2672.868,
+          "targetLcpMs": 2500
+        },
+        "input": 18,
+        "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+      },
+      "rootPush": {
+        "run": 38453293266,
+        "result": "PASS"
+      },
+      "rootPR": {
+        "run": 38453300149,
+        "result": "PASS"
+      },
+      "policy": "original attempt1 artifacts; actual source/tree/parents verified; no rerun or older PASS substitution"
+    },
+    "canonicalLocalSchema": {
+      "migrations": 191,
+      "fingerprint": "82200cae56744f93de44b296663fddfcaa4d62a32bc1146fa2583edbf269aecb",
+      "hosted": "NOT_APPLIED_NOT_ACCEPTED",
+      "delta": "20261013190617_kinnso_campaign_utc_validation_fast_path.sql",
+      "control": {
+        "catalogBefore": 100,
+        "catalogAfter": 0,
+        "statementTimeoutMs": 8000,
+        "originalExportRows": 5001,
+        "namedAndInvalidZones": "UNCHANGED"
+      }
     }
   }
 }
