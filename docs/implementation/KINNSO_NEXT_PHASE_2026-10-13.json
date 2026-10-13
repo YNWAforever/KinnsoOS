@@ -1770,7 +1770,14 @@
       "deletions": "5",
       "decision": "DEFER_CONTROLLED_MEASUREMENT",
       "reason": "五個工具延後至fresh authorized company read；有縮減初始載荷的可測假設，但現有數字不是同host A/B或首次可操作時間。",
-      "acceptance": "在W05候選上單獨改動；48/8/24全測與角色／late response、first enabled invitation/campaign時間都不可退步。"
+      "acceptance": "在W05候選上單獨改動；48/8/24全測與角色／late response、first enabled invitation/campaign時間都不可退步。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "LAZY_REJECTED_REVERTED; OPTIONAL_SSR_INCOMPARABLE_REVERTED",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/app/travel/loadMerchantTool.tsx",
@@ -1779,7 +1786,14 @@
       "deletions": "0",
       "decision": "CONDITIONAL_WITH_LAZY_PORT",
       "reason": "chunk失敗局部恢復有用途；目前沒有新lazy boundary，不單獨加入無用helper。",
-      "acceptance": "與lazy port同批；實際Next chunk503→retry、sibling draft及unknown request留存，切公司／logout移除舊控制。"
+      "acceptance": "與lazy port同批；實際Next chunk503→retry、sibling draft及unknown request留存，切公司／logout移除舊控制。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "NOT_ADOPTED_REMOVED_AFTER_REJECTION",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/playwright.service-state.config.ts",
@@ -1788,7 +1802,14 @@
       "deletions": "1",
       "decision": "MERGE_ADDITIVELY_IF_PORTED",
       "reason": "舊設定不能覆蓋本次u18及W08原生控制。",
-      "acceptance": "保留所有現有testMatch並新增bundle控制；不能減少72個現有fixture案例。"
+      "acceptance": "保留所有現有testMatch並新增bundle控制；不能減少72個現有fixture案例。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "CURRENT_CONFIG_PLUS_13_OBSERVER_CASES; NO_LAZY_PORT",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/scripts/source-manifest.json",
@@ -1797,7 +1818,14 @@
       "deletions": "1",
       "decision": "MERGE_ADDITIVELY_IF_PORTED",
       "reason": "舊manifest沒有本次提醒migration、gate和profile lock測試。",
-      "acceptance": "只追加必要helper/test；解壓來源重跑相同unit/build/types與migration清單。"
+      "acceptance": "只追加必要helper/test；解壓來源重跑相同unit/build/types與migration清單。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "ADDITIVE_CURRENT_MEASUREMENT_SSR_TEST_ENTRIES; NO_WHOLESALE_COPY",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/tests/e2e/u06-role-bundle.spec.ts",
@@ -1806,7 +1834,14 @@
       "deletions": "1",
       "decision": "ADAPT_IF_PORTED",
       "reason": "角色route與真Next chunk恢復是必要控制；須保留本次已知服務不可用先於登入的行為。",
-      "acceptance": "公開／無權role不載私人panel；合法owner chunk重試不丟draft/receipt；雙語。"
+      "acceptance": "公開／無權role不載私人panel；合法owner chunk重試不丟draft/receipt；雙語。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "ORIGINAL_CURRENT_ROLE_CONTROLS_RETAINED_AFTER_REVERT",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/tests/e2e/u16-merchant-native-bundle.spec.ts",
@@ -1815,7 +1850,14 @@
       "deletions": "0",
       "decision": "ADAPT_IF_PORTED",
       "reason": "實際Next signed-out測試可證明defer；不能以此推論signed-in LCP已改善。",
-      "acceptance": "正確capability環境下登入入口、private/no-store及panel未下載；加signed-in首次任務時間。"
+      "acceptance": "正確capability環境下登入入口、private/no-store及panel未下載；加signed-in首次任務時間。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "EXPERIMENT_ONLY_TEST_REMOVED; ORIGINAL_FAILURES_RETAINED",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/tests/e2e/u16-merchant-panel-bundle.spec.ts",
@@ -1824,7 +1866,14 @@
       "deletions": "0",
       "decision": "ADAPT_IF_PORTED",
       "reason": "真React/Next loader fixture可證明選擇性載入；舊immediate-refresh assertion需等待受控刷新完成。",
-      "acceptance": "hold/release refresh並核對後置值；權限、掛載及W05晚profile焦點控制均保留。"
+      "acceptance": "hold/release refresh並核對後置值；權限、掛載及W05晚profile焦點控制均保留。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "EXPERIMENT_ONLY_TEST_REMOVED; ORIGINAL_FAILURES_RETAINED",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "apps/journeys/tests/helpers/workspace-harness.mjs",
@@ -1833,7 +1882,14 @@
       "deletions": "4",
       "decision": "MERGE_ONLY_DYNAMIC_BOUNDARY",
       "reason": "不可覆蓋本次document/hash events及recovery complete支援；fixture bytes不是Next transfer。",
-      "acceptance": "只加必要dynamic framework boundary；不改領域語義；保留現在599個unit。"
+      "acceptance": "只加必要dynamic framework boundary；不改領域語義；保留現在599個unit。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "CURRENT_BASELINE_RESTORED; REJECTED_DYNAMIC_BOUNDARY_NOT_ADOPTED",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "docs/implementation/CREATOR_MERCHANT_OPERATIONS_LEDGER.json",
@@ -1842,7 +1898,14 @@
       "deletions": "0",
       "decision": "KEEP_HISTORICAL_ONLY",
       "reason": "紀錄屬舊head、base、runner及當時pending狀態，不能當本次驗收。",
-      "acceptance": "只引用原SHA／run；新量測另記來源與完整分母。"
+      "acceptance": "只引用原SHA／run；新量測另記來源與完整分母。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "UNCHANGED_HISTORICAL_ONLY",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     },
     {
       "path": "docs/implementation/CREATOR_MERCHANT_PHASE_2026-10-11.md",
@@ -1851,7 +1914,14 @@
       "deletions": "0",
       "decision": "KEEP_HISTORICAL_ONLY",
       "reason": "舊phase的成功、未完成和deferred minor有歷史價值，但不移作新候選結論。",
-      "acceptance": "保留原證據；新候選報告列差異、風險及實際original run。"
+      "acceptance": "保留原證據；新候選報告列差異、風險及實際original run。",
+      "execution": {
+        "observedAt": "2026-10-13T13:10:21.006Z",
+        "decision": "UNCHANGED_HISTORICAL_ONLY",
+        "lazyCandidate": "REJECTED_AND_REVERTED_AT_1a20cb25",
+        "receipt": "private:protocol05-comparison.json",
+        "note": "Original ten-file decision fields and current contracts preserved; no whole PR76 port."
+      }
     }
   ],
   "tasks": [
@@ -1877,13 +1947,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W01",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "INTAKE_AND_STACKED_ANCESTRY_VERIFIED",
+      "ownedStatus": "BASELINE_METADATA_VERIFIED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
       "executionStatus": "VERIFIED_BASELINE",
-      "evidence": [],
-      "blockers": []
+      "evidence": [
+        "private:source-evidence/SHA256SUMS.txt",
+        "private:remote-prs-protocol06-pending.jsonl",
+        "https://github.com/YNWAforever/KinnsoOS/pull/79"
+      ],
+      "blockers": [],
+      "executionUpdatedAt": "2026-10-13T13:10:21.005Z"
     },
     {
       "task_id": "NEXT-02",
@@ -1907,13 +1982,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W06",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "MEASUREMENT_IMPLEMENTED_RED_GREEN",
+      "ownedStatus": "VALID_48_8_24_18_BASELINE_AND_FIXED_ABBA",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "OWNED_BASELINE_VERIFIED",
+      "evidence": [
+        "private:protocol-05.json",
+        "private:protocol05-comparison.json",
+        "private:protocol05-A-latency.log"
+      ],
+      "blockers": [],
+      "executionUpdatedAt": "2026-10-13T13:10:21.005Z"
     },
     {
       "task_id": "NEXT-03",
@@ -1937,13 +2017,27 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W05;W06;W07",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "LAZY_REJECTED_SSR_INCOMPARABLE_BOTH_REVERTED",
+      "ownedStatus": "INCOMPARABLE",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "REVERTED_PERFORMANCE_NOT_ACCEPTED",
+      "evidence": [
+        "private:protocol05-comparison.json",
+        "private:SSR-final-unit-full.log",
+        "private:SSR-final-native-full.safe.log",
+        "private:SSR-native-authenticated-green.safe.log",
+        "private:protocol-07.json",
+        "private:protocol07-comparison.json",
+        "private:protocol07-six-group-status.json",
+        "private:protocol07-B2-recovery-receipt.json",
+        "private:protocol-06.json",
+        "private:protocol06-comparison.json"
+      ],
+      "blockers": [
+        "B2_INCOMPLETE_NO_BACKFILL; OPTIONAL_SSR_REVERTED; W07_OPEN"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-04",
@@ -1967,13 +2061,22 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W02",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
-      "hostedStatus": "NOT_RUN",
+      "sourceStatus": "READINESS_CONTRACT_REUSED",
+      "ownedStatus": "READONLY_DIAGNOSIS_COMPLETE",
+      "hostedStatus": "CURRENT_CONFIG_READONLY_NOT_DEPLOYED_ACCEPTANCE",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "CONFIG_DIAGNOSED_TARGET_BLOCKED",
+      "evidence": [
+        "private:production-config-presence-readonly.json",
+        "private:preview-config-presence-readonly.json",
+        "private:anonymous-readback-20261013-current.json",
+        "private:anonymous-creator-readback-correct-route.json"
+      ],
+      "blockers": [
+        "TARGET",
+        "DEPLOYED_EFFECTIVE_VALUES_SCHEMA_ROLES_AND_AUTH_REDIRECT_NOT_ATTESTED"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-05",
@@ -1997,13 +2100,19 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W01;W02;W03;W05;W07;W08;W17",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "TARGET",
+        "RECOVERY"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-06",
@@ -2027,13 +2136,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W03;W04;W05;W09;W10;W11;W12;W13;W15;W16;W18",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "ROLES"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-07",
@@ -2057,13 +2171,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W09;W14",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "CONTENT"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-08",
@@ -2087,13 +2206,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W08;W09;W10;W11;W13;W19",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "SCHEDULER"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-09",
@@ -2117,13 +2241,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W03;W05;W08;W09;W12;W13;W14;W20",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "DEVICES"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-10",
@@ -2147,13 +2276,19 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W01;W07;W14;W17;W18;W19;W20;W21",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "RECOVERY",
+        "RELEASE_PILOT"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
     {
       "task_id": "NEXT-11",
@@ -2177,13 +2312,18 @@
       "evidence_ids": "SOURCE-ZIP;BASELINE-CHECK;W14;W15;W16;W19;W21;W22",
       "verification_environment": "owned isolated local / CI；hosted只有NEXT-05指定後；prod另需授權",
       "completion_evidence": "未執行；本文件為計劃，不是完成證據",
-      "sourceStatus": "BASELINE_REFERENCED",
-      "ownedStatus": "NOT_RUN_CURRENT_INCREMENT",
+      "sourceStatus": "EXISTING_CONTRACTS_RETAINED",
+      "ownedStatus": "REVIEWABLE_CASES_AND_INPUT_PACKET_PREPARED",
       "hostedStatus": "NOT_RUN",
       "releaseStatus": "NOT_RELEASED",
-      "executionStatus": "NOT_STARTED",
-      "evidence": [],
-      "blockers": []
+      "executionStatus": "PREPARATION_PARTIAL_EXTERNAL_ACCEPTANCE_BLOCKED",
+      "evidence": [
+        "private:independent-preparation-packet-v5.json"
+      ],
+      "blockers": [
+        "RELEASE_PILOT"
+      ],
+      "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     }
   ],
   "validation": {
@@ -2194,5 +2334,118 @@
     "originalCSVReadCount": 6
   },
   "releaseDecision": "NO_GO",
-  "financialCapabilities": "Booking/payment/withdrawal disabled"
+  "financialCapabilities": "Booking/payment/withdrawal disabled",
+  "execution": {
+    "currentSource": {
+      "sha": "d2de4f5527db524b5b83464f4bacda6cfbf2de39",
+      "tree": "50e8f0d17c1f1050e618c3686ee9b572c53fe1ff",
+      "status": "ROLLBACK_VERIFICATION_PENDING",
+      "noHistoricalPassTransfer": true
+    },
+    "updatedAt": "2026-10-13T13:10:21.006Z",
+    "measuredCandidate": {
+      "sourceSha": "3fab97da6bf2514ce65b6c0f3bd1065cafc0e6c8",
+      "sourceTree": "29e36ea9f9a5592fe11d661e0231cebd284f8479"
+    },
+    "sourceBoundLocalValidation": {
+      "unit": {
+        "pass": 628,
+        "fail": 0,
+        "skip": 0
+      },
+      "native": {
+        "pass": 213,
+        "fail": 0,
+        "skip": 0,
+        "includedFixtures": 85
+      },
+      "build": "PASS",
+      "types": "PASS",
+      "hosted": "NOT_RUN",
+      "note": "All results belong to 3fab97d; documentation/final source and CI must be independently bound."
+    },
+    "experiments": [
+      {
+        "batch": "05",
+        "status": "REJECTED",
+        "evidence": "private:protocol05-comparison.json"
+      },
+      {
+        "batch": "06",
+        "status": "INCOMPARABLE",
+        "evidence": "private:protocol06-comparison.json"
+      },
+      {
+        "batch": "07",
+        "status": "INCOMPARABLE",
+        "evidence": "private:protocol07-comparison.json"
+      }
+    ],
+    "externalInputs": [
+      {
+        "id": "TARGET",
+        "owner": "platform/release owner",
+        "requestedAt": "2026-10-13",
+        "scope": "designated staging URL/Vercel project/branch and Supabase project/branch/Auth owner; no key values",
+        "unlocks": [
+          "NEXT-04",
+          "NEXT-05"
+        ]
+      },
+      {
+        "id": "RECOVERY",
+        "owner": "platform/release owner",
+        "scope": "target schema/grants/migration inventory, last-good source, backup coverage and restore rehearsal",
+        "unlocks": [
+          "NEXT-05",
+          "NEXT-10"
+        ]
+      },
+      {
+        "id": "ROLES",
+        "owner": "role owners",
+        "scope": "two companies/two creators plus owner/marketing/clerk/finance/ops and approved mailbox/actions",
+        "unlocks": [
+          "NEXT-06"
+        ]
+      },
+      {
+        "id": "CONTENT",
+        "owner": "content owner",
+        "scope": "three real structured guides, author consent, cover rights, verified sources/dates/locales and traveller",
+        "unlocks": [
+          "NEXT-07"
+        ]
+      },
+      {
+        "id": "SCHEDULER",
+        "owner": "operations owner",
+        "scope": "target/source/candidate/schema/window and enable/stop/recovery scope",
+        "unlocks": [
+          "NEXT-08"
+        ]
+      },
+      {
+        "id": "DEVICES",
+        "owner": "QA/accessibility owner",
+        "scope": "physical iOS/Safari/VoiceOver, Android/Chrome, Windows/NVDA and versions/operators",
+        "unlocks": [
+          "NEXT-09"
+        ]
+      },
+      {
+        "id": "RELEASE_PILOT",
+        "owner": "release/product owner",
+        "scope": "exact candidate/environment/capabilities/owners and concrete merge/deploy/pilot scope after gates",
+        "unlocks": [
+          "NEXT-10",
+          "NEXT-11"
+        ]
+      }
+    ],
+    "financialCapabilities": "Booking/payment/withdrawal disabled",
+    "releaseDecision": "NO_GO",
+    "production": "NOT_CHANGED_NOT_ACCEPTED",
+    "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement."
+  }
 }
