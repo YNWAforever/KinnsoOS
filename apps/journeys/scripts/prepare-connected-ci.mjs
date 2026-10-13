@@ -2,16 +2,17 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { verifyTestTarget } from './verify-test-target.mjs';
+import { verifyTestTarget, approvedLocalProjects } from './verify-test-target.mjs';
 import { verifyMailboxRuntime } from './local-auth-mailbox.mjs';
 const project = 'kinnsoos-b1-20261002', api = 'http://127.0.0.1:58421';
-export function localConfiguration(source, {mailbox = false} = {}) {
+export function localConfiguration(source, {mailbox = false, projectRef = project} = {}) {
+ if (!approvedLocalProjects.includes(projectRef)) throw Error('Explicit owned local project required');
  if (mailbox && (!/\[inbucket\]\r?\n(?:[^[]*\n)?enabled = false/m.test(source) || !/\[auth.email\]\r?\n[\s\S]*?enable_confirmations = false/m.test(source) || /^\[auth\.(?:email\.smtp|hook\.send_email)\]/m.test(source))) throw Error('Canonical local-only email configuration required');
  if (!/^project_id = "kinnso-v3"$/m.test(source) || !/^port = 54421$/m.test(source)) throw Error('Canonical local config required');
  let section = '';
  return source.split(/\r?\n/).map(line => {
   if (line.startsWith('[')) section = line;
-  if (line === 'project_id = "kinnso-v3"') return `project_id = "${project}"`;
+  if (line === 'project_id = "kinnso-v3"') return `project_id = "${projectRef}"`;
   const port = line.match(/^(port|shadow_port) = (544\d\d)$/); if (port) return `${port[1]} = ${Number(port[2]) + 4000}`;
   if (section === '[db.seed]' && /^enabled =/.test(line)) return 'enabled = false';
   if (mailbox && section === '[inbucket]' && /^enabled =/.test(line)) return 'enabled = true';
@@ -23,9 +24,9 @@ export function localConfiguration(source, {mailbox = false} = {}) {
  }).join('\n');
 }
 function role(key) { try { return JSON.parse(Buffer.from(key.split('.')[1], 'base64url').toString()).role; } catch { return null; } }
-export function localTestEnvironment(status, label, {mailbox = false} = {}) {
- if (label !== project || status.API_URL !== api || role(status.ANON_KEY) !== 'anon' || role(status.SERVICE_ROLE_KEY) !== 'service_role') throw Error('Owned local status and test keys required');
- const env = { KINNSO_TEST_TARGET: 'local', KINNSO_TEST_PROJECT: project, KINNSO_TEST_API_ORIGIN: api, KINNSO_TEST_DB_CONTAINER: 'supabase_db_' + project,
+export function localTestEnvironment(status, label, {mailbox = false, projectRef = project} = {}) {
+ if (!approvedLocalProjects.includes(projectRef) || label !== projectRef || status.API_URL !== api || role(status.ANON_KEY) !== 'anon' || role(status.SERVICE_ROLE_KEY) !== 'service_role') throw Error('Owned local status and test keys required');
+ const env = { KINNSO_TEST_TARGET: 'local', KINNSO_TEST_PROJECT: projectRef, KINNSO_TEST_API_ORIGIN: api, KINNSO_TEST_DB_CONTAINER: 'supabase_db_' + projectRef,
   SUPABASE_URL: api, SUPABASE_ANON_KEY: status.ANON_KEY, SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
   KINNSO_ENVIRONMENT: 'local', KINNSO_SUPABASE_URL: api, KINNSO_SUPABASE_PUBLISHABLE_KEY: status.ANON_KEY,
   KINNSO_APPROVED_SUPABASE_ORIGIN: api, KINNSO_LEGACY_AUTH_ORIGIN: api,

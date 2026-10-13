@@ -238,7 +238,7 @@ try {
    const cliFile=cli??execFileSync('which',['supabase'],{encoding:'utf8'}).trim();
    const dockerServerVersion=execFileSync('docker',['version','--format','{{.Server.Version}}'],{encoding:'utf8'}).trim();
    const toolFiles=['package-lock.json','scripts/performance/package-lock.json'];
-   const instrumentationFiles=['scripts/performance/run.mjs','scripts/performance/run-latency.mjs','scripts/performance/first-usable.mjs','scripts/performance/compare-operations.mjs','scripts/performance/report.mjs','scripts/performance/operations-fixture.mjs'];
+   const instrumentationFiles=['scripts/performance/run.mjs','scripts/performance/run-latency.mjs','scripts/performance/first-usable.mjs','scripts/performance/compare-operations.mjs','scripts/performance/report.mjs','scripts/performance/operations-fixture.mjs','scripts/verify-test-target.mjs','scripts/prepare-connected-ci.mjs'];
    const tools={node:process.version,browser:report.conditions.browser,supabase:supabaseVersion,docker:dockerServerVersion,locks:await Promise.all(toolFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))}))),browserExecutableSha256:digest(await readFile(chromium.executablePath())),cliEntrySha256:digest(await readFile(cliFile))};
    const instrumentation=await Promise.all(instrumentationFiles.map(async file=>({file,sha256:digest(await readFile(path.join(app,file)))})));
    const host={platform:process.platform,arch:process.arch,kernel:os.release(),cpuModels:[...new Set(os.cpus().map(cpu=>cpu.model))],cpuCount:os.cpus().length,hostNameHash:digest(os.hostname()),dockerServerVersion};

@@ -34,3 +34,21 @@ test('the mailbox environment requires the exact local Mailpit origin and emits 
  assert.equal(env.KINNSO_TEST_EMAIL_CONFIRMATION, 'required');
  assert.equal(localTestEnvironment(status(), 'kinnsoos-b1-20261002').KINNSO_TEST_MAILBOX_ORIGIN, undefined);
 });
+const pilotProject='kinnsoos-pilot-20261013';
+test('the named pilot profile uses a fresh project volume without changing CI defaults',()=>{
+ const canonical='project_id = "kinnso-v3"\n[api]\nport = 54421\n[db.seed]\nenabled = true\n';
+ const pilot=localConfiguration(canonical,{projectRef:pilotProject});
+ assert.match(pilot,/project_id = "kinnsoos-pilot-20261013"/);assert.match(pilot,/port = 58421/);assert.match(pilot,/enabled = false/);
+ assert.match(localConfiguration(canonical),/project_id = "kinnsoos-b1-20261002"/);
+});
+test('pilot status binds the actual label and exact container with the same loopback and key-role restrictions',()=>{
+ const options={projectRef:pilotProject};const env=localTestEnvironment(status(),pilotProject,options);
+ assert.equal(env.KINNSO_TEST_PROJECT,pilotProject);assert.equal(env.KINNSO_TEST_DB_CONTAINER,'supabase_db_'+pilotProject);
+ for(const [value,label] of [[status(),'kinnsoos-b1-20261002'],[{...status(),API_URL:'https://production.supabase.co'},pilotProject],[{...status(),ANON_KEY:jwt('service_role')},pilotProject]])assert.throws(()=>localTestEnvironment(value,label,options));
+});
+test('local setup refuses arbitrary project overrides rather than authorizing any local database',()=>{
+ const canonical='project_id = "kinnso-v3"\n[api]\nport = 54421\n';
+ for(const projectRef of ['unrelated-local-project','production','kinnsoos-pilot-20261013-other']){
+  assert.throws(()=>localConfiguration(canonical,{projectRef}));assert.throws(()=>localTestEnvironment(status(),projectRef,{projectRef}));
+ }
+});
