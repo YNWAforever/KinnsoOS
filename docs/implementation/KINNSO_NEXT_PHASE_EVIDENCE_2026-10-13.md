@@ -1,3 +1,14 @@
+# Native capture checkpoint after original CI failure — 2026-10-14
+
+Original95f54 PR38485107747 workspace fixture is87PASS/1FAIL0SKIP: P07 en1280 reached geometry/keyboard/link/privacy assertions, then Page.captureScreenshot failed with Unable to capture screenshot. No PNG; causeUNKNOWN. Original log SHA25653a846b095b71aa901221d879687371c4926def024217eebab4d070f71b23f9d and artifactSHA2565d8456ce72e50d915965be880acd0a98b0066b650c88ba966a1a80dd9e5d07da plus all members retained. Successful push fixture does not erase this failure. Both95 mailbox jobs passed; actual DB profile boot is separately observed, pending final raw receipts.
+
+Minimum fixture-only checkpoint brings its page to front, waits two actual animation frames and rechecks the original focused link before the **one mandatory full-page screenshot**. No catch,retry,fallback,assertion removal,timeout change,viewport/sample reduction or product/CSS change. The installed locked capture implementation has no general post-paint wait; this checkpoint makes the capture precondition explicit but does not establish the old protocol error's root cause.
+
+Local precommit focused6/6 and full88/88 fixture cases pass0FAIL0SKIP. Six actual one-shot PNGs (EN/zh-HK320/640/1280 at200% fixture text) are retained with dimensions and SHA256;320/1280 visually inspected. The initial local invocation had a wrong cwd and did not run the component; its failure is INVALID_VERIFICATION and retained. None of these precommit results qualify a final commit or physical devices. Current changed source must earn full664unit/97DB/220native/source/build/type validation and fresh original CI before remaining78→77feature→main merges.
+
+ABBA10 remains measured0a2 with unchanged product/schema/measurement/default local-profile objects; new fixture/CI infrastructure results are separate. Hosted/staging/content/roles/devices/recovery/scheduler/pilot remainNO_GO, Booking/payment/withdrawal/provider activation disabled. The timestamped snapshots below remain attached to their original source/status.
+
+---
 # Locally qualified CI resource candidate — 2026-10-14
 
 Exact source `25e250d2d88649caafc07ce1286ca1a46db8777b`, tree `5f24de3e03ee9a2f6d14cb2b6674821c183805eb`: **664unit/97ownedDB/220native PASS0FAIL0SKIP**,88fixtures included in220. All eight source-package/workflow/deployment-scope/unit/DB/build/types/native steps passed. Existing named Windows symlink-permission source-package skip remains explicit. Original JSONs and hashes retained privately. These actual results belong to25e; this documentation revision must earn its own original CI before any remaining merge.
