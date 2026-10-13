@@ -6,25 +6,28 @@ import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {creatorMissions,type CreatorMission,type CreatorMissionDetail,type CreatorMissionCommand,type Evidence,type MissionScope} from '../../lib/creators/collaboration';
 import {evidenceUrl} from '../../lib/creators/collaboration-validation';
+import type{PrivateCreatorMissionEntry}from '../../lib/creators/private-mission-entry';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {CollaborationListFilters} from './CollaborationListFilters';
 import {changeListFilter,readListLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
 import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 type EvidenceForm={milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofText:string;notes:string};
-export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;actorId:string|null;enabled:boolean}){
+export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:{path:string;actorId:string|null;enabled:boolean;initialSnapshot?:PrivateCreatorMissionEntry|null}){
  const {t,href,locale}=useApp();
  const missionId=/^studio\/missions\/[0-9a-f-]{36}$/i.test(path)?path.split('/')[2]:null;
+ const initialDetail=enabled&&actorId&&initialSnapshot?.actorId===actorId&&typeof initialSnapshot.detail?.id==='string'&&initialSnapshot.detail.id.toLowerCase()===missionId?.toLowerCase()?initialSnapshot.detail:null;
+ const initialEntry=useRef(initialDetail);
  const [scope,setScope]=useState<MissionScope>(path==='studio/outcomes'?'mine':'available');
  const [filters,setFilters]=useState<CollaborationListQuery>({});const applied=useRef<CollaborationListQuery>({});
- const [items,setItems]=useState<CreatorMission[]|null>(null),[cursor,setCursor]=useState<string|null>(null),[detail,setDetail]=useState<CreatorMissionDetail|null>(null);
- const [busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
+ const [items,setItems]=useState<CreatorMission[]|null>(null),[cursor,setCursor]=useState<string|null>(null),[detail,setDetail]=useState<CreatorMissionDetail|null>(initialDetail);
+ const [busy,setBusy]=useState(!!initialDetail),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [applicationNote,setApplicationNote]=useState(''),[agreed,setAgreed]=useState(false),[form,setForm]=useState<EvidenceForm|null>(null);
  const generation=useRef(0),pending=useRef<{command:CreatorMissionCommand;requestId:string}|null>(null);
  const focusedMilestone=useRef<string|null>(null);
  const reference=useRef<string|undefined>(undefined);
  const recovery=useWorkspaceRecovery({actorId,scope:'creator-mission:'+missionId,authorized:!!missionId&&!!detail&&valid,draft:{applicationNote,form},pending:pending.current,dirty:!!applicationNote||!!form,restore:value=>{const d=value.draft as {applicationNote?:string;form?:EvidenceForm|null};if(typeof d?.applicationNote==='string'&&d.applicationNote.length<=2000)setApplicationNote(d.applicationNote);if(d?.form&&typeof d.form.milestoneId==='string'&&typeof d.form.proofText==='string'&&d.form.proofText.length<=10244&&typeof d.form.notes==='string'&&d.form.notes.length<=4000)setForm(d.form);if(value.pending?.requestId&&value.pending.command&&typeof value.pending.command==='object'){pending.current=value.pending as {command:CreatorMissionCommand;requestId:string};setUnknown(true);setError('UNAVAILABLE');}}});
- function clear(){focusedMilestone.current=null;setFilters({});applied.current={};setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
+ function clear(keepInitialDetail=false){focusedMilestone.current=null;setFilters({});applied.current={};setItems(null);if(!keepInitialDetail)setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
  function denied(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){clear();if(code==='AUTH_REQUIRED')setValid(false);}}
  async function load(after?:string,nextScope=scope,nextQuery:CollaborationListQuery=applied.current){
   const own=++generation.current;setBusy(true);setError('');
@@ -41,7 +44,8 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   }
  }
  useEffect(()=>{
-  setValid(true);clear();setError('');setMessage('');const selected=new URLSearchParams(window.location.search).get('scope');const initial:MissionScope=path==='studio/outcomes'?'mine':selected==='mine'?'mine':'available';setScope(initial);
+  const bootEntry=initialEntry.current;initialEntry.current=null;
+  setValid(true);clear(!!bootEntry);setError('');setMessage('');const selected=new URLSearchParams(window.location.search).get('scope');const initial:MissionScope=path==='studio/outcomes'?'mine':selected==='mine'?'mine':'available';setScope(initial);
   let entry:CollaborationListQuery={};try{if(!missionId)entry=readListLocation(initial);}catch{setError('INVALID');return;}setFilters(entry);applied.current=entry;
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){++generation.current;setValid(false);setBusy(false);clear();}});
   if(actorId&&enabled)void load(entry.after,initial,entry);

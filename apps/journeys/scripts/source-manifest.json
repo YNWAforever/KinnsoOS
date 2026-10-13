@@ -179,6 +179,7 @@
     "lib/creators/contracts.ts",
     "lib/creators/editor-operations.ts",
     "lib/creators/handles.ts",
+    "lib/creators/private-mission-entry.ts",
     "lib/creators/progress.ts",
     "lib/creators/scan-service.ts",
     "lib/finance/contracts.ts",

@@ -12,6 +12,7 @@ import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
 import type { Actor } from '../../lib/auth/actor';
 import type{PrivateMerchantEntry}from '../../lib/merchants/private-entry';
+import type{PrivateCreatorMissionEntry}from '../../lib/creators/private-mission-entry';
 import type { CapabilityMode } from '../../lib/contracts/capabilities';
 import type {PublicGuide} from '../../lib/seo/public-guide';
 import type {PublicCreator} from '../../lib/seo/public-creator';
@@ -253,6 +254,7 @@ export function Workbench({
   publicArticle = null,
   tripHeading = null,
   merchantEntry = null,
+  creatorMissionEntry = null,
   features={media:false,sharing:false},
 }: {
   locale: m.Locale;
@@ -264,6 +266,7 @@ export function Workbench({
   publicArticle?:PublicArticle|null;
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
+  creatorMissionEntry?:PrivateCreatorMissionEntry|null;
   features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
@@ -650,7 +653,7 @@ export function Workbench({
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
-    else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} initialSnapshot={creatorMissionEntry?.actorId===workspaceActor?.id?creatorMissionEntry:null} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/earnings')content=<CreatorEarningsWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.agent===true}/>;
     else if(path==='inbox'||path==='studio/inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
