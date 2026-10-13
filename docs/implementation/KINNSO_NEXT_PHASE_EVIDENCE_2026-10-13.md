@@ -51,6 +51,12 @@ Current rollback CI is pending at this packet's creation. Read current PR79 chec
 
 Read-only configuration diagnosis: production required names/guards present with creator/merchant/notifications disabled; branch preview required configuration absent. Preview is protected; anonymous production merchant/creator reads returned503 in separately timestamped receipts. No flag/config/account/SQL/scheduler/provider change, main merge or production deployment occurred. Booking/payment/withdrawal remain disabled.
 
+## Current local verification failure retained
+
+At source7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84 (tree04b8b83391eee80a8e69cef9c2c2c0477e36df5c), unit614/build/types PASS. The full owned native run is **214PASS/1FAIL/0SKIP of215**, with88 fixture cases included. The existing agent-workspace foreign actor private snapshot GET at line87 failed with ECONNRESET. Its cause is unknown; agent/trip runtime and that case were unchanged by the observer fix. Original log and error-context remain private; no retry/backfill/timeout change occurred. Test finally executed with no reported cleanup error. This failure remains a blocker; independent current CI cannot rewrite this local result.
+
+The source7a5 push38405381703 and PR38405390776 unit artifacts each614PASS were downloaded as original ZIPs and SHA256 verified; connected/performance remained pending at this observation. PR actualcheckout fa88079864960812c97689540ab2ee6bbbea9a03 has parents168f653 and7a5, with exactly the candidate tree. Subsequent current-head CI and original artifacts are reported in PR79 and the private final receipt; this packet does not inherit prior-source PASS. Final preview source7a5 is protected: anonymous GET/api/session302 tovercel.com, no bypass token created. Production remains unchanged.
+
 ## Concrete blockers and next action
 
 - W07 / NEXT03: no accepted performance candidate; incomplete B2 prevents six-group comparison. A future experiment needs a separately justified lifetime failure remedy and fresh frozen full ABBA; do not retry07 to green.

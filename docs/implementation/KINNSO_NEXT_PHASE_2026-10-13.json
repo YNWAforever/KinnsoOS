@@ -2115,7 +2115,8 @@
       ],
       "blockers": [
         "TARGET",
-        "RECOVERY"
+        "RECOVERY",
+        "LOCAL_NATIVE_ECONNRESET_UNRESOLVED_AT_7a5c81a"
       ],
       "executionUpdatedAt": "2026-10-13T13:10:21.006Z"
     },
@@ -2344,10 +2345,10 @@
     "currentSource": {
       "sha": "ac06a33afdc8024a29eb3628b7c85e84dc47fc8e",
       "tree": "94e4ec655b4e327f9ec019755e52293b48583ce4",
-      "status": "REVIEW_FIX_FULL_VERIFICATION_PENDING",
+      "status": "OBSERVER_FIXED_WITH_LOCAL_NATIVE_FAILURE_AND_PERFORMANCE_GATE_OPEN",
       "noHistoricalPassTransfer": true
     },
-    "updatedAt": "2026-10-13T13:26:56.937Z",
+    "updatedAt": "2026-10-13T13:41:40.572Z",
     "measuredCandidate": {
       "sourceSha": "3fab97da6bf2514ce65b6c0f3bd1065cafc0e6c8",
       "sourceTree": "29e36ea9f9a5592fe11d661e0231cebd284f8479"
@@ -2485,6 +2486,49 @@
       "noRereview": true,
       "deferredMinor": "Reviewed matrix source-manifest decision wording still mentions retained SSR test entries; actual manifest is measurement only",
       "currentFullValidation": "PENDING_CURRENT_HEAD_UNIT_BUILD_TYPES_NATIVE_AND_CI",
+      "release": "NO_GO"
+    },
+    "localValidationAsOf": {
+      "recordedAt": "2026-10-13T13:41:40.570Z",
+      "sourceSha": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+      "sourceTree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+      "unit": {
+        "passed": 614,
+        "failed": 0,
+        "skipped": 0,
+        "cancelled": 0,
+        "todo": 0
+      },
+      "build": "PASS",
+      "types": "PASS",
+      "native": {
+        "passed": 214,
+        "failed": 1,
+        "skipped": 0,
+        "cancelled": 0,
+        "todo": 0,
+        "result": "FAIL",
+        "includedFixtureCases": 88,
+        "failedCase": "agent-workspace.spec.ts:87 foreign actor private snapshot GET",
+        "error": "ECONNRESET",
+        "cause": "UNKNOWN",
+        "cleanup": "test finally executed; no cleanup error reported",
+        "raw": "private:final-review-fixed-native.log",
+        "safe": "private:final-review-fixed-native.safe.log",
+        "noRetryOrBackfill": true
+      },
+      "CIPush": {
+        "run": 38405381703,
+        "source": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+        "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+      },
+      "CIPR": {
+        "run": 38405390776,
+        "source": "fa88079864960812c97689540ab2ee6bbbea9a03",
+        "tree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+        "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+      },
+      "qualification": "All results stay bound to7a5; documentation-only continuation must earn its own current CI, not inherit a PASS",
       "release": "NO_GO"
     }
   }
