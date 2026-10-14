@@ -126,35 +126,50 @@ def verify(args, report):
     prefix = subprocess.check_output(['git', '-C', str(root), 'rev-parse', '--show-prefix'],
                                      stderr=subprocess.DEVNULL, timeout=10).decode().strip()
 
-    def committed(name):
-        return subprocess.check_output(['git', '-C', str(root), 'show', args.expected_sha + ':' + prefix + name],
+    def committed(name, repository=False):
+        object_path = name if repository else prefix + name
+        return subprocess.check_output(['git', '-C', str(root), 'show', args.expected_sha + ':' + object_path],
                                        stderr=subprocess.DEVNULL, timeout=10)
 
     # Commit bytes avoid both uncommitted edits and Windows checkout line-ending transforms.
-    manifest = json.loads(committed('scripts/source-manifest.json').decode('utf-8-sig'))['files']
+    source_manifest = json.loads(committed('scripts/source-manifest.json').decode('utf-8-sig'))
+    require(isinstance(source_manifest, dict) and source_manifest.get('version') == 1, 'Invalid source manifest')
+    manifest = source_manifest.get('files')
     require(isinstance(manifest, list) and 0 < len(manifest) <= 1000 and
+            all(isinstance(name, str) for name in manifest) and
             len(set(manifest)) == len(manifest), 'Invalid source manifest')
+    repository_files = source_manifest.get('repositoryFiles', {})
+    require(isinstance(repository_files, dict), 'Invalid repository source manifest')
+    for destination, source in repository_files.items():
+        # The producer permits only reviewed canonical migration inputs, never arbitrary parent files.
+        require(isinstance(source, str) and isinstance(destination, str) and
+                re.fullmatch(r'supabase/migrations/[0-9]{14}_[a-z0-9_]+\.sql', source) and
+                destination == 'tests/contracts/' + PurePosixPath(source).name and
+                destination not in manifest, 'Invalid or colliding repository SQL input')
+    approved_names = [*manifest, *repository_files]
+    require(len(approved_names) <= 1000, 'Source manifest exceeds entry bound')
     with zipfile.ZipFile(io.BytesIO(archive)) as zipped:
         entries = zipped.infolist()
         names = [entry.filename for entry in entries]
-        require(len(names) == len(set(names)) and set(names) == set(manifest) | {'SOURCE_METADATA.json'}, 'Archive entries differ from the explicit manifest')
+        require(len(names) == len(set(names)) and set(names) == set(approved_names) | {'SOURCE_METADATA.json'}, 'Archive entries differ from the explicit manifest')
         require(sum(entry.file_size for entry in entries) <= 32 * 1024 * 1024 and
                 all(entry.file_size <= 8 * 1024 * 1024 for entry in entries), 'Archive exceeds size bound')
         metadata = json.loads(zipped.read('SOURCE_METADATA.json'))
         require(isinstance(metadata, dict), 'Invalid source metadata')
         require(metadata.get('sourceRevision') == args.expected_sha, 'Deployed source revision mismatch')
         hashes = metadata.get('sha256', {})
-        require(isinstance(hashes, dict) and set(hashes) == set(manifest), 'Source hash manifest mismatch')
-        for name in manifest:
+        require(isinstance(hashes, dict) and set(hashes) == set(approved_names), 'Source hash manifest mismatch')
+        for name in approved_names:
             relative = PurePosixPath(name)
             require(not relative.is_absolute() and '..' not in relative.parts and '\\' not in name and
                     ':' not in name and str(relative) == name, 'Unsafe source path')
             source = (root / name).resolve()
             require(source.is_relative_to(root), 'Source path escapes checkout')
             actual = hashlib.sha256(zipped.read(name)).hexdigest()
-            require(actual == hashes[name] and actual == hashlib.sha256(committed(name)).hexdigest(), 'Deployed source bytes differ from commit')
-        report.update(deployedSourceRevision=metadata['sourceRevision'], sourceFilesVerified=len(manifest),
-                      packagingWorkspaceDirty=metadata.get('dirty'), archiveSha256=hashlib.sha256(archive).hexdigest())
+            expected = committed(repository_files[name], repository=True) if name in repository_files else committed(name)
+            require(actual == hashes[name] and actual == hashlib.sha256(expected).hexdigest(), 'Deployed source bytes differ from commit')
+        report.update(deployedSourceRevision=metadata['sourceRevision'], sourceFilesVerified=len(approved_names), applicationSourceFilesVerified=len(manifest),
+                      repositoryInputsVerified=len(repository_files), packagingWorkspaceDirty=metadata.get('dirty'), archiveSha256=hashlib.sha256(archive).hexdigest())
 
     page('/', 'zh-HK')
     page('/en', 'en')

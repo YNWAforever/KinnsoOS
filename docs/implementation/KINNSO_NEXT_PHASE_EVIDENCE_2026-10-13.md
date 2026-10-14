@@ -1,3 +1,20 @@
+# Merged source and production verification contract — 2026-10-14
+
+PR79→PR78feature→PR77feature→main completed, each after its actual original Root/Journeys head/tree/base/full functional/numeric/input/cleanup gates. MergeSHAs f61a04b /6ece683 /4cc49ab0ea6693ea660cca097cab45434b5eb597. Main treec4f98b7e3a0331a93a68d5493f06cff35121dbc4 exactly equals the validated candidate. Original requested openPRs0. Current main original push and the extra Root ready-event run are tracked separately; new results are not inferred from premerge gates.
+
+Original automatic production read-only38492259626FAIL is retained: archive entries differ from explicit manifest. Exact read-only reconciliation proves archive source4cc49ab matches main and has only three extra **declared repositoryFiles canonical SQL inputs**. Old checker ignored that producer contract. ArchiveSHA2565563139701163e34012f0e257157633a56c7865047821cc734c8e7650669feb3; packagingWorkspaceDirty=true retained.
+
+Verification-only fix:exact files+repositoryFiles entry/hash sets; same producer canonical migration regex and tests/contracts destination; reject collisions,missing/tampered/unlisted/malformed inputs and wrongrevision; compare mapped bytes against the specified commit's repository path. Same target/origin/redirect/size/path/private-no-store and anonymous guards, GET-only, no archive code/SQL execution. Nine real HTTP/Git/archive controls5PASS/3RED/1valid domain-rejectionRED→9GREEN. Existing workflow4PASS; added CI gate runs only owned HTTP fixtures.
+
+Independent corrected precommit verifier at actual production4cc49abPASS:454sourcefiles (451app+3repository inputs), ten anonymous/public GET checks, signedInAcceptanceNOT_RUN. Original automaticFAIL is not rewritten; the new committed verifier must earn fresh original CI, then actual new-main automatic/source/anonymous evidence. No app/schema/hosted config change, provider/scheduler/account/SQL action or capability expansion. Booking/payment/withdrawal stayoff; actual ops/creator/inbox503 remains a held-capability fence, not operational acceptance.
+
+Root workflow also triggersready_for_review. Its additional unchanged-source CI is preserved and separately observed; the new verification-only PR will wait both all initial originals and ready-event originals before merge, without rerun/cancel. Matrix22W/38A-G/6U/21P-D and all original decisions/failures preserved. Staging/roles/content/devices/recovery/scheduler/pilot remainNO_GO; no physical/signed-in/end-to-end claim.
+
+Next:verification-only draftPR fromactualmain4cc, all current original/ready-event CI green, matchedhead source merge; then exactnewmain/automatic deployment and source/anonymous GET observation. Rollback is an ordinary verifier-only revert preserving app/schema/data/receipts/history; no hosted rollback is performed.
+
+All following sections are historical timestamped source snapshots.
+
+---
 # Qualified native checkpoint candidate — 2026-10-14
 
 Exact localsource `0e3fed78727e2286455e981f4c488b24e0d8e07f`, tree `25154e39a2259ec03f829da2fcca69a9beb78804`: **664unit/97ownedDB/220native PASS0FAIL0SKIP**,88fixtures included. All eight source/workflow/scope/unit/DB/build/type/native checks passed; existing Windows source-package symlink-permission skip stays explicit. Source-bound original JSONs/hashes retained. This document-only revision must earn fresh original CI before remaining source merges.
