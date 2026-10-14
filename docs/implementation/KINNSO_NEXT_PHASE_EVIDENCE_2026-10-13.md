@@ -1,3 +1,18 @@
+# Qualified native checkpoint candidate — 2026-10-14
+
+Exact localsource `0e3fed78727e2286455e981f4c488b24e0d8e07f`, tree `25154e39a2259ec03f829da2fcca69a9beb78804`: **664unit/97ownedDB/220native PASS0FAIL0SKIP**,88fixtures included. All eight source/workflow/scope/unit/DB/build/type/native checks passed; existing Windows source-package symlink-permission skip stays explicit. Source-bound original JSONs/hashes retained. This document-only revision must earn fresh original CI before remaining source merges.
+
+Original95f54 source push38485102102PASS / PR38485107747FAIL remains: both664/97/220/4mailbox and full48/8/24/18 numeric/input/cleanupPASS; bothRoot38485102254/38485107704PASS. Separate PR no-DB fixture87PASS/1captureFAIL is unchanged, no PNG, causeUNKNOWN. All original runs completed and raw ZIP/source/parents/hashes were verified; none cancelled,retried or filled. New evidence does not relabel this failure.
+
+Minimum fixture checkpoint still requires one successful full-page capture after visible page/two animation frames and focused-link assertion. No retry/fallback/catch/deadline/viewport/assertion relaxation. Focused6/full88 precommitGREEN and current full220nativeGREEN; six one-shot EN/zh-HK320/640/1280 PNGs retained with exact widths/heights/SHA and narrow/wide visual inspection. This establishes current capture success, not the old error's root cause or physical-device acceptance. CI DB-profile18422/18420 boot separately passed both original95 mailbox4-case jobs; all API/Mailpit/key-role/project/default pilot contracts remain.
+
+Product/schema/measurement/workflow Git objects still equal measured0a2. ABBA10 remains bound to0a2/adbd, allfour48/8/24/18, B1/B2 and six6A/6B gatesPASS; no new product performance metric claim for CI/test changes. Current new original functional/native/numeric/input/cleanup/boot/mailbox/Root CI must pass before78→77feature→main. PR79 already merged after its fully-green52ab gates; PR78/77 and main remain pending at this snapshot. Public PR and private stack-integration-receipt.json record later actual outcomes.
+
+Hosted/staging/role/content/device/recovery/scheduler/pilot remainNO_GO; Booking/payment/withdrawal/provider disabled and no scheduler configuration delta.22W/38A-G/6U/21P-D and ten originalPR76 decisions preserved. Rollback uses ordinary compatible application/test/CI-profile changes preserving independent UX,drafts,receipts and history, without hosted replay/downgrade. Next:publish this document packet once, qualify its exact original CI, then each integrated stack head before source merge; independent hosted inputs still required.
+
+All following sections are historical timestamped source snapshots.
+
+---
 # Native capture checkpoint after original CI failure — 2026-10-14
 
 Original95f54 PR38485107747 workspace fixture is87PASS/1FAIL0SKIP: P07 en1280 reached geometry/keyboard/link/privacy assertions, then Page.captureScreenshot failed with Unable to capture screenshot. No PNG; causeUNKNOWN. Original log SHA25653a846b095b71aa901221d879687371c4926def024217eebab4d070f71b23f9d and artifactSHA2565d8456ce72e50d915965be880acd0a98b0066b650c88ba966a1a80dd9e5d07da plus all members retained. Successful push fixture does not erase this failure. Both95 mailbox jobs passed; actual DB profile boot is separately observed, pending final raw receipts.
