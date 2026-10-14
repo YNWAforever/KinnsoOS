@@ -1,3 +1,12 @@
+# Verifier legacy-format correction — 2026-10-14
+
+PR80 source4f71a02 originalRoot push38493732996/PR38493831573FAIL:70PASS/2FAIL of72tooling cases, before Turbo; downstream e2eSKIPPED is notPASS. Both failures are the unchanged source/anonymous positive and Windows committed-byte case. This implementation unnecessarily required explicit manifestversion1, breaking the verifier's prior files-only format. Original logs/hashes retained;14PASS2RED reproduced locally with real HTTP/Git fixtures.
+
+Minimum one-line correction preserves missing-version default1 while retaining explicit unsupported-version rejection, exact mapped-input/canonical/hash/source/path/origin/size/private-no-store and callback controls. Existing16cases allGREEN with assertions untouched; new10mapped/legacy casesGREEN. Full72toolingGREEN0FAIL0SKIP. Initial full localrun71PASS1missingTurbo is an environment failure retained (despite provisional GREENfilename); exactlockfileTurbo2.9.18 installed only in ignored taskruntime without package/lock changes. No application/schema/hosted change.
+
+Original4f71 Journeys pushPASS, PR still running at this snapshot; old jobs finish before one ordinary new-source push, no cancel/retry/fill. New committed head and all original/ready-event CI must pass beforePR80merge. Earlier automatic production checkerFAIL remains original; correctedindependent4cc454files10GETPASS belongs to its checker/source, never rewritten as originalCI. Main4cc source CI and earlierready supplements passed separately; hosted/signed-in/physical/pilot acceptance remainsNO_GO. Original22W/38A-G/6U/21P-D maps and all raw outcomes retained.
+
+---
 # Merged source and production verification contract — 2026-10-14
 
 PR79→PR78feature→PR77feature→main completed, each after its actual original Root/Journeys head/tree/base/full functional/numeric/input/cleanup gates. MergeSHAs f61a04b /6ece683 /4cc49ab0ea6693ea660cca097cab45434b5eb597. Main treec4f98b7e3a0331a93a68d5493f06cff35121dbc4 exactly equals the validated candidate. Original requested openPRs0. Current main original push and the extra Root ready-event run are tracked separately; new results are not inferred from premerge gates.

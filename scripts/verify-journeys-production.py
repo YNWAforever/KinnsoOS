@@ -133,7 +133,7 @@ def verify(args, report):
 
     # Commit bytes avoid both uncommitted edits and Windows checkout line-ending transforms.
     source_manifest = json.loads(committed('scripts/source-manifest.json').decode('utf-8-sig'))
-    require(isinstance(source_manifest, dict) and source_manifest.get('version') == 1, 'Invalid source manifest')
+    require(isinstance(source_manifest, dict) and source_manifest.get('version', 1) == 1, 'Invalid source manifest')
     manifest = source_manifest.get('files')
     require(isinstance(manifest, list) and 0 < len(manifest) <= 1000 and
             all(isinstance(name, str) for name in manifest) and

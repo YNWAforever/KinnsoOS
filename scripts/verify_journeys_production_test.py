@@ -41,9 +41,10 @@ class ArchiveContract(unittest.TestCase):
  def tearDown(self):
   self.server.shutdown();self.server.server_close();self.thread.join();assert self.root.is_relative_to(pathlib.Path(tempfile.gettempdir()).resolve());self.temp.cleanup()
  def git(self,*args):return subprocess.check_output(['git','-C',str(self.root),'-c','core.hooksPath='+str(self.root/'empty-hooks'),*args],stderr=subprocess.DEVNULL)
- def prepare(self,mapping=None,omit=(),extra=None,tamper=False,revision=None):
+ def prepare(self,mapping=None,omit=(),extra=None,tamper=False,revision=None,version=1):
   mapping=self.mapping if mapping is None else mapping
-  manifest={'version':1,'files':[*self.contents,'scripts/source-manifest.json'],'repositoryFiles':mapping}
+  manifest={'version':version,'files':[*self.contents,'scripts/source-manifest.json'],'repositoryFiles':mapping}
+  if version is None:manifest.pop('version')
   (self.app/'scripts/source-manifest.json').write_text(json.dumps(manifest),encoding='utf8');self.git('add','.');self.git('commit','-qm','Owned fixture');self.sha=self.git('rev-parse','HEAD').decode().strip()
   contents={name:(self.app/name).read_bytes() for name in manifest['files']}
   for destination,source in mapping.items():
@@ -64,6 +65,8 @@ class ArchiveContract(unittest.TestCase):
   self.assertEqual(self.requests,[('GET','/source/kinnsoos-source.zip')])
  def test_legacy_exact_source_archive_and_anonymous_fences_stay_valid(self):
   self.prepare({});r=self.verify();self.assertEqual(r['deployedSourceRevision'],self.sha);self.assertEqual(len(r['checks']),10);self.assertTrue(all(method=='GET' for method,path in self.requests))
+ def test_legacy_files_only_manifest_without_version_remains_valid(self):
+  self.prepare({},version=None);r=self.verify();self.assertEqual(r['deployedSourceRevision'],self.sha);self.assertEqual(r['repositoryInputsVerified'],0);self.assertEqual(len(r['checks']),10)
  def test_declared_three_repository_sql_inputs_are_verified_against_the_commit(self):
   self.prepare();r=self.verify();self.assertEqual(r['deployedSourceRevision'],self.sha);self.assertEqual(r['repositoryInputsVerified'],3);self.assertEqual(len(r['checks']),10)
  def test_missing_declared_input_fails_before_any_page_or_actor_read(self):
