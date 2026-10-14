@@ -1,3 +1,14 @@
+# CI profile enquiries uses the compiled route table — 2026-10-14
+
+Originalb74fa29 Root PR38501593361FAIL is retained: creator pageHTTP404 on both initial and existing automatic retry despite successful anonymous creator fixture verification. Original trace is the global Next dev not-found route. Precise transient timing causeUNKNOWN. Its Root push38501589592PASS, including production BookingON; both Journeys originals38501589595/38501593345 independentlyPASS with actual664unit/97DB/220native/4mailbox0FAIL0SKIP and48/8/24/18 numeric/input/ownedcleanupPASS.88fixtures are included220. They do not replace the failed Root PR. Downstream BookingON in that PR was NOT_RUN after the profile failure.
+
+Minimum correction extends the existing compiled-runtime CI contract only to profile enquiries: next start consumes the preceding successful build; local developer invocation keeps next dev, with no missing-build fallback. No app/schema/config/role/provider/hosted mutation. Opt-in/loopback/credentials/container/HMAC, original HTTP200/form/anonymous/authenticatedops/audit/cleanup assertions and all original retry/deadline settings remain unchanged. New7combinedruntime controls6PASS1RED→7GREEN; fullRoot79PASS0FAIL0SKIP. The new committed source must earn all current original push/PR plus ready-event gates; no original rerun/cancel/fill or oldPASS transfer.
+
+All historical mappings/tenPR76 decisions and measured application/schema objects remain unchanged. Operational/staging/signed-in/physical/scheduler/pilot acceptance remainsNO_GO. Rollback is an ordinary CI runtime selector/verifier revert, preserving independently accepted app code, data and pushed history. Next: fresh original source gates, matchedhead merge, actualnewmain/automatic production/source/anonymous readback.
+
+All following sections are historical timestamped source snapshots.
+
+---
 # CI Booking ON consumes the existing production build — 2026-10-14
 
 Original source361510c Root push38495886499FAIL is preserved: the seeded Booking ON experience returned HTTP404 on both the first attempt and existing automatic retry. Anonymous experience/merchant/availability projection was alltrue; trace returned the global Next dev not-found route. Root PR38495890293 and Journeys push38495886402/PR38495890275 independentlyPASS. They do not replace the failed push or open this merge gate. Precise dev-router timing cause remainsUNKNOWN.

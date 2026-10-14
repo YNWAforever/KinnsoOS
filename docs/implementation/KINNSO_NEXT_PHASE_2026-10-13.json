@@ -2356,12 +2356,12 @@
   "financialCapabilities": "Booking/payment/withdrawal disabled",
   "execution": {
     "currentSource": {
-      "sha": "361510c9e722a599da9edf6401b330ef9760ac3c",
-      "tree": "70e389997b8305cc04fb62f205e619ad055fca30",
-      "status": "ORIGINAL_ROOT_PUSH_BOOKING_FAIL_MINIMUM_CI_PRODUCTION_RUNTIME_FIX_PREPARED",
+      "sha": "b74fa29a73e387582acdb13b23a1a89d7dcba7f1",
+      "tree": "fd724e3b0f4d02a1755577e049a273ac689169b4",
+      "status": "ORIGINAL_ROOT_PR_PROFILE_DEV_404_MINIMUM_CI_PRODUCTION_RUNTIME_FIX_PREPARED",
       "noHistoricalPassTransfer": true
     },
-    "updatedAt": "2026-10-14T02:31:32.073962+00:00",
+    "updatedAt": "2026-10-14T03:00:27.674778+00:00",
     "measuredCandidate": {
       "sourceSha": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
       "sourceTree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
@@ -8185,6 +8185,871 @@
             "newCommittedSourceCI": "REQUIRED_NOT_PUBLISHED_AT_SNAPSHOT"
           }
         }
+      },
+      {
+        "currentSource": {
+          "sha": "361510c9e722a599da9edf6401b330ef9760ac3c",
+          "tree": "70e389997b8305cc04fb62f205e619ad055fca30",
+          "status": "ORIGINAL_ROOT_PUSH_BOOKING_FAIL_MINIMUM_CI_PRODUCTION_RUNTIME_FIX_PREPARED",
+          "noHistoricalPassTransfer": true
+        },
+        "updatedAt": "2026-10-14T02:31:32.073962+00:00",
+        "measuredCandidate": {
+          "sourceSha": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+          "sourceTree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
+          "adoption": "ADOPTED_OWNED_SOURCE_AND_CI_ONLY",
+          "hosted": "NOT_ACCEPTED"
+        },
+        "sourceBoundLocalValidation": {
+          "sourceSha": "0e3fed78727e2286455e981f4c488b24e0d8e07f",
+          "sourceTree": "25154e39a2259ec03f829da2fcca69a9beb78804",
+          "unit": {
+            "pass": 664,
+            "fail": 0,
+            "skip": 0
+          },
+          "integration": {
+            "pass": 97,
+            "fail": 0,
+            "skip": 0
+          },
+          "native": {
+            "pass": 220,
+            "fail": 0,
+            "skip": 0,
+            "includedFixtures": 88
+          },
+          "build": "PASS",
+          "types": "PASS",
+          "sourcePackage": "PASS_WITH_NAMED_EXISTING_WINDOWS_SYMLINK_PERMISSION_SKIP",
+          "workflow": "PASS",
+          "deploymentScope": "PASS_METADATA_ONLY",
+          "hosted": "NOT_RUN",
+          "receipt": "private:candidate-painted-verification-receipt.json",
+          "originalJSONs": {
+            "unit": {
+              "file": "candidate-painted-unit-original.json",
+              "sha256": "89f27c4465429658c655c3d9f3dc8220e8c7624d7d335ae1ece74b0949412f6e",
+              "counts": {
+                "passed": 664,
+                "failed": 0,
+                "skipped": 0,
+                "cancelled": 0,
+                "todo": 0
+              }
+            },
+            "integration": {
+              "file": "candidate-painted-integration-original.json",
+              "sha256": "336f55cb29b5743b9a6a00b021997acf99bdb43826bac2e145298fe62f6fad65",
+              "counts": {
+                "passed": 97,
+                "failed": 0,
+                "skipped": 0,
+                "cancelled": 0,
+                "todo": 0
+              }
+            },
+            "browser": {
+              "file": "candidate-painted-browser-original.json",
+              "sha256": "dd921a6cec08e1f29b47628f1f1e8b79fde90c85d504ba7ae81842f2971c1617",
+              "counts": {
+                "passed": 220,
+                "failed": 0,
+                "skipped": 0,
+                "cancelled": 0,
+                "todo": 0
+              }
+            }
+          }
+        },
+        "experiments": [
+          {
+            "batch": "05",
+            "status": "REJECTED",
+            "evidence": "private:protocol05-comparison.json"
+          },
+          {
+            "batch": "06",
+            "status": "INCOMPARABLE",
+            "evidence": "private:protocol06-comparison.json"
+          },
+          {
+            "batch": "07",
+            "status": "INCOMPARABLE",
+            "evidence": "private:protocol07-comparison.json"
+          },
+          {
+            "batch": "08",
+            "status": "INCOMPARABLE_SCHEMA_CHANGE_BEFORE_B",
+            "originalA1": "COMPLETE_RETAINED",
+            "candidateRunsStarted": 0
+          },
+          {
+            "batch": "09",
+            "status": "PASS_OWNED_NOT_ADOPTED_PR_NUMERIC_FAIL",
+            "baseline": "26888a108ae7131915d40cae51ed322d6b499bbe",
+            "candidate": "804513c13caaaccf6ab83cef020538cb256c6d44",
+            "originalA1": "COMPLETE_NUMERIC_FAIL_INPUT_CLEANUP_PASS",
+            "originalB1": "COMPLETE_NUMERIC_INPUT_CLEANUP_PASS",
+            "originalB2": "COMPLETE_NUMERIC_INPUT_CLEANUP_PASS",
+            "originalA2": "COMPLETE_NUMERIC_FAIL_INPUT_CLEANUP_PASS",
+            "sixGroups": [
+              {
+                "task": "merchantInvitation",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 3278.3499999940395,
+                "bMedianMs": 2823.949999988079,
+                "limitMs": 3442.2674999937417,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantInvitation",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 1946.8500000238419,
+                "bMedianMs": 1804.25,
+                "limitMs": 2044.192500025034,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantBrief",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 3746.6500000059605,
+                "bMedianMs": 3142.050000011921,
+                "limitMs": 3933.9825000062583,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantBrief",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 2351.6500000059605,
+                "bMedianMs": 1907.3499999940395,
+                "limitMs": 2469.2325000062583,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantReview",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 4020.2000000178814,
+                "bMedianMs": 3118.199999988079,
+                "limitMs": 4221.210000018776,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantReview",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 2731.7000000178814,
+                "bMedianMs": 2132.300000011921,
+                "limitMs": 2868.2850000187755,
+                "status": "PASS"
+              }
+            ],
+            "protocol": "private:protocol-09.json",
+            "denominators": "48 navigation /8 interaction /24 reads /18 first-usable per run;6A/6B each group",
+            "threshold": "B1/B2 numeric PASS and six medians <=A+max(50ms,5%);2500msLCP/0.1CLS",
+            "schemaOnBothSides": 191,
+            "comparison": "private:protocol09-comparison.json"
+          },
+          {
+            "batch": "10",
+            "status": "PASS_ADOPTED_OWNED_SOURCE_AND_CI_ONLY",
+            "baseline": "26888a108ae7131915d40cae51ed322d6b499bbe",
+            "candidate": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+            "candidateTree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
+            "originalRuns": [
+              {
+                "id": "A1",
+                "source": "26888a108ae7131915d40cae51ed322d6b499bbe",
+                "tree": "72c28b9386d94f0edab8a0cb81c4926b85581f3c",
+                "navigation": 48,
+                "interactions": 8,
+                "reads": 24,
+                "firstUsable": 18,
+                "numeric": "FAIL",
+                "inputs": "PASS",
+                "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+              },
+              {
+                "id": "B1",
+                "source": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+                "tree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
+                "navigation": 48,
+                "interactions": 8,
+                "reads": 24,
+                "firstUsable": 18,
+                "numeric": "PASS",
+                "inputs": "PASS",
+                "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+              },
+              {
+                "id": "B2",
+                "source": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+                "tree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
+                "navigation": 48,
+                "interactions": 8,
+                "reads": 24,
+                "firstUsable": 18,
+                "numeric": "PASS",
+                "inputs": "PASS",
+                "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+              },
+              {
+                "id": "A2",
+                "source": "26888a108ae7131915d40cae51ed322d6b499bbe",
+                "tree": "72c28b9386d94f0edab8a0cb81c4926b85581f3c",
+                "navigation": 48,
+                "interactions": 8,
+                "reads": 24,
+                "firstUsable": 18,
+                "numeric": "FAIL",
+                "inputs": "PASS",
+                "cleanup": "PASS_OWNED_SYNTHETIC_ACTORS_REMOVED"
+              }
+            ],
+            "sixGroups": [
+              {
+                "task": "merchantInvitation",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 3188.600000023842,
+                "bMedianMs": 2970.1500000059605,
+                "limitMs": 3348.030000025034,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantInvitation",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 2065.5500000417233,
+                "bMedianMs": 1836.050000011921,
+                "limitMs": 2168.8275000438093,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantBrief",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 3685.300000011921,
+                "bMedianMs": 3202.8499999940395,
+                "limitMs": 3869.565000012517,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantBrief",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 2553.9000000059605,
+                "bMedianMs": 2091.600000023842,
+                "limitMs": 2681.5950000062585,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantReview",
+                "cache": "cold",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 3780.599999964237,
+                "bMedianMs": 3134.0999999940395,
+                "limitMs": 3969.629999962449,
+                "status": "PASS"
+              },
+              {
+                "task": "merchantReview",
+                "cache": "warm",
+                "aSamples": 6,
+                "bSamples": 6,
+                "aMedianMs": 2610.550000011921,
+                "bMedianMs": 2235.6500000059605,
+                "limitMs": 2741.077500012517,
+                "status": "PASS"
+              }
+            ],
+            "protocol": "private:protocol-10.json",
+            "protocolSha256": "ca2d08b2c9953211a2a396325496026c0fe11c10ca3cfe07c770b627932533e0",
+            "comparison": "private:protocol10-comparison.json",
+            "comparisonSha256": "4a0f9315f6dc829cd181ad3a5bc8892484164f88cfa0fd7f144cbbff8059f6c5",
+            "denominators": "48 navigation /8 interaction /24 reads /18 first-usable per run;6A/6B each group",
+            "threshold": "B1/B2 numeric PASS; six medians <=A+max(50ms,5%);2500msLCP/0.1CLS",
+            "schemaOnBothSides": 191,
+            "noRetryBackfillBudgetOrTimeoutChange": true
+          }
+        ],
+        "externalInputs": [
+          {
+            "id": "TARGET",
+            "owner": "platform/release owner",
+            "requestedAt": "2026-10-13",
+            "scope": "designated staging URL/Vercel project/branch and Supabase project/branch/Auth owner; no key values",
+            "unlocks": [
+              "NEXT-04",
+              "NEXT-05"
+            ]
+          },
+          {
+            "id": "RECOVERY",
+            "owner": "platform/release owner",
+            "scope": "target schema/grants/migration inventory, last-good source, backup coverage and restore rehearsal",
+            "unlocks": [
+              "NEXT-05",
+              "NEXT-10"
+            ]
+          },
+          {
+            "id": "ROLES",
+            "owner": "role owners",
+            "scope": "two companies/two creators plus owner/marketing/clerk/finance/ops and approved mailbox/actions",
+            "unlocks": [
+              "NEXT-06"
+            ]
+          },
+          {
+            "id": "CONTENT",
+            "owner": "content owner",
+            "scope": "three real structured guides, author consent, cover rights, verified sources/dates/locales and traveller",
+            "unlocks": [
+              "NEXT-07"
+            ]
+          },
+          {
+            "id": "SCHEDULER",
+            "owner": "operations owner",
+            "scope": "target/source/candidate/schema/window and enable/stop/recovery scope",
+            "unlocks": [
+              "NEXT-08"
+            ]
+          },
+          {
+            "id": "DEVICES",
+            "owner": "QA/accessibility owner",
+            "scope": "physical iOS/Safari/VoiceOver, Android/Chrome, Windows/NVDA and versions/operators",
+            "unlocks": [
+              "NEXT-09"
+            ]
+          },
+          {
+            "id": "RELEASE_PILOT",
+            "owner": "release/product owner",
+            "scope": "exact candidate/environment/capabilities/owners and concrete merge/deploy/pilot scope after gates",
+            "unlocks": [
+              "NEXT-10",
+              "NEXT-11"
+            ]
+          }
+        ],
+        "financialCapabilities": "Booking/payment/withdrawal disabled",
+        "releaseDecision": "NO_GO",
+        "production": "MAIN4CC_AUTOMATIC_SOURCE_SERVING_CORRECT_BYTE_VERIFIED_WITH_CORRECTED_PRECOMMIT_CHECKER_ORIGINAL_WORKFLOW_FAIL_RETAINED_HOSTED_NO_GO",
+        "scopeNote": "22W/38A-G/6U/21P-D histories and completion rules are unchanged; individual NEXT progress does not close an entire story or requirement.",
+        "measurementQualification": {
+          "recordedAt": "2026-10-13T22:43:10.494556+00:00",
+          "source": {
+            "sha": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+            "tree": "adbd58a88f0d2d8d430048b9f6ad71964287d5e6",
+            "status": "FULL_FUNCTIONAL_FIXED_ABBA10_AND_ORIGINAL_PUSH_PR_CI_PASS",
+            "noHistoricalPassTransfer": true
+          },
+          "observerSha256": "a9650c96901fb40837332f9d1f1ec44dbfbbca0031bdae06f147e40e685699f6",
+          "reviewedSource": "de6f7935b8157b03b1dfb3122e46014227349c55",
+          "reviewImportant": "Campaign directory initiated a second detail read; pathname-only completion could freeze a false PASS before denial",
+          "red": {
+            "failed": 2,
+            "passed": 1,
+            "log": "private:final-review-campaign-followup-RED.log"
+          },
+          "green": {
+            "allFixturePassed": 88,
+            "fail": 0,
+            "skip": 0,
+            "includedObserverCases": 16,
+            "log": "private:final-review-observer-and-fixtures-GREEN.log"
+          },
+          "historicalProtocols": [
+            "05",
+            "06",
+            "07"
+          ],
+          "historicalStatusPolicy": "Original raw metrics and assessments remain unchanged; their first-usable method lacks follow-up completion protection and is NOT qualification of the current observer",
+          "currentPerformanceQualification": "FIXED_ABBA10_PASS_191_SCHEMA_SAME_HOST_6A_6B_ALL_GROUPS",
+          "productPerformanceDecision": "ADOPTED_OWNED_SOURCE_AND_CI_ONLY",
+          "reviewCount": 1,
+          "noRereview": true,
+          "deferredMinor": "Historical wording issue preserved in priorSnapshots; current manifest includes explicitly allowlisted merchant/creator initial-view implementation and tests",
+          "currentFullValidation": "CURRENT0A2_660_UNIT_97_DB_220_NATIVE_BUILD_TYPES_SOURCE_CHECKS_PASS",
+          "release": "NO_GO",
+          "currentOriginalCI": "PUSH_AND_PR_FUNCTIONAL_NUMERIC_INPUT_CLEANUP_ROOT_PASS"
+        },
+        "localValidationAsOf": {
+          "recordedAt": "2026-10-13T13:41:40.570Z",
+          "sourceSha": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+          "sourceTree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+          "unit": {
+            "passed": 614,
+            "failed": 0,
+            "skipped": 0,
+            "cancelled": 0,
+            "todo": 0
+          },
+          "build": "PASS",
+          "types": "PASS",
+          "native": {
+            "passed": 214,
+            "failed": 1,
+            "skipped": 0,
+            "cancelled": 0,
+            "todo": 0,
+            "result": "FAIL",
+            "includedFixtureCases": 88,
+            "failedCase": "agent-workspace.spec.ts:87 foreign actor private snapshot GET",
+            "error": "ECONNRESET",
+            "cause": "UNKNOWN",
+            "cleanup": "test finally executed; no cleanup error reported",
+            "raw": "private:final-review-fixed-native.log",
+            "safe": "private:final-review-fixed-native.safe.log",
+            "noRetryOrBackfill": true
+          },
+          "CIPush": {
+            "run": 38405381703,
+            "source": "7a5c81a6c3b2b0c3c97da8b5dcd7c82a35b64b84",
+            "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+          },
+          "CIPR": {
+            "run": 38405390776,
+            "source": "fa88079864960812c97689540ab2ee6bbbea9a03",
+            "tree": "04b8b83391eee80a8e69cef9c2c2c0477e36df5c",
+            "status": "PENDING_CONNECTED_AND_OPERATIONS_AT_OBSERVATION"
+          },
+          "qualification": "All results stay bound to7a5; documentation-only continuation must earn its own current CI, not inherit a PASS",
+          "release": "NO_GO"
+        },
+        "conditionalSourceIntegration": {
+          "authorized": true,
+          "request": "fix and merge all left pr if all go green first",
+          "order": [
+            "79->78 feature",
+            "78->77 feature",
+            "77->main"
+          ],
+          "status": "PR79_PR78_PR77_ALL_MERGED_AFTER_CURRENT_ORIGINAL_GREEN_GATES",
+          "noForceOrAdminBypass": true,
+          "hostedChangesAuthorized": false,
+          "gate": {
+            "localSource": "0e3fed78727e2286455e981f4c488b24e0d8e07f",
+            "localTree": "25154e39a2259ec03f829da2fcca69a9beb78804",
+            "fullLocalFunctional": "PASS_664_97_220",
+            "measuredRuntimeSource": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+            "ABBA10": "PASS_MEASURED_RUNTIME_ONLY",
+            "newOriginalCI": "NOT_PUBLISHED_AT_SNAPSHOT"
+          },
+          "evidencePolicy": "CI-only helper and its four controls changed; product/schema/measurement/workflow objects equal0a2, default developer/pilot profile unchanged; fresh current source CI must qualify the changed generated CI resource profile",
+          "merged": [
+            {
+              "pr": 79,
+              "head": "52abfe028fbb1b309d4247eef251ef16177eaa38",
+              "base": "codex/creator-merchant-continuation-20261013",
+              "mergedAt": "2026-10-13T23:06:11Z",
+              "mergeSource": "f61a04baf9911464612dc1040985a6321ef58870",
+              "tree": "5b818015616c314332cfcb6df4596d8cfa4388c4",
+              "parents": [
+                "168f653475b421efaeb9dc29356f0a84deb5ec49",
+                "52abfe028fbb1b309d4247eef251ef16177eaa38"
+              ],
+              "preMergeGate": "PR79-52abfe0-green-gate-receipt.json",
+              "status": "MERGED_AFTER_CURRENT_GREEN_GATES"
+            },
+            {
+              "pr": 78,
+              "head": "4dcf50ecf618d181ac77d9d847b1a6a4296d1168",
+              "base": "codex/travel-collaboration-usability-20261012",
+              "mergedAt": "2026-10-14T00:24:39Z",
+              "mergeSource": "6ece683d10342a4afc7c68c1710e586eee605512",
+              "tree": "c4f98b7e3a0331a93a68d5493f06cff35121dbc4",
+              "parents": [
+                "bfdcdc22858f7b925375bbeee724609b3700a603",
+                "4dcf50ecf618d181ac77d9d847b1a6a4296d1168"
+              ],
+              "preMergeGate": "PR78-4dcf50e-green-gate-receipt.json",
+              "status": "MERGED_AFTER_ALL_CURRENT_GREEN_GATES"
+            },
+            {
+              "pr": 77,
+              "head": "6ece683d10342a4afc7c68c1710e586eee605512",
+              "base": "main",
+              "mergedAt": "2026-10-14T00:48:07Z",
+              "mergeSource": "4cc49ab0ea6693ea660cca097cab45434b5eb597",
+              "tree": "c4f98b7e3a0331a93a68d5493f06cff35121dbc4",
+              "parents": [
+                "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+                "6ece683d10342a4afc7c68c1710e586eee605512"
+              ],
+              "preMergeGate": "PR77-6ece683-green-gate-receipt.json",
+              "status": "MERGED_AFTER_ALL_CURRENT_GREEN_GATES"
+            }
+          ],
+          "remaining": [],
+          "nextFix": "fixture capture readiness only; new full committed-source and original CI required before78/77 merge",
+          "newVerificationOnlyPR": "PR80_REMAINS_DRAFT_NEW_LEGACY_COMPATIBLE_HEAD_REQUIRES_ORIGINAL_AND_READY_EVENT_CI"
+        },
+        "currentCI": {
+          "status": "NEW_COMMITTED_CANDIDATE_REQUIRES_ALL_CURRENT_ORIGINALS_AND_READY_EVENT",
+          "priorSource": "361510c9e722a599da9edf6401b330ef9760ac3c",
+          "rootPush": "FAIL_38495886499",
+          "rootPR": "PASS_38495890293",
+          "journeysPush": "PASS_38495886402",
+          "journeysPR": "PASS_38495890275",
+          "noOriginalRunRerun": true
+        },
+        "canonicalLocalSchema": {
+          "migrations": 191,
+          "fingerprint": "82200cae56744f93de44b296663fddfcaa4d62a32bc1146fa2583edbf269aecb",
+          "hosted": "NOT_APPLIED_NOT_ACCEPTED",
+          "delta": "20261013190617_kinnso_campaign_utc_validation_fast_path.sql",
+          "control": {
+            "catalogBefore": 100,
+            "catalogAfter": 0,
+            "statementTimeoutMs": 8000,
+            "originalExportRows": 5001,
+            "namedAndInvalidZones": "UNCHANGED"
+          }
+        },
+        "initialViewBehavior": {
+          "merchant": "request-scoped authenticated existing membership/workspace RPC; role/company/actor quarantine; no shared cache",
+          "creator": "same actor and mission existing RPC; initial readonly brief while original fresh client GET is pending; commands remain locked",
+          "terminalDenial": "late initial reads cannot resurrect revoked private controls",
+          "unknownWrite": "retain original requestId/payload; reconcile before retry",
+          "utcValidation": "canonical UTC avoids catalog scan; named/NULL/invalid zones and all other guard contracts unchanged"
+        },
+        "packetRevision": {
+          "recordedAt": "2026-10-14T01:03:34.216673+00:00",
+          "type": "verification-only correction after exact-main original production checker failure",
+          "measuredSource": "0a2d41a41ef7ccb28ee587539e67af89b9d915e6",
+          "freshCIRequiredBeforeMerge": true,
+          "futureIntegrationReceipt": "private:stack-integration-receipt.json",
+          "notAHostedOrProductionAcceptance": true,
+          "qualifiedLocalSource": "0e3fed78727e2286455e981f4c488b24e0d8e07f",
+          "qualifiedLocalTree": "25154e39a2259ec03f829da2fcca69a9beb78804"
+        },
+        "CIInfrastructureFix": {
+          "failedSource": "f61a04baf9911464612dc1040985a6321ef58870",
+          "originalRun": 38482144573,
+          "attempt": 1,
+          "failedStep": "Start owned local Auth and Mailpit without application seeds",
+          "error": "Docker DB host port58422 address already in use",
+          "occupant": "UNKNOWN",
+          "mailboxTests": "NOT_STARTED",
+          "raw": "private:f61a-push-auth-mailbox-start-original-FAIL.log",
+          "rawSha256": "162d64ed76e637f397f0065c21d5884656fb805402b4a0258d1ee3f44bc3a708",
+          "fix": "Generated CI-only canonical DB/shadow ports18422/18420; API58421/Mailpit58424/project labels/key roles/seeds/confirmation and original developer/pilot profiles retained",
+          "red": {
+            "pass": 7,
+            "fail": 4,
+            "skip": 0,
+            "log": "private:ci-db-port-original-RED.log"
+          },
+          "focusedGreen": {
+            "pass": 16,
+            "fail": 0,
+            "skip": 0,
+            "realLoopbackBinds": 2,
+            "log": "private:ci-db-port-focused-GREEN.log"
+          },
+          "newSourceFullQualification": {
+            "source": "25e250d2d88649caafc07ce1286ca1a46db8777b",
+            "tree": "5f24de3e03ee9a2f6d14cb2b6674821c183805eb",
+            "unit": 664,
+            "db": 97,
+            "native": 220,
+            "includedFixtures": 88,
+            "allEightSteps": "PASS"
+          },
+          "newOriginalCI": "REQUIRED_NOT_PUBLISHED_AT_SNAPSHOT",
+          "ABBA10": "Belongs to0a2; product/runtime/measurement source and default owned profile unchanged, not a new product performance experiment",
+          "actualFixedDockerStartup": "ORIGINAL95_PUSH_AND_PR_AUTH_MAILBOX4PASS_EACH_RAW_HASH_SOURCE_TREE_VERIFIED"
+        },
+        "historicalCIHeadFinalOutcomes": {
+          "at": "2026-10-13T23:57:51.529007+00:00",
+          "source": "95f54e47730fc41e457a8d188ccc4b88b4c68b5a",
+          "tree": "2942101480f4d4bdf6e0f242b41a8c81addbac45",
+          "originalRuns": [
+            {
+              "run": 38485102102,
+              "event": "push",
+              "conclusion": "success",
+              "attempt": 1,
+              "source": "95f54e47730fc41e457a8d188ccc4b88b4c68b5a",
+              "checkout": "95f54e47730fc41e457a8d188ccc4b88b4c68b5a",
+              "tree": "2942101480f4d4bdf6e0f242b41a8c81addbac45",
+              "parents": [
+                "25e250d2d88649caafc07ce1286ca1a46db8777b"
+              ],
+              "counts": {
+                "browser.json": {
+                  "passed": 220,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "integration.json": {
+                  "passed": 97,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "unit.json": {
+                  "passed": 664,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "auth-mailbox.json": {
+                  "passed": 4,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                }
+              },
+              "numeric": "PASS",
+              "denominators": "48/8/24/18",
+              "input": "PASS",
+              "cleanup": "PASS",
+              "workspaceFixture": "88PASS"
+            },
+            {
+              "run": 38485107747,
+              "event": "pull_request",
+              "conclusion": "failure",
+              "attempt": 1,
+              "source": "95f54e47730fc41e457a8d188ccc4b88b4c68b5a",
+              "checkout": "2c96f25a4ddbbdd0746c0c0d5b098733688ff181",
+              "tree": "2942101480f4d4bdf6e0f242b41a8c81addbac45",
+              "parents": [
+                "bfdcdc22858f7b925375bbeee724609b3700a603",
+                "95f54e47730fc41e457a8d188ccc4b88b4c68b5a"
+              ],
+              "counts": {
+                "auth-mailbox.json": {
+                  "passed": 4,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "unit.json": {
+                  "passed": 664,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "browser.json": {
+                  "passed": 220,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                },
+                "integration.json": {
+                  "passed": 97,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                }
+              },
+              "numeric": "PASS",
+              "denominators": "48/8/24/18",
+              "input": "PASS",
+              "cleanup": "PASS",
+              "workspaceFixture": "87PASS1CAPTUREFAIL"
+            }
+          ],
+          "rootPush": {
+            "run": 38485102254,
+            "result": "PASS"
+          },
+          "rootPR": {
+            "run": 38485107704,
+            "result": "PASS"
+          },
+          "mergeDecision": "NOT_MERGED_PR_CAPTURE_PROTOCOL_FAIL",
+          "originalsCancelledRetriedOrBackfilled": false
+        },
+        "nativeCaptureCheckpoint": {
+          "failedSource": "95f54e47730fc41e457a8d188ccc4b88b4c68b5a",
+          "run": 38485107747,
+          "attempt": 1,
+          "job": 115596749733,
+          "originalFixtureCounts": {
+            "pass": 87,
+            "fail": 1,
+            "skip": 0
+          },
+          "case": "P07 en1280 native next-action layout",
+          "failure": "Page.captureScreenshot Unable to capture screenshot after geometry/keyboard/privacy assertions",
+          "cause": "UNKNOWN_NOT_PROVEN",
+          "originalArtifactSha256": "5d8456ce72e50d915965be880acd0a98b0066b650c88ba966a1a80dd9e5d07da",
+          "originalLogSha256": "53a846b095b71aa901221d879687371c4926def024217eebab4d070f71b23f9d",
+          "checkpoint": "bringToFront and two actual animation frames; retain focused link then one mandatory full-page capture",
+          "noRetryFallbackAssertionOrTimeoutRelaxation": true,
+          "localPrecommitFocused": 6,
+          "localPrecommitAllFixtures": 88,
+          "sixOriginalPNGRefs": "private:P07-painted-frame-fixture-receipt.json",
+          "initialWrongCwdInvocation": "INVALID_NOT_COMPONENT_ACCEPTANCE_RETAINED",
+          "currentCommittedFullValidation": {
+            "source": "0e3fed78727e2286455e981f4c488b24e0d8e07f",
+            "tree": "25154e39a2259ec03f829da2fcca69a9beb78804",
+            "allEightSteps": "PASS",
+            "unit": 664,
+            "db": 97,
+            "native": 220,
+            "includedFixtures": 88,
+            "originalJSONs": {
+              "unit": {
+                "file": "candidate-painted-unit-original.json",
+                "sha256": "89f27c4465429658c655c3d9f3dc8220e8c7624d7d335ae1ece74b0949412f6e",
+                "counts": {
+                  "passed": 664,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                }
+              },
+              "integration": {
+                "file": "candidate-painted-integration-original.json",
+                "sha256": "336f55cb29b5743b9a6a00b021997acf99bdb43826bac2e145298fe62f6fad65",
+                "counts": {
+                  "passed": 97,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                }
+              },
+              "browser": {
+                "file": "candidate-painted-browser-original.json",
+                "sha256": "dd921a6cec08e1f29b47628f1f1e8b79fde90c85d504ba7ae81842f2971c1617",
+                "counts": {
+                  "passed": 220,
+                  "failed": 0,
+                  "skipped": 0,
+                  "cancelled": 0,
+                  "todo": 0
+                }
+              }
+            },
+            "oldCaptureCause": "UNKNOWN_NOT_PROVEN"
+          }
+        },
+        "productionSourceVerification": {
+          "originalRun": 38492259626,
+          "originalStatus": "FAIL",
+          "originalFailure": "Archive entries differ from explicit manifest",
+          "expectedSource": "4cc49ab0ea6693ea660cca097cab45434b5eb597",
+          "actualArchiveSource": "4cc49ab0ea6693ea660cca097cab45434b5eb597",
+          "archiveSha256": "5563139701163e34012f0e257157633a56c7865047821cc734c8e7650669feb3",
+          "declaredRepositoryInputs": 3,
+          "rootCause": "Verifier used files-only manifest and ignored producer repositoryFiles; archive is correctly bound and contains only declared extra canonical SQL inputs",
+          "sourceOnlyFix": "Exact files+repositoryFiles union, canonical source/destination constraint, immutable commit bytes and full hash keyset; no anonymous or size/origin/path/revision relaxation",
+          "newLocalTests": {
+            "cases": 9,
+            "red": "5PASS3FAIL1_DOMAIN_CHECK_REJECTION",
+            "green": "9PASS",
+            "original": "private:production-mapped-inputs-stronger-RED.log"
+          },
+          "independentCorrectedReadOnly": {
+            "status": "PASS",
+            "source": "4cc49ab0ea6693ea660cca097cab45434b5eb597",
+            "sourceFiles": 454,
+            "applicationSourceFiles": 451,
+            "repositoryInputs": 3,
+            "anonymousGETChecks": 10,
+            "packagingWorkspaceDirty": true,
+            "receipt": "private:main4cc-corrected-verifier-independent-readonly.json",
+            "checker": "precommit corrected program, not original workflowPASS"
+          },
+          "signedInAcceptance": "NOT_RUN",
+          "newCommittedCheckerCI": "NEW_COMMITTED_SOURCE_REQUIRES_ALL_ORIGINALS",
+          "legacyCompatibility": {
+            "originalSource": "4f71a02f6f132113f7a4cfb7137b1d71c09b4232",
+            "rootPush": 38493732996,
+            "rootPR": 38493831573,
+            "rootToolingOriginalCounts": {
+              "pass": 70,
+              "fail": 2,
+              "total": 72
+            },
+            "downstreamE2E": "SKIPPED_DUE_UPSTREAM_FAIL_NOT_PASS",
+            "cause": "New mandatory version1 check rejected previously accepted files-only legacy manifests; unnecessary narrowing introduced by this fix",
+            "minimumCorrection": "Missing version retains previous default; explicit supplied unsupported version and all mapping/hash/source/fence/path bounds remain blocked",
+            "unchangedExistingCases": {
+              "cases": 16,
+              "red": {
+                "pass": 14,
+                "fail": 2
+              },
+              "green": 16
+            },
+            "newMappedCases": 10,
+            "fullRootTooling": {
+              "pass": 72,
+              "fail": 0,
+              "skip": 0,
+              "originalLocalMissingTurbo": "71PASS1MODULE_NOT_FOUND_RETAINED",
+              "pinnedIgnoredRuntime": "Turbo2.9.18 matches existing lockfile; no dependency manifest/lock change"
+            },
+            "newCommittedSourceCI": "REQUIRED_NOT_PUBLISHED_AT_SNAPSHOT"
+          }
+        },
+        "ciBookingProductionRuntime": {
+          "originalSource": "361510c9e722a599da9edf6401b330ef9760ac3c",
+          "rootPush": 38495886499,
+          "rootPushStatus": "FAIL",
+          "rootPR": 38495890293,
+          "rootPRStatus": "PASS",
+          "journeysPush": 38495886402,
+          "journeysPR": 38495890275,
+          "journeysStatuses": "PASS",
+          "failure": "Booking ON seeded experience navigation HTTP404 both initial and existing automatic retry; anonymous experience/merchant/availability checks alltrue",
+          "originalTraceResult": "Global Next dev not-found route returned; application data projection passed. Precise dev-router timing cause UNKNOWN",
+          "minimumChange": "CI Booking ON uses already-successful production build through next start; no dev fallback. Booking OFF and local developer dev servers unchanged",
+          "regressionTests": {
+            "red": "3PASS1FAIL",
+            "green": "4PASS",
+            "rootTooling": "76PASS0FAIL0SKIP"
+          },
+          "ownedProductionFixture": {
+            "status": "PASS",
+            "next": "16.3.8",
+            "scope": "LOOPBACK_NO_DB_NO_PROVIDER",
+            "buildBookingFlag": false,
+            "runtimeBookingFlag": true,
+            "dynamicRouteHTTP": 200,
+            "devOutputAbsent": true,
+            "missingBuildStartExit": 1,
+            "invalidHarnessRuns": "Turbopack fixture root, import path, and raw-HTML contiguous text assertion errors retained; no product acceptance inferred"
+          },
+          "currentOriginalCI": "REQUIRED_PENDING",
+          "hostedActivation": "NOT_AUTHORIZED_NOT_PERFORMED"
+        }
       }
     ],
     "conditionalSourceIntegration": {
@@ -8256,13 +9121,24 @@
       "newVerificationOnlyPR": "PR80_REMAINS_DRAFT_NEW_LEGACY_COMPATIBLE_HEAD_REQUIRES_ORIGINAL_AND_READY_EVENT_CI"
     },
     "currentCI": {
-      "status": "NEW_COMMITTED_CANDIDATE_REQUIRES_ALL_CURRENT_ORIGINALS_AND_READY_EVENT",
-      "priorSource": "361510c9e722a599da9edf6401b330ef9760ac3c",
-      "rootPush": "FAIL_38495886499",
-      "rootPR": "PASS_38495890293",
-      "journeysPush": "PASS_38495886402",
-      "journeysPR": "PASS_38495890275",
-      "noOriginalRunRerun": true
+      "source": "b74fa29a73e387582acdb13b23a1a89d7dcba7f1",
+      "rootPush": {
+        "run": 38501589592,
+        "result": "PASS_INCLUDING_PRODUCTION_BOOKING_ON"
+      },
+      "rootPR": {
+        "run": 38501593361,
+        "result": "FAIL_PROFILE_CREATOR_ROUTE_HTTP404"
+      },
+      "journeysPush": {
+        "run": 38501589595,
+        "result": "PASS_664_97_220_4_48_8_24_18"
+      },
+      "journeysPR": {
+        "run": 38501593345,
+        "result": "PASS_664_97_220_4_48_8_24_18"
+      },
+      "policy": "Retain all source-bound outcomes; new source must earn all fresh originals and ready-event gate"
     },
     "canonicalLocalSchema": {
       "migrations": 191,
@@ -8600,6 +9476,24 @@
       },
       "currentOriginalCI": "REQUIRED_PENDING",
       "hostedActivation": "NOT_AUTHORIZED_NOT_PERFORMED"
+    },
+    "ciProfileProductionRuntime": {
+      "originalSource": "b74fa29a73e387582acdb13b23a1a89d7dcba7f1",
+      "originalRootPR": 38501593361,
+      "originalStatus": "FAIL",
+      "failure": "Public creator route HTTP404 on both initial and existing automatic retry after anonymous creator projection verified",
+      "trace": "GLOBAL_DEV_NOT_FOUND_ROUTE",
+      "transientTimingCause": "UNKNOWN",
+      "originalLogSha256": "af24d64940db2e3c93d9c6ceaf05e617922c328018f32dd1a9c89e21b61a5751",
+      "originalArtifactSha256": "468c725ae4b39eac291467252658edbfc90cb161d77ef7df52bb37df72b45182",
+      "minimumChange": "CI-only profile server starts preceding successful production build; local dev unchanged, missing build has no dev fallback",
+      "combinedRuntimeTests": {
+        "red": "6PASS1FAIL",
+        "green": "7PASS",
+        "fullRootTooling": "79PASS0FAIL0SKIP"
+      },
+      "hostedSQLConfigProviderAccounts": "NOT_PERFORMED",
+      "newCommittedCandidateCI": "REQUIRED_PENDING"
     }
   }
 }
