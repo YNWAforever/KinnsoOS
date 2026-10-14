@@ -1,3 +1,16 @@
+# CI Booking ON consumes the existing production build — 2026-10-14
+
+Original source361510c Root push38495886499FAIL is preserved: the seeded Booking ON experience returned HTTP404 on both the first attempt and existing automatic retry. Anonymous experience/merchant/availability projection was alltrue; trace returned the global Next dev not-found route. Root PR38495890293 and Journeys push38495886402/PR38495890275 independentlyPASS. They do not replace the failed push or open this merge gate. Precise dev-router timing cause remainsUNKNOWN.
+
+Minimal CI-only runtime change: Booking ON starts the already-successful production build with next start, consuming its fixed route table. No dev fallback; missing build fails. Booking OFF and local developer invocations retain next dev. Original loopback/Stripe test-mode guards, false default product state, fixture HTTP200/h1/keyboard/checkout expectations, retries/deadlines/sample counts and all actor/RLS/CAS/receipt boundaries remain unchanged. Testfirst3PASS1RED→4GREEN; full Root tooling76PASS0FAIL0SKIP. Owned Next16.3.8 production fixture confirms buildBooking=false→runtimeBooking=true, one dynamic routeHTTP200, no devoutput and original missing-build exit1; it performs no DB/provider calls. Invalid local harness root/import/raw-HTML assertion runs remain retained as invalid verification, not product failures or passes.
+
+The combined verifier/runtime source requires all fresh original push/PR CI, plus the additional ready_for_review Root run, before PR80 merge. No old run rerun/cancel/fill and no previous source PASS transferred. All baseline/count/mapping/PR76 decision fields are exactly preserved. Source-only automatic production follow-up remains distinct from hosted/signed-in/physical/pilot acceptanceNO_GO; Booking/payment/withdrawal/provider remain disabled.
+
+Rollback:ordinary revert of the CI Booking runtime selector and verifier fixes; no data replay/config change/history rewrite. Next:publish candidate once, wait its current original gates, matchhead merge, verify actualnewmain/automatic deployment/source/anonymous result.
+
+All following sections are historical timestamped source snapshots.
+
+---
 # Verifier legacy-format correction — 2026-10-14
 
 PR80 source4f71a02 originalRoot push38493732996/PR38493831573FAIL:70PASS/2FAIL of72tooling cases, before Turbo; downstream e2eSKIPPED is notPASS. Both failures are the unchanged source/anonymous positive and Windows committed-byte case. This implementation unnecessarily required explicit manifestversion1, breaking the verifier's prior files-only format. Original logs/hashes retained;14PASS2RED reproduced locally with real HTTP/Git fixtures.

@@ -40,7 +40,9 @@ export default defineConfig({
   testMatch: local.bookingState === 'on' ? 'r7-10-booking.spec.ts' : [...R7_10_OFF_SPECS],
   use: { ...baseConfig.use, baseURL: local.baseURL },
   webServer: {
-    command: `pnpm --filter web exec next dev --hostname 127.0.0.1 --port ${port}`,
+    // CI already built web before these suites. Booking ON consumes that fixed
+    // route table; no dev-router rebuild/cache or fallback can mask a missing build.
+    command: `pnpm --filter web exec next ${process.env.CI === 'true' && local.bookingState === 'on' ? 'start' : 'dev'} --hostname 127.0.0.1 --port ${port}`,
     url: local.baseURL,
     reuseExistingServer: false,
     stdout: 'pipe',
