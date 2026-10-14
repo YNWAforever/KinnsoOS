@@ -1,3 +1,5 @@
+import {verifyTestTarget as verifyOwnedTarget} from '../../scripts/verify-test-target.mjs';
+const ownedTarget=verifyOwnedTarget();
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
@@ -31,7 +33,7 @@ test('merchant team keyset pages all53 related members once and retains archived
   const branch=randomUUID();const command=payload=>ok(owner.client.rpc('apply_kinnso_merchant_command',{p_merchant_id:merchantId,p_request_id:randomUUID(),p_command:payload}));await command({type:'createBranch',id:branch,name:'Synthetic retained branch'});
   for(let i=0;i<53;i++){const actor=await f.actor();members.push(actor.id);await command({type:'setMember',userId:actor.id,role:'clerk',branchIds:i===0?[branch]:[],active:i!==52});}
   const first=await ok(owner.client.rpc('get_kinnso_merchant_team',{p_merchant_id:merchantId}));assert.equal(first.members.length,50);assert.ok(first.nextCursor);const second=await ok(owner.client.rpc('get_kinnso_merchant_team',{p_merchant_id:merchantId,p_after:first.nextCursor}));assert.equal(second.members.length,3);assert.equal(second.nextCursor,null);assert.deepEqual([...first.members,...second.members].map(x=>x.userId).sort(),members.sort());
-  const {execFileSync}=await import('node:child_process');execFileSync('docker',['exec','supabase_db_kinnsoos-b1-20261002','psql','-U','postgres','-d','postgres','-X','-Atq','-v','ON_ERROR_STOP=1','-c',`update kinnso_internal.merchant_branches set active=false where merchant_id='${merchantId}' and id='${branch}';`]);
+  const {execFileSync}=await import('node:child_process');execFileSync('docker',['exec',ownedTarget.dbContainer,'psql','-U','postgres','-d','postgres','-X','-Atq','-v','ON_ERROR_STOP=1','-c',`update kinnso_internal.merchant_branches set active=false where merchant_id='${merchantId}' and id='${branch}';`]);
   const updated=await ok(owner.client.rpc('get_kinnso_merchant_team',{p_merchant_id:merchantId}));const row=updated.members.find(x=>x.branchIds.includes(branch))??(await ok(owner.client.rpc('get_kinnso_merchant_team',{p_merchant_id:merchantId,p_after:updated.nextCursor}))).members.find(x=>x.branchIds.includes(branch));assert.equal(row.branches[0].name,'Synthetic retained branch');assert.equal(row.branches[0].active,false);assert.deepEqual(row.branchIds,[branch]);
  }finally{if(merchantId)await ok(admin.from('merchant_profiles').delete().eq('id',merchantId));await f.cleanup();}
 });

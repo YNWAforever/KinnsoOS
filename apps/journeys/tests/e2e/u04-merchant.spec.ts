@@ -6,7 +6,7 @@ import {execFileSync} from 'node:child_process';
 import { verifyTestTarget } from '../../scripts/verify-test-target.mjs';
 
 loadEnvFile('.env.test');
-verifyTestTarget();
+const ownedTarget=verifyTestTarget();
 const boundedFetch: typeof fetch = (input, init) => fetch(input, { ...init, signal: AbortSignal.timeout(10_000) });
 const admin = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false }, global: { fetch: boundedFetch } });
 const ok = async (promise: PromiseLike<any>) => { const r = await promise; expect(r.error).toBeNull(); return r.data; };
@@ -165,7 +165,7 @@ test('U04 owner selects a scoped member, previews access and retries one audited
   const payloads:unknown[]=[];let attempts=0;await page.route('**/api/merchant',async route=>{if(route.request().method()!=='POST'){await route.continue();return;}payloads.push(route.request().postDataJSON());const response=await route.fetch();if(++attempts===1)await route.fulfill({status:503,contentType:'application/json',body:JSON.stringify({ok:false,code:'UNAVAILABLE'})});else await route.fulfill({response});});
   await page.getByRole('button',{name:'Save team access',exact:true}).click();await expect(page.getByRole('button',{name:'Retry the same request',exact:true})).toBeVisible();await expect(page.getByLabel('Organization role',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Retry the same request',exact:true}).click();await expect(page.getByRole('status').filter({hasText:'Saved on the server.'})).toBeVisible();expect(payloads).toHaveLength(2);expect(payloads[1]).toEqual(payloads[0]);
   expect((await clerk.client.rpc('get_kinnso_merchant_workspace',{p_merchant_id:company})).error?.message).toBe('forbidden');
-  const audit=execFileSync('docker',['exec','supabase_db_kinnsoos-b1-20261002','psql','-U','postgres','-d','postgres','-X','-Atq','-c',`select count(*) from kinnso_internal.merchant_audit where merchant_id='${company}' and action='setMember' and reason='Synthetic N11 owner reviewed finance access';`],{encoding:'utf8'});expect(audit.trim()).toBe('1');
+  const audit=execFileSync('docker',['exec',ownedTarget.dbContainer,'psql','-U','postgres','-d','postgres','-X','-Atq','-c',`select count(*) from kinnso_internal.merchant_audit where merchant_id='${company}' and action='setMember' and reason='Synthetic N11 owner reviewed finance access';`],{encoding:'utf8'});expect(audit.trim()).toBe('1');
   await page.goto('/zh-HK/merchant');await expect(page.getByLabel('現有公司成員',{exact:true})).toBeVisible();await page.getByLabel('現有公司成員',{exact:true}).selectOption(clerk.id);await expect(page.getByRole('heading',{name:'權限預覽',exact:true})).toBeVisible();await expect(page.getByLabel('創作者佣金比例（%）',{exact:true})).toBeVisible();
   await page.setViewportSize({width:320,height:800});await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);await page.screenshot({path:'evidence/merchant-team-320.png',fullPage:true});
  }catch(error){failed=true;throw error;}finally{const errors:string[]=[];if(company){try{await ok(admin.from('merchant_profiles').delete().eq('id',company));}catch{errors.push('merchant cleanup');}}for(const id of users){try{await ok(admin.auth.admin.deleteUser(id));}catch{errors.push('auth fixture cleanup');}}if(errors.length){testInfo.annotations.push({type:'cleanup failures',description:errors.join(',')});if(!failed)throw Error('Synthetic N11 cleanup failed');}}

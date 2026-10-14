@@ -1,0 +1,38 @@
+{
+  "observedAtUtc": "2026-10-12T16:42:46.263249+00:00",
+  "scope": "anonymous read only",
+  "reads": [
+    {
+      "path": "/api/creator/missions",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "dataIsNull": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "path": "/api/merchant/campaigns",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "dataIsNull": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "path": "/api/inbox",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "dataIsNull": true,
+      "cacheControl": "private, no-store"
+    },
+    {
+      "path": "/api/session",
+      "status": 200,
+      "code": null,
+      "dataIsNull": true,
+      "cacheControl": "private, no-store"
+    }
+  ],
+  "sourceSha": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+  "candidateBase": "bfdcdc22858f7b925375bbeee724609b3700a603",
+  "configurationInspection": "403 decrypt=false; no CLI",
+  "inference": "Anonymous 503 is returned at capability/backend gate before business RPC; exact configuration cause remains unknown."
+}

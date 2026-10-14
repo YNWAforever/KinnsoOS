@@ -16,7 +16,7 @@ test.beforeAll(async()=>{
  if(start<0||end<start)throw Error('Actual role loader missing');
  const ports:Record<string,string>={
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='zh-HK'?zh:en,href:path=>'/'+window.fixture.locale+'/'+path});`,
-  session:`const records=new Map();export const subscribeAccountInvalidation=fn=>{const handler=()=>fn(null);window.addEventListener('fixture-invalidate',handler);return()=>window.removeEventListener('fixture-invalidate',handler)};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(actor,scope)=>records.get(actor+':'+scope)??null;export const saveLocalWorkspaceRecovery=async(actor,scope,value)=>{records.set(actor+':'+scope,structuredClone(value))};export const clearLocalWorkspaceRecovery=async(actor,scope)=>{records.delete(actor+':'+scope)};export const releaseLocalWorkspaceRecovery=async()=>{};`,
+  session:`const records=new Map();export const subscribeAccountInvalidation=fn=>{const handler=()=>fn(null);window.addEventListener('fixture-invalidate',handler);return()=>window.removeEventListener('fixture-invalidate',handler)};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(actor,scope)=>records.get(actor+':'+scope)??null;export const saveLocalWorkspaceRecovery=async(actor,scope,value)=>{records.set(actor+':'+scope,structuredClone(value))};export const clearLocalWorkspaceRecovery=async(actor,scope)=>{records.delete(actor+':'+scope)};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
   creator:`export const creatorMissions={get:()=>window.fixtureRead('creator')};`,
   campaigns:`export const merchantCampaigns={list:()=>window.fixtureRead('campaigns')};`,
   merchant:`export const merchants={memberships:()=>window.fixtureRead('memberships'),workspace:()=>window.fixtureRead('workspace')};`,
@@ -133,4 +133,22 @@ for(const locale of ['en','zh-HK'])for(const initial of ['invalid-url','invalid-
  await expect.poll(()=>page.evaluate(()=>(window as any).fixtureReads.campaigns)).toBe(initial==='invalid-url'?1:2);await expect(title).toHaveCount(0);
  await settle(page,'campaigns',{...directory,items:[]});await expect(title).toBeEnabled();expect(new URL(page.url()).searchParams.get('status')).toBeNull();
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});
+
+for(const locale of ['en','zh-HK'])test(`W08 ${locale}: authorized async milestone anchors focus once, retain refresh focus and ignore missing work`,async({page})=>{
+ const first='22222222-2222-4222-8222-222222222222',second='33333333-3333-4333-8333-333333333333';
+ const work={...detail,milestones:[{id:first,title:'Original guide',description:'Owned first deliverable',dueAt:'2026-10-13T06:00:00Z'},{id:second,title:'Original video',description:'Owned second deliverable',dueAt:'2026-10-13T08:00:00Z'}]};
+ await mount(page,'creator',locale,320,'#milestone-'+second);
+ await expect(page.locator('#milestone-'+second)).toHaveCount(0);
+ await settle(page,'creator',work);await expect(page.locator('#milestone-'+second)).toBeFocused();
+ const refresh=page.getByRole('button',{name:label(locale,'Refresh collaborations','重新載入合作'),exact:true});
+ await refresh.focus();await page.keyboard.press('Enter');await expect(refresh).toBeDisabled();
+ // Chromium blurs a disabled native button. Move focus to an enabled sibling while
+ // the response is held, then prove completion does not steal that user focus.
+ const all=page.getByRole('link',{name:label(locale,'All collaborations','所有合作'),exact:true});await all.focus();await expect(all).toBeFocused();await settle(page,'creator',work);await expect(all).toBeFocused();
+ await page.evaluate(hash=>{window.location.hash=hash;},'#milestone-'+first);await expect(page.locator('#milestone-'+first)).toBeFocused();
+ await refresh.focus();await page.evaluate(()=>{window.location.hash='#milestone-44444444-4444-4444-8444-444444444444';});await expect(refresh).toBeFocused();
+ await page.evaluate(hash=>{window.location.hash=hash;},'#milestone-'+first);await expect(page.locator('#milestone-'+first)).toBeFocused();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+ await page.evaluate(()=>window.dispatchEvent(new Event('fixture-invalidate')));await expect(page.getByText('Owned second deliverable',{exact:true})).toHaveCount(0);
 });

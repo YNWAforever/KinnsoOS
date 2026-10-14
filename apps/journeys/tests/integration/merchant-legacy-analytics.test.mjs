@@ -1,3 +1,5 @@
+import {verifyTestTarget as verifyOwnedTarget} from '../../scripts/verify-test-target.mjs';
+const ownedTarget=verifyOwnedTarget();
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID,createHash} from 'node:crypto';
@@ -28,7 +30,7 @@ function probe(f,setup,operation,assertions){
  for(const id of [f.merchantId,f.offerId,f.claimId,f.raw,f.journey])assert.match(id,/^[0-9a-f-]{36}$/i);
  const inspect=spawnSync('docker',['inspect',process.env.KINNSO_TEST_DB_CONTAINER],{encoding:'utf8'});
  assert.equal(inspect.status,0,inspect.stderr);const target=JSON.parse(inspect.stdout)[0];
- assert.equal(target.Config.Labels['com.supabase.cli.project'],'kinnsoos-b1-20261002');assert.equal(target.State.Running,true);
+ assert.equal(target.Config.Labels['com.supabase.cli.project'],ownedTarget.projectRef);assert.equal(target.State.Running,true);
  const sql=`BEGIN; SET LOCAL lock_timeout='5s'; SET LOCAL statement_timeout='10s';
  ${setup}
  SET LOCAL ROLE authenticated; SELECT set_config('request.jwt.claims','${f.claims}',true) IS NOT NULL;

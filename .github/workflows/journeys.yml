@@ -6,6 +6,29 @@ concurrency:
   group: journeys-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
+  workspace-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - name: Install the locked Chromium runtime
+        run: npm exec playwright install -- --with-deps chromium
+      - name: Native workspace contracts without a database
+        run: npm exec playwright test -- --config=playwright.service-state.config.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: failure()
+        with:
+          name: journeys-workspace-fixture-results
+          path: apps/journeys/evidence/service-state-browser/
   verify:
     runs-on: ubuntu-latest
     defaults:
@@ -133,6 +156,8 @@ jobs:
         working-directory: apps/journeys
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 22
@@ -157,6 +182,19 @@ jobs:
       - name: Collect all traveller and private workspace cold/warm navigation evidence
         if: ${{ !cancelled() }}
         run: node scripts/performance/run.mjs --operations
+      - name: Enforce independent first-usable evidence
+        if: ${{ !cancelled() }}
+        run: |
+          report=$(python -c 'import glob,json; rows=[p for p in glob.glob("evidence/performance/*/report.json") if json.load(open(p)).get("kind")=="operations"]; assert len(rows)==1, "Exactly one operations report required"; print(rows[0])')
+          node scripts/performance/first-usable.mjs "$report" "$GITHUB_SHA"
+      - name: Enforce the source-bound operations assessment
+        if: ${{ !cancelled() }}
+        env:
+          CANDIDATE_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+          CANDIDATE_BASE: ${{ github.event.pull_request.base.sha || '' }}
+        run: |
+          report=$(python -c 'import glob,json; rows=[p for p in glob.glob("evidence/performance/*/report.json") if json.load(open(p)).get("kind")=="operations"]; assert len(rows)==1, "Exactly one retained operations report is required"; print(rows[0])')
+          node scripts/performance/assert-operations-assessment.mjs "$report" "$GITHUB_SHA" "$CANDIDATE_HEAD" "$CANDIDATE_BASE"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

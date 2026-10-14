@@ -4431,6 +4431,10 @@ body:has(.k-app) {
 .k-merchant label {
   display: block;
 }
+.k-merchant fieldset.k-actions > label {
+  min-width: 0;
+  max-width: 100%;
+}
 .k-merchant input:not([type="checkbox"]),
 .k-merchant select,
 .k-merchant textarea {

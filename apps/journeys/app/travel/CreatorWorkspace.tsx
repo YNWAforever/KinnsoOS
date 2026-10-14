@@ -7,11 +7,13 @@ import { creators, emptyDraft, emptyProfile, type CreatorProgress, type DraftPay
 import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
 import {CreatorCollaborationTasks} from './CreatorCollaborationTasks';
-import {formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
+import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {publicationReadiness,formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
  const { t, href, locale } = useApp();
  const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true);
+ const [readVersion,setReadVersion]=useState(0);
  useEffect(() => {
   setProgress(null); setError(''); setValidAccount(true);
   if (!actorId || !enabled) return;
@@ -24,10 +26,10 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
    if (r.data.step === 'progress' || r.data.step === 'wait' || (r.data.step === 'review' && !r.data.profileReady)) timer = setTimeout(load, 2000);
   }
   void load(); return () => { active = false; clearTimeout(timer); unsubscribe(); };
- }, [actorId, enabled]);
+ }, [actorId, enabled, readVersion]);
+ if (!enabled) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="status">{t('Creator publishing is not connected yet.', '創作者發布服務尚未接通。')}</p><Link className="k-btn" href={href('explore')}>{t('Explore guides','探索攻略')}</Link></section>;
  if (!actorId || !validAccount) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><Link className="k-btn primary" href={`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`}>{t('Sign in to continue', '登入後繼續')}</Link></section>;
- if (!enabled) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="status">{t('Creator publishing is not connected yet.', '創作者發布服務尚未接通。')}</p></section>;
- if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><p role="alert">{error === 'FORBIDDEN' ? t('This creator account is currently restricted.', '此創作者帳戶目前受限制。') : t('Could not load your studio. Refresh to retry.', '未能載入工作室，請重新整理。')}</p></section>;
+ if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><WorkspaceServiceState locale={locale} code={error} retryState="read" returnPath={href(path)} onRetry={()=>setReadVersion(value=>value+1)}/></section>;
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
  if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
@@ -125,6 +127,16 @@ function CreatorEditor({ path }: { path: string }) {
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
  }
+ const readiness=publicationReadiness(payload),fieldPrefix='guide-'+useId();
+ function issueField(issue:typeof readiness.issues[number]){return fieldPrefix+'-'+(issue.code==='stopTitle'?`stop-${issue.day}-${issue.stop}`:issue.code==='stops'?`stops-${issue.day}`:issue.code);}
+ function issueLabel(issue:typeof readiness.issues[number]){
+  if(issue.code==='title')return t('Add a guide title','填寫攻略名稱');
+  if(issue.code==='city')return t('Add a destination','填寫目的地');
+  if(issue.code==='summary')return t('Add a summary','填寫摘要');
+  if(issue.code==='days')return t('Add an authored day','加入創作日期');
+  const day=payload.content.days[issue.day!].offset+1;
+  return issue.code==='stops'?t(`Day ${day}: add an authored stop`,`第 ${day} 日：加入創作站點`):t(`Day ${day}, stop ${issue.stop!+1}: add a name`,`第 ${day} 日，站點 ${issue.stop!+1}：填寫名稱`);
+ }
  const dirty = JSON.stringify(payload) !== saved.current;
  const status = busy ? intent.current?.action === 'publish' ? t('Publishing version…', '正在發布版本…') : intent.current?.action === 'withdraw' ? t('Withdrawing adoption…', '正在撤回套用…') : t('Saving draft…', '正在保存草稿…')
   : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
@@ -146,20 +158,26 @@ function CreatorEditor({ path }: { path: string }) {
  function changeStop(day: number, stop: number, patch: Partial<DraftPayload['content']['days'][number]['stops'][number]>) { edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === day ? { ...d, stops: d.stops.map((s, j) => j === stop ? { ...s, ...patch } : s) } : d) } })); }
  return <section className="k-page os-editor" data-testid="creator-editor"><Link href={href('studio/guides')}>{t('Back to guides', '返回攻略')}</Link><h1>{t('Author your route', '創作你的路線')}</h1><p>{t('Write only itinerary content you have rights to publish. Summary text is never converted into stops.', '只填寫你有權公開的行程內容，摘要不會自動變成站點。')}</p>
   {!loaded ? <p role="status">{message || t('Loading draft…', '正在載入草稿…')}</p> : <>
-   <fieldset disabled={pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => edit(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
+   <section className="k-card" aria-labelledby={fieldPrefix+'-readiness'}>
+    <h2 id={fieldPrefix+'-readiness'}>{t('Before publishing','發布前檢查')}</h2>
+    <p>{t(`${readiness.dayCount} authored days · ${readiness.stopCount} stops`,`${readiness.dayCount} 個創作日期 · ${readiness.stopCount} 個站點`)}</p>
+    {readiness.issues.length?<><p>{t('Complete these fields before publishing:','發布前請完成以下欄位：')}</p><ul>{readiness.issues.map((issue,i)=><li key={i}><a href={'#'+issueField(issue)}>{issueLabel(issue)}</a></li>)}</ul></>:<p>{t('Required content is filled in. Publication will check the saved version.','必填內容已填寫；發布時會核對已保存版本。')}</p>}
+    {(dirty||revision<1)&&<p>{t('Save your latest changes before publishing.','發布前請先保存最新修改。')}</p>}
+   </section>
+   <fieldset disabled={pending || conflict}><legend>{t('Guide details', '攻略資料')}</legend>{(['title', 'city', 'summary'] as const).map(key => <label key={key}>{({ title: t('Guide title', '攻略名稱'), city: t('Destination', '目的地'), summary: t('Summary', '摘要') })[key]}<input id={fieldPrefix+'-'+key} value={payload[key]} maxLength={key === 'summary' ? 4000 : key === 'city' ? 120 : 200} onChange={e => edit(p => ({ ...p, [key]: e.target.value }))}/></label>)}</fieldset>
    {payload.content.days.map((day, di) => <fieldset key={editor.keys[di].day} data-testid="editor-day" disabled={pending || conflict}><legend>{t(`Day ${day.offset + 1}`, `第 ${day.offset + 1} 日`)}</legend><label>{t('Day title', '日期名稱')}<input data-editor-focus={editor.keys[di].day} value={day.title} maxLength={200} onChange={e => edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === di ? { ...d, title: e.target.value } : d) } }))}/></label>
     <div><button type="button" className="k-btn" disabled={di===0} onClick={()=>reorderDay(di,di-1)}>{t('Move day up','日期上移')}</button><button type="button" className="k-btn" disabled={di===payload.content.days.length-1} onClick={()=>reorderDay(di,di+1)}>{t('Move day down','日期下移')}</button><button type="button" className="k-btn" onClick={()=>{transform(e=>({payload:{...e.payload,content:{days:e.payload.content.days.filter((_,i)=>i!==di)}},keys:e.keys.filter((_,i)=>i!==di)}),editor.keys[di].day);focusAfterEdit("[data-editor-undo]");}}>{t('Delete day','刪除日期')}</button></div>
-    {day.stops.map((stop, si) => <div key={editor.keys[di].stops[si]} data-testid="editor-stop"><label>{t('Stop title', '站點名稱')}<input data-editor-focus={editor.keys[di].stops[si]} value={stop.title} maxLength={200} onChange={e => changeStop(di, si, { title: e.target.value })}/></label><label>{t('Public description', '公開描述')}<textarea aria-label={t('Public description', '公開描述')} value={stop.description} maxLength={4000} onChange={e => changeStop(di, si, { description: e.target.value })}/></label><label>{t('Start time (HH:mm, optional)', '開始時間（HH:mm，可選）')}<input type="time" step={60} value={formatTimeOfDay(stop.startMinuteOfDay)} onChange={e => {const parsed=parseTimeOfDay(e.target.value);if(parsed.ok)changeStop(di,si,{startMinuteOfDay:parsed.minutes});}}/></label><label>{t('Duration in minutes (optional)', '停留分鐘（可選）')}<input type="number" min={1} max={1440} value={stop.durationMinutes ?? ''} onChange={e => changeStop(di, si, { durationMinutes: e.target.value === '' ? null : Number(e.target.value) })}/></label>
+    {day.stops.map((stop, si) => <div key={editor.keys[di].stops[si]} data-testid="editor-stop"><label>{t('Stop title', '站點名稱')}<input id={fieldPrefix+`-stop-${di}-${si}`} data-editor-focus={editor.keys[di].stops[si]} value={stop.title} maxLength={200} onChange={e => changeStop(di, si, { title: e.target.value })}/></label><label>{t('Public description', '公開描述')}<textarea aria-label={t('Public description', '公開描述')} value={stop.description} maxLength={4000} onChange={e => changeStop(di, si, { description: e.target.value })}/></label><label>{t('Start time (HH:mm, optional)', '開始時間（HH:mm，可選）')}<input type="time" step={60} value={formatTimeOfDay(stop.startMinuteOfDay)} onChange={e => {const parsed=parseTimeOfDay(e.target.value);if(parsed.ok)changeStop(di,si,{startMinuteOfDay:parsed.minutes});}}/></label><label>{t('Duration in minutes (optional)', '停留分鐘（可選）')}<input type="number" min={1} max={1440} value={stop.durationMinutes ?? ''} onChange={e => changeStop(di, si, { durationMinutes: e.target.value === '' ? null : Number(e.target.value) })}/></label>
      <button type="button" className="k-btn" disabled={si===0} onClick={()=>reorderStop(di,si,si-1)}>{t('Move stop up','站點上移')}</button><button type="button" className="k-btn" disabled={si===day.stops.length-1} onClick={()=>reorderStop(di,si,si+1)}>{t('Move stop down','站點下移')}</button><button type="button" className="k-btn" onClick={()=>{transform(e=>({payload:{...e.payload,content:removeStop(e.payload.content,di,si)},keys:e.keys.map((k,i)=>i===di?{...k,stops:k.stops.filter((_,j)=>j!==si)}:k)}),editor.keys[di].stops[si]);focusAfterEdit("[data-editor-undo]");}}>{t('Delete stop','刪除站點')}</button>
     </div>)}
     {!day.stops.length&&<p>{t('No stops. Add an authored stop before publishing.','尚未加入站點，發布前請填寫創作站點。')}</p>}
-    <button className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => transform(e=>({payload:{...e.payload,content:{days:e.payload.content.days.map((d,i)=>i===di?{...d,stops:[...d.stops,emptyDraft().content.days[0].stops[0]]}:d)}},keys:e.keys.map((k,i)=>i===di?{...k,stops:[...k.stops,crypto.randomUUID()]}:k)}))}>{t('Add stop', '加入站點')}</button>
+    <button id={fieldPrefix+`-stops-${di}`} className="k-btn" disabled={day.stops.length >= 50 || payload.content.days.reduce((n, d) => n + d.stops.length, 0) >= 200} onClick={() => transform(e=>({payload:{...e.payload,content:{days:e.payload.content.days.map((d,i)=>i===di?{...d,stops:[...d.stops,emptyDraft().content.days[0].stops[0]]}:d)}},keys:e.keys.map((k,i)=>i===di?{...k,stops:[...k.stops,crypto.randomUUID()]}:k)}))}>{t('Add stop', '加入站點')}</button>
    </fieldset>)}
    {!payload.content.days.length&&<p>{t('No days. Add a day before publishing.','尚未加入日期，發布前請加入日期。')}</p>}
-   <button className="k-btn" disabled={pending || conflict || payload.content.days.length >= 30 || payload.content.days.some(d=>d.offset>=364)} onClick={() => transform(e=>({payload:{...e.payload,content:{days:[...e.payload.content.days,{...emptyDraft().content.days[0],offset:Math.max(-1,...e.payload.content.days.map(d=>d.offset))+1}]}},keys:[...e.keys,{day:crypto.randomUUID(),stops:[crypto.randomUUID()]}]}))}>{t('Add day', '加入一天')}</button>
+   <button id={fieldPrefix+'-days'} className="k-btn" disabled={pending || conflict || payload.content.days.length >= 30 || payload.content.days.some(d=>d.offset>=364)} onClick={() => transform(e=>({payload:{...e.payload,content:{days:[...e.payload.content.days,{...emptyDraft().content.days[0],offset:Math.max(-1,...e.payload.content.days.map(d=>d.offset))+1}]}},keys:[...e.keys,{day:crypto.randomUUID(),stops:[crypto.randomUUID()]}]}))}>{t('Add day', '加入一天')}</button>
    {undo&&<><button type="button" className="k-btn" data-editor-undo disabled={pending||conflict} onClick={()=>{const restored=undo;transform(()=>restored.editor);focusItem(restored.focusKey);}}>{t('Undo last deletion','復原上次刪除')}</button><p>{t('Undo is available until the next edit.','下一次修改前可復原此刪除。')}</p></>}
    <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('save')}>{t('Save draft', '保存草稿')}</button><button className="k-btn" onClick={() => setPreview(!preview)}>{t('Preview', '預覽')}</button>
-   <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
+   <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1 || readiness.issues.length > 0} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
    {pending && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
    {conflict && <><p role="alert">{t('A newer source version or draft exists. Your input is retained. Review the published guide and reload the saved draft before continuing.', '已有較新的來源版本或草稿，輸入仍保留。請先核對已發布攻略及重新載入已保存草稿。')}</p><button className="k-btn" onClick={async () => { const r = await creators.get(id!); if (r.ok) accept(r.data); }}>{t('Reload saved draft (replace this form)', '載入已保存草稿（替換此表格）')}</button><button className="k-btn" disabled={busy} onClick={() => run('save', true)}>{t('I reviewed the current version; save this draft', '我已核對目前版本，保存此草稿')}</button></>}
    {actionError && <p role="alert">{actionError.message}</p>}

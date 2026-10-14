@@ -17,9 +17,13 @@ export async function clearAccountCaches(){const db=await open();try{await new P
 
 export type WorkspaceRecovery={version:1;draft:unknown;pending:{command:unknown;requestId?:string;id?:string}|null};
 function recoveryScope(scope:string){if(typeof scope!=='string'||scope.length>200||!scope.length||/[\u0000-\u001f]/.test(scope))throw Error('INVALID_RECOVERY_SCOPE');return scope;}
-export async function saveLocalWorkspaceRecovery(ownerId:string,scope:string,value:WorkspaceRecovery){
+function validatedRecovery(value:WorkspaceRecovery){
  const copy=JSON.parse(JSON.stringify(value)) as WorkspaceRecovery;
  if(copy.version!==1||new TextEncoder().encode(JSON.stringify(copy)).byteLength>80000||copy.pending&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(copy.pending.requestId??copy.pending.id??''))throw Error('INVALID_RECOVERY');
+ return copy;
+}
+export async function saveLocalWorkspaceRecovery(ownerId:string,scope:string,value:WorkspaceRecovery){
+ const copy=validatedRecovery(value);
  await write('recoveries',{key:ownerId+':'+recoveryScope(scope),ownerId,value:copy,requestId:copy.pending?.requestId??copy.pending?.id});
 }
 export async function readLocalWorkspaceRecovery(ownerId:string,scope:string):Promise<WorkspaceRecovery|null>{
@@ -33,4 +37,21 @@ export async function clearLocalWorkspaceRecovery(ownerId:string,scope:string,re
 /** A definite failed command releases its receipt identity without deleting the unsent draft. */
 export async function releaseLocalWorkspaceRecovery(ownerId:string,scope:string,requestId:string){
  const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['recoveries','identity'],'readwrite'),store=tx.objectStore('recoveries'),key=ownerId+':'+recoveryScope(scope),identity=tx.objectStore('identity').get('actor');identity.onsuccess=()=>{if(identity.result?.ownerId!==ownerId){tx.abort();return;}const row=store.get(key);row.onsuccess=()=>{if(row.result?.requestId===requestId)store.put({...row.result,requestId:undefined,value:{...row.result.value,pending:null}});};};tx.oncomplete=()=>resolve();tx.onerror=()=>reject(Error('LOCAL_STORAGE_UNAVAILABLE'));tx.onabort=()=>reject(Error('CACHE_ACCOUNT_CHANGED'));});}finally{db.close();}
+}
+
+/** Commit selective draft completion and receipt release in one actor-bound transaction. */
+export async function completeLocalWorkspaceRecovery(ownerId:string,scope:string,requestId:string,draft:unknown){
+ const value=validatedRecovery({version:1,draft,pending:null}),key=ownerId+':'+recoveryScope(scope),db=await open();
+ try{await new Promise<void>((resolve,reject)=>{
+  const tx=db.transaction(['recoveries','identity'],'readwrite'),store=tx.objectStore('recoveries');let reason='LOCAL_STORAGE_UNAVAILABLE';
+  const identity=tx.objectStore('identity').get('actor');
+  identity.onsuccess=()=>{
+   if(identity.result?.ownerId!==ownerId){reason='CACHE_ACCOUNT_CHANGED';tx.abort();return;}
+   const row=store.get(key);row.onsuccess=()=>{
+    if(row.result?.requestId!==requestId){reason='PENDING_DRAFT';tx.abort();return;}
+    store.put({key,ownerId,value});
+   };
+  };
+  tx.oncomplete=()=>resolve();tx.onerror=()=>reject(Error(reason));tx.onabort=()=>reject(Error(reason));
+ });}finally{db.close();}
 }

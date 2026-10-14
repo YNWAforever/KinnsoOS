@@ -1,0 +1,226 @@
+{
+  "schemaVersion": 1,
+  "auditDateHK": "2026-10-12",
+  "baselineCommit": "c5c73721c424f61121ce063c96fc9777e72b698c",
+  "production": {
+    "deploymentId": "dpl_B2yHiD6oCn2kVbqPgUJwJFAprnex",
+    "state": "READY",
+    "alias": "https://kinnso-os.vercel.app",
+    "commit": "c5c73721c424f61121ce063c96fc9777e72b698c"
+  },
+  "baselineCI": {
+    "journeysRun": 38144966477,
+    "unit": {
+      "pass": 544,
+      "fail": 0,
+      "skip": 0
+    },
+    "integration": {
+      "pass": 94,
+      "fail": 0,
+      "skip": 0
+    },
+    "nativeBrowser": {
+      "pass": 164
+    },
+    "jobs": [
+      {
+        "name": "verify",
+        "conclusion": "success"
+      },
+      {
+        "name": "connected",
+        "conclusion": "success"
+      },
+      {
+        "name": "auth-mailbox",
+        "conclusion": "success"
+      },
+      {
+        "name": "operations-performance",
+        "conclusion": "success"
+      }
+    ],
+    "performanceAssessment": "FAIL",
+    "performanceEnvironment": "Owned synthetic localhost lab; not production RUM"
+  },
+  "performanceSamples": {
+    "merchantCampaigns": {
+      "coldLcpMs": [
+        2827,
+        2869,
+        2854
+      ],
+      "warmLcpMs": [
+        1384,
+        1458,
+        1446
+      ],
+      "cls": 0.048912383035605786
+    },
+    "merchantReview": {
+      "coldLcpMs": [
+        2864,
+        2857,
+        2852
+      ],
+      "warmLcpMs": [
+        1425,
+        1381,
+        1435
+      ],
+      "cls": 0.048912383035605786
+    },
+    "creatorDetail": {
+      "coldLcpMs": [
+        2435,
+        2420,
+        2403
+      ],
+      "warmLcpMs": [
+        1104,
+        1043,
+        1190
+      ],
+      "cls": 0.0012724476320307501
+    },
+    "caveat": "Lighthouse trace-engine emitted TypeErrors on several warm navigations. Retain full report validity/denominators; successful collector execution is not a passed performance gate."
+  },
+  "liveAnonymousReads": [
+    {
+      "path": "/api/creator/missions",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/merchant/campaigns",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/inbox",
+      "status": 503,
+      "code": "UNAVAILABLE",
+      "cache": "private, no-store"
+    },
+    {
+      "path": "/api/session",
+      "status": 200,
+      "data": null,
+      "cache": "private, no-store"
+    }
+  ],
+  "backendReadOnly": {
+    "projectName": "Remix-Kinnso",
+    "projectRef": "scryfkefedzuetfdtrvl",
+    "targetEvidence": "apps/scan/DEPLOYMENT.md and apps/scan/.env.example",
+    "productionBinding": "NOT_VERIFIED; Vercel environment metadata read denied (403)",
+    "migrationLedgerLastVersion": "20260718093422",
+    "missingRpcs": [
+      "query_kinnso_creator_missions",
+      "query_kinnso_merchant_campaigns",
+      "apply_kinnso_merchant_campaign_command"
+    ],
+    "presentRpcs": [
+      "kinnso_actor",
+      "kinnso_guide",
+      "apply_kinnso_support_command",
+      "get_kinnso_support",
+      "get_kinnso_inbox",
+      "publish_kinnso_guide_draft"
+    ],
+    "interpretation": "Migration ledger is not a full schema inventory. Some newer functions exist despite no October history. Reconcile catalog/definition/grant/policy hashes before any hosted migration; no hosted mutation performed."
+  },
+  "localContinuation": {
+    "node": "24.19.0",
+    "baselineUnitPass": 544,
+    "currentUnitPass": 568,
+    "currentUnitFail": 0,
+    "currentUnitSkip": 0,
+    "build": "PASS",
+    "typecheck": "PASS",
+    "sourcePackagePythonTests": 10,
+    "connectedBrowser": "NOT_RUN_LOCALLY; no Docker CLI available",
+    "hostedRoleUAT": "BLOCKED; no designated approved role accounts/staging target"
+  },
+  "writes": {
+    "hostedDatabase": 0,
+    "productionConfiguration": 0,
+    "messagesSent": 0,
+    "realPublishedGuides": 0
+  },
+  "integrationUpdate": {
+    "main": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+    "pr74": "merged_into_main",
+    "pr76": {
+      "merged": true,
+      "base": "codex/workspace-recovery-source-contract-20261011",
+      "mergeCommit": "992fc09b1ef51258f3124ed420c90d4cd1c6b24a",
+      "inMain": false
+    },
+    "pr77": "https://github.com/YNWAforever/KinnsoOS/pull/77"
+  },
+  "baselineOpenPRs": [
+    {
+      "number": 74,
+      "head": "2400da159281070c7b191fb76f71068c084f7840",
+      "scope": "Merchant initial recovery and standalone source SQL contracts"
+    },
+    {
+      "number": 76,
+      "head": "773f91c12fc49ac43e413313c4fc3dff0a433eb4",
+      "scope": "Merchant workspace lazy loading; based on PR 74"
+    }
+  ],
+  "independentReview": {
+    "range": "c5c7372..104c7aa",
+    "critical": 0,
+    "important": 2,
+    "fixPasses": 1,
+    "redRegressions": 5,
+    "focusedTestsPassed": 13,
+    "result": "Both findings addressed; exact-source CI pending"
+  },
+  "productionAtFinalMetadataCheck": {
+    "deploymentId": "dpl_7DJFouZs9q6hWaxyA4dSaSFsnLrB",
+    "state": "READY",
+    "alias": "https://kinnso-os.vercel.app",
+    "commit": "58d72e9f76e99a5c527d0f88efe37c65912bac31",
+    "observedAt": "2026-10-11T18:08:06.455Z"
+  },
+  "nativeCorrection": {
+    "failedCandidate": "d179505d6d27e52d1f9c0e17192159ce9a9eb20d",
+    "run": 38161841278,
+    "passed": 164,
+    "failed": 3,
+    "cause": "Per-case decision select lost explicit label; implicit label includes option text",
+    "fix": "Restore bilingual aria-label; add real DOM/IndexedDB two-language fixture",
+    "additionalFixtureContract": "Missing completeLocalWorkspaceRecovery boundary export reproduced by local esbuild and corrected",
+    "localBrowser": "NOT_RUN; Chromium download returned invalid ZIP",
+    "newExactSourceCI": "PENDING"
+  },
+  "nativeRestoredLabelCorrection": {
+    "failedCandidate": "f9d9bb8f780d4b76a60e5eaf2d70daeca864518d",
+    "originalRuns": [
+      {
+        "run": 38163924818,
+        "event": "push",
+        "passed": 177,
+        "failed": 2
+      },
+      {
+        "run": 38163927707,
+        "event": "pull_request",
+        "passed": 178,
+        "failed": 1
+      }
+    ],
+    "fastNativeFixtures": 52,
+    "consistentFailure": "Exact reply label unavailable after restoring nonempty textarea following GET 503",
+    "fix": "Explicit bilingual textarea labels; four real DOM/IndexedDB customer/ops recovery fixtures",
+    "additionalPushFailure": "Structured author GET socket hang up; same-source original PR run passed that story; root cause unconfirmed",
+    "nextSourceCI": "PENDING"
+  }
+}

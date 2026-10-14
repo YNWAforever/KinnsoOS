@@ -1,3 +1,5 @@
+import {verifyTestTarget as verifyOwnedTarget} from '../../scripts/verify-test-target.mjs';
+const ownedTarget=verifyOwnedTarget();
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID,randomBytes} from 'node:crypto';
@@ -7,7 +9,7 @@ import {fixture,admin,anonymous} from './local-fixtures.mjs';
 const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
 const denied=async p=>{const r=await p;assert.ok(r.error);return r.error;};
 const token=()=>randomBytes(32).toString('hex');
-const sql=q=>execFileSync('docker',['exec','supabase_db_kinnsoos-b1-20261002','psql','-U','postgres','-d','postgres','-X','-Atq','-v','ON_ERROR_STOP=1','-c',q],{encoding:'utf8'}).trim();
+const sql=q=>execFileSync('docker',['exec',ownedTarget.dbContainer,'psql','-U','postgres','-d','postgres','-X','-Atq','-v','ON_ERROR_STOP=1','-c',q],{encoding:'utf8'}).trim();
 async function setup(){
  const f=await fixture();const owner=await f.actor(),recipient=await f.actor(),outsider=await f.actor(),replacement=await f.actor();
  const merchant=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic invitation company',contact_email:'synthetic@example.test'}).select('id').single())).id;

@@ -217,10 +217,9 @@ test('late save acknowledgement cannot reopen an editor after client navigation'
  } finally { release(); }
 });
 test('publication rejection remains visible through edits and autosave until publication succeeds', async ({ page }) => {
- await openNewDraft(page);
- await page.getByLabel('Guide title', { exact: true }).fill('Incomplete local route');
- await page.getByRole('button', { name: 'Save draft', exact: true }).click();
- await page.waitForURL(/\/en\/studio\/guides\/[0-9a-f-]{36}\/edit/);
+ const {id}=await editableRoute(page);let first=true;
+ // Client completeness is not backend authority; preserve a server rejection through edits.
+ await page.route('**/api/creator/guides/'+id+'/publish',route=>{if(!first)return route.continue();first=false;return route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({ok:false,code:'INVALID',retryable:false})});});
  const publish = page.getByRole('button', { name: 'Publish structured version', exact: true });
  await expect(publish).toBeEnabled();
  const rejected = page.waitForResponse(r => r.url().endsWith('/publish') && r.request().method() === 'POST');
@@ -234,9 +233,9 @@ test('publication rejection remains visible through edits and autosave until pub
  await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');
  await expect(error).toBeVisible();
  await page.getByLabel('Destination', { exact: true }).fill('Kyoto');
- await page.getByLabel('Day title', { exact: true }).fill('An explicitly authored day');
- await page.getByLabel('Stop title', { exact: true }).fill('An explicitly authored square');
- await page.getByLabel('Public description', { exact: true }).fill('A description written by this local author');
+ await page.getByLabel('Day title', { exact: true }).first().fill('An explicitly authored day');
+ await page.getByLabel('Stop title', { exact: true }).first().fill('An explicitly authored square');
+ await page.getByLabel('Public description', { exact: true }).first().fill('A description written by this local author');
  await expect(publish).toBeEnabled();
  await publish.click();
  await expect(page.getByText('Version published. Existing traveller copies stay unchanged.', { exact: true })).toBeVisible();
@@ -329,4 +328,14 @@ for(const item of ['day','stop'] as const)test(`delayed ${item} deletion focus r
  expect(dto.payload.content.days.map((day:{offset:number})=>day.offset)).toEqual(item==='day'?[2]:[0,2]);
  expect(dto.payload.content.days[0].stops.map((stop:{description:string})=>stop.description)).toEqual(item==='day'?['First','Second']:['Second']);
  await page.reload();await expect(title).toHaveValue('Chosen after deletion retained');
+});
+
+test('publication checklist guides an author to the missing field without submitting an incomplete route',async({page})=>{
+ await openNewDraft(page);
+ const checklist=page.getByRole('region',{name:'Before publishing',exact:true});await expect(checklist).toBeVisible();
+ await expect(page.getByRole('button',{name:'Publish structured version',exact:true})).toBeDisabled();
+ await checklist.getByRole('link',{name:'Add a guide title',exact:true}).click();await expect(page.getByLabel('Guide title',{exact:true})).toBeFocused();
+ await page.getByLabel('Guide title',{exact:true}).fill('Synthetic checklist route');await page.getByLabel('Destination',{exact:true}).fill('Kyoto');await page.getByLabel('Summary',{exact:true}).fill('Original synthetic isolated authoring test');await page.getByLabel('Stop title',{exact:true}).fill('Original authored stop');
+ await expect(checklist.getByRole('link')).toHaveCount(0);
+ await page.getByRole('button',{name:'Save draft',exact:true}).click();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText('Draft saved.');await expect(page.getByRole('button',{name:'Publish structured version',exact:true})).toBeEnabled();
 });
