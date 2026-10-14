@@ -34,7 +34,9 @@ export default defineConfig({
   testMatch: 'profile-enquiries.spec.ts',
   use: { ...baseConfig.use, baseURL: local.baseURL },
   webServer: {
-    command: `pnpm --filter web exec next dev --hostname 127.0.0.1 --port ${port}`,
+    // CI's preceding production build owns the fixed route table. Local developer
+    // invocations keep dev; a missing CI build must fail instead of falling back.
+    command: `pnpm --filter web exec next ${process.env.CI === 'true' ? 'start' : 'dev'} --hostname 127.0.0.1 --port ${port}`,
     url: local.baseURL,
     reuseExistingServer: false,
     stdout: 'pipe',

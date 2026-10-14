@@ -1,3 +1,53 @@
+# CI profile enquiries uses the compiled route table — 2026-10-14
+
+Originalb74fa29 Root PR38501593361FAIL is retained: creator pageHTTP404 on both initial and existing automatic retry despite successful anonymous creator fixture verification. Original trace is the global Next dev not-found route. Precise transient timing causeUNKNOWN. Its Root push38501589592PASS, including production BookingON; both Journeys originals38501589595/38501593345 independentlyPASS with actual664unit/97DB/220native/4mailbox0FAIL0SKIP and48/8/24/18 numeric/input/ownedcleanupPASS.88fixtures are included220. They do not replace the failed Root PR. Downstream BookingON in that PR was NOT_RUN after the profile failure.
+
+Minimum correction extends the existing compiled-runtime CI contract only to profile enquiries: next start consumes the preceding successful build; local developer invocation keeps next dev, with no missing-build fallback. No app/schema/config/role/provider/hosted mutation. Opt-in/loopback/credentials/container/HMAC, original HTTP200/form/anonymous/authenticatedops/audit/cleanup assertions and all original retry/deadline settings remain unchanged. New7combinedruntime controls6PASS1RED→7GREEN; fullRoot79PASS0FAIL0SKIP. The new committed source must earn all current original push/PR plus ready-event gates; no original rerun/cancel/fill or oldPASS transfer.
+
+All historical mappings/tenPR76 decisions and measured application/schema objects remain unchanged. Operational/staging/signed-in/physical/scheduler/pilot acceptance remainsNO_GO. Rollback is an ordinary CI runtime selector/verifier revert, preserving independently accepted app code, data and pushed history. Next: fresh original source gates, matchedhead merge, actualnewmain/automatic production/source/anonymous readback.
+
+All following sections are historical timestamped source snapshots.
+
+---
+# CI Booking ON consumes the existing production build — 2026-10-14
+
+Original source361510c Root push38495886499FAIL is preserved: the seeded Booking ON experience returned HTTP404 on both the first attempt and existing automatic retry. Anonymous experience/merchant/availability projection was alltrue; trace returned the global Next dev not-found route. Root PR38495890293 and Journeys push38495886402/PR38495890275 independentlyPASS. They do not replace the failed push or open this merge gate. Precise dev-router timing cause remainsUNKNOWN.
+
+Minimal CI-only runtime change: Booking ON starts the already-successful production build with next start, consuming its fixed route table. No dev fallback; missing build fails. Booking OFF and local developer invocations retain next dev. Original loopback/Stripe test-mode guards, false default product state, fixture HTTP200/h1/keyboard/checkout expectations, retries/deadlines/sample counts and all actor/RLS/CAS/receipt boundaries remain unchanged. Testfirst3PASS1RED→4GREEN; full Root tooling76PASS0FAIL0SKIP. Owned Next16.3.8 production fixture confirms buildBooking=false→runtimeBooking=true, one dynamic routeHTTP200, no devoutput and original missing-build exit1; it performs no DB/provider calls. Invalid local harness root/import/raw-HTML assertion runs remain retained as invalid verification, not product failures or passes.
+
+The combined verifier/runtime source requires all fresh original push/PR CI, plus the additional ready_for_review Root run, before PR80 merge. No old run rerun/cancel/fill and no previous source PASS transferred. All baseline/count/mapping/PR76 decision fields are exactly preserved. Source-only automatic production follow-up remains distinct from hosted/signed-in/physical/pilot acceptanceNO_GO; Booking/payment/withdrawal/provider remain disabled.
+
+Rollback:ordinary revert of the CI Booking runtime selector and verifier fixes; no data replay/config change/history rewrite. Next:publish candidate once, wait its current original gates, matchhead merge, verify actualnewmain/automatic deployment/source/anonymous result.
+
+All following sections are historical timestamped source snapshots.
+
+---
+# Verifier legacy-format correction — 2026-10-14
+
+PR80 source4f71a02 originalRoot push38493732996/PR38493831573FAIL:70PASS/2FAIL of72tooling cases, before Turbo; downstream e2eSKIPPED is notPASS. Both failures are the unchanged source/anonymous positive and Windows committed-byte case. This implementation unnecessarily required explicit manifestversion1, breaking the verifier's prior files-only format. Original logs/hashes retained;14PASS2RED reproduced locally with real HTTP/Git fixtures.
+
+Minimum one-line correction preserves missing-version default1 while retaining explicit unsupported-version rejection, exact mapped-input/canonical/hash/source/path/origin/size/private-no-store and callback controls. Existing16cases allGREEN with assertions untouched; new10mapped/legacy casesGREEN. Full72toolingGREEN0FAIL0SKIP. Initial full localrun71PASS1missingTurbo is an environment failure retained (despite provisional GREENfilename); exactlockfileTurbo2.9.18 installed only in ignored taskruntime without package/lock changes. No application/schema/hosted change.
+
+Original4f71 Journeys pushPASS, PR still running at this snapshot; old jobs finish before one ordinary new-source push, no cancel/retry/fill. New committed head and all original/ready-event CI must pass beforePR80merge. Earlier automatic production checkerFAIL remains original; correctedindependent4cc454files10GETPASS belongs to its checker/source, never rewritten as originalCI. Main4cc source CI and earlierready supplements passed separately; hosted/signed-in/physical/pilot acceptance remainsNO_GO. Original22W/38A-G/6U/21P-D maps and all raw outcomes retained.
+
+---
+# Merged source and production verification contract — 2026-10-14
+
+PR79→PR78feature→PR77feature→main completed, each after its actual original Root/Journeys head/tree/base/full functional/numeric/input/cleanup gates. MergeSHAs f61a04b /6ece683 /4cc49ab0ea6693ea660cca097cab45434b5eb597. Main treec4f98b7e3a0331a93a68d5493f06cff35121dbc4 exactly equals the validated candidate. Original requested openPRs0. Current main original push and the extra Root ready-event run are tracked separately; new results are not inferred from premerge gates.
+
+Original automatic production read-only38492259626FAIL is retained: archive entries differ from explicit manifest. Exact read-only reconciliation proves archive source4cc49ab matches main and has only three extra **declared repositoryFiles canonical SQL inputs**. Old checker ignored that producer contract. ArchiveSHA2565563139701163e34012f0e257157633a56c7865047821cc734c8e7650669feb3; packagingWorkspaceDirty=true retained.
+
+Verification-only fix:exact files+repositoryFiles entry/hash sets; same producer canonical migration regex and tests/contracts destination; reject collisions,missing/tampered/unlisted/malformed inputs and wrongrevision; compare mapped bytes against the specified commit's repository path. Same target/origin/redirect/size/path/private-no-store and anonymous guards, GET-only, no archive code/SQL execution. Nine real HTTP/Git/archive controls5PASS/3RED/1valid domain-rejectionRED→9GREEN. Existing workflow4PASS; added CI gate runs only owned HTTP fixtures.
+
+Independent corrected precommit verifier at actual production4cc49abPASS:454sourcefiles (451app+3repository inputs), ten anonymous/public GET checks, signedInAcceptanceNOT_RUN. Original automaticFAIL is not rewritten; the new committed verifier must earn fresh original CI, then actual new-main automatic/source/anonymous evidence. No app/schema/hosted config change, provider/scheduler/account/SQL action or capability expansion. Booking/payment/withdrawal stayoff; actual ops/creator/inbox503 remains a held-capability fence, not operational acceptance.
+
+Root workflow also triggersready_for_review. Its additional unchanged-source CI is preserved and separately observed; the new verification-only PR will wait both all initial originals and ready-event originals before merge, without rerun/cancel. Matrix22W/38A-G/6U/21P-D and all original decisions/failures preserved. Staging/roles/content/devices/recovery/scheduler/pilot remainNO_GO; no physical/signed-in/end-to-end claim.
+
+Next:verification-only draftPR fromactualmain4cc, all current original/ready-event CI green, matchedhead source merge; then exactnewmain/automatic deployment and source/anonymous GET observation. Rollback is an ordinary verifier-only revert preserving app/schema/data/receipts/history; no hosted rollback is performed.
+
+All following sections are historical timestamped source snapshots.
+
+---
 # Qualified native checkpoint candidate — 2026-10-14
 
 Exact localsource `0e3fed78727e2286455e981f4c488b24e0d8e07f`, tree `25154e39a2259ec03f829da2fcca69a9beb78804`: **664unit/97ownedDB/220native PASS0FAIL0SKIP**,88fixtures included. All eight source/workflow/scope/unit/DB/build/type/native checks passed; existing Windows source-package symlink-permission skip stays explicit. Source-bound original JSONs/hashes retained. This document-only revision must earn fresh original CI before remaining source merges.
