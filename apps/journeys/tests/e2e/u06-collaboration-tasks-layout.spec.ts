@@ -27,6 +27,10 @@ for(const locale of ['en','zh-HK'])for(const viewport of [{width:320,height:800}
   await expect(link).toHaveAttribute('href',`/${locale}/studio/missions/11111111-1111-4111-8111-111111111111`);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
   await expect(page.locator('body')).not.toContainText('secret-proof');await expect(page.locator('body')).not.toContainText('private-contact');
+  // Require a visible presented frame before the one mandatory capture; no retry or fallback.
+  await page.bringToFront();
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await expect(link).toBeFocused();
   await testInfo.attach(`tasks-${locale}-${viewport.width}-200pct`,{body:await page.screenshot({fullPage:true}),contentType:'image/png'});
  });
 }

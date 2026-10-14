@@ -6,24 +6,28 @@ import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {creatorMissions,type CreatorMission,type CreatorMissionDetail,type CreatorMissionCommand,type Evidence,type MissionScope} from '../../lib/creators/collaboration';
 import {evidenceUrl} from '../../lib/creators/collaboration-validation';
+import type{PrivateCreatorMissionEntry}from '../../lib/creators/private-mission-entry';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
 import {CollaborationListFilters} from './CollaborationListFilters';
 import {changeListFilter,readListLocation,writeListLocation,type CollaborationListQuery} from '../../lib/collaboration/list-query';
 import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 
 type EvidenceForm={milestoneId:string;submissionId:string|null;expectedUpdatedAt:string|null;proofText:string;notes:string};
-export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;actorId:string|null;enabled:boolean}){
+export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:{path:string;actorId:string|null;enabled:boolean;initialSnapshot?:PrivateCreatorMissionEntry|null}){
  const {t,href,locale}=useApp();
  const missionId=/^studio\/missions\/[0-9a-f-]{36}$/i.test(path)?path.split('/')[2]:null;
+ const initialDetail=enabled&&actorId&&initialSnapshot?.actorId===actorId&&typeof initialSnapshot.detail?.id==='string'&&initialSnapshot.detail.id.toLowerCase()===missionId?.toLowerCase()?initialSnapshot.detail:null;
+ const initialEntry=useRef(initialDetail);
  const [scope,setScope]=useState<MissionScope>(path==='studio/outcomes'?'mine':'available');
  const [filters,setFilters]=useState<CollaborationListQuery>({});const applied=useRef<CollaborationListQuery>({});
- const [items,setItems]=useState<CreatorMission[]|null>(null),[cursor,setCursor]=useState<string|null>(null),[detail,setDetail]=useState<CreatorMissionDetail|null>(null);
- const [busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
+ const [items,setItems]=useState<CreatorMission[]|null>(null),[cursor,setCursor]=useState<string|null>(null),[detail,setDetail]=useState<CreatorMissionDetail|null>(initialDetail);
+ const [busy,setBusy]=useState(!!initialDetail),[unknown,setUnknown]=useState(false),[valid,setValid]=useState(true),[error,setError]=useState(''),[message,setMessage]=useState('');
  const [applicationNote,setApplicationNote]=useState(''),[agreed,setAgreed]=useState(false),[form,setForm]=useState<EvidenceForm|null>(null);
  const generation=useRef(0),pending=useRef<{command:CreatorMissionCommand;requestId:string}|null>(null);
+ const focusedMilestone=useRef<string|null>(null);
  const reference=useRef<string|undefined>(undefined);
  const recovery=useWorkspaceRecovery({actorId,scope:'creator-mission:'+missionId,authorized:!!missionId&&!!detail&&valid,draft:{applicationNote,form},pending:pending.current,dirty:!!applicationNote||!!form,restore:value=>{const d=value.draft as {applicationNote?:string;form?:EvidenceForm|null};if(typeof d?.applicationNote==='string'&&d.applicationNote.length<=2000)setApplicationNote(d.applicationNote);if(d?.form&&typeof d.form.milestoneId==='string'&&typeof d.form.proofText==='string'&&d.form.proofText.length<=10244&&typeof d.form.notes==='string'&&d.form.notes.length<=4000)setForm(d.form);if(value.pending?.requestId&&value.pending.command&&typeof value.pending.command==='object'){pending.current=value.pending as {command:CreatorMissionCommand;requestId:string};setUnknown(true);setError('UNAVAILABLE');}}});
- function clear(){setFilters({});applied.current={};setItems(null);setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
+ function clear(keepInitialDetail=false){focusedMilestone.current=null;setFilters({});applied.current={};setItems(null);if(!keepInitialDetail)setDetail(null);setCursor(null);setForm(null);setApplicationNote('');setAgreed(false);setUnknown(false);pending.current=null;}
  function denied(code:string){if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){clear();if(code==='AUTH_REQUIRED')setValid(false);}}
  async function load(after?:string,nextScope=scope,nextQuery:CollaborationListQuery=applied.current){
   const own=++generation.current;setBusy(true);setError('');
@@ -40,12 +44,29 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
   }
  }
  useEffect(()=>{
-  setValid(true);clear();setError('');setMessage('');const selected=new URLSearchParams(window.location.search).get('scope');const initial:MissionScope=path==='studio/outcomes'?'mine':selected==='mine'?'mine':'available';setScope(initial);
+  const bootEntry=initialEntry.current;initialEntry.current=null;
+  setValid(true);clear(!!bootEntry);setError('');setMessage('');const selected=new URLSearchParams(window.location.search).get('scope');const initial:MissionScope=path==='studio/outcomes'?'mine':selected==='mine'?'mine':'available';setScope(initial);
   let entry:CollaborationListQuery={};try{if(!missionId)entry=readListLocation(initial);}catch{setError('INVALID');return;}setFilters(entry);applied.current=entry;
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){++generation.current;setValid(false);setBusy(false);clear();}});
   if(actorId&&enabled)void load(entry.after,initial,entry);
   return()=>{++generation.current;unsubscribe();};
  },[actorId,enabled,path]);
+ useEffect(()=>{
+  if(!detail||!valid||!actorId||!enabled)return;
+  const focusMilestone=()=>{
+   const hash=window.location.hash;
+   if(!hash||!/^#milestone-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(hash))return;
+   const id=hash.slice('#milestone-'.length);
+   if(!detail.milestones.some(row=>row.id===id))return;
+   const key=actorId+':'+missionId+hash;
+   if(focusedMilestone.current===key)return;
+   const element=document.getElementById(hash.slice(1));
+   if(element){element.focus();element.scrollIntoView({block:'center'});focusedMilestone.current=key;}
+  };
+  const changed=()=>{focusedMilestone.current=null;focusMilestone();};
+  focusMilestone();window.addEventListener('hashchange',changed);
+  return()=>window.removeEventListener('hashchange',changed);
+ },[detail,valid,actorId,enabled,missionId]);
  async function send(command?:CreatorMissionCommand){
   if(!missionId||busy||!valid)return;
   if(!pending.current&&command)pending.current={command,requestId:crypto.randomUUID()};
@@ -117,7 +138,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled}:{path:string;act
    <p>{t('Evidence links are reviewed by the merchant or Kinnso team. Submitting a link does not automatically verify or approve the work.','商戶或 Kinnso 團隊會審核證明連結。提交連結不會自動驗證或核准作品。')}</p>
    {detail.milestones.length===0&&<p>{t('This brief has no content milestones.','此合作簡介沒有內容里程碑。')}</p>}
    {detail.milestonesTruncated&&<p>{t('This campaign has more milestones than this view can show. Contact support for the complete brief.','此合作的里程碑超出本頁顯示範圍，請聯絡客服取得完整簡介。')}</p>}
-   {detail.milestones.map(milestone=><article className="k-card" key={milestone.id}><h3>{milestone.title}</h3><p>{milestone.description}</p>{milestone.dueAt&&<p>{t('Due: ','期限：')}<time dateTime={milestone.dueAt}>{scheduleDate(milestone.dueAt,detail.scheduleTimeZone??'UTC',locale)}</time>{Date.parse(milestone.dueAt)<Date.now()&&' · '+t('Past the stated deadline; accepted work can still be submitted or revised.','已過列明期限；已接受的工作仍可提交或修改。')}</p>}{milestone.repeatable&&detail.maxReceipts!==null&&<p>{t('Maximum submitted or approved receipts: ','已提交或核准收據上限：')}{detail.maxReceipts}</p>}
+   {detail.milestones.map(milestone=><article className="k-card" key={milestone.id} id={`milestone-${milestone.id}`} tabIndex={-1}><h3>{milestone.title}</h3><p>{milestone.description}</p>{milestone.dueAt&&<p>{t('Due: ','期限：')}<time dateTime={milestone.dueAt}>{scheduleDate(milestone.dueAt,detail.scheduleTimeZone??'UTC',locale)}</time>{Date.parse(milestone.dueAt)<Date.now()&&' · '+t('Past the stated deadline; accepted work can still be submitted or revised.','已過列明期限；已接受的工作仍可提交或修改。')}</p>}{milestone.repeatable&&detail.maxReceipts!==null&&<p>{t('Maximum submitted or approved receipts: ','已提交或核准收據上限：')}{detail.maxReceipts}</p>}
     {detail.evidenceAvailable&&(milestone.repeatable||!detail.submissions.some(s=>s.milestoneId===milestone.id))&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id)}>{milestone.repeatable?t('Prepare new receipt','準備新收據'):t('Prepare evidence','準備證明')}</button>}
     {detail.submissions.filter(s=>s.milestoneId===milestone.id).map(submission=><div key={submission.id}><h4>{status(submission.status)}</h4>{submission.notes&&<p>{submission.notes}</p>}{submission.proofUrls.map((url,i)=>evidenceUrl(url)?<p key={i}><a href={url} target="_blank" rel="noopener noreferrer">{t('Evidence link ','證明連結 ')}{i+1}</a></p>:<p key={i}>{url}</p>)}{submission.merchantFeedback&&<p><strong>{t('Reviewer feedback: ','審核意見：')}</strong>{submission.merchantFeedback}</p>}{submission.reviews.length>0&&<details><summary>{t('Review history','審核紀錄')}</summary>{submission.reviews.map(review=><p key={review.id}>{status(review.action==='request_revision'?'revision_requested':review.action==='approve'?'approved':'rejected')} · {review.reason} <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString(locale)}</time></p>)}</details>}{detail.evidenceAvailable&&['pending','submitted','revision_requested'].includes(submission.status)&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id,submission)}>{t('Edit and resubmit evidence','修改並重新提交證明')}</button>}</div>)}
    </article>)}

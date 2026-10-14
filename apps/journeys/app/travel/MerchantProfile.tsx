@@ -8,7 +8,8 @@ import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 export function MerchantProfile({actorId,merchantId,onLockChange}:{actorId:string|null;merchantId:string;onLockChange:(locked:boolean)=>void}){
  const {t}=useApp();const [saved,setSaved]=useState<Profile|null>(null),[draft,setDraft]=useState<ProfileInput|null>(null),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[valid,setValid]=useState(true);
  const epoch=useRef(0),pending=useRef<{input:ProfileInput;expectedUpdatedAt:string;requestId:string}|null>(null),locked=useRef(false);
- useEffect(()=>{onLockChange(busy||unknown);return()=>onLockChange(false);},[busy,unknown,onLockChange]);
+ // Only a pending write blocks other company forms; an independent profile read must not steal their focus.
+ useEffect(()=>{onLockChange(locked.current||unknown);return()=>onLockChange(false);},[busy,unknown,onLockChange]);
  const fields=(p:Profile):ProfileInput=>({companyName:p.companyName,contactName:p.contactName,contactEmail:p.contactEmail,websiteUrl:p.websiteUrl,tagline:p.tagline,city:p.city,logoUrl:p.logoUrl});
  function fail(code:string){setError(code);if(code==='AUTH_REQUIRED'||code==='FORBIDDEN'){epoch.current++;setValid(false);setSaved(null);setDraft(null);pending.current=null;setUnknown(false);locked.current=false;}}
  async function load(){if(locked.current||!actorId)return;const own=epoch.current;setBusy(true);const r=await merchantOnboarding.profile(merchantId);if(own!==epoch.current)return;setBusy(false);if(r.ok){setSaved(r.data);setDraft(fields(r.data));setError('');setMessage('');}else fail(r.code);}

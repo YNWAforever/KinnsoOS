@@ -1,6 +1,7 @@
 'use client';
 import {useWorkspaceRecovery} from './useWorkspaceRecovery';
 import {emptyCaseDraft,emptySupportDraft,restoreSupportDraft,supportDraftDirty,completeSupportDraft,type CaseDraft} from '../../lib/collaboration/support-drafts';
+import {scheduleDate} from '../../lib/merchants/campaign-schedule';
 import {collaborationNotice} from '../../lib/collaboration/reminders';
 import Link from 'next/link';
 import {useSearchParams} from 'next/navigation';
@@ -8,7 +9,7 @@ import {supportSubject,supportNextStep,type SupportContextView} from '../../lib/
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
-import {inbox,support,deliveryFailures,entityLink,type InboxPage,type InboxCursor,type SupportCase,type DeliveryFailure} from '../../lib/notifications/repository';
+import {inbox,support,deliveryFailures,entityLink,reminderContext,type InboxPage,type InboxCursor,type SupportCase,type DeliveryFailure} from '../../lib/notifications/repository';
 export function InboxWorkspace({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const{t,locale}=useApp();const[data,setData]=useState<InboxPage|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[valid,setValid]=useState(true),[unknown,setUnknown]=useState(false);
  const generation=useRef(0),pending=useRef<{command:Record<string,unknown>;id:string}|null>(null);
@@ -19,7 +20,7 @@ export function InboxWorkspace({actorId,enabled}:{actorId:string|null;enabled:bo
  return <section className="k-page"><h1>{t('Your inbox','你的收件匣')}</h1>{!actorId||!valid?<Link href={`/${locale}/sign-in?next=/${locale}/inbox`}>{t('Sign in','登入')}</Link>:!enabled?<p>{t('Inbox service is not connected yet.','收件匣服務尚未接通。')}</p>:<>
  {error&&<p role="alert">{t('Inbox request was not completed. Refresh or retry.','收件匣請求未完成，請重新載入或重試。')}</p>}<button className="k-btn" disabled={busy||unknown} onClick={()=>void load()}>{t('Refresh inbox','重新載入收件匣')}</button>{unknown&&<button className="k-btn" disabled={busy} onClick={()=>void send()}>{t('Retry the same request','重試相同請求')}</button>}
  {data&&<><p>{data.unreadCount} {t('unread notifications','項未讀通知')}</p><p>{t('Email delivery is not configured. These are in-app notifications.','電郵外送尚未設定；這些是站內通知。')}</p><button className="k-btn" disabled={busy||unknown} onClick={()=>void send({type:'setPreference',channel:'email',enabled:false})}>{t('Opt out of future email delivery','取消未來電郵外送')}</button>{data.items.length===0&&<p>{t('No notifications yet.','暫未有通知。')}</p>}
- {data.items.map(item=><article className="k-card" key={item.id}><h2>{collaborationNotice(item.type,locale)}</h2><p>{item.payload.missionTitle}</p><time dateTime={item.createdAt}>{item.createdAt}</time><p>{item.readAt?t('Read','已讀'):t('Unread','未讀')}</p>{entityLink(item,locale)&&<Link href={entityLink(item,locale)!}>{t('Open related activity','開啟相關活動')}</Link>}<button className="k-btn" disabled={busy||unknown||!!item.readAt} onClick={()=>void send({type:'markRead',id:item.id})}>{t('Mark as read','標示已讀')}</button><Link href={`/${locale}/support?event=${item.id}`}>{t('Ask support about this event','向客服查詢此事件')}</Link></article>)}{data.nextCursor&&<button className="k-btn" disabled={busy||unknown} onClick={()=>void load(data.nextCursor!)}>{t('Older notifications','較早通知')}</button>}</>}
+ {data.items.map(item=>{const context=reminderContext(item);return <article className="k-card" key={item.id}><h2>{collaborationNotice(item.type,locale)}</h2><p>{item.payload.missionTitle}</p>{context&&<><p>{context.milestoneTitle}</p><p>{t('Deadline when notified: ','通知發出時的期限：')}<time dateTime={context.dueAt}>{scheduleDate(context.dueAt,'UTC',locale)}</time></p></>}<time dateTime={item.createdAt}>{item.createdAt}</time><p>{item.readAt?t('Read','已讀'):t('Unread','未讀')}</p>{entityLink(item,locale)&&<Link href={entityLink(item,locale)!}>{t('Open related activity','開啟相關活動')}</Link>}<button className="k-btn" disabled={busy||unknown||!!item.readAt} onClick={()=>void send({type:'markRead',id:item.id})}>{t('Mark as read','標示已讀')}</button><Link href={`/${locale}/support?event=${item.id}`}>{t('Ask support about this event','向客服查詢此事件')}</Link></article>;})}{data.nextCursor&&<button className="k-btn" disabled={busy||unknown} onClick={()=>void load(data.nextCursor!)}>{t('Older notifications','較早通知')}</button>}</>}
  <Link className="k-btn" href={`/${locale}/support`}>{t('Support cases','客服案件')}</Link></>}</section>;
 }
 export function SupportWorkspace({actorId,enabled,opsMode=false}:{actorId:string|null;enabled:boolean;opsMode?:boolean}){
