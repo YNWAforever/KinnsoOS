@@ -13,7 +13,7 @@ import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/messages/en'
 
 export function ExperiencePublicView({
-  locale, t, bookingT, featureInterestT, bookingLive, reviewsT, experienceSaveT, experience, availability, viewerEmail, viewerId, isSaved, rating, reviews, sourceSurface, guideSlug,
+  locale, t, bookingT, featureInterestT, bookingLive, reviewsT, experienceSaveT, experience, availability, viewerEmail, viewerId, isSaved, saveStateUnavailable, rating, reviews, sourceSurface, guideSlug,
 }: {
   locale: Locale
   t: Messages['experiencePublic']
@@ -27,6 +27,7 @@ export function ExperiencePublicView({
   viewerEmail: string | null
   viewerId: string | null
   isSaved: boolean
+  saveStateUnavailable: boolean
   rating: RatingAggregate | null
   reviews: Review[]
   sourceSurface?: string
@@ -48,7 +49,14 @@ export function ExperiencePublicView({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
           <Eyebrow className="absolute left-4 top-4 rounded-[3px] bg-white/90 px-3 py-1">{experience.city}</Eyebrow>
           <div className="absolute right-4 top-4">
-            <ExperienceSaveButton locale={locale} experienceId={experience.id} initialSaved={isSaved} signedIn={!!viewerId} t={experienceSaveT} />
+            <ExperienceSaveButton
+              locale={locale}
+              experienceId={experience.id}
+              initialSaved={isSaved}
+              saveStateUnavailable={saveStateUnavailable}
+              signedIn={!!viewerId}
+              t={experienceSaveT}
+            />
           </div>
         </div>
         <div className="p-6 md:p-8">

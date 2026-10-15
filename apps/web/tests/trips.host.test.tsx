@@ -5,13 +5,23 @@ import { TravelerTripsView } from '@/components/kinnso/pages/TravelerTripsView'
 
 afterEach(cleanup)
 
+// Typed against the real outcome union so a failure case carrying `reason` is
+// assignable; inferring from the success default narrows it to { ok; guideId }.
+type GuideUnsaveOutcome =
+  | { ok: true; guideId: string }
+  | { ok: false; reason: 'auth' | 'failed'; errors: Record<string, string[]> }
+
 const { unsaveGuideActionMock } = vi.hoisted(() => ({
-  unsaveGuideActionMock: vi.fn(async () => ({ ok: true, guideId: 'g1' })),
+  unsaveGuideActionMock: vi.fn(async (): Promise<GuideUnsaveOutcome> => ({ ok: true, guideId: 'g1' })),
 }))
 vi.mock('@/lib/saves/guide-actions', () => ({ unsaveGuideAction: unsaveGuideActionMock }))
 
+type ExperienceUnsaveOutcome =
+  | { ok: true; experienceId: string }
+  | { ok: false; reason: 'auth' | 'failed'; errors: Record<string, string[]> }
+
 const { unsaveExperienceActionMock } = vi.hoisted(() => ({
-  unsaveExperienceActionMock: vi.fn(async () => ({ ok: true, experienceId: 'e1' })),
+  unsaveExperienceActionMock: vi.fn(async (): Promise<ExperienceUnsaveOutcome> => ({ ok: true, experienceId: 'e1' })),
 }))
 vi.mock('@/lib/saves/experience-actions', () => ({ unsaveExperienceAction: unsaveExperienceActionMock }))
 
@@ -40,6 +50,8 @@ const t = {
   savedExperiencesEmpty: "You haven't saved any experiences yet.",
   reviewCta: 'Leave a review',
   reviewedLabel: 'Reviewed',
+  unsaveFailed: 'That did not remove it. Please try again.',
+  unsaveSignIn: 'Sign in to finish removing',
 }
 
 const reviewsT = {
@@ -161,5 +173,37 @@ describe('TravelerTripsView', () => {
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => expect(unsaveExperienceActionMock).toHaveBeenCalledWith('en', 'e1'))
     await waitFor(() => expect(screen.queryByRole('link', { name: /Sunset junk boat tour/ })).toBeNull())
+  })
+
+  it('keeps the saved guide and reports the failure when the unsave is rejected', async () => {
+    // A rejected unsave used to change nothing on screen: the card stayed and no
+    // message appeared, so the click read as broken rather than as "not removed".
+    unsaveGuideActionMock.mockResolvedValueOnce({ ok: false, reason: 'failed', errors: { form: ['Guide could not be removed'] } })
+    render(
+      <TravelerTripsView
+        locale="en" t={t} reviewsT={reviewsT} savesLabel="saves" bookings={[]}
+        savedGuides={[{ guideId: 'g1', guide: { slug: 'kyoto-tea', title: 'Kyoto Tea Houses', cover: 'https://x/kyoto.jpg', city: 'Kyoto', saves: 5, creatorHandle: 'teafan' } }]}
+        savedExperiences={[]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button'))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(t.unsaveFailed)
+    expect(screen.getByRole('heading', { level: 3, name: 'Kyoto Tea Houses' })).toBeInTheDocument()
+  })
+
+  it('offers a sign-in link when the session lapsed before an unsave could be confirmed', async () => {
+    unsaveExperienceActionMock.mockResolvedValueOnce({ ok: false, reason: 'auth', errors: { form: ['Sign in is required'] } })
+    render(
+      <TravelerTripsView
+        locale="en" t={t} reviewsT={reviewsT} savesLabel="saves" bookings={[]} savedGuides={[]}
+        savedExperiences={[{ experienceId: 'e1', slug: 'sunset-tour', title: 'Sunset junk boat tour', city: 'Hong Kong', priceAmount: 480, currency: 'HKD', coverUrl: null, savesCount: 3 }]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button'))
+    const alert = await screen.findByRole('alert')
+    expect(alert).toHaveTextContent(t.unsaveFailed)
+    expect(screen.getByRole('link', { name: t.unsaveSignIn })).toHaveAttribute('href', '/en/sign-in?next=%2Fen%2Ftrips')
+    expect(screen.getByRole('link', { name: /Sunset junk boat tour/ })).toBeInTheDocument()
   })
 })

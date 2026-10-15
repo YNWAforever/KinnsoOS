@@ -1282,6 +1282,8 @@ const messages: Messages = {
     savedExperiencesEmpty: '아직 저장한 체험이 없습니다.',
     reviewCta: '리뷰 작성',
     reviewedLabel: '리뷰 완료',
+    unsaveFailed: '삭제하지 못했습니다. 다시 시도해 주세요.',
+    unsaveSignIn: '로그인하여 삭제 완료',
   },
   merchantsOps: {
     title: '머천트', subtitle: '머천트를 파악, 관리, 분석하세요.',
@@ -1518,12 +1520,14 @@ const messages: Messages = {
     saved: '저장됨',
     signInToSave: '저장하려면 로그인하세요',
     saveFailed: '저장하지 못했습니다. 다시 시도해 주세요.',
+    statusUnavailable: '저장 상태를 확인하지 못했습니다. 다시 시도',
   },
   experienceSave: {
     save: '저장',
     saved: '저장됨',
     signInToSave: '저장하려면 로그인하세요',
     saveFailed: '저장하지 못했습니다. 다시 시도해 주세요.',
+    statusUnavailable: '저장 상태를 확인하지 못했습니다. 다시 시도',
   },
   reviews: {
     formHeading: '리뷰 작성',

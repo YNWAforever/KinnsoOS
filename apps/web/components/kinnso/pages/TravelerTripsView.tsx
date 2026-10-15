@@ -7,6 +7,7 @@ import ExperienceCard from '@/components/kinnso/ExperienceCard'
 import { ReviewForm } from '@/components/kinnso/ReviewForm'
 import { unsaveGuideAction } from '@/lib/saves/guide-actions'
 import { unsaveExperienceAction } from '@/lib/saves/experience-actions'
+import { signInHref } from '@/lib/auth/return-path'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages, TravelerTripsMessages } from '@/lib/i18n/messages/en'
 import type { TravelerBookingRow } from '@/lib/bookings/types'
@@ -39,16 +40,35 @@ export function TravelerTripsView({
   const [savedExperiences, setSavedExperiences] = useState(initialSavedExperiences)
   const [openReviewFor, setOpenReviewFor] = useState<string | null>(null)
   const [reviewedIds, setReviewedIds] = useState<Set<string>>(new Set())
+  // An unsave can fail in two different ways that need opposite responses: an
+  // expired session needs a sign-in link, a rejected write just needs a retry.
+  // Both used to be dropped on the floor, leaving a card that looked unchanged
+  // and a click that appeared to do nothing at all.
+  const [unsaveFailure, setUnsaveFailure] = useState<{ id: string; busy: boolean; error: 'failed' | 'auth' | null } | null>(null)
 
-  async function handleUnsaveGuide(guideId: string) {
-    const result = await unsaveGuideAction(locale, guideId)
-    if (result.ok) setSavedGuides((prev) => prev.filter((g) => g.guideId !== guideId))
+  async function removeSaved(kind: 'guide' | 'experience', id: string) {
+    if (unsaveFailure?.busy) return
+    setUnsaveFailure({ id, busy: true, error: null })
+    try {
+      const result = kind === 'guide'
+        ? await unsaveGuideAction(locale, id)
+        : await unsaveExperienceAction(locale, id)
+
+      if (result.ok) {
+        if (kind === 'guide') setSavedGuides((prev) => prev.filter((g) => g.guideId !== id))
+        else setSavedExperiences((prev) => prev.filter((e) => e.experienceId !== id))
+        setUnsaveFailure(null)
+        return
+      }
+
+      setUnsaveFailure({ id, busy: false, error: result.reason === 'auth' ? 'auth' : 'failed' })
+    } catch {
+      // The action never returned an outcome, so nothing was confirmed removed.
+      setUnsaveFailure({ id, busy: false, error: 'failed' })
+    }
   }
 
-  async function handleUnsaveExperience(experienceId: string) {
-    const result = await unsaveExperienceAction(locale, experienceId)
-    if (result.ok) setSavedExperiences((prev) => prev.filter((e) => e.experienceId !== experienceId))
-  }
+  const unsaveError = (id: string) => unsaveFailure?.id === id ? unsaveFailure.error : null
 
   return (
     <main className="k-container py-10">
@@ -141,14 +161,25 @@ export function TravelerTripsView({
         ) : (
           <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {savedGuides.map((entry) => (
-              <GuideCard
-                key={entry.guideId}
-                g={entry.guide}
-                locale={locale}
-                savesLabel={savesLabel}
-                isSaved={true}
-                onSaveToggle={() => handleUnsaveGuide(entry.guideId)}
-              />
+              <div key={entry.guideId}>
+                <GuideCard
+                  g={entry.guide}
+                  locale={locale}
+                  savesLabel={savesLabel}
+                  isSaved={true}
+                  onSaveToggle={() => removeSaved('guide', entry.guideId)}
+                />
+                {unsaveError(entry.guideId) && (
+                  <p role="alert" className="mt-2 text-sm text-kinnso-ink/80">
+                    {t.unsaveFailed}{' '}
+                    {unsaveError(entry.guideId) === 'auth' && (
+                      <Link href={signInHref(locale, `/${locale}/trips`)} className="font-semibold underline">
+                        {t.unsaveSignIn}
+                      </Link>
+                    )}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         )}
@@ -161,13 +192,24 @@ export function TravelerTripsView({
         ) : (
           <div className="mt-4 space-y-3">
             {savedExperiences.map((entry) => (
-              <ExperienceCard
-                key={entry.experienceId}
-                experience={entry}
-                locale={locale}
-                isSaved={true}
-                onSaveToggle={() => handleUnsaveExperience(entry.experienceId)}
-              />
+              <div key={entry.experienceId}>
+                <ExperienceCard
+                  experience={entry}
+                  locale={locale}
+                  isSaved={true}
+                  onSaveToggle={() => removeSaved('experience', entry.experienceId)}
+                />
+                {unsaveError(entry.experienceId) && (
+                  <p role="alert" className="mt-2 text-sm text-kinnso-ink/80">
+                    {t.unsaveFailed}{' '}
+                    {unsaveError(entry.experienceId) === 'auth' && (
+                      <Link href={signInHref(locale, `/${locale}/trips`)} className="font-semibold underline">
+                        {t.unsaveSignIn}
+                      </Link>
+                    )}
+                  </p>
+                )}
+              </div>
             ))}
           </div>
         )}

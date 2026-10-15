@@ -52,8 +52,10 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
   const viewer = await optionalQuery('experience-viewer', async () => {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
+    // `null` means "could not tell"; `false` would assert the viewer has not
+    // saved this experience, which this read has not established.
     const isSaved = user
-      ? await optionalQuery('experience-save-state', () => isExperienceSaved(supabase, experience.id, user.id), false)
+      ? await optionalQuery<boolean | null>('experience-save-state', () => isExperienceSaved(supabase, experience.id, user.id), null)
       : false
     return { user, isSaved }
   }, { user: null, isSaved: false })
@@ -101,7 +103,8 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
         availability={availability}
         viewerEmail={viewer.user?.email ?? null}
         viewerId={viewer.user?.id ?? null}
-        isSaved={viewer.isSaved}
+        isSaved={viewer.isSaved === true}
+        saveStateUnavailable={viewer.isSaved === null}
         rating={rating}
         reviews={reviews}
         sourceSurface={sourceSurface}

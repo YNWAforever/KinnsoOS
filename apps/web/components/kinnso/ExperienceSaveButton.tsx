@@ -9,11 +9,12 @@ import { currentReturnPath, signInHref } from '@/lib/auth/return-path'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/messages/en'
 
-export function ExperienceSaveButton({ locale, experienceId, initialSaved, signedIn, t }: {
+export function ExperienceSaveButton({ locale, experienceId, initialSaved, signedIn, saveStateUnavailable = false, t }: {
   locale: Locale
   experienceId: string
   initialSaved: boolean
   signedIn: boolean
+  saveStateUnavailable?: boolean
   t: Messages['experienceSave']
 }) {
   const router = useRouter()
@@ -30,29 +31,56 @@ export function ExperienceSaveButton({ locale, experienceId, initialSaved, signe
     }
     setFailed(false)
     setPending(true)
-    const result = saved
-      ? await unsaveExperienceAction(locale, experienceId)
-      : await saveExperienceAction(locale, experienceId)
-    setPending(false)
+    try {
+      const result = saved
+        ? await unsaveExperienceAction(locale, experienceId)
+        : await saveExperienceAction(locale, experienceId)
 
-    if (result.ok) {
-      setSaved(!saved)
-      router.refresh()
-      return
+      if (result.ok) {
+        setSaved(!saved)
+        router.refresh()
+        return
+      }
+
+      // The session lapsed between render and this click, so `signedIn` was
+      // stale. Ask for re-authentication and carry this experience back, rather than
+      // reporting a broken save for something that is really a sign-in.
+      if (result.reason === 'auth') {
+        router.push(signInHref(locale, currentReturnPath()))
+        return
+      }
+
+      // Anything else used to render nothing at all: the button simply stopped
+      // responding, which reads as a broken page rather than a save that did not
+      // happen. Say so, and leave the viewer where they are to retry.
+      setFailed(true)
+    } catch {
+      // A rejected action call never produced an outcome (dropped connection, a
+      // redeploy mid-request). Without this the pending flag stayed true forever
+      // and the button read as dead. Report it and let the viewer retry.
+      setFailed(true)
+    } finally {
+      setPending(false)
     }
+  }
 
-    // The session lapsed between render and this click, so `signedIn` was
-    // stale. Ask for re-authentication and carry this experience back, rather than
-    // reporting a broken save for something that is really a sign-in.
-    if (result.reason === 'auth') {
-      router.push(signInHref(locale, currentReturnPath()))
-      return
-    }
-
-    // Anything else used to render nothing at all: the button simply stopped
-    // responding, which reads as a broken page rather than a save that did not
-    // happen. Say so, and leave the viewer where they are to retry.
-    setFailed(true)
+  if (saveStateUnavailable) {
+    // The saved-state read failed, so rendering "Save" would assert something we
+    // never established (and "Saved" would assert the opposite). Re-run the
+    // server read instead of guessing either way.
+    return (
+      <button
+        type="button"
+        onClick={() => router.refresh()}
+        className={cn(
+          'inline-flex min-h-[44px] items-center gap-1 rounded-[3px] bg-white/90 px-3 py-1 text-sm font-semibold text-kinnso-ink',
+          'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kinnso-orange',
+        )}
+      >
+        <Bookmark className="h-4 w-4" aria-hidden="true" />
+        {t.statusUnavailable}
+      </button>
+    )
   }
 
   return (

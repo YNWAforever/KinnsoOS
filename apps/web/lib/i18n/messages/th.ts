@@ -1282,6 +1282,8 @@ const messages: Messages = {
     savedExperiencesEmpty: 'คุณยังไม่ได้บันทึกประสบการณ์ใด ๆ',
     reviewCta: 'เขียนรีวิว',
     reviewedLabel: 'รีวิวแล้ว',
+    unsaveFailed: 'ลบรายการไม่สำเร็จ กรุณาลองอีกครั้ง',
+    unsaveSignIn: 'เข้าสู่ระบบเพื่อลบให้เสร็จ',
   },
   merchantsOps: {
     title: 'ร้านค้า', subtitle: 'ทำความเข้าใจ ดูแล และวิเคราะห์ร้านค้าของคุณ',
@@ -1518,12 +1520,14 @@ const messages: Messages = {
     saved: 'บันทึกแล้ว',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึก',
     saveFailed: 'บันทึกไม่สำเร็จ โปรดลองอีกครั้ง',
+    statusUnavailable: 'ตรวจสอบสถานะการบันทึกไม่สำเร็จ ลองอีกครั้ง',
   },
   experienceSave: {
     save: 'บันทึก',
     saved: 'บันทึกแล้ว',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึก',
     saveFailed: 'บันทึกไม่สำเร็จ โปรดลองอีกครั้ง',
+    statusUnavailable: 'ตรวจสอบสถานะการบันทึกไม่สำเร็จ ลองอีกครั้ง',
   },
   reviews: {
     formHeading: 'เขียนรีวิว',

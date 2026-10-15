@@ -147,4 +147,16 @@ describe('/[locale]/g/[slug] host', () => {
     expect(ld).toContain('"aggregateRating"')
     expect(ld).toContain('"ratingValue":4.5')
   })
+
+  it('does not present a signed-in viewer as unsaved when the saved-state read fails', async () => {
+    // Degrading the saved-state read to `false` told a viewer who may well have
+    // saved this guide that they had not — an explicit, wrong claim.
+    getUserMock.mockResolvedValueOnce({ data: { user: { id: 'u1' } } })
+    isGuideSavedMock.mockRejectedValueOnce(new Error('read failed'))
+    const route = await import('@/app/[locale]/g/[slug]/page')
+    const ui = await route.default({ params: Promise.resolve({ locale: 'en', slug: 'kyoto-tea' }) })
+    render(ui)
+    expect(screen.getByRole('button', { name: 'Saved status could not be checked. Retry' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
+  })
 })

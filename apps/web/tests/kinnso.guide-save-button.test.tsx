@@ -153,4 +153,26 @@ describe('GuideSaveButton', () => {
     render(<GuideSaveButton locale="en" guideId="g1" initialSaved={false} signedIn={true} t={en.guideSave} />)
     expect(screen.queryByRole('alert')).toBeNull()
   })
+
+  it('re-enables the button and reports the failure when the save action itself rejects', async () => {
+    // A rejected Server Action call (dropped connection, deploy restart) never
+    // returns a SaveOutcome, so the pending flag would stay true and the button
+    // would read as dead rather than as a save that did not happen.
+    saveGuideActionMock.mockRejectedValueOnce(new Error('transport down'))
+    const swallow = () => {}
+    process.on('unhandledRejection', swallow)
+    try {
+      render(<GuideSaveButton locale="en" guideId="g1" initialSaved={false} signedIn={true} t={en.guideSave} />)
+      fireEvent.click(screen.getByRole('button', { name: en.guideSave.save }))
+
+      const alert = await screen.findByRole('alert')
+      expect(alert).toHaveTextContent(en.guideSave.saveFailed)
+      const button = screen.getByRole('button', { name: en.guideSave.save })
+      expect(button).not.toBeDisabled()
+      expect(button).toHaveAttribute('aria-pressed', 'false')
+      expect(refreshMock).not.toHaveBeenCalled()
+    } finally {
+      process.off('unhandledRejection', swallow)
+    }
+  })
 })

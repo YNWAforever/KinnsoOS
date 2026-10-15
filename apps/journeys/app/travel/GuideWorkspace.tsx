@@ -14,7 +14,7 @@ import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
 export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
  const requestNavigation=useDraftNavigation();
- const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
+ const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState(''),[guideFailed,setGuideFailed]=useState(false),[guideAttempt,setGuideAttempt]=useState(0);
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId),[next,setNext]=useState<string|null>(null);
  const [bookmarkStatus,setBookmarkStatus]=useState<'loading'|'ready'|'error'>('loading'),bookmarkRead=useRef({ticket:0,loading:false});
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
@@ -33,7 +33,14 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   document.addEventListener('visibilitychange',check);
   return()=>{epoch.current++;unsubscribe();document.removeEventListener('visibilitychange',check)};
  },[id,actorId,router]);
- useEffect(()=>{let active=true;setGuide(initialGuide);void guides.get(id).then(r=>{if(active){if(r.ok)setGuide(r.data);else {setGuide(null);setMessage(r.code==='NOT_FOUND'?t('Guide not found.','找不到攻略。'):t('Guide could not be loaded.','未能載入攻略。'))}}});return()=>{active=false}},[id,initialGuide]);
+ // A transient refresh failure must not discard a guide that is already published
+ // on screen: that turned a flaky read into a dead end with no way back. Only a
+ // genuine NOT_FOUND removes it.
+ useEffect(()=>{let active=true;setGuide(initialGuide);setGuideFailed(false);void guides.get(id).then(r=>{if(!active)return;
+  if(r.ok){setGuide(r.data);setGuideFailed(false)}
+  else if(r.code==='NOT_FOUND'){setGuide(null);setGuideFailed(false);setMessage(t('Guide not found.','找不到攻略。'))}
+  else {setGuideFailed(true);setMessage(t('Guide could not be loaded.','未能載入攻略。'))}
+ });return()=>{active=false}},[id,initialGuide,guideAttempt]);
  useEffect(()=>{if(!actorId)return;let active=true;const generation=epoch.current;
   void loadBookmarkStatus(true);
   void trips.list().then(r=>{if(active&&generation===epoch.current){if(r.ok){setList(r.data.items);setNext(r.data.nextCursor)}else setMessage(t('Your trips could not be loaded. Reload to retry.','未能載入你的行程，請重新載入以重試。'))}});
@@ -84,8 +91,8 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   else{setMessage(t('Application was not confirmed. Retry the same action or check your trip.','未確認套用結果；請重試同一操作或檢查行程。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   setBusy(false);lock.current=false;
  }
- if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
- return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/>
+ if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role={guideFailed?'alert':'status'}>{message||t('Loading…','載入中…')}</p>{guideFailed&&<button className="k-btn" onClick={()=>setGuideAttempt(value=>value+1)}>{t('Retry guide','重試載入攻略')}</button>}</div>;
+ return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link>{guideFailed&&<p role="alert">{t('Showing the last loaded version. Retry to refresh.','顯示上次載入的版本，請重試以重新載入。')} <button className="k-btn" onClick={()=>setGuideAttempt(value=>value+1)}>{t('Retry guide','重試載入攻略')}</button></p>}<PublicGuideContent guide={guide}/>
  <p className="k-muted">{t('Guide text is shown as published by its author.','攻略原文依作者發布內容顯示。')}</p>
  <p className="k-muted">{t('Original language: not provided.','原文語言：來源未提供。')}</p>
  <p className="k-muted">{t('Last updated: not provided.','最後更新：來源未提供。')}</p>
@@ -110,7 +117,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  </div>
 }
 export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
- const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<BookmarkRow[]|null>(null),[next,setNext]=useState<BookmarkCursor|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0),lock=useRef(false);
+ const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<BookmarkRow[]|null>(null),[next,setNext]=useState<BookmarkCursor|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0),lock=useRef(false),[removal,setRemoval]=useState<{guideId:string;requestId:string;busy:boolean}|null>(null),[removalError,setRemovalError]=useState('');
  useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;
   const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;router.refresh()};
   const unsubscribe=subscribeAccountInvalidation(invalidate);
@@ -126,10 +133,24 @@ export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
   else setMessage(t('Bookmarks could not be loaded. Retry to continue.','未能載入收藏，請重試以繼續。'));
   lock.current=false;setBusy(false);
  }
+ // A saved guide stays bookmarked even after its source is withdrawn, so the list
+ // itself has to own the removal — otherwise those rows have no way out at all.
+ // A retry of the same row reuses the original request id rather than issuing a
+ // fresh command for a write whose outcome was never confirmed.
+ async function removeBookmark(guideId:string){
+  if(removal?.busy)return;
+  const generation=epoch.current,requestId=removal?.guideId===guideId?removal.requestId:crypto.randomUUID();
+  setRemoval({guideId,requestId,busy:true});setRemovalError('');
+  const result=await bookmarks.toggle(guideId,false,requestId);if(generation!==epoch.current)return;
+  if(result.ok){setRows(previous=>(previous??[]).filter(row=>row.guide_id!==guideId));setRemoval(null)}
+  else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
+  else {setRemoval({guideId,requestId,busy:false});setRemovalError(t('Bookmark could not be removed. Retry.','未能取消收藏，請重試。'))}
+ }
  useEffect(()=>{if(actorId)void loadPage(null,true)},[actorId]);
  return <div className="k-page"><h1>{t('Your bookmarks','我的收藏')}</h1>{!actorId||!accountValid?<Link className="k-btn primary" href={href('sign-in')+'?next='+encodeURIComponent(href('saved'))}>{t('Sign in','登入')}</Link>:<>
   {message&&<><p role="alert">{message}</p><button className="k-btn" disabled={busy} onClick={()=>void loadPage(rows===null?null:next)}>{t('Retry bookmarks','重試載入收藏')}</button></>}
-  {rows?<ul>{rows.map(row=><li key={row.guide_id}>{row.guides?<Link href={href('g/'+row.guide_id)}>{row.guides.title}</Link>:t('Source unavailable','來源未能提供')}</li>)}{!rows.length&&<li>{t('No bookmarks yet.','暫未有收藏。')}</li>}</ul>:!message&&<p role="status">{t('Loading…','載入中…')}</p>}
+  {rows?<ul>{rows.map(row=><li key={row.guide_id}>{row.guides?<Link href={href('g/'+row.guide_id)}>{row.guides.title}</Link>:t('Source unavailable','來源未能提供')} <button className="k-btn" disabled={removal?.busy} onClick={()=>void removeBookmark(row.guide_id)}>{removal?.guideId===row.guide_id&&removalError?t('Retry removal','重試取消'):t('Remove bookmark','取消收藏')}</button></li>)}{!rows.length&&<li>{t('No bookmarks yet.','暫未有收藏。')}</li>}</ul>:!message&&<p role="status">{t('Loading…','載入中…')}</p>}
+  {removalError&&<p role="alert">{removalError}</p>}
   {next&&!message&&<button className="k-btn" disabled={busy} onClick={()=>void loadPage(next)}>{t('More bookmarks','載入更多收藏')}</button>}
  </>}</div>
 }

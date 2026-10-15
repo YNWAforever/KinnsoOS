@@ -60,8 +60,10 @@ export default async function GuidePage({
   const viewer = await optionalQuery('guide-viewer', async () => {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
+    // `null` means "could not tell". A `false` fallback would assert that a
+    // signed-in viewer has not saved this guide — a claim we have not verified.
     const isSaved = user
-      ? await optionalQuery('guide-save-state', () => isGuideSaved(supabase, guide.id, user.id), false)
+      ? await optionalQuery<boolean | null>('guide-save-state', () => isGuideSaved(supabase, guide.id, user.id), null)
       : false
     return { user, isSaved }
   }, { user: null, isSaved: false })
@@ -115,7 +117,14 @@ export default async function GuidePage({
 
           {/* Save toggle, top-right */}
           <div className="absolute right-6 top-6 sm:right-8">
-            <GuideSaveButton locale={locale as Locale} guideId={guide.id} initialSaved={viewer.isSaved} signedIn={!!viewer.user} t={messages.guideSave} />
+            <GuideSaveButton
+              locale={locale as Locale}
+              guideId={guide.id}
+              initialSaved={viewer.isSaved === true}
+              saveStateUnavailable={viewer.isSaved === null}
+              signedIn={!!viewer.user}
+              t={messages.guideSave}
+            />
           </div>
 
           {/* TicketCard overlay – title, author, and city */}
