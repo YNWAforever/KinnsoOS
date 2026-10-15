@@ -109,4 +109,20 @@ describe('ExperienceSaveButton', () => {
       process.off('unhandledRejection', swallow)
     }
   })
+
+  it('uses the confirmed saved state after an unknown-state refresh without writing', () => {
+    refreshMock.mockClear()
+    saveExperienceActionMock.mockClear()
+    unsaveExperienceActionMock.mockClear()
+    const { rerender } = render(
+      <ExperienceSaveButton locale="en" experienceId="e1" initialSaved={false} saveStateUnavailable signedIn t={en.experienceSave} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: en.experienceSave.statusUnavailable }))
+    expect(refreshMock).toHaveBeenCalledOnce()
+    expect(saveExperienceActionMock).not.toHaveBeenCalled()
+    expect(unsaveExperienceActionMock).not.toHaveBeenCalled()
+
+    rerender(<ExperienceSaveButton locale="en" experienceId="e1" initialSaved saveStateUnavailable={false} signedIn t={en.experienceSave} />)
+    expect(screen.getByRole('button', { name: en.experienceSave.saved })).toHaveAttribute('aria-pressed', 'true')
+  })
 })

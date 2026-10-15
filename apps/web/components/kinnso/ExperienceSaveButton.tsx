@@ -9,14 +9,21 @@ import { currentReturnPath, signInHref } from '@/lib/auth/return-path'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/messages/en'
 
-export function ExperienceSaveButton({ locale, experienceId, initialSaved, signedIn, saveStateUnavailable = false, t }: {
+type ExperienceSaveButtonProps = {
   locale: Locale
   experienceId: string
   initialSaved: boolean
   signedIn: boolean
   saveStateUnavailable?: boolean
   t: Messages['experienceSave']
-}) {
+}
+
+export function ExperienceSaveButton(props: ExperienceSaveButtonProps) {
+  const stateKey = `${props.experienceId}:${props.signedIn}:${props.saveStateUnavailable === true}:${props.initialSaved}`
+  return <ExperienceSaveControl key={stateKey} {...props} />
+}
+
+function ExperienceSaveControl({ locale, experienceId, initialSaved, signedIn, saveStateUnavailable = false, t }: ExperienceSaveButtonProps) {
   const router = useRouter()
   const [saved, setSaved] = useState(initialSaved)
   const [pending, setPending] = useState(false)

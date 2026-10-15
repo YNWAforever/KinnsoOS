@@ -154,6 +154,19 @@ describe('GuideSaveButton', () => {
     expect(screen.queryByRole('alert')).toBeNull()
   })
 
+  it('uses the confirmed saved state after an unknown-state refresh without writing', () => {
+    const { rerender } = render(
+      <GuideSaveButton locale="en" guideId="g1" initialSaved={false} saveStateUnavailable signedIn t={en.guideSave} />,
+    )
+    fireEvent.click(screen.getByRole('button', { name: en.guideSave.statusUnavailable }))
+    expect(refreshMock).toHaveBeenCalledOnce()
+    expect(saveGuideActionMock).not.toHaveBeenCalled()
+    expect(unsaveGuideActionMock).not.toHaveBeenCalled()
+
+    rerender(<GuideSaveButton locale="en" guideId="g1" initialSaved saveStateUnavailable={false} signedIn t={en.guideSave} />)
+    expect(screen.getByRole('button', { name: en.guideSave.saved })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('re-enables the button and reports the failure when the save action itself rejects', async () => {
     // A rejected Server Action call (dropped connection, deploy restart) never
     // returns a SaveOutcome, so the pending flag would stay true and the button

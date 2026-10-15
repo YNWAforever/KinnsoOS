@@ -5,6 +5,16 @@ import { TravelerTripsView } from '@/components/kinnso/pages/TravelerTripsView'
 
 afterEach(cleanup)
 
+const { browserUserMock } = vi.hoisted(() => ({
+  browserUserMock: vi.fn(async (): Promise<{
+    data: { user: { id: string } | null }
+    error: { name: string; status?: number } | null
+  }> => ({ data: { user: null }, error: { name: 'AuthSessionMissingError' } })),
+}))
+vi.mock('@/lib/supabase/client', () => ({
+  createSupabaseBrowserClient: () => ({ auth: { getUser: browserUserMock } }),
+}))
+
 // Typed against the real outcome union so a failure case carrying `reason` is
 // assignable; inferring from the success default narrows it to { ok; guideId }.
 type GuideUnsaveOutcome =
@@ -205,5 +215,47 @@ describe('TravelerTripsView', () => {
     expect(alert).toHaveTextContent(t.unsaveFailed)
     expect(screen.getByRole('link', { name: t.unsaveSignIn })).toHaveAttribute('href', '/en/sign-in?next=%2Fen%2Ftrips')
     expect(screen.getByRole('link', { name: /Sunset junk boat tour/ })).toBeInTheDocument()
+  })
+
+  for (const kind of ['guide', 'experience'] as const) {
+    it(`checks the session when the ${kind} action rejects before returning an auth outcome`, async () => {
+      browserUserMock.mockClear()
+      const action = kind === 'guide' ? unsaveGuideActionMock : unsaveExperienceActionMock
+      action.mockRejectedValueOnce(new Error('The proxy returned a sign-in page'))
+      browserUserMock.mockResolvedValueOnce({
+        data: { user: null }, error: { name: 'AuthSessionMissingError' },
+      })
+      render(
+        <TravelerTripsView
+          locale="en" t={t} reviewsT={reviewsT} savesLabel="saves" bookings={[]}
+          savedGuides={kind === 'guide' ? [{
+            guideId: 'g1', guide: { slug: 'kyoto-tea', title: 'Kyoto Tea Houses', cover: null, city: 'Kyoto', saves: 5, creatorHandle: 'teafan' },
+          }] : []}
+          savedExperiences={kind === 'experience' ? [{
+            experienceId: 'e1', slug: 'sunset-tour', title: 'Sunset junk boat tour', city: 'Hong Kong', priceAmount: 480, currency: 'HKD', coverUrl: null, savesCount: 3,
+          }] : []}
+        />,
+      )
+      fireEvent.click(screen.getByRole('button'))
+      expect(await screen.findByRole('link', { name: t.unsaveSignIn })).toHaveAttribute('href', '/en/sign-in?next=%2Fen%2Ftrips')
+      if (kind === 'guide') expect(screen.getByRole('heading', { name: 'Kyoto Tea Houses' })).toBeInTheDocument()
+      else expect(screen.getByRole('link', { name: /Sunset junk boat tour/ })).toBeInTheDocument()
+    })
+  }
+
+  it('keeps a signed-in transport failure distinct from a missing session', async () => {
+    browserUserMock.mockClear()
+    unsaveGuideActionMock.mockRejectedValueOnce(new Error('Transport down'))
+    browserUserMock.mockResolvedValueOnce({ data: { user: { id: 'u1' } }, error: null })
+    render(
+      <TravelerTripsView
+        locale="en" t={t} reviewsT={reviewsT} savesLabel="saves" bookings={[]} savedExperiences={[]}
+        savedGuides={[{ guideId: 'g1', guide: { slug: 'kyoto-tea', title: 'Kyoto Tea Houses', cover: null, city: 'Kyoto', saves: 5, creatorHandle: 'teafan' } }]}
+      />,
+    )
+    fireEvent.click(screen.getByRole('button'))
+    expect(await screen.findByRole('alert')).toHaveTextContent(t.unsaveFailed)
+    await waitFor(() => expect(browserUserMock).toHaveBeenCalled())
+    expect(screen.queryByRole('link', { name: t.unsaveSignIn })).toBeNull()
   })
 })

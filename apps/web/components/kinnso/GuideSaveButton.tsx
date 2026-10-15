@@ -9,14 +9,21 @@ import { currentReturnPath, signInHref } from '@/lib/auth/return-path'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/messages/en'
 
-export function GuideSaveButton({ locale, guideId, initialSaved, signedIn, saveStateUnavailable = false, t }: {
+type GuideSaveButtonProps = {
   locale: Locale
   guideId: string
   initialSaved: boolean
   signedIn: boolean
   saveStateUnavailable?: boolean
   t: Messages['guideSave']
-}) {
+}
+
+export function GuideSaveButton(props: GuideSaveButtonProps) {
+  const stateKey = `${props.guideId}:${props.signedIn}:${props.saveStateUnavailable === true}:${props.initialSaved}`
+  return <GuideSaveControl key={stateKey} {...props} />
+}
+
+function GuideSaveControl({ locale, guideId, initialSaved, signedIn, saveStateUnavailable = false, t }: GuideSaveButtonProps) {
   const router = useRouter()
   const [saved, setSaved] = useState(initialSaved)
   const [pending, setPending] = useState(false)

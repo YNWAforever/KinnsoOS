@@ -8,6 +8,7 @@ import { ReviewForm } from '@/components/kinnso/ReviewForm'
 import { unsaveGuideAction } from '@/lib/saves/guide-actions'
 import { unsaveExperienceAction } from '@/lib/saves/experience-actions'
 import { signInHref } from '@/lib/auth/return-path'
+import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { Locale } from '@/lib/i18n/config'
 import type { Messages, TravelerTripsMessages } from '@/lib/i18n/messages/en'
 import type { TravelerBookingRow } from '@/lib/bookings/types'
@@ -63,8 +64,16 @@ export function TravelerTripsView({
 
       setUnsaveFailure({ id, busy: false, error: result.reason === 'auth' ? 'auth' : 'failed' })
     } catch {
-      // The action never returned an outcome, so nothing was confirmed removed.
-      setUnsaveFailure({ id, busy: false, error: 'failed' })
+      let reason: 'auth' | 'failed' = 'failed'
+      try {
+        const { data, error } = await createSupabaseBrowserClient().auth.getUser()
+        if (!data.user && (!error || error.name === 'AuthSessionMissingError' || error.status === 401 || error.status === 403)) {
+          reason = 'auth'
+        }
+      } catch {
+        // A failed session read cannot establish that authentication was lost.
+      }
+      setUnsaveFailure({ id, busy: false, error: reason })
     }
   }
 
