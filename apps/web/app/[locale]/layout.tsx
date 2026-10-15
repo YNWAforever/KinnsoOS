@@ -7,7 +7,7 @@ import { SiteChrome } from '@/components/kinnso/SiteChrome'
 import { JsonLd } from '@/components/JsonLd'
 import { SITE_URL, OG_LOCALE } from '@/lib/seo/metadata'
 import { organizationJsonLd, websiteJsonLd } from '@/lib/seo/jsonld'
-import { fontVariables } from '../layout'
+import { fontVariables } from '../fonts'
 import { getProductState } from '@/lib/product-state'
 
 /**
