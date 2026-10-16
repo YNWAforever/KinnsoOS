@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {transform} from 'esbuild';
 import {createContext,runInContext} from 'node:vm';
+import {webcrypto} from 'node:crypto';
 
 // A strict IDB boundary enforces transaction store membership and atomic aborts.
 async function storage(){
@@ -14,10 +15,16 @@ async function storage(){
  }};
  const indexedDB={open(){const r={result:db};queueMicrotask(()=>{r.onupgradeneeded?.();r.onsuccess?.();});return r;}};
  const source=await transform(await readFile(new URL('../lib/trips/local-drafts.ts',import.meta.url),'utf8'),{loader:'ts',format:'cjs'}),module={exports:{}};
- runInContext(source.code,createContext({module,exports:module.exports,indexedDB,TextEncoder,window:{dispatchEvent(){}},CustomEvent:class{},structuredClone}));return module.exports;
+ runInContext(source.code,createContext({module,exports:module.exports,indexedDB,crypto:webcrypto,TextEncoder,window:{dispatchEvent(){}},CustomEvent:class{},structuredClone}));return module.exports;
 }
 const uuid='11111111-1111-4111-8111-111111111111';
 const value={version:1,draft:{notes:'Owned original'},pending:{requestId:uuid,command:{type:'submitEvidence',notes:'Exact original'}}};
+test('an invalid creation time zone is refused before retaining a frozen request',async()=>{
+ const s=await storage();await s.synchronizeAccountCache('A');
+ const intent={requestId:uuid,guideId:null,version:null,flowId:null,tripId:null};
+ await assert.rejects(s.savePendingCreation('A',intent,{title:'Private title',timezone:'Not/A_Time_Zone',startDate:null}),/INVALID_CREATION/);
+ assert.equal(await s.readPendingCreation('A',null),null);
+});
 test('creation recovery freezes its original payload; logout retains only the actor-bound opaque receipt',async()=>{
  const s=await storage(),guideId='22222222-2222-4222-8222-222222222222',tripId='33333333-3333-4333-8333-333333333333';
  const intent={requestId:uuid,guideId,version:1,flowId:tripId,tripId:null},input={title:'Private title',startDate:null,timezone:'UTC'};
@@ -29,6 +36,11 @@ test('creation recovery freezes its original payload; logout retains only the ac
  await s.clearAccountCaches();await s.synchronizeAccountCache('B');assert.equal(await s.readPendingCreation('B',guideId),null);
  await s.synchronizeAccountCache('A');const reopened=await s.readPendingCreation('A',guideId);assert.equal(reopened.input,null);assert.equal(reopened.intent.requestId,uuid);
  await assert.rejects(s.savePendingCreation('A',intent,{...input,title:'Replacement after logout'}),/PENDING_DRAFT/);
+ assert.equal(typeof s.restoreOriginalCreation,'function');
+ await assert.rejects(s.restoreOriginalCreation('A',guideId,uuid,{...input,title:'Replacement after logout'}),/ORIGINAL_INPUT_MISMATCH/);
+ await assert.rejects(s.restoreOriginalCreation('B',guideId,uuid,input),/CACHE_ACCOUNT_CHANGED/);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.restoreOriginalCreation('A',guideId,uuid,input))),input);
+ assert.equal((await s.readPendingCreation('A',guideId)).intent.requestId,uuid);
  await assert.rejects(s.recordCreatedTrip('B',guideId,uuid,tripId),/CACHE_ACCOUNT_CHANGED/);
  await s.recordCreatedTrip('A',guideId,uuid,tripId);assert.equal((await s.readPendingCreation('A',guideId)).intent.tripId,tripId);
  await s.clearPendingCreation('A',guideId,'wrong');assert.ok(await s.readPendingCreation('A',guideId));

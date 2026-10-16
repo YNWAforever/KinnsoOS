@@ -16,15 +16,20 @@ export async function clearLocalDraft(ownerId:string,tripId:string,requestId:str
 export async function clearAccountCaches(){const db=await open();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['snapshots','drafts','recoveries','identity'],'readwrite');for(const name of ['snapshots','drafts','recoveries','identity'])tx.objectStore(name).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error)})}finally{db.close()}}
 
 export type CreationInput={title:string;timezone:string;startDate:string|null};
-export type PendingCreation={requestId:string;guideId:string|null;version:number|null;flowId:string|null;tripId:string|null};
+export type PendingCreation={requestId:string;guideId:string|null;version:number|null;flowId:string|null;tripId:string|null;inputHash?:string};
 const opaqueId=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 function creationIntent(value:PendingCreation):PendingCreation{
- if(!value||Object.keys(value).length!==5||!opaqueId.test(value.requestId)||[value.guideId,value.flowId,value.tripId].some(id=>id!==null&&(typeof id!=='string'||!opaqueId.test(id)))||(value.guideId!==null?(!Number.isSafeInteger(value.version)||(value.version??0)<1||!value.flowId):value.version!==null))throw Error('INVALID_CREATION');
- return{requestId:value.requestId,guideId:value.guideId,version:value.version,flowId:value.flowId,tripId:value.tripId};
+ if(!value||Object.keys(value).some(key=>!['requestId','guideId','version','flowId','tripId','inputHash'].includes(key))||!opaqueId.test(value.requestId)||[value.guideId,value.flowId,value.tripId].some(id=>id!==null&&(typeof id!=='string'||!opaqueId.test(id)))||(value.guideId!==null?(!Number.isSafeInteger(value.version)||(value.version??0)<1||!value.flowId):value.version!==null)||value.inputHash!==undefined&&(typeof value.inputHash!=='string'||!/^[a-f0-9]{64}$/.test(value.inputHash)))throw Error('INVALID_CREATION');
+ return{requestId:value.requestId,guideId:value.guideId,version:value.version,flowId:value.flowId,tripId:value.tripId,...value.inputHash?{inputHash:value.inputHash}:{}};
 }
 function creationInput(value:CreationInput):CreationInput{
  if(!value||Object.keys(value).length!==3||typeof value.title!=='string'||!value.title.trim()||value.title.length>200||typeof value.timezone!=='string'||!value.timezone||value.timezone.length>100||value.startDate!==null&&(typeof value.startDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(value.startDate)))throw Error('INVALID_CREATION');
+ try{new Intl.DateTimeFormat('en',{timeZone:value.timezone})}catch{throw Error('INVALID_CREATION')}
  return{title:value.title,timezone:value.timezone,startDate:value.startDate};
+}
+async function creationInputHash(value:CreationInput){
+ const bytes=new TextEncoder().encode(JSON.stringify(creationInput(value)));
+ return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
 function creationKey(ownerId:string,guideId:string|null){if(guideId!==null&&!opaqueId.test(guideId))throw Error('INVALID_CREATION');return ownerId+':'+(guideId??'manual')}
 async function creationTransaction<T>(ownerId:string,work:(tx:IDBTransaction,done:(value:T)=>void,fail:(reason:string)=>void)=>void):Promise<T>{
@@ -37,7 +42,9 @@ async function creationTransaction<T>(ownerId:string,work:(tx:IDBTransaction,don
  })}finally{db.close()}
 }
 export async function savePendingCreation(ownerId:string,intent:PendingCreation,input:CreationInput){
- const value=creationIntent(intent),payload=creationInput(input),key=creationKey(ownerId,value.guideId);
+ const payload=creationInput(input),inputHash=await creationInputHash(payload),checked=creationIntent(intent);
+ if(checked.inputHash&&checked.inputHash!==inputHash)throw Error('ORIGINAL_INPUT_MISMATCH');
+ const value={...checked,inputHash},key=creationKey(ownerId,value.guideId);
  await creationTransaction<void>(ownerId,(tx,done,fail)=>{
   const store=tx.objectStore('creations'),old=store.get(key);
   old.onsuccess=()=>{
@@ -46,6 +53,21 @@ export async function savePendingCreation(ownerId:string,intent:PendingCreation,
    prior.onsuccess=()=>{
     if(old.result&&!prior.result||prior.result&&JSON.stringify(prior.result.creationInput)!==JSON.stringify(payload)){fail('PENDING_DRAFT');return}
     store.put({key,ownerId,value});recovery.put({key:privateKey,ownerId,creationInput:payload});done();
+   };
+  };
+ });
+}
+export async function restoreOriginalCreation(ownerId:string,guideId:string|null,requestId:string,input:CreationInput):Promise<CreationInput>{
+ const payload=creationInput(input),inputHash=await creationInputHash(payload);
+ return creationTransaction(ownerId,(tx,done,fail)=>{
+  const row=tx.objectStore('creations').get(creationKey(ownerId,guideId));
+  row.onsuccess=()=>{
+   if(row.result?.value.requestId!==requestId||row.result.value.tripId){fail('PENDING_DRAFT');return}
+   if(creationIntent(row.result.value).inputHash!==inputHash){fail('ORIGINAL_INPUT_MISMATCH');return}
+   const store=tx.objectStore('recoveries'),key=ownerId+':trip-create:'+requestId,previous=store.get(key);
+   previous.onsuccess=()=>{
+    if(previous.result&&JSON.stringify(previous.result.creationInput)!==JSON.stringify(payload)){fail('PENDING_DRAFT');return}
+    store.put({key,ownerId,creationInput:payload});done(payload);
    };
   };
  });

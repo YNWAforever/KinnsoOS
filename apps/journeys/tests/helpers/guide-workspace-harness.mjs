@@ -24,6 +24,7 @@ const STUBS = {
    export const savePendingCreation=async(...a)=>globalThis.__ports.saveCreation?.(...a);
    export const recordCreatedTrip=async(...a)=>globalThis.__ports.recordCreated?.(...a);
    export const clearPendingCreation=async(...a)=>globalThis.__ports.clearCreation?.(...a);
+   export const restoreOriginalCreation=async(...a)=>globalThis.__ports.restoreCreation?.(...a);
    export const saveLocalSnapshot=async()=>{};export const readLocalSnapshot=async()=>null;
    export const saveLocalDraft=async()=>{};export const readLocalDraft=async()=>null;export const clearLocalDraft=async()=>{};`,
   guest: `export const GuestPlanner=()=>null;`,
@@ -102,7 +103,7 @@ export async function mount(name, props, ports, search = '') {
   const router = {push: noop, replace: noop, refresh: noop};
   const searchParams = new URLSearchParams(search);
   const context = createContext({
-    module: {}, exports: {}, console, setTimeout, clearTimeout, URL, URLSearchParams,
+    module: {}, exports: {}, console, Error, setTimeout, clearTimeout, URL, URLSearchParams,
     crypto: {randomUUID: () => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`},
     document: {visibilityState: 'visible', addEventListener: noop, removeEventListener: noop},
     navigator: {onLine: true},

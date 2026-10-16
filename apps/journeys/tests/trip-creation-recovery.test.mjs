@@ -8,6 +8,25 @@ const input={title:'My Kyoto',timezone:'Asia/Tokyo',startDate:'2026-11-01'};
 const search='?next='+encodeURIComponent(`/en/g/${guideId}?adopt=1&flow=${flowId}&version=1`);
 const submit=async view=>{view.elements().find(n=>n.type==='form').props.onSubmit({preventDefault(){}});await view.settle();};
 const ports={guidesGet:async()=>({ok:true,data:guide})};
+test('late original-field mismatch from A cannot repaint account B',async()=>{
+ let reject;const held=new Promise((resolve,no)=>{reject=no}),props={actorId:'A'};
+ const view=await mount('TripWorkspace',props,{...ports,readCreation:async owner=>owner==='A'?{intent:{...intent,inputHash:'a'.repeat(64)},input:null}:null,restoreCreation:async()=>held},search);
+ await submit(view);await submit(view);
+ props.actorId='B';view.render();await view.settle();reject(Error('ORIGINAL_INPUT_MISMATCH'));await view.settle();
+ assert.doesNotMatch(view.text(),/These fields do not match/);
+});
+test('after sign-out before creation, explicit original-field review resumes the same request',async()=>{
+ const calls=[],restored=[];
+ const view=await mount('TripWorkspace',{actorId:'A'},{...ports,readCreation:async()=>({intent:{...intent,inputHash:'a'.repeat(64)},input:null}),restoreCreation:async(...args)=>{restored.push(args);return input},tripsCreate:async(...args)=>{calls.push(args);return{ok:true,data:{id:tripId}}}},search);
+ await submit(view);assert.equal(calls.length,0);
+ const fields=view.elements().filter(n=>n.type==='input');
+ fields.find(n=>n.props.maxLength===200).props.onChange({target:{value:input.title}});
+ fields.find(n=>n.props.type==='date').props.onChange({target:{value:input.startDate}});
+ fields.find(n=>n.props.required&&n.props.maxLength===undefined).props.onChange({target:{value:input.timezone}});
+ await view.settle();await submit(view);
+ assert.equal(restored.length,1);assert.deepEqual(JSON.parse(JSON.stringify(restored[0])),['A',guideId,requestId,input]);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0])),[input,requestId,'A']);
+});
 test('same-prop session invalidation clears creation UI and explains how to sign in again',async()=>{
  let invalidate,writes=0;
  const view=await mount('TripWorkspace',{actorId:'A'},{...ports,readCreation:async()=>({intent,input}),subscribeInvalidation:callback=>{invalidate=callback;return()=>{}},tripsCreate:async()=>{writes++;return{ok:false,code:'UNAVAILABLE'}}},search);

@@ -6,6 +6,45 @@ import {offlineTripHost,actorA,actorB,guideId} from '../helpers/offline-trip-hos
 const require=createRequire(import.meta.url);
 const {chromium,expect}=require('@playwright/test');
 const evidence=process.env.KINNSO_OFFLINE_EVIDENCE;
+test('mock sign-out before create recovers only the original reviewed payload and request',{timeout:60000},async()=>{
+ const host=await offlineTripHost();let browser;
+ try{
+  browser=await chromium.launch({headless:true});
+  const context=await browser.newContext({baseURL:host.origin});
+  await context.route('**/*',route=>new URL(route.request().url()).origin===host.origin?route.continue():route.abort());
+  const page=await context.newPage();await page.request.get('/__session?actor='+actorA);
+  await page.goto('/en/g/'+guideId);await page.getByRole('link',{name:'Create a new trip and apply',exact:true}).click();
+  const originalUrl=page.url();await page.getByLabel('Trip title',{exact:true}).fill('Synthetic custom private name');
+  let original;
+  await page.route('**/api/trips',async route=>{
+   if(route.request().method()==='POST'&&!original){original=route.request().postDataJSON();await route.fulfill({status:401,contentType:'application/json',headers:{'set-cookie':'actor=; Path=/; SameSite=Strict'},body:JSON.stringify({ok:false,code:'AUTH_REQUIRED'})})}
+   else await route.continue();
+  });
+  await page.getByRole('button',{name:'Create trip',exact:true}).click();await expect(page.getByRole('link',{name:'Sign in',exact:true})).toBeVisible();
+  await page.evaluate(()=>window.__offlineSignOut());
+  await page.request.get('/__session?actor='+actorB);await page.goto(originalUrl);
+  await expect(page.getByLabel('Trip title',{exact:true})).toHaveValue(host.guide.title);
+  assert.equal(host.trips.size,0);await expect(page.getByRole('button',{name:'Check original trip creation',exact:true})).toHaveCount(0);
+  await page.request.get('/__session?actor='+actorA);await page.goto(originalUrl);
+  await page.getByRole('button',{name:'Check original trip creation',exact:true}).click();
+  await expect(page.getByRole('button',{name:'Confirm original fields and retry',exact:true})).toBeVisible();
+  await page.getByLabel('Trip title',{exact:true}).fill('Wrong replacement payload');
+  await page.getByRole('button',{name:'Confirm original fields and retry',exact:true}).click();
+  await expect(page.getByTestId('trip-save-state')).toContainText('do not match');
+  assert.equal(host.requests.filter(row=>row.path==='/api/trips'&&row.method==='POST').length,0);
+  await page.getByLabel('Trip title',{exact:true}).fill(original.input.title);
+  await page.getByLabel('Time zone',{exact:true}).fill(original.input.timezone);
+  if(original.input.startDate)await page.getByLabel('Start date (optional)',{exact:true}).fill(original.input.startDate);
+  if(evidence){await mkdir(evidence,{recursive:true});await page.screenshot({path:evidence+'/auth-original-fields.png',fullPage:true})}
+  await page.getByRole('button',{name:'Confirm original fields and retry',exact:true}).click();
+  await expect(page.getByTestId('adoption-preview')).toBeVisible();
+  const submitted=host.requests.filter(row=>row.path==='/api/trips'&&row.method==='POST');
+  assert.equal(submitted.length,1);assert.deepEqual(submitted[0].body,original);assert.equal(host.trips.size,1);
+  assert.equal([...host.trips.values()][0].value.days.length,0);
+  if(evidence)await writeFile(evidence+'/auth-recovery.json',JSON.stringify({layer:'MOCK_SESSION_REAL_REACT_AND_INDEXEDDB',original,submitted,tripCount:host.trips.size},null,2));
+  await context.close();
+ }finally{await browser?.close();await host.close()}
+});
 for(const locale of ['en','zh-HK'])test(`real Chromium / production React / mocked API: saved guide to durable private trip (${locale})`,{timeout:60000},async()=>{
  const host=await offlineTripHost();let browser,page;
  const errors=[],external=[];

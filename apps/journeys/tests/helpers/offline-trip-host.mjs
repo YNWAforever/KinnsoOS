@@ -10,6 +10,8 @@ const entry=`
  import React from 'react';import {createRoot} from 'react-dom/client';
  import {GuideWorkspace,BookmarkWorkspace} from '../../app/travel/GuideWorkspace';
  import {TripWorkspace} from '../../app/travel/TripWorkspace';
+ import {clearAccountCaches} from '../../lib/trips/local-drafts';
+ window.__offlineSignOut=clearAccountCaches;
  const state=await(await fetch('/__state')).json(),parts=location.pathname.split('/'),locale=parts[1];
  document.documentElement.lang=locale;
  const props={actorId:state.actor};
