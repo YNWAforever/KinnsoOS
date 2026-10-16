@@ -6,6 +6,12 @@ const id='11111111-1111-4111-8111-111111111111',tripId='22222222-2222-4222-8222-
 const guide={kind:'itinerary',id,title:'Published route',version:1,days:[{id,offset:0,title:'Authored day',stops:[{id:tripId,title:'Authored stop'}]}]};
 const trip={id:tripId,title:'Private destination',revision:4,days:[]};
 const ports={guidesGet:async()=>({ok:true,data:guide}),bookmarksList:async()=>({ok:true,data:{items:[]}}),tripsList:async()=>({ok:true,data:{items:[trip],nextCursor:null}}),tripsGet:async()=>({ok:true,data:trip}),adoptionPreview};
+test('an unresolved adoption cannot offer a second trip creation after partial journal cleanup',async()=>{
+ const original={guideId:id,tripId,version:1,revision:2,requestId:flow,flowId:flow};
+ const view=await mount('GuideWorkspace',{id,actorId:'A',initialGuide:guide},{...ports,readPending:async()=>original,readCreation:async()=>null});
+ assert.ok(view.button('Retry original application'));
+ assert.equal(view.elements().some(node=>node.type==='a'&&node.props.href?.startsWith('/en/trips?next=')),false,'resolve the original application before creating another destination');
+});
 test('cancel preview discloses a created empty trip and sends no adoption',async()=>{
  let writes=0;
  const view=await mount('GuideWorkspace',{id,actorId:'A',initialGuide:guide},{...ports,readCreation:async()=>({intent:{guideId:id,version:1,flowId:flow,requestId:flow,tripId},input:null}),tripsAdopt:async()=>{writes++}},`?adopt=1&trip=${tripId}&flow=${flow}&version=1&creation=${flow}`);
