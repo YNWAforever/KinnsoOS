@@ -199,6 +199,10 @@ function ensureJourney(locale: Locale): string | null {
   trackTravellerEvent('journey_started', { locale, routeKey: 'journey' })
   return journeyId
 }
+/** Reuse the existing consent/expiry contract before a supplemental pilot event. */
+export function ensureAnalyticsJourney(locale:Locale):string|null{
+ return hasAnalyticsConsent()?ensureJourney(locale):null
+}
 
 export function grantAnalyticsConsent(locale: Locale): boolean {
   if (getPublicAnalyticsMode() === 'disabled') return false

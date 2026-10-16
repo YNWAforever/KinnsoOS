@@ -1,10 +1,17 @@
 import { apiContext,backendFailure,boundedBody,failure,reply } from '../../../../lib/api/server';
 import { object,uuid } from '../../../../lib/api/validation';
+import {pilotEvent} from '../../../../lib/telemetry/pilot-server';
 type Context = { params: Promise<{id:string}> };
 export async function GET(request: Request, context: Context) {
   const ctx = await apiContext(request,'trips'); if (ctx.response) return ctx.response;
   const {id} = await context.params; if (!uuid(id)) return failure('NOT_FOUND',404);
+  const requestId=crypto.randomUUID();
+  await pilotEvent(ctx.actor,{phase:'reopen_attempt',tripId:id,requestId});
   const result = await ctx.client.rpc('get_trip_snapshot',{p_trip_id:id});
+  if(!result.error){
+    await pilotEvent(ctx.actor,{phase:'read',tripId:id,requestId,revision:result.data.revision});
+    await pilotEvent(ctx.actor,{phase:'reopened',tripId:id,requestId,revision:result.data.revision});
+  }
   return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data});
 }
 export async function DELETE(request: Request, context: Context) {

@@ -11,7 +11,7 @@ const GuideCard = ({ g, locale, savesLabel = 'Saves', isSaved, onSaveToggle }: {
   onSaveToggle?: () => void
 }) => (
   <div className="group relative">
-    <Link href={`/${locale}/g/${g.slug}`} className="block">
+    <Link href={`/${locale}/g/${g.slug}`} aria-label={g.title} className="block">
       <EditorialCard
         media={
           <EntityMedia

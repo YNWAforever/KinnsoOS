@@ -1516,6 +1516,8 @@ const messages: Messages = {
     unnamed: '이름 없음',
   },
   guideSave: {
+    planFromGuide: '이 가이드로 여행 계획하기',
+    planningUnavailable: '계정 여행 계획 서비스를 준비 중입니다.',
     save: '저장',
     saved: '저장됨',
     signInToSave: '저장하려면 로그인하세요',

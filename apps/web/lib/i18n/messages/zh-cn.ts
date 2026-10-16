@@ -1516,6 +1516,8 @@ const messages: Messages = {
     unnamed: '未命名',
   },
   guideSave: {
+    planFromGuide: '用这篇攻略规划行程',
+    planningUnavailable: '账户行程规划服务尚未接通。',
     save: '保存',
     saved: '已保存',
     signInToSave: '登录以保存',

@@ -13,20 +13,20 @@ const compiled=await build({entryPoints:[fileURLToPath(new URL('../app/api/ops/m
 const module={exports:{}};new Function('require','module','exports',compiled.outputFiles[0].text)(require,module,module.exports);
 const {GET}=module.exports;
 
-function backend(t,{monthlyError=null,dailyError=null,anonymous=false,enabled=true}={}){
+function backend(t,{monthlyError=null,dailyError=null,pilotError={code:"PGRST202",message:"Not installed"},pilotData=null,anonymous=false,enabled=true}={}){
  const env={KINNSO_ENVIRONMENT:'production',KINNSO_SITE_URL:'https://journeys.example',KINNSO_SUPABASE_URL:'https://example.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_synthetic',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://example.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://example.supabase.co',KINNSO_ENABLED_CAPABILITIES:enabled?'ops':''};
  const before=Object.fromEntries(Object.keys(env).map(k=>[k,process.env[k]]));for(const[k,v]of Object.entries(env))process.env[k]=v;
- const calls=[];globalThis.__monitoringClient={auth:{getUser:async()=>({data:{user:anonymous?null:{id:actor}},error:null})},rpc:async(name,args)=>{calls.push({name,args});if(name==='kinnso_actor')return{data:{id:actor,roles:['ops']},error:null};if(name==='get_kinnso_monitoring')return{data:dailyError?null:daily,error:dailyError};if(name==='get_kinnso_monthly_costs')return{data:monthlyError?null:monthly,error:monthlyError};throw Error('Unexpected RPC '+name);}};
+ const calls=[];globalThis.__monitoringClient={auth:{getUser:async()=>({data:{user:anonymous?null:{id:actor}},error:null})},rpc:async(name,args)=>{calls.push({name,args});if(name==='kinnso_actor')return{data:{id:actor,roles:['ops']},error:null};if(name==='get_kinnso_monitoring')return{data:dailyError?null:daily,error:dailyError};if(name==='get_kinnso_monthly_costs')return{data:monthlyError?null:monthly,error:monthlyError};if(name==='get_kinnso_pilot_metrics')return{data:pilotData,error:pilotError};throw Error('Unexpected RPC '+name);}};
  t.after(()=>{delete globalThis.__monitoringClient;for(const[k,v]of Object.entries(before))if(v===undefined)delete process.env[k];else process.env[k]=v;});return calls;
 }
 const request=()=>new Request('https://journeys.example/api/ops/monitoring?day=2026-10-05');
 for(const code of ['PGRST202','42883'])test('missing monthly definition preserves authorized daily monitoring without inventing zero costs: '+code,async t=>{
  backend(t,{monthlyError:{code,message:'Monthly definition is not installed'}});const response=await GET(request());
- assert.equal(response.status,200);const body=await response.json();assert.equal(body.ok,true);assert.deepEqual(body.data,{...daily,monthlyCosts:null});
+ assert.equal(response.status,200);const body=await response.json();assert.equal(body.ok,true);assert.deepEqual(body.data,{...daily,monthlyCosts:null,pilot:null});
  assert.match(response.headers.get('cache-control'),/private.*no-store/);assert.equal(response.headers.get('vary'),'Cookie');
 });
 test('installed monthly projection keeps the requested month and measured daily data',async t=>{
- const calls=backend(t);const response=await GET(request());assert.equal(response.status,200);assert.deepEqual((await response.json()).data,{...daily,monthlyCosts:monthly});
+ const calls=backend(t);const response=await GET(request());assert.equal(response.status,200);assert.deepEqual((await response.json()).data,{...daily,monthlyCosts:monthly,pilot:null});
  assert.deepEqual(calls.find(x=>x.name==='get_kinnso_monitoring').args,{p_day:'2026-10-05'});assert.deepEqual(calls.find(x=>x.name==='get_kinnso_monthly_costs').args,{p_month:'2026-10-01'});
 });
 for(const [message,status] of [['forbidden',403],['unauthenticated',401],['timeout',503]])test('monthly '+message+' remains a failure and does not disclose daily data',async t=>{
@@ -50,7 +50,13 @@ function rendered(data,locale){let state=0;const module={exports:{}};new Functio
  throw Error('Unexpected UI dependency '+name);
 },module,module.exports);return renderToStaticMarkup(module.exports.MonitoringWorkspace({actorId:actor,enabled:true}));}
 for(const locale of ['en','zh-HK'])test('monitoring shows the unknown monthly state while retaining activity and failed job: '+locale,()=>{
- const html=rendered({...daily,monthlyCosts:null},locale);assert.ok(html.includes(locale==='en'?'Combined monthly service costs':'服務合計月費'));
+ const html=rendered({...daily,monthlyCosts:null,pilot:null},locale);assert.ok(html.includes(locale==='en'?'Combined monthly service costs':'服務合計月費'));
  assert.ok(html.includes(locale==='en'?'Monthly service costs are unavailable':'月費目前未可用'));assert.ok(html.includes('trip_created: 7'));assert.ok(html.includes('media_cleanup: failed'));
  assert.equal(html.includes('US$0'),false);assert.equal(html.includes('role="alert"'),false);
+});
+
+test('installed pilot metrics retain numerical zero and a consented sample denominator',async t=>{
+ const pilot={adoptionAttempts:2,adoptions:1,adoptionSuccessRate:.5,firstCompletions:1,firstCompletionP50Ms:12000,reopenAttempts:1,reopens:1,reopenSuccessRate:1,qualifiedGuideViews:4,experienceReferrals:0,merchantReferrals:0,merchantReferralRate:0};
+ backend(t,{pilotError:null,pilotData:pilot});const response=await GET(request());assert.deepEqual((await response.json()).data.pilot,pilot);
+ const html=rendered({...daily,pilot},'en');assert.match(html,/Private itinerary pilot/);assert.match(html,/50%/);assert.match(html,/0%/);assert.match(html,/12000/);
 });

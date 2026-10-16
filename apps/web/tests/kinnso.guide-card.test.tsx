@@ -9,6 +9,10 @@ afterEach(cleanup)
 const guide = { slug: 'kyoto-tea', title: 'Kyoto Tea Houses', cover: 'https://picsum.photos/seed/kyoto/800/600', city: 'Kyoto', saves: 5, creatorHandle: 'teafan' }
 
 describe('GuideCard', () => {
+  it('names the saved-guide link using its visible guide title',()=>{
+    render(<GuideCard g={guide} locale="en"/>)
+    expect(screen.getByRole('link',{name:guide.title}).getAttribute('href')).toBe('/en/g/'+guide.slug)
+  })
   it('renders honest missing media and no static save proof', () => {
     const { container } = render(<GuideCard g={guide} locale="en" />)
     expect(screen.queryByRole('button')).toBeNull()

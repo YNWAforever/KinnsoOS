@@ -16,8 +16,8 @@ import type { Messages } from '@/lib/i18n/messages/en'
  *  support nested async function components). If a future test does that for the
  *  article route, mock this component's sibling the same way
  *  apps/web/tests/g.slug.host.test.tsx mocks this one. */
-export async function GuideExperienceLinks({ locale, city, guideSlug, t }: {
-  locale: Locale; city: string; guideSlug: string; t: Messages['article']
+export async function GuideExperienceLinks({ locale, city, guideSlug, guideId, t }: {
+  locale: Locale; city: string; guideSlug: string; guideId?:string; t: Messages['article']
 }) {
   const experiences = await optionalQuery('guide-experience-links', () => getExperiencesForCity(city), [])
   if (experiences.length === 0) return null
@@ -28,7 +28,7 @@ export async function GuideExperienceLinks({ locale, city, guideSlug, t }: {
       <h2 className="k2-display mt-3 text-lg font-semibold text-kinnso-ink">{t.experiencesNearbyHeadingWaitlist}</h2>
       <div className="mt-5 grid gap-4">
         {experiences.map((exp) => (
-          <ExperienceLinkCard key={exp.id} locale={locale} experience={exp} hrefQuery={hrefQuery} />
+          <ExperienceLinkCard key={exp.id} locale={locale} experience={exp} hrefQuery={hrefQuery} guideId={guideId}/>
         ))}
       </div>
     </div>

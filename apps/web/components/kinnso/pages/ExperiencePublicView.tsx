@@ -1,11 +1,11 @@
 // apps/web/components/kinnso/pages/ExperiencePublicView.tsx
-import Link from 'next/link'
 import { Bookmark } from 'lucide-react'
 import { Eyebrow } from '@/components/kinnso/editorial/Eyebrow'
 import { BookingWidget } from '@/components/kinnso/pages/BookingWidget'
 import { FeatureInterestForm } from '@/components/kinnso/FeatureInterestForm'
 import { ExperienceSaveButton } from '@/components/kinnso/ExperienceSaveButton'
 import { EntityMedia } from '@/components/kinnso/media/EntityMedia'
+import { PilotReferralLink } from '@/components/kinnso/pilot/PilotReferralLink'
 import type { PublicExperience } from '@/lib/experiences/public-queries'
 import type { PublicAvailability } from '@/lib/experiences/public-availability-queries'
 import type { RatingAggregate, Review } from '@/lib/reviews/types'
@@ -13,7 +13,7 @@ import type { Locale } from '@/lib/i18n/config'
 import type { Messages } from '@/lib/i18n/messages/en'
 
 export function ExperiencePublicView({
-  locale, t, bookingT, featureInterestT, bookingLive, reviewsT, experienceSaveT, experience, availability, viewerEmail, viewerId, isSaved, saveStateUnavailable, rating, reviews, sourceSurface, guideSlug,
+  locale, t, bookingT, featureInterestT, bookingLive, reviewsT, experienceSaveT, experience, availability, viewerEmail, viewerId, isSaved, saveStateUnavailable, rating, reviews, sourceSurface, guideSlug, sourceGuideId,
 }: {
   locale: Locale
   t: Messages['experiencePublic']
@@ -32,8 +32,10 @@ export function ExperiencePublicView({
   reviews: Review[]
   sourceSurface?: string
   guideSlug?: string
+  sourceGuideId?: string
 }) {
   const p = (path: string) => `/${locale}${path}`
+  const merchantHref=p(`/m/${experience.merchant.slug}`)+(sourceGuideId&&guideSlug?'?src=guide&guideSlug='+encodeURIComponent(guideSlug):'')
   return (
     <article className="k2-container py-8 md:py-12">
       <section className="overflow-hidden rounded-xl bg-white shadow-kinnso">
@@ -69,9 +71,9 @@ export function ExperiencePublicView({
           </div>
           <p className="mt-2 text-sm text-kinnso-muted">
             {t.hostedBy}{' '}
-            <Link href={p(`/m/${experience.merchant.slug}`)} className="font-semibold text-kinnso-orangeDark hover:underline">
+            <PilotReferralLink locale={locale} href={merchantHref} guideId={sourceGuideId} experienceId={experience.id} phase="merchant_referral" className="font-semibold text-kinnso-orangeDark hover:underline">
               {experience.merchant.companyName}
-            </Link>
+            </PilotReferralLink>
           </p>
         </div>
       </section>
@@ -100,9 +102,9 @@ export function ExperiencePublicView({
               />
             </div>
           )}
-          <Link href={p(`/m/${experience.merchant.slug}`)} className="mt-4 inline-block text-sm font-semibold text-kinnso-orangeDark hover:underline">
+          <PilotReferralLink locale={locale} href={merchantHref} guideId={sourceGuideId} experienceId={experience.id} phase="merchant_referral" className="mt-4 inline-block text-sm font-semibold text-kinnso-orangeDark hover:underline">
             {t.backToMerchant} {experience.merchant.companyName}
-          </Link>
+          </PilotReferralLink>
         </div>
       </section>
 

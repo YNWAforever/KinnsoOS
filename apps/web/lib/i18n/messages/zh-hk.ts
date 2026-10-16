@@ -1516,6 +1516,8 @@ const messages: Messages = {
     unnamed: '未命名',
   },
   guideSave: {
+    planFromGuide: '用這篇攻略規劃行程',
+    planningUnavailable: '帳戶行程規劃服務尚未接通。',
     save: '儲存',
     saved: '已儲存',
     signInToSave: '登入以儲存',

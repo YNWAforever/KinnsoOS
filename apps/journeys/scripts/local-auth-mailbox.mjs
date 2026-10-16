@@ -1,15 +1,17 @@
-import {verifyTestTarget} from './verify-test-target.mjs';
+import {verifyTestTarget,testTargetConfiguration} from './verify-test-target.mjs';
 
 const mailboxOrigin = 'http://127.0.0.1:58424';
 const appOrigin = 'http://127.0.0.1:3495';
 function blocked() { throw Error('BLOCKED: owned local email capture contract required'); }
-export function verifyMailboxTarget(env = process.env) {
- const target = verifyTestTarget(env);
+function mailboxConfiguration(env,target=testTargetConfiguration(env)) {
  if (env.KINNSO_TEST_MAILBOX_ORIGIN !== mailboxOrigin || env.KINNSO_TEST_EMAIL_CONFIRMATION !== 'required') blocked();
  return {...target, mailboxOrigin, authContainer:'supabase_auth_'+target.projectRef, mailboxContainer:'supabase_inbucket_'+target.projectRef};
 }
-export function verifyMailboxRuntime(env, auth, mailbox) {
- const target = verifyMailboxTarget(env);
+export function verifyMailboxTarget(env = process.env,run) {
+ return mailboxConfiguration(env,verifyTestTarget(env,run));
+}
+export function verifyMailboxRuntime(env, auth, mailbox, run) {
+ const target = verifyMailboxTarget(env,run);
  for (const [value, name] of [[auth,target.authContainer],[mailbox,target.mailboxContainer]]) {
   if (value?.Name !== '/'+name || value?.State?.Running !== true || value?.Config?.Labels?.['com.supabase.cli.project'] !== target.projectRef) blocked();
  }
@@ -33,7 +35,7 @@ export function selectCapturedMessage(list, email) {
  return matching[0].ID;
 }
 export function capturedConfirmationLink(message, email, intent, env = process.env) {
- const target = verifyMailboxTarget(env); syntheticAddress(email);
+ const target = mailboxConfiguration(env); syntheticAddress(email);
  if (!recipient(message,email) || typeof message.HTML !== 'string' || message.HTML.length > 32768) blocked();
  if (!['en','zh-HK'].includes(intent.locale) || !['sign-up','recovery'].includes(intent.flow) || typeof intent.next !== 'string') blocked();
  const links = [...message.HTML.matchAll(/href\s*=\s*["']([^"']+)["']/gi)];

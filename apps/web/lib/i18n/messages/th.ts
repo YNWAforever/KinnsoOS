@@ -1516,6 +1516,8 @@ const messages: Messages = {
     unnamed: 'ไม่มีชื่อ',
   },
   guideSave: {
+    planFromGuide: 'วางแผนทริปจากคู่มือนี้',
+    planningUnavailable: 'บริการวางแผนทริปในบัญชียังไม่พร้อมใช้งาน',
     save: 'บันทึก',
     saved: 'บันทึกแล้ว',
     signInToSave: 'เข้าสู่ระบบเพื่อบันทึก',

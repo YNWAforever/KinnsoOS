@@ -22,6 +22,8 @@ import { buildGuideMetadata, SITE_URL } from '@/lib/seo/metadata'
 import { articleJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
 import { JsonLd } from '@/components/JsonLd'
 import { AnalyticsEntityView } from '@/components/kinnso/analytics/AnalyticsEntityView'
+import { guideAdoptionHref } from '@/lib/guides/adoption'
+import { GuidePlanningActions } from '@/components/kinnso/pilot/GuidePlanningActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +58,7 @@ export default async function GuidePage({
   const messages = await getDictionary(locale as Locale)
   const authorName = guide.creatorName ?? guide.creatorHandle
   const approvedCover = isApprovedEntityMediaUrl(guide.cover) ? guide.cover : null
+  const planningHref = guideAdoptionHref(guide.id, locale)
 
   const viewer = await optionalQuery('guide-viewer', async () => {
     const supabase = await createSupabaseServerClient()
@@ -148,10 +151,11 @@ export default async function GuidePage({
         <div className="rounded-lg bg-white p-6">
           <h2 className="text-base font-bold text-kinnso-ink">{messages.creatorProfile.destinationsCovered}</h2>
           <p className="mt-2 text-sm text-kinnso-muted">{guide.summary ?? guide.city}</p>
+          <GuidePlanningActions locale={locale as Locale} guideId={guide.id} href={planningHref} label={messages.guideSave.planFromGuide} unavailable={messages.guideSave.planningUnavailable}/>
           <Link href={`/${locale}/feed`} className="k2-btn-ghost mt-5 inline-flex text-sm">
             {messages.creatorProfile.viewAllGuides}
           </Link>
-          <GuideExperienceLinks locale={locale as Locale} city={guide.city} guideSlug={guide.slug} t={messages.article} />
+          <GuideExperienceLinks locale={locale as Locale} city={guide.city} guideSlug={guide.slug} guideId={guide.id} t={messages.article} />
         </div>
 
         <aside className="k2-card bg-kinnso-cream2 p-6">

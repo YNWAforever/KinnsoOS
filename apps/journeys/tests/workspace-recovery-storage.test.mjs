@@ -41,3 +41,24 @@ test('acknowledgement cannot cross accounts or replace a journal with an oversiz
  await s.synchronizeAccountCache('B');
  await assert.rejects(s.completeLocalWorkspaceRecovery('A','support',uuid,{}),/CACHE_ACCOUNT_CHANGED/);
 });
+
+const adoption={guideId:uuid,tripId:'22222222-2222-4222-8222-222222222222',version:1,revision:3,requestId:uuid,flowId:'33333333-3333-4333-8333-333333333333'};
+test('opaque adoption intent survives reopen and logout but remains hidden from a different current owner',async()=>{
+ const s=await storage();assert.equal(typeof s.savePendingAdoption,'function');
+ await s.synchronizeAccountCache('A');await s.savePendingAdoption('A',adoption);
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.readPendingAdoption('A',uuid))),adoption);
+ await s.clearAccountCaches();await s.synchronizeAccountCache('B');
+ assert.equal(await s.readPendingAdoption('A',uuid),null);
+ assert.equal(await s.readPendingAdoption('B',uuid),null);
+ await s.synchronizeAccountCache('A');
+ assert.deepEqual(JSON.parse(JSON.stringify(await s.readPendingAdoption('A',uuid))),adoption);
+});
+test('an unresolved adoption cannot change payload or request identity, and only its owner can release it',async()=>{
+ const s=await storage();assert.equal(typeof s.savePendingAdoption,'function');await s.synchronizeAccountCache('A');
+ await s.savePendingAdoption('A',adoption);await s.savePendingAdoption('A',adoption);
+ for(const patch of [{revision:4},{tripId:uuid},{requestId:adoption.tripId}])await assert.rejects(s.savePendingAdoption('A',{...adoption,...patch}),/PENDING_DRAFT/);
+ await s.clearPendingAdoption('A',uuid,'wrong');assert.ok(await s.readPendingAdoption('A',uuid));
+ await assert.rejects(s.clearPendingAdoption('B',uuid,uuid),/CACHE_ACCOUNT_CHANGED/);
+ await s.clearPendingAdoption('A',uuid,uuid);assert.equal(await s.readPendingAdoption('A',uuid),null);
+ await assert.rejects(s.savePendingAdoption('A',{...adoption,privateNote:'do not store this'}),/INVALID_ADOPTION/);
+});

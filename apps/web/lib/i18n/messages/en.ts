@@ -1374,6 +1374,8 @@ export interface Messages {
     unnamed: string
   }
   guideSave: {
+    planFromGuide: string
+    planningUnavailable: string
     save: string
     saved: string
     signInToSave: string
@@ -3048,6 +3050,8 @@ const messages: Messages = {
     unnamed: 'Unnamed',
   },
   guideSave: {
+    planFromGuide: 'Plan from this guide',
+    planningUnavailable: 'Account trip planning is not connected yet.',
     save: 'Save',
     saved: 'Saved',
     signInToSave: 'Sign in to save',

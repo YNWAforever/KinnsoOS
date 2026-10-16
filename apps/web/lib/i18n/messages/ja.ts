@@ -1516,6 +1516,8 @@ const messages: Messages = {
     unnamed: '名称未設定',
   },
   guideSave: {
+    planFromGuide: 'このガイドで旅程を作る',
+    planningUnavailable: 'アカウントの旅程作成サービスは準備中です。',
     save: '保存',
     saved: '保存済み',
     signInToSave: '保存するにはログイン',
