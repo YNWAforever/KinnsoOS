@@ -18,6 +18,22 @@ async function storage(){
 }
 const uuid='11111111-1111-4111-8111-111111111111';
 const value={version:1,draft:{notes:'Owned original'},pending:{requestId:uuid,command:{type:'submitEvidence',notes:'Exact original'}}};
+test('creation recovery freezes its original payload; logout retains only the actor-bound opaque receipt',async()=>{
+ const s=await storage(),guideId='22222222-2222-4222-8222-222222222222',tripId='33333333-3333-4333-8333-333333333333';
+ const intent={requestId:uuid,guideId,version:1,flowId:tripId,tripId:null},input={title:'Private title',startDate:null,timezone:'UTC'};
+ assert.equal(typeof s.savePendingCreation,'function');
+ await s.synchronizeAccountCache('A');await s.savePendingCreation('A',intent,input);
+ await assert.rejects(s.savePendingCreation('A',{...intent,requestId:tripId},input),/PENDING_DRAFT/);
+ await assert.rejects(s.savePendingCreation('A',intent,{...input,title:'Changed'}),/PENDING_DRAFT/);
+ assert.equal(await s.readPendingCreation('B',guideId),null);
+ await s.clearAccountCaches();await s.synchronizeAccountCache('B');assert.equal(await s.readPendingCreation('B',guideId),null);
+ await s.synchronizeAccountCache('A');const reopened=await s.readPendingCreation('A',guideId);assert.equal(reopened.input,null);assert.equal(reopened.intent.requestId,uuid);
+ await assert.rejects(s.savePendingCreation('A',intent,{...input,title:'Replacement after logout'}),/PENDING_DRAFT/);
+ await assert.rejects(s.recordCreatedTrip('B',guideId,uuid,tripId),/CACHE_ACCOUNT_CHANGED/);
+ await s.recordCreatedTrip('A',guideId,uuid,tripId);assert.equal((await s.readPendingCreation('A',guideId)).intent.tripId,tripId);
+ await s.clearPendingCreation('A',guideId,'wrong');assert.ok(await s.readPendingCreation('A',guideId));
+ await s.clearPendingCreation('A',guideId,uuid);assert.equal(await s.readPendingCreation('A',guideId),null);
+});
 test('workspace IDB recovery participates in the account transaction and remains invisible to another owner',async()=>{const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','mission:1',value);assert.deepEqual(JSON.parse(JSON.stringify(await s.readLocalWorkspaceRecovery('A','mission:1'))),value);assert.equal(await s.readLocalWorkspaceRecovery('B','mission:1'),null);await assert.rejects(s.saveLocalWorkspaceRecovery('B','mission:1',value),/CACHE_ACCOUNT_CHANGED/);});
 test('unknown recovery cannot replace its UUID or payload, and only exact terminal receipt clearing releases it',async()=>{const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.saveLocalWorkspaceRecovery('A','mission:1',value);await assert.rejects(s.saveLocalWorkspaceRecovery('A','mission:1',{...value,pending:{...value.pending,command:{type:'submitEvidence',notes:'Changed'}}}),/PENDING_DRAFT/);await assert.rejects(s.saveLocalWorkspaceRecovery('A','mission:1',{...value,pending:null}),/PENDING_DRAFT/);await s.clearLocalWorkspaceRecovery('A','mission:1','wrong');assert.ok(await s.readLocalWorkspaceRecovery('A','mission:1'));await s.clearLocalWorkspaceRecovery('A','mission:1',uuid);assert.equal(await s.readLocalWorkspaceRecovery('A','mission:1'),null);});
 test('account switch and explicit logout clear recovery with existing private snapshots and trip drafts',async()=>{const s=await storage();await s.synchronizeAccountCache('A');await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.synchronizeAccountCache('B');await s.synchronizeAccountCache('A');assert.equal(await s.readLocalWorkspaceRecovery('A','mission:1'),null);await s.saveLocalWorkspaceRecovery('A','mission:1',value);await s.clearAccountCaches();await s.synchronizeAccountCache('A');assert.equal(await s.readLocalWorkspaceRecovery('A','mission:1'),null);});

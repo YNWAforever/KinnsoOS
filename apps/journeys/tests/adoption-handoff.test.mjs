@@ -6,6 +6,17 @@ const id='11111111-1111-4111-8111-111111111111',tripId='22222222-2222-4222-8222-
 const guide={kind:'itinerary',id,title:'Published route',version:1,days:[{id,offset:0,title:'Authored day',stops:[{id:tripId,title:'Authored stop'}]}]};
 const trip={id:tripId,title:'Private destination',revision:4,days:[]};
 const ports={guidesGet:async()=>({ok:true,data:guide}),bookmarksList:async()=>({ok:true,data:{items:[]}}),tripsList:async()=>({ok:true,data:{items:[trip],nextCursor:null}}),tripsGet:async()=>({ok:true,data:trip}),adoptionPreview};
+test('cancel preview discloses a created empty trip and sends no adoption',async()=>{
+ let writes=0;
+ const view=await mount('GuideWorkspace',{id,actorId:'A',initialGuide:guide},{...ports,readCreation:async()=>({intent:{guideId:id,version:1,flowId:flow,requestId:flow,tripId},input:null}),tripsAdopt:async()=>{writes++}},`?adopt=1&trip=${tripId}&flow=${flow}&version=1&creation=${flow}`);
+ assert.match(view.text(),/empty trip.*created/i);
+ const cancel=view.button('Cancel preview');assert.ok(cancel);cancel.props.onClick();await view.settle();
+ assert.doesNotMatch(view.text(),/Review before applying/);assert.match(view.text(),/empty trip.*created/i);assert.equal(writes,0);
+});
+test('a changed source version cannot auto-preview a different itinerary after trip creation',async()=>{
+ const view=await mount('GuideWorkspace',{id,actorId:'A',initialGuide:{...guide,version:2}},{...ports,guidesGet:async()=>({ok:true,data:{...guide,version:2}})},`?adopt=1&trip=${tripId}&flow=${flow}&version=1`);
+ assert.match(view.text(),/source version changed/i);assert.doesNotMatch(view.text(),/Review before applying/);
+});
 test('anonymous account adoption links through login back to this guide, without writing',async()=>{
  const view=await mount('GuideWorkspace',{id,actorId:null,initialGuide:guide},ports);
  const signIn=view.elements().find(node=>node.type==='a'&&node.props.href?.includes('/sign-in?')&&node.props.children?.includes('Sign in to apply'));
@@ -19,7 +30,7 @@ test('a newly selected trip returns to a read-only preview with the actual incom
  assert.match(view.text(),/Review before applying/);
  assert.match(view.text(),/Authored stop/);
  assert.equal(writes,0);
- const create=view.elements().find(node=>node.type==='a'&&node.props.children==='Create a trip first');
+ const create=view.elements().find(node=>node.type==='a'&&node.props.children==='Create a new trip and apply');
  assert.match(create.props.href,/\/en\/trips\?next=/);
 });
 test('a remounted unknown adoption replays the stored version, revision and request ID',async()=>{
@@ -44,7 +55,7 @@ test('a freshly created owned return target remains selectable when it is outsid
 });
 for(const actorId of [null,'actor-A'])test(`the adoption start precedes login or trip creation (${actorId})`,async()=>{
  const events=[],view=await mount('GuideWorkspace',{id,actorId,initialGuide:guide},{...ports,trackPilotEvent:event=>events.push(event)});
- const label=actorId?'Create a trip first':'Sign in to apply this itinerary';
+ const label=actorId?'Create a new trip and apply':'Sign in to apply this itinerary';
  const link=view.elements().find(node=>node.type==='a'&&node.props.children===label);
  assert.ok(link);
  assert.equal(events.filter(event=>event.phase==='started').length,0);

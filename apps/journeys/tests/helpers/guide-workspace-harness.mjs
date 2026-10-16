@@ -10,20 +10,27 @@ const require = createRequire(import.meta.url);
 const {build} = require('esbuild');
 
 const STUBS = {
-  ui: `export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:p=>'/'+globalThis.__locale+'/'+(p||'')});`,
+  ui: `export const useApp=()=>({ready:true,locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:p=>'/'+globalThis.__locale+'/'+(p||'')});`,
   guides: `export const guides={get:id=>globalThis.__ports.guidesGet(id)};`,
   adoption: `export const adoptionPreview=(...a)=>globalThis.__ports.adoptionPreview?.(...a)??null;`,
   bookmarks: `export const bookmarks={list:(...a)=>globalThis.__ports.bookmarksList(...a),toggle:(...a)=>globalThis.__ports.bookmarksToggle(...a)};`,
-  trips: `export const trips={list:(...a)=>globalThis.__ports.tripsList?.(...a)??Promise.resolve({ok:true,data:{items:[],nextCursor:null}}),get:(...a)=>globalThis.__ports.tripsGet?.(...a)??Promise.resolve({ok:false,code:'NOT_FOUND',retryable:false,requestId:'x'}),adopt:(...a)=>globalThis.__ports.tripsAdopt?.(...a)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'})};`,
-  drafts: `export const subscribeAccountInvalidation=()=>()=>{};export const invalidateAccountViews=()=>{};
+  trips: `export const trips={list:(...a)=>globalThis.__ports.tripsList?.(...a)??Promise.resolve({ok:true,data:{items:[],nextCursor:null}}),get:(...a)=>globalThis.__ports.tripsGet?.(...a)??Promise.resolve({ok:false,code:'NOT_FOUND',retryable:false,requestId:'x'}),adopt:(...a)=>globalThis.__ports.tripsAdopt?.(...a)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'}),create:(...a)=>globalThis.__ports.tripsCreate?.(...a),creation:(...a)=>globalThis.__ports.creationReceipt?.(...a)??Promise.resolve({ok:true,data:{tripId:null}})};`,
+  drafts: `export const subscribeAccountInvalidation=(...a)=>globalThis.__ports.subscribeInvalidation?.(...a)??(()=>{});export const invalidateAccountViews=(...a)=>globalThis.__ports.invalidateAccount?.(...a);
    export const synchronizeAccountCache=async()=>{};
    export const readPendingAdoption=async(...a)=>globalThis.__ports.readPending?.(...a)??null;
    export const savePendingAdoption=async(...a)=>globalThis.__ports.savePending?.(...a);
-   export const clearPendingAdoption=async(...a)=>globalThis.__ports.clearPending?.(...a);`,
+   export const clearPendingAdoption=async(...a)=>globalThis.__ports.clearPending?.(...a);
+   export const readPendingCreation=async(...a)=>globalThis.__ports.readCreation?.(...a)??null;
+   export const savePendingCreation=async(...a)=>globalThis.__ports.saveCreation?.(...a);
+   export const recordCreatedTrip=async(...a)=>globalThis.__ports.recordCreated?.(...a);
+   export const clearPendingCreation=async(...a)=>globalThis.__ports.clearCreation?.(...a);
+   export const saveLocalSnapshot=async()=>{};export const readLocalSnapshot=async()=>null;
+   export const saveLocalDraft=async()=>{};export const readLocalDraft=async()=>null;export const clearLocalDraft=async()=>{};`,
   guest: `export const GuestPlanner=()=>null;`,
   content: `export const PublicGuideContent=({guide})=>guide?guide.title:'';`,
   guard: `export const useDraftNavigation=()=>path=>globalThis.__ports.navigate?.(path);`,
   metrics: `export const trackPilotEvent=(...args)=>globalThis.__ports.trackPilotEvent?.(...args);`,
+  children: `export const ImportPreview=()=>null;export const RecordCapture=()=>null;export const SharePreview=()=>null;export const TripWarnings=()=>null;export const PendingAdoptionRecovery=()=>null;export const exportPrivateTrip=()=>{};`,
 };
 
 function stubFor(specifier) {
@@ -37,13 +44,15 @@ function stubFor(specifier) {
   if (specifier.endsWith('/seo/PublicGuideContent')) return 'content';
   if (specifier === './UnsavedDraftGuard') return 'guard';
   if (specifier.endsWith('/telemetry/pilot-client')) return 'metrics';
+  if (['./ImportPreview','./RecordCapture','./SharePreview','./TripWarnings','./PendingAdoptionRecovery'].includes(specifier)||specifier.endsWith('/trips/export')) return 'children';
   return null;
 }
 
-let bundlePromise;
-function bundle() {
-  bundlePromise ??= build({
-    entryPoints: [new URL('../../app/travel/GuideWorkspace.tsx', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')],
+const bundles=new Map();
+function bundle(name) {
+  const file=name==='TripWorkspace'?'TripWorkspace':'GuideWorkspace';
+  if(!bundles.has(file))bundles.set(file,build({
+    entryPoints: [new URL('../../app/travel/'+file+'.tsx', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')],
     bundle: true, write: false, platform: 'node', format: 'cjs',
     external: ['react', 'react/jsx-runtime', 'next/link', 'next/navigation'],
     plugins: [{
@@ -56,8 +65,8 @@ function bundle() {
         b.onLoad({filter: /.*/, namespace: 'stub'}, args => ({loader: 'js', contents: STUBS[args.path]}));
       },
     }],
-  });
-  return bundlePromise;
+  }));
+  return bundles.get(file);
 }
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -115,7 +124,7 @@ export async function mount(name, props, ports, search = '') {
     },
   });
   context.globalThis = context;
-  const compiled = await bundle();
+  const compiled = await bundle(name);
   const module = {exports: {}};
   context.module = module;
   context.exports = module.exports;

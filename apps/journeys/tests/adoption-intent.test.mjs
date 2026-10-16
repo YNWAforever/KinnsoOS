@@ -2,6 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 const intent=await import('../lib/guides/adoption-intent.ts').catch(()=>({}));
 const guide='11111111-1111-4111-8111-111111111111',trip='22222222-2222-4222-8222-222222222222',flow='33333333-3333-4333-8333-333333333333';
+test('the reviewed source version and opaque creation receipt survive validated trip returns',()=>{
+ const next=intent.adoptionPath('en',guide,undefined,flow,3,trip);
+ assert.equal(intent.parseAdoptionPath(next,'en').version,3);
+ assert.equal(intent.parseAdoptionPath(next,'en').creationId,trip);
+ const returned=intent.afterTripCreation(next,trip,'en');
+ assert.equal(intent.parseAdoptionPath(returned,'en').version,3);
+ for(const suffix of ['&version=0','&version=1.5','&version=1&version=2','&creation=nope'])assert.equal(intent.parseAdoptionPath(`/en/g/${guide}?adopt=1`+suffix,'en'),null);
+});
 test('login and new-trip handoffs return to the exact guide preview without confirming adoption',()=>{
  assert.equal(typeof intent.adoptionPath,'function');
  const next=intent.adoptionPath('zh-HK',guide,undefined,flow);

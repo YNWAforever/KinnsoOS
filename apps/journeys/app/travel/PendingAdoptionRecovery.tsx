@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useDraftNavigation} from './UnsavedDraftGuard';
 import {useApp} from './ui';
 import {trips} from '../../lib/trips/repository';
-import {synchronizeAccountCache,readPendingAdoptions,clearPendingAdoption,subscribeAccountInvalidation,type PendingAdoption} from '../../lib/trips/local-drafts';
+import {synchronizeAccountCache,readPendingAdoptions,clearPendingAdoption,subscribeAccountInvalidation,readPendingCreation,clearPendingCreation,invalidateAccountViews,type PendingAdoption} from '../../lib/trips/local-drafts';
 export function PendingAdoptionRecovery({actorId,tripId}:{actorId:string;tripId?:string}){
  const {t,href}=useApp(),navigate=useDraftNavigation(),[items,setItems]=useState<{intent:PendingAdoption;title:string}[]>([]),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[valid,setValid]=useState(true);
  const epoch=useRef(0),lock=useRef(false);
@@ -14,7 +14,7 @@ export function PendingAdoptionRecovery({actorId,tripId}:{actorId:string;tripId?
    await synchronizeAccountCache(actorId);
    const pending=await readPendingAdoptions(actorId),rows=[];
    for(const intent of pending.filter(item=>!tripId||item.tripId===tripId)){
-    const current=await trips.get(intent.tripId);
+    const current=await trips.get(intent.tripId,actorId);
     if(!active)return;
     if(current.ok)rows.push({intent,title:current.data.title});
    }
@@ -24,10 +24,10 @@ export function PendingAdoptionRecovery({actorId,tripId}:{actorId:string;tripId?
  },[actorId,tripId]);
  async function retry(intent:PendingAdoption){
   if(lock.current||!valid)return;const generation=epoch.current;lock.current=true;setBusy(true);
-  const result=await trips.adopt(intent.guideId,intent.version,intent.tripId,intent.revision,intent.requestId,intent.flowId);
+  const result=await trips.adopt(intent.guideId,intent.version,intent.tripId,intent.revision,intent.requestId,intent.flowId,actorId);
   if(generation!==epoch.current)return;
   if(result.ok){
-   try{await clearPendingAdoption(actorId,intent.guideId,intent.requestId)}catch{if(generation!==epoch.current)return;setMessage(t('The application was confirmed. Its recovery entry is retained; reload your trip.','套用已確認，恢復紀錄仍保留，請重新載入行程。'));setBusy(false);lock.current=false;return}
+   try{const creation=await readPendingCreation(actorId,intent.guideId);if(generation!==epoch.current)return;if(creation?.intent.tripId===intent.tripId){await clearPendingCreation(actorId,intent.guideId,creation.intent.requestId);if(generation!==epoch.current)return}await clearPendingAdoption(actorId,intent.guideId,intent.requestId)}catch{if(generation!==epoch.current)return;setMessage(t('The application was confirmed. Its recovery entry is retained; reload your trip.','套用已確認，恢復紀錄仍保留，請重新載入行程。'));setBusy(false);lock.current=false;return}
    if(generation!==epoch.current)return;
    setItems(rows=>rows.filter(row=>row.intent.requestId!==intent.requestId));navigate(href('trips/'+intent.tripId));
   }else if(['CONFLICT','INVALID','NOT_FOUND','FORBIDDEN'].includes(result.code)){
@@ -37,7 +37,7 @@ export function PendingAdoptionRecovery({actorId,tripId}:{actorId:string;tripId?
     setItems(rows=>rows.filter(row=>row.intent.requestId!==intent.requestId));
     setMessage(t('The original application was refused. Your existing private trip is kept; review the current guide before starting again.','原套用已被拒絕，現有私人行程保留；請核對目前攻略後再開始。'));
    }catch{if(generation!==epoch.current)return;setMessage(t('The recovery entry could not be cleared. The original request is kept.','未能清除恢復紀錄，原請求已保留。'))}
-  }else setMessage(t('The original application could not be confirmed. Its request is kept.','未能確認原套用操作，原請求已保留。'));
+  }else {if(result.code==='AUTH_REQUIRED'){invalidateAccountViews(null);return}setMessage(t('The original application could not be confirmed. Its request is kept.','未能確認原套用操作，原請求已保留。'));}
   setBusy(false);lock.current=false;
  }
  if(!valid)return null;
