@@ -434,6 +434,7 @@
     "tests/navigation-diagnostics.test.mjs",
     "tests/notifications.delivery.test.mjs",
     "tests/offline/private-trip.browser.mjs",
+    "tests/offline/stale-tab-recovery.browser.mjs",
     "tests/operations-connected-coverage.test.mjs",
     "tests/operations-layout.test.mjs",
     "tests/operations-performance.test.mjs",
