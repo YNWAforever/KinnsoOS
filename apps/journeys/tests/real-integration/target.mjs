@@ -75,8 +75,15 @@ export function validateApproval(approval,head,{now=Date.now(),memory=freemem()}
   approval.resourceAuthorization.minimumFreeMemoryBytes===2*1024**3&&
   approval.resourceAuthorization.minimumFreeDiskBytes===6*1024**3&&
   ['renewalReceiptSha256','gatewayConfigSha256'].every(key=>/^[a-f0-9]{64}$/.test(approval.resourceAuthorization[key]??''));
+ const todaySliceTwoGiB=project===defaultProject&&
+  approval.runId==='c731fc3e-38be-4f79-b333-5757b2a72497'&&approval.testSelection==='TODAY_SLICE_4'&&
+  approval.minimumFreeDiskBytes===6*1024**3&&approval.resourceAuthorization?.approved===true&&
+  approval.resourceAuthorization.kind==='human-approved-today-slice-2-6-gib-20261019'&&
+  approval.resourceAuthorization.minimumFreeMemoryBytes===2*1024**3&&
+  approval.resourceAuthorization.minimumFreeDiskBytes===6*1024**3&&
+  ['renewalReceiptSha256','gatewayConfigSha256'].every(key=>/^[a-f0-9]{64}$/.test(approval.resourceAuthorization[key]??''));
  requireGate(approval.minimumFreeMemoryBytes===3*1024**3||
-  (scopedTwoGiB||coldStartTwoGiB||staleTabTwoGiB)&&approval.minimumFreeMemoryBytes===2*1024**3,'APPROVED_RAM_THRESHOLD_MISMATCH');
+  (scopedTwoGiB||coldStartTwoGiB||staleTabTwoGiB||todaySliceTwoGiB)&&approval.minimumFreeMemoryBytes===2*1024**3,'APPROVED_RAM_THRESHOLD_MISMATCH');
  const readingValid=Number.isFinite(memory)&&memory>0;
  if(!readingValid||memory<approval.minimumFreeMemoryBytes){
   const error=new Blocked(readingValid?
@@ -169,6 +176,17 @@ function execute(args,{input,env}={}){
  try{return String(execFileSync(args[0],args.slice(1),{cwd:root,input,env:env??process.env,encoding:'utf8',windowsHide:true,timeout:20000,stdio:['pipe','pipe','pipe'],maxBuffer:3*1024*1024}))}
  catch{throw new Blocked('IDENTITY_OR_CATALOG_COMMAND_FAILED')}
 }
+export function bootstrapFile(approval,approvalFile,name){
+ requireGate(['loopback-relay.mjs','runtime-http.mjs'].includes(name),'BOOTSTRAP_FILE_NOT_APPROVED');
+ let privateRoot=path.resolve(root,'../../.local-private');
+ if(approval.testSelection==='TODAY_SLICE_4'){
+  requireGate(path.isAbsolute(approvalFile)&&
+   approval.resourceAuthorization?.kind==='human-approved-today-slice-2-6-gib-20261019','BOOTSTRAP_SCOPE_MISMATCH');
+  privateRoot=path.resolve(path.dirname(approvalFile),'..');
+  requireGate(path.basename(privateRoot)==='.local-private','BOOTSTRAP_PRIVATE_ROOT_REQUIRED');
+ }
+ return path.join(privateRoot,'guide-real-integration-20261016/bootstrap',name);
+}
 export async function verifyTarget(env=process.env,{empty=true}={}){
  requireGate(!!env.KINNSO_REAL_IT_APPROVAL_FILE&&!!env.KINNSO_REAL_IT_ATTESTATION_FILE,'APPROVAL_REQUIRED');
  let approval,attestation;try{approval=JSON.parse(readFileSync(env.KINNSO_REAL_IT_APPROVAL_FILE,'utf8'));attestation=JSON.parse(readFileSync(env.KINNSO_REAL_IT_ATTESTATION_FILE,'utf8'))}catch{throw new Blocked('APPROVAL_RECORD_UNREADABLE')}
@@ -185,7 +203,7 @@ export async function verifyTarget(env=process.env,{empty=true}={}){
   const configuredRelay=approval.coldStartTarget?.relaySourceFile;
   const relayPath=configuredRelay
    ?path.resolve(configuredRelay)
-   :path.resolve(root,'../../.local-private/guide-real-integration-20261016/bootstrap/loopback-relay.mjs');
+   :bootstrapFile(approval,env.KINNSO_REAL_IT_APPROVAL_FILE,'loopback-relay.mjs');
   if(configuredRelay)requireGate(
    relayPath.startsWith(path.resolve(root,'../../.local-private')+path.sep),'RELAY_SOURCE_PATH');
   requireGate(sha(readFileSync(relayPath))===transportApproval.relaySourceSha256,'RELAY_SOURCE_DRIFT');

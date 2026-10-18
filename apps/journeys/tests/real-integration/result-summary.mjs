@@ -27,7 +27,7 @@ export function summarizeRealRun(result,{productHead,project,testSelection='FULL
   if(readingValid&&Number.isFinite(freeBytes)&&freeBytes>0||!readingValid&&freeBytes===null)
    resourceGate={readingValid,freeBytes,minimumBytes:Number(sample[4])};
  }
- const expectedCaseCount=testSelection==='TRAVELLER_CORE_12'?12:testSelection==='STALE_TAB_4'?4:testSelection==='FULL_EXISTING_8'?8:
+ const expectedCaseCount=testSelection==='TRAVELLER_CORE_12'?12:['STALE_TAB_4','TODAY_SLICE_4'].includes(testSelection)?4:testSelection==='FULL_EXISTING_8'?8:
   ['en/desktop','en/mobile','zh-HK/desktop','zh-HK/mobile'].includes(testSelection)?3:
   ['en/','zh-HK/'].includes(testSelection)?6:null;
  const passed=counters.filter(row=>row.kind==='passed');

@@ -3,13 +3,13 @@ import {readFileSync,writeFileSync,appendFileSync} from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import {URL,pathToFileURL} from 'node:url';
-import {verifyTarget,assertSafeLedger,Blocked,uuid,expected,root} from './target.mjs';
+import {verifyTarget,assertSafeLedger,Blocked,uuid,expected,root,bootstrapFile} from './target.mjs';
 
 // Credentials and sessions stay in this process. No raw SDK errors or actor
 // objects are handed to a reporter; screenshots are restricted to travel pages.
 export async function openFixture(env=process.env){
  const target=await verifyTarget(env,{empty:env.KINNSO_REAL_IT_NONEMPTY_BASELINE!=='1'});
- const httpRuntime=await import(pathToFileURL(path.resolve(root,'../../.local-private/guide-real-integration-20261016/bootstrap/runtime-http.mjs')).href);
+ const httpRuntime=await import(pathToFileURL(bootstrapFile(target.approval,env.KINNSO_REAL_IT_APPROVAL_FILE,'runtime-http.mjs')).href);
  httpRuntime.installBoundedTransport(root);
  const output=env.KINNSO_REAL_IT_EVIDENCE;
  if(!output)throw new Blocked('EVIDENCE_DIRECTORY_REQUIRED');

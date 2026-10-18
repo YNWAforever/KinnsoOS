@@ -24,11 +24,11 @@ async function main(){
  writeFileSync(path.join(output,'RUN.json'),JSON.stringify(assertSafeLedger({runId:target.approval.runId,productHead:target.head,project:target.identity.project}),null,2)+'\n',{flag:'wx'});
  const app=fileURLToPath(new URL('../',import.meta.url));
  const selection=target.approval.testSelection;
- if(selection!==undefined&&!['en/desktop','en/mobile','en/','zh-HK/desktop','zh-HK/mobile','zh-HK/','TRAVELLER_CORE_12','STALE_TAB_4'].includes(selection))throw new Blocked('UNAPPROVED_TEST_SELECTION');
+ if(selection!==undefined&&!['en/desktop','en/mobile','en/','zh-HK/desktop','zh-HK/mobile','zh-HK/','TRAVELLER_CORE_12','STALE_TAB_4','TODAY_SLICE_4'].includes(selection))throw new Blocked('UNAPPROVED_TEST_SELECTION');
  const result=spawnSync(process.execPath,[
   path.join(app,'node_modules/@playwright/test/cli.js'),'test','--config',
-  selection==='STALE_TAB_4'?'playwright.stale-tab.config.ts':'playwright.real-integration.config.ts',
-  ...(selection&&!['TRAVELLER_CORE_12','STALE_TAB_4'].includes(selection)?['--grep','real isolated target '+selection]:[]),
+  selection==='TODAY_SLICE_4'?'playwright.today-slice.config.ts':selection==='STALE_TAB_4'?'playwright.stale-tab.config.ts':'playwright.real-integration.config.ts',
+  ...(selection&&!['TRAVELLER_CORE_12','STALE_TAB_4','TODAY_SLICE_4'].includes(selection)?['--grep','real isolated target '+selection]:[]),
  ],{cwd:app,env:{...process.env,PLAYWRIGHT_NO_COPY_PROMPT:'1'},encoding:'utf8',stdio:['ignore','pipe','pipe'],windowsHide:true,maxBuffer:8*1024*1024});
  // Do not persist raw stdout/stderr: Auth/browser call logs may contain values.
  const report=assertSafeLedger(summarizeRealRun(result,{
