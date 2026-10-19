@@ -7,6 +7,8 @@ import {clockLabel, dayDate, navigationUrl, orderedStops, selectTripDay} from '.
 import {request} from '../../lib/trips/repository';
 import {invalidateAccountViews} from '../../lib/trips/local-drafts';
 import {useApp} from './ui';
+import {dayProgress} from '../../lib/trips/progress';
+import {useTripProgress, ProgressSummary, ProgressActions} from './TripProgress';
 
 type LocationsState = {
   key: string;
@@ -22,6 +24,8 @@ export function TodayItinerary({trip, actorId}: {trip: TripSnapshot; actorId: st
   const [locations, setLocations] = useState<LocationsState | null>(null);
   const selected = selectTripDay(trip, new Date(now), manualDay);
   const day = selected.day;
+  const progress = useTripProgress(trip, actorId);
+  const progressView = day && progress.ready ? dayProgress(day, progress.snapshot!.entries) : null;
   const key = `${actorId}:${trip.id}:${trip.revision}:${day?.id ?? ''}`;
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 30000);
@@ -66,6 +70,7 @@ export function TodayItinerary({trip, actorId}: {trip: TripSnapshot; actorId: st
           </option>)}
       </select>
     </label>
+    <ProgressSummary day={day} model={progress}/>
     {!day ? <p>{selected.reason === 'undated'
       ? t('Dates are not set. Choose a day to read.', '未設定日期，請選擇一天閱讀。')
       : selected.reason === 'invalid'
@@ -83,7 +88,10 @@ export function TodayItinerary({trip, actorId}: {trip: TripSnapshot; actorId: st
             const place = stop.placeId ? places.get(stop.placeId) : null;
             const navigation = place ? navigationUrl(place) : null;
             const clock = clockLabel(stop.startMinuteOfDay);
-            return <li key={stop.id} data-stop-id={stop.id}>
+            return <li key={stop.id} id={'progress-stop-' + stop.id} data-stop-id={stop.id}
+              aria-current={progressView?.nextStopId === stop.id ? 'step' : undefined}
+              style={progressView?.nextStopId === stop.id ? {borderInlineStart: '3px solid currentColor', paddingInlineStart: 12} : undefined}>
+              {progressView?.nextStopId === stop.id && <p className="k-eyebrow">{t('Next stop', '下一站')}</p>}
               <h4>{stop.title}</h4>
               <p>{clock ? <time dateTime={clock}>{clock}</time> : t('Time not set', '未設定時間')}
                 {stop.durationMinutes !== null && ` · ${stop.durationMinutes} ${t('min', '分鐘')}`}</p>
@@ -95,6 +103,7 @@ export function TodayItinerary({trip, actorId}: {trip: TripSnapshot; actorId: st
                   : current?.status === 'error' && stop.placeId
                     ? t('Location not loaded', '地點尚未載入')
                     : t('Location unavailable', '地點資料未能提供')}</p>}
+              <ProgressActions stop={stop} model={progress}/>
             </li>;
           })}
         </ol>
