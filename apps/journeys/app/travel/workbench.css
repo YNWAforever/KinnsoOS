@@ -2842,6 +2842,9 @@ body:has(.k-app) {
   }
   .k-home-heading {
     margin-bottom: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   .k-home-heading h1 {
     font-size: 1.95rem;
@@ -2852,7 +2855,8 @@ body:has(.k-app) {
     margin-top: 9px;
   }
   .k-home-heading .k-subtle-link {
-    display: none;
+    display: inline-flex;
+    min-height: 44px;
   }
   .k-search {
     grid-template-columns: 1fr auto;
