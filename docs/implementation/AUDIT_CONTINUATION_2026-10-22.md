@@ -23,6 +23,7 @@ Audit the current repository and production public journeys, review recently mer
 | OCT22-06 | P1 | Current public creator/merchant entries report services not connected. The latest checked-in hosted UAT checklist remains NO_GO. Source, old CI and production deployment are separate facts. | Named-role hosted acceptance remains open: creator, merchant owner/staff, outsider and ops; persistence, permissions, approval, drafts, uncertain submissions and recovery. Do not turn on flags merely to remove unavailable UI. |
 | OCT22-07 | P1 | No approved full privacy policy or dedicated privacy-request contact found in this audited source. Demo SupportPage contains browser-only data claims unsuitable for connected services. | New privacy destination explicitly states the policy/contact gap and explains account versus demo modes. **Routing is repaired; privacy-policy approval remains open.** |
 | OCT22-08 | P2 | Historical controlled performance evidence is not a fresh field measurement. Remaining retained informational/commercial paths still fall back to the hub. | Re-establish CI, then set explicit latency budgets and measure production journeys after authorized activation. Inventory remaining retained routes and provide truthful content/availability handling without exposing demo transactions. |
+| OCT22-09 | P2 | Actual Edge preview at 320px: the header ends at y=70 but its language/sign-in row extends to y=105, overlapping the service-status strip. Later theme CSS overrides the existing automatic-height reflow rule. | Remove the two late fixed-height overrides and add a real-page geometry assertion. Preserve existing minimum heights and appearance; verify the next preview before claiming closure. |
 
 ## Recent-function review
 
@@ -68,7 +69,7 @@ The public-entry config explicitly disables backend target/capabilities and star
 | Task | Depends on | Acceptance | Status / owner |
 |---|---|---|---|
 | T01 Reconcile latest main/production/source | — | Exact revision and source-file hashes, old merged work not repeated | COMPLETE for the baseline above |
-| T02 Close the four bounded source defects | T01 | Regression behavior, source/package/build/type checks, explicit limitations | IMPLEMENTED locally; draft PR and exact-head CI required |
+| T02 Close the five bounded source defects | T01 | Regression behavior, source/package/build/type checks, explicit limitations | IMPLEMENTED; draft PR #82; exact-head CI is blocked before execution |
 | T03 Restore CI execution eligibility | — | Billing owner resolves GitHub annotation; jobs actually obtain runners and execute | BLOCKED on account owner; no financial settings changed |
 | T04 Qualify the candidate | T02, T03 | Exact head: root/Journeys CI, native browser checks, source verification and configured review pass; retain all failures | REQUIRED before merge |
 | T05 Complete public policy/support content | T02 | Approved full privacy policy, valid request contact, retention/deletion and provider disclosures; bilingual review | OPEN; product/content owner |

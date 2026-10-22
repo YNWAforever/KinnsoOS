@@ -4279,7 +4279,6 @@ body:has(.k-app) {
   --k-muted: #53665f;
 }
 .k-header {
-  height: 72px;
   background: #f7f6f1;
 }
 .k-home-heading h1 {
@@ -4315,9 +4314,6 @@ body:has(.k-app) {
   .k-home-heading h1 {
     font-size: 32px;
     letter-spacing: -0.6px;
-  }
-  .k-header {
-    height: 68px;
   }
 }
 

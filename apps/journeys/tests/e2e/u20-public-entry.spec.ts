@@ -25,6 +25,7 @@ for(const locale of ['en','zh-HK']){
   await page.setViewportSize({width:320,height:844});
   await page.goto(`/${locale}/workspace`);
   await page.addStyleTag({content:'html{font-size:200%} .k-app{font-size:1rem}'});
+  expect(await page.locator('.k-header-end').evaluate(el=>el.getBoundingClientRect().bottom<=document.querySelector('.k-mode')!.getBoundingClientRect().top)).toBe(true);
   const main=page.locator('main');
   for(const path of ['studio','merchant','ops'])await expect(main.locator(`a[href="/${locale}/${path}"]`).first()).toBeVisible();
   for(const path of ['studio','merchants/dashboard','demo-lab'])await expect(main.locator(`a[href="/${locale}/demo/${path}"]`)).toBeVisible();
