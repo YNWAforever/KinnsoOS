@@ -113,6 +113,9 @@ jobs:
           logout: true
       - name: Prepare the isolated CI target
         run: node scripts/prepare-connected-ci.mjs config
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile connected
       - name: Start current local migrations without sample seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Derive local test environment after ownership verification
@@ -171,6 +174,9 @@ jobs:
           logout: true
       - name: Prepare a fresh local confirmation and SMTP capture profile
         run: node scripts/prepare-connected-ci.mjs config-mailbox
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile mailbox
       - name: Start owned local Auth and Mailpit without application seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Verify local SMTP ownership and required confirmation
@@ -185,7 +191,9 @@ jobs:
         if: always()
         with:
           name: journeys-auth-mailbox-summary
-          path: apps/journeys/evidence/ci/auth-mailbox.json
+          path: |
+            apps/journeys/evidence/ci/auth-mailbox.json
+            apps/journeys/evidence/ci/image-downloads.json
           if-no-files-found: warn
 
   operations-performance:
@@ -227,6 +235,9 @@ jobs:
           logout: true
       - name: Prepare owned isolated operations lab
         run: node scripts/prepare-connected-ci.mjs config
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile connected
       - name: Start fresh localhost migrations without sample seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Verify local ownership before deriving lab credentials
@@ -258,3 +269,10 @@ jobs:
           name: journeys-operations-performance
           path: apps/journeys/evidence/performance/
           if-no-files-found: error
+      - name: Preserve registry-only download diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: journeys-operations-image-downloads
+          path: apps/journeys/evidence/ci/image-downloads.json
+          if-no-files-found: warn

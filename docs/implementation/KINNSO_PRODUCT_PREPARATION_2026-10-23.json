@@ -3,8 +3,8 @@
   "base": "6126ed900c9fa7f17688ac3261970add46d70cfa",
   "candidateBranch": "codex/pd-policy-staging-preparation-20261023",
   "publicationBinding": "Final delivery receipt binds exact head/PR/CI; no inferred SHA from previous local results",
-  "code_status": "DIRECTIONS_RECORDED_PREPARATION_GUARDS_UPDATED;POLICY_UNAPPROVED_NOT_ACTIVATED",
-  "test_status": "25_FOCUSED_PASS;720_LOCAL_APP_UNIT_PASS;0_FAIL;0_SKIP;FINAL_INTEGRATED_AND_PACK_RESULTS_BOUND_BY_PUBLICATION_RECEIPT",
+  "code_status": "DIRECTIONS_RECORDED_PREPARATION_AND_CI_PREFETCH_IMPLEMENTED;POLICY_UNAPPROVED_NOT_ACTIVATED",
+  "test_status": "731_LOCAL_APP_UNIT_PASS;10_WORKFLOW_CONTRACT_PASS;9_MIGRATION_GUARD_PASS;SOURCE9_PASS1_WINDOWS_SKIP;AUTH_ONLY_4ee4be9_CI_FAIL;NEXT_EXACT_HEAD_CI_BOUND_BY_DELIVERY_RECEIPT",
   "deployment_status": "NO_DEPLOYMENT_ACTION_BY_PREPARATION_EDIT;FINAL_VERSION_BOUND_BY_PUBLICATION_RECEIPT;NO_NEW_SUPABASE_PROJECTS;NO_PRODUCTION_CHANGE",
   "runtime_status": "NO_RUNTIME_ACTION_THIS_EDIT;HISTORICAL_MANAGEMENT_METADATA_AND_DNS_ONLY;NO_AUTH_CLIENT_SQL_ACTORS_RESTORE",
   "userDecisions": {
@@ -100,10 +100,21 @@
       "skip": 0,
       "durationMs": 18324.9814,
       "binding": "Assessor/template/tests content tested before final prose-only publication-binding edits; final integrated head and packaging are separate receipt gates"
+    },
+    {
+      "command": "npm test",
+      "cwd": "apps/journeys",
+      "environment": "LOCAL_NODE24_PURE_UNIT",
+      "pass": 731,
+      "fail": 0,
+      "skip": 0,
+      "newPrefetchIncluded": 11,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-prefetch.log",
+      "binding": "Dirty prefetch candidate; exact tested fingerprints and final head bound by delivery receipt"
     }
   ],
   "notRun": [
-    "CI problem investigation is parallel work; no CI rerun or result claimed by this bounded edit",
+    "Next exact prefetch candidate CI and generated Preview must be bound by final delivery receipt; do not reuse 4ee4be9 PASS for a new head",
     "new candidate build/typecheck/browser - no render/type/runtime/Next config changes",
     "hosted DB/Auth/RLS/cohort role acceptance",
     "public real content consent/image rights",
@@ -180,5 +191,32 @@
       "log": "apps/journeys/evidence/pd-20261023/source-package.log",
       "evidenceBinding": "PR86 previous preparation work; not rerun evidence for this uncommitted edit"
     }
-  ]
+  ],
+  "ciRepair": {
+    "authOnlyCandidate": "4ee4be9ee8785ecf15782fb9dba795aee37b5008",
+    "originalFailedRuns": [
+      "39823822828",
+      "39823831292",
+      "39823822793",
+      "39823831295"
+    ],
+    "originalFailure": "GHCR image layer/config429 even after successful login; database assertions not reached",
+    "candidateStrategy": "pinned sequential image prefetch;429-only bounded backoff;never replay database startup",
+    "registry": "ghcr.io",
+    "cliVersion": "2.107.0",
+    "maximumAttemptsPerImage": 5,
+    "maximumPreparationMinutes": 8,
+    "newPurePrefetchTests": 11,
+    "newSourceFiles": [
+      "apps/journeys/scripts/prefetch-ci-images.mjs",
+      "apps/journeys/tests/ci-image-downloads.test.mjs"
+    ],
+    "workflowFiles": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/journeys.yml",
+      "scripts/supabase-registry-workflow-test.mjs"
+    ],
+    "finalCI": "NOT_CLAIMED_IN_SOURCE_LEDGER;exact head/run/job results in delivery receipt",
+    "ownedCIIsolation": "Existing ephemeral local targets and all gates retained; original Remix-Kinnso is never a CI target"
+  }
 }

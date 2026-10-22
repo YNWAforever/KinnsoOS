@@ -27,7 +27,14 @@ for(const [workflow,name] of [['ci','quality'],['ci','e2e'],['journeys','connect
   assert.ok(body.indexOf('Isolate ephemeral registry configuration')<body.indexOf('Authenticate Supabase image downloads'));
   assert.doesNotMatch(body.split('    steps:')[0],/runner\./,'runner context is unavailable in job-level env');
   assert.ok(body.indexOf('Authenticate Supabase image downloads')<body.indexOf('supabase start'),'login precedes the only database start');
-  if(workflow==='ci')assert.ok(body.indexOf('Authenticate Supabase image downloads')<body.indexOf('docker pull ghcr.io/'),'type-generation cache also uses authenticated downloads');
+  const prefetch=body.match(/      - name: Prefetch pinned images before database startup\r?\n([\s\S]*?)(?=      - |$)/)?.[1];
+  assert.ok(prefetch,'registry-only retry must finish before the only database start');
+  const profile=workflow==='ci'?'root':name==='auth-mailbox'?'mailbox':'connected';
+  assert.match(prefetch,new RegExp(`run: node (?:apps/journeys/)?scripts/prefetch-ci-images\\.mjs --profile ${profile}(?:\\s|$)`));
+  assert.ok(body.indexOf('Authenticate Supabase image downloads')<body.indexOf('Prefetch pinned images before database startup'));
+  assert.ok(body.indexOf('Prefetch pinned images before database startup')<body.indexOf('supabase start'));
+  assert.doesNotMatch(prefetch,/continue-on-error|supabase start/);
+  assert.match(body,/image-downloads\.json|evidence\/ci\/\*\.json/,'registry diagnostics must survive downstream startup failure');
   assert.equal((body.match(/(?:pnpm )?supabase start/g)||[]).length,1,'registry failure must not replay migrations');
   assert.doesNotMatch(body,/supabase start[^\n]*(?:\|\||--ignore-health-check)/,'retain startup failures and health gates');
  });

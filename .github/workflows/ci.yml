@@ -71,10 +71,9 @@ jobs:
       # CLI 2.107.0 type generation ignores the GHCR registry override and uses
       # this exact pg-meta tag, which differs from the stack's service tag.
       # https://github.com/supabase/cli/issues/5785
-      - name: Cache the pinned type-generation image through GHCR
-        run: |
-          docker pull ghcr.io/supabase/postgres-meta:v0.96.1
-          docker tag ghcr.io/supabase/postgres-meta:v0.96.1 public.ecr.aws/supabase/postgres-meta:v0.96.1
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node apps/journeys/scripts/prefetch-ci-images.mjs --profile root
       - run: pnpm supabase start
 
       - name: Remove e2e-only fixtures from quality database
@@ -185,6 +184,14 @@ jobs:
 
       - run: pnpm test
 
+      - name: Preserve registry-only download diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: ci-quality-image-downloads
+          path: apps/journeys/evidence/ci/image-downloads.json
+          if-no-files-found: warn
+
   e2e:
     permissions:
       contents: read
@@ -226,10 +233,9 @@ jobs:
       # CLI 2.107.0 type generation ignores the GHCR registry override and uses
       # this exact pg-meta tag, which differs from the stack's service tag.
       # https://github.com/supabase/cli/issues/5785
-      - name: Cache the pinned type-generation image through GHCR
-        run: |
-          docker pull ghcr.io/supabase/postgres-meta:v0.96.1
-          docker tag ghcr.io/supabase/postgres-meta:v0.96.1 public.ecr.aws/supabase/postgres-meta:v0.96.1
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node apps/journeys/scripts/prefetch-ci-images.mjs --profile root
       - run: pnpm supabase start
 
       - name: Export local Supabase env for apps/web and apps/scan
@@ -430,6 +436,14 @@ jobs:
           path: |
             apps/e2e/test-results/
             apps/e2e/playwright-report/
+
+      - name: Preserve registry-only download diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: ci-e2e-image-downloads
+          path: apps/journeys/evidence/ci/image-downloads.json
+          if-no-files-found: warn
 
   scan-image:
     name: Scan worker image
