@@ -1,0 +1,511 @@
+{
+  "schema_version": 1,
+  "plan": "docs/superpowers/plans/2026-10-22-kinnsoos-product-pilot.md",
+  "authorization": {
+    "read": [
+      "specified repo, PR/checks, supplied evidence"
+    ],
+    "write": [
+      "isolated local branch, implementation, local pure/browser tests, own branch/draft PR requested by user"
+    ],
+    "separate_scope_required": [
+      "hosted writes/SQL/config/roles",
+      "billing/protection",
+      "scheduler/provider/messages",
+      "merge/production deploy"
+    ]
+  },
+  "baseline": {
+    "workspace": "C:\\Users\\laich\\.codex\\worktrees\\pd-public-entry-20261022\\KinnsoOS",
+    "branch": "codex/pd-public-entry-20261022",
+    "baseSha": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+    "mainSha": "0e9fd552f6e6270da23c8ebc25ec7487524850d6",
+    "treeSha": "e4d0ff8ceb8c00d31a4bb24dc3e10e8b6be1fef4",
+    "trackedPaths": 2051,
+    "shallow": false,
+    "sparse": false,
+    "initialDirty": [],
+    "pr82Draft": true,
+    "mergedPRs": [
+      77,
+      78,
+      79,
+      80
+    ]
+  },
+  "candidate": {
+    "sourceSha": null,
+    "treeSha": null,
+    "baseSha": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+    "pr": null,
+    "deploymentId": null,
+    "environment": "local backend-disabled / pure component fixtures",
+    "schemaFingerprint": null,
+    "configChecks": "All backend capabilities disabled for public browser suite",
+    "recoveryRef": null,
+    "unknownReasons": {
+      "sourceSha": "working candidate not committed yet",
+      "deploymentId": "no deployment performed",
+      "schemaFingerprint": "no approved hosted target",
+      "recoveryRef": "fresh target-bound rehearsal absent"
+    }
+  },
+  "integrity": {
+    "packSha256": "1e21320ca6473830a53afda12dcb8e0f2aee09d84c99eaac7d6e5adc757aee79",
+    "auditSha256": "3d4a976e66245c798891c56d64d9e5d29d29af85bb98ef8baabb1d70827f43ea",
+    "packHashes": 8,
+    "auditHashes": 15,
+    "mismatches": [],
+    "originalFiles": {
+      "NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+      "NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+    }
+  },
+  "requirements": [
+    {
+      "id": "A01",
+      "historical_K_tasks": "K00 K02 K05 K06 K16 K25",
+      "next_N_tasks": "N01 N02 N03 N09 N14 N16 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A02",
+      "historical_K_tasks": "K01 K03 K25",
+      "next_N_tasks": "N02 N03 N16 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A03",
+      "historical_K_tasks": "K01 K04 K06 K07 K09 K11 K12 K16 K25",
+      "next_N_tasks": "N03 N04 N05 N08 N09 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A04",
+      "historical_K_tasks": "K01 K04 K23",
+      "next_N_tasks": "N03 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A05",
+      "historical_K_tasks": "K04 K16",
+      "next_N_tasks": "N09 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A06",
+      "historical_K_tasks": "K08 K10 K11 K16 K17",
+      "next_N_tasks": "N03 N05 N06 N07 N09 N12 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A07",
+      "historical_K_tasks": "K02 K08",
+      "next_N_tasks": "N01 N07 N09 N12 N13",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A08",
+      "historical_K_tasks": "K08 K19 K24",
+      "next_N_tasks": "N03 N07 N09 N10 N12 N13 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A09",
+      "historical_K_tasks": "K19 K24",
+      "next_N_tasks": "N03 N09 N10 N12 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A10",
+      "historical_K_tasks": "K19 K21 K24",
+      "next_N_tasks": "N03 N09 N10 N12 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A11",
+      "historical_K_tasks": "K19",
+      "next_N_tasks": "N03 N09 N10",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A12",
+      "historical_K_tasks": "K04 K19",
+      "next_N_tasks": "N03 N09 N10 N13 N14",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A13",
+      "historical_K_tasks": "K02 K07 K16",
+      "next_N_tasks": "N01 N05 N09 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A14",
+      "historical_K_tasks": "K20 K22",
+      "next_N_tasks": "N03 N09 N15 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A15",
+      "historical_K_tasks": "K05 K24 K25",
+      "next_N_tasks": "N03 N12 N16 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A16",
+      "historical_K_tasks": "K02 K04 K05 K16 K25",
+      "next_N_tasks": "N01 N09 N13 N14 N16 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A17",
+      "historical_K_tasks": "K09 K11 K12 K13 K16 K24",
+      "next_N_tasks": "N03 N04 N08 N09 N12 N14 N15 N16 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A18",
+      "historical_K_tasks": "K08 K13 K23",
+      "next_N_tasks": "N07 N12 N13 N14 N15 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A19",
+      "historical_K_tasks": "K04 K11 K16",
+      "next_N_tasks": "N09 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "A20",
+      "historical_K_tasks": "K04 K08 K23",
+      "next_N_tasks": "N07 N12 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G01",
+      "historical_K_tasks": "K00 K01 K11 K16",
+      "next_N_tasks": "N01 N02 N03 N09 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G02",
+      "historical_K_tasks": "K00 K01 K02 K04 K23 K25",
+      "next_N_tasks": "N01 N02 N03 N09 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G03",
+      "historical_K_tasks": "K01 K06 K07 K09 K11 K25",
+      "next_N_tasks": "N03 N05 N09 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G04",
+      "historical_K_tasks": "K02 K07 K16 K17 K18",
+      "next_N_tasks": "N01 N03 N05 N06 N07 N09 N11 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G05",
+      "historical_K_tasks": "K07 K09 K12 K13 K16",
+      "next_N_tasks": "N04 N05 N08 N09 N14 N15 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G06",
+      "historical_K_tasks": "K09 K10 K11 K12 K13 K14 K16 K17",
+      "next_N_tasks": "N03 N04 N05 N06 N07 N08 N09 N14 N15 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G07",
+      "historical_K_tasks": "K08 K15 K16 K22",
+      "next_N_tasks": "N07 N09 N12 N13 N14 N16 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G08",
+      "historical_K_tasks": "K09 K12 K13 K14 K16",
+      "next_N_tasks": "N04 N08 N09 N14 N15 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G09",
+      "historical_K_tasks": "K08 K10 K15 K16 K17 K19 K23",
+      "next_N_tasks": "N03 N05 N06 N07 N09 N10 N12 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G10",
+      "historical_K_tasks": "K10 K13 K17 K22",
+      "next_N_tasks": "N03 N05 N06 N07 N09 N14 N15 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G11",
+      "historical_K_tasks": "K18 K19 K21",
+      "next_N_tasks": "N03 N09 N10 N11 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G12",
+      "historical_K_tasks": "K01 K18 K21",
+      "next_N_tasks": "N03 N09 N11 N16 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G13",
+      "historical_K_tasks": "K17 K20 K24",
+      "next_N_tasks": "N03 N05 N06 N07 N09 N12 N15 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G14",
+      "historical_K_tasks": "K19 K20",
+      "next_N_tasks": "N03 N09 N10 N15",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G15",
+      "historical_K_tasks": "K04 K08 K14 K23 K25",
+      "next_N_tasks": "N07 N09 N12 N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G16",
+      "historical_K_tasks": "K22",
+      "next_N_tasks": "N09 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G17",
+      "historical_K_tasks": "K01 K03 K05 K06 K13 K14 K16 K21 K24 K25",
+      "next_N_tasks": "N02 N03 N09 N12 N14 N15 N16 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "G18",
+      "historical_K_tasks": "K16 K24",
+      "next_N_tasks": "N03 N09 N12 N14 N16 N17 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE01",
+      "historical_K_tasks": "K00 K01",
+      "next_N_tasks": "N01 N02 N03 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE02",
+      "historical_K_tasks": "K04 K23",
+      "next_N_tasks": "N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE03",
+      "historical_K_tasks": "K04 K23",
+      "next_N_tasks": "N13 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE04",
+      "historical_K_tasks": "K03",
+      "next_N_tasks": "N02 N18",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE05",
+      "historical_K_tasks": "K02 K20",
+      "next_N_tasks": "N01 N03 N09 N15",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE06",
+      "historical_K_tasks": "K02 K17",
+      "next_N_tasks": "N01 N03 N05 N06 N07 N09",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE07",
+      "historical_K_tasks": "K23",
+      "next_N_tasks": "N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE08",
+      "historical_K_tasks": "K08",
+      "next_N_tasks": "N07 N12 N13",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "LegacyE09",
+      "historical_K_tasks": "K02 K06 K09 K10",
+      "next_N_tasks": "N01 N03 N06 N07 N09",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U01",
+      "historical_K_tasks": "K16 K25",
+      "next_N_tasks": "N09 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U02",
+      "historical_K_tasks": "K16 K25",
+      "next_N_tasks": "N09 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U03",
+      "historical_K_tasks": "K17 K25",
+      "next_N_tasks": "N03 N05 N06 N07 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U04",
+      "historical_K_tasks": "K18 K21 K25",
+      "next_N_tasks": "N03 N09 N11 N16 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U05",
+      "historical_K_tasks": "K19 K21 K25",
+      "next_N_tasks": "N03 N09 N10 N16 N17",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    },
+    {
+      "id": "U06",
+      "historical_K_tasks": "K16 K25",
+      "next_N_tasks": "N09 N14 N16",
+      "status": "partial",
+      "closure_rule": "All mapped task acceptance at current SHA; source-only evidence cannot close requirement."
+    }
+  ],
+  "originalNStatuses": {
+    "N01": "partial",
+    "N02": "verified_done",
+    "N03": "partial",
+    "N04": "code_merged",
+    "N05": "partial",
+    "N06": "partial",
+    "N07": "partial",
+    "N08": "partial",
+    "N09": "partial",
+    "N10": "partial",
+    "N11": "partial",
+    "N12": "partial",
+    "N13": "partial",
+    "N14": "partial",
+    "N15": "partial",
+    "N16": "partial",
+    "N17": "partial",
+    "N18": "partial"
+  },
+  "dependencyGraphAcyclic": true,
+  "rulings": [
+    "Approved supplied product/implementation plan is the design; execute bounded increments without reopening design approval.",
+    "PR77-80 are merged in verified main: old NEXT-01 integration steps are historical only.",
+    "Original 53 requirement rows and N02 verified_done remain byte-preserved; phase progress does not close original acceptance.",
+    "PR82 required CI remains blocked before execution; native browser failure is separate and must be repaired.",
+    "No designated owned DB target means integration/hosted tests remain blocked; public tests disable every backend capability."
+  ],
+  "receipts": [
+    {
+      "taskId": "PD01",
+      "scenarioId": "INTEGRITY",
+      "candidate": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "actorRole": "operator",
+      "expected": "Audit SHA and all member hashes match; preserve 18 N and 53 mappings",
+      "observed": "8 pack and 15 internal hashes match; complete 2051-path tree; 18 N/53 mappings read; N02 unchanged",
+      "status": "PASS",
+      "evidenceRef": "user-supplied plan pack / exact Git objects",
+      "cleanupStatus": "NOT_APPLICABLE"
+    },
+    {
+      "taskId": "PD02",
+      "scenarioId": "CI",
+      "candidate": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "actorRole": "runner",
+      "expected": "Required jobs execute assertions",
+      "observed": "Runs 39788143596/39788143594: all failed jobs 0 steps, no runner; billing/spending annotation verified; dependent e2e skipped",
+      "status": "BLOCKED",
+      "evidenceRef": "https://github.com/YNWAforever/KinnsoOS/actions/runs/39788143596/job/119856656068",
+      "cleanupStatus": "NOT_APPLICABLE"
+    },
+    {
+      "taskId": "PD02",
+      "scenarioId": "U18_INITIAL",
+      "candidate": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "actorRole": "anonymous / component fixture",
+      "expected": "12 native cases at 320px/200% without overflow",
+      "observed": "11 PASS, 1 FAIL: English creator collaborations overflows; real assertions executed. Historical 12 launch failures retained.",
+      "status": "FAIL",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/pr82-u18.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD02",
+      "scenarioId": "U20_INITIAL",
+      "candidate": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "actorRole": "anonymous",
+      "expected": "Real Next server starts",
+      "observed": "Turbopack rejected external dependency junction; local lockfile install selected; initial log retained",
+      "status": "BLOCKED",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/pr82-u20.log",
+      "cleanupStatus": "NO_DB"
+    }
+  ]
+}
