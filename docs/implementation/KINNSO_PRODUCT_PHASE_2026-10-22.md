@@ -19,3 +19,11 @@ Ruling：用戶已要求按附帶設計實作，沿用 typed registry 方案，�
 Ruling：DB target 未指定／核實，所有 DB／hosted／role寫入及owned seed/reset均 NOT_RUN；本機 public browser 關閉 backend。
 
 本次逐項狀態見 JSON 與 `KINNSO_PRODUCT_TASKS_2026-10-22.csv`。新 evidence 追加，不覆寫歷史 FAIL／BLOCKED／NOT_RUN。
+
+## PD02／PD03 本次本機結果
+
+PR82 原 u20 6PASS；原u18首次11PASS1FAIL（不是launch blocker），英文collaborations長字在60.8px標題／288px內容區溢出。新增正常換行後原12案全PASS，原斷言不改。新candidate的46條公共入口逐一接typed registry；原4頁及private/native handlers保留。
+
+新candidate：682unit、90真Next u20、92無DB native fixture、4workflow、10owned HTTP source contracts全部PASS；build/typecheck PASS。Source package10discovered／9PASS／1Windows symlink-permission SKIP，不能報10PASS。Node24.18與CI Node22分開；尚無此head有效remote CI。
+
+User確認沒有policy／content／target／roles／recovery輸入；PD04／PD07真內容／PD14及hosted依賴維持BLOCKED。操作包已完成，繼續獨立source工作；未新增SQL、hosted client、fixture或cleanup。

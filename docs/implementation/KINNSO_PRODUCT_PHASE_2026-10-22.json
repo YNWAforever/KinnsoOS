@@ -460,7 +460,8 @@
     "PR77-80 are merged in verified main: old NEXT-01 integration steps are historical only.",
     "Original 53 requirement rows and N02 verified_done remain byte-preserved; phase progress does not close original acceptance.",
     "PR82 required CI remains blocked before execution; native browser failure is separate and must be repaired.",
-    "No designated owned DB target means integration/hosted tests remain blocked; public tests disable every backend capability."
+    "No designated owned DB target means integration/hosted tests remain blocked; public tests disable every backend capability.",
+    "Retained notice pages have no approved canonical/hreflang mapping; keep alternates absent and use existing migrationRobots noindex/nofollow rather than invent ownership or translations."
   ],
   "receipts": [
     {
@@ -506,6 +507,62 @@
       "status": "BLOCKED",
       "evidenceRef": "apps/journeys/evidence/pd-20261022/pr82-u20.log",
       "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD04/PD07/PD14",
+      "scenarioId": "OWNER_INPUT",
+      "candidate": null,
+      "actorRole": "owner",
+      "expected": "Approved policy/channel, consented real content, designated target/roles/recovery references",
+      "observed": "User explicitly has none; only dependent policy/content/owned/hosted acceptance blocked. Continue independent implementation.",
+      "status": "BLOCKED",
+      "evidenceRef": "Current user reply",
+      "cleanupStatus": "NO_EXTERNAL_ACTIONS"
+    },
+    {
+      "taskId": "PD02",
+      "scenarioId": "U20_PR82_CODE",
+      "candidate": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "actorRole": "anonymous",
+      "expected": "Original u20 executes assertions",
+      "observed": "6 PASS,0FAIL,0SKIP after local lockfile install; app blobs unchanged from PR82",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/pr82-u20-local-deps.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD02",
+      "scenarioId": "U18_FIX",
+      "candidate": "PD03 working tree based on b236aa0",
+      "actorRole": "anonymous component fixture",
+      "expected": "No enlarged heading overflow; original assertions unchanged",
+      "observed": "Root cause unbreakable English collaborations at60.8px in288px content; overflow-wrap:anywhere; 12PASS0FAIL0SKIP",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/u18-reflow-green.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD03",
+      "scenarioId": "LOCAL_QUALIFICATION",
+      "candidate": "PD03 working tree based on b236aa0",
+      "actorRole": "anonymous / pure unit",
+      "expected": "All retained public entries mapped and native controls preserved",
+      "observed": "46 entries; 682unit PASS;90 real Next/Chromium PASS; build/typecheck PASS;10 packaging discovered9PASS1Windows permissionSKIP; no commands/private APIs in42newroutes x2locales",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/{unit-pd03,u20-pd03,build-pd03,typecheck-pd03,source-tests-pd03}.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD02/PD03",
+      "scenarioId": "NATIVE_AND_SOURCE_CONTRACTS",
+      "candidate": "PD03 working tree based on b236aa0",
+      "actorRole": "component fixtures / local HTTP",
+      "expected": "Existing no-DB native gates and source/workflow contracts remain intact",
+      "observed": "92 Chromium fixture cases PASS,4 workflow contracts PASS,10 owned HTTP source contracts PASS; no DB/Auth/hosted",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/{service-state,workflow-contracts,source-http-contracts}-pd03.log",
+      "cleanupStatus": "NO_DB"
     }
-  ]
+  ],
+  "ownerInputReply": "User states i do not have policy/channel, consented real content, target/roles/recovery inputs; 2026-10-22 Hong Kong. Do not request again without new evidence."
 }

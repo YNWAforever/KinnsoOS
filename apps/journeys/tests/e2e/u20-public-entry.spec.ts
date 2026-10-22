@@ -1,4 +1,5 @@
 import {test,expect} from '@playwright/test';
+import {PUBLIC_ENTRY_PATHS,resolvePublicEntry} from '../../app/integration/public-entry-registry';
 
 // Public navigation only: no account, Auth fixture, database or mutation.
 for(const locale of ['en','zh-HK']){
@@ -39,5 +40,36 @@ for(const locale of ['en','zh-HK']){
  test(`U20 ${locale}: unknown public page remains not found`,async({page})=>{
   const response=await page.goto(`/${locale}/legal/not-a-policy`);
   expect(response?.status()).toBe(404);
+ });
+}
+
+// Each retained route exercises real Next routing and the actual public CTA.
+for(const locale of ['en','zh-HK'] as const)for(const path of PUBLIC_ENTRY_PATHS.filter(path=>!['help','legal/privacy','for-business','credits'].includes(path))){
+ test(`U20 ${locale} ${path}: direct, keyboard navigation, Back, reload and reflow without commands`,async({page})=>{
+  const writes:string[]=[],privateReads:string[]=[];
+  page.on('request',request=>{
+   if(!['GET','HEAD','OPTIONS'].includes(request.method()))writes.push(request.method()+' '+new URL(request.url()).pathname);
+   if(/\/api\/(creator|merchant|ops)(\/|$)/.test(new URL(request.url()).pathname))privateReads.push(request.url());
+  });
+  const entry=resolvePublicEntry(path,locale,{creator:false,merchant:false,support:false})!;
+  await page.setViewportSize({width:320,height:844});
+  const response=await page.goto(`/${locale}/${path}`);
+  expect(response?.status()).toBe(200);
+  const heading=page.getByRole('heading',{level:1});
+  await expect(heading).toHaveText(entry.title);
+  await expect(page.locator('html')).toHaveAttribute('lang',locale);
+  await expect(page).toHaveTitle(new RegExp(entry.title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+  await page.addStyleTag({content:'html{font-size:200%}.k-app{font-size:1rem}body:has(.k-app){overflow-x:visible}'});
+  expect(await page.locator('.k-header-end').evaluate(el=>el.getBoundingClientRect().bottom<=document.querySelector('.k-mode')!.getBoundingClientRect().top)).toBe(true);
+  expect(await heading.evaluate(el=>{const range=document.createRange();range.selectNodeContents(el);return Array.from(range.getClientRects()).every(rect=>rect.left>=0&&rect.right<=innerWidth);})).toBe(true);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  const primary=page.locator('main .k-actions').getByRole('link',{name:entry.primary.label,exact:true}).first();
+  await expect(primary).toHaveAttribute('href',entry.primary.href);
+  await primary.focus();await expect(primary).toBeFocused();await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(entry.primary.href);
+  await page.goBack();await expect(heading).toHaveText(entry.title);
+  await page.reload();await expect(heading).toHaveText(entry.title);
+  expect(writes).toEqual([]);expect(privateReads).toEqual([]);
  });
 }

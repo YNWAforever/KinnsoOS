@@ -1,13 +1,27 @@
 "use client";
 import Link from "next/link";
+import { resolvePublicEntry } from "./public-entry-registry";
 import { useApp } from "../travel/ui";
 
 /** Public information must never inherit the demo's data or transaction claims. */
-export function PublicInformation({ path, merchantEnabled = false, supportEnabled = false }: {
-  path: string; merchantEnabled?: boolean; supportEnabled?: boolean;
+export function PublicInformation({ path, creatorEnabled = false, merchantEnabled = false, supportEnabled = false }: {
+  path: string; creatorEnabled?: boolean; merchantEnabled?: boolean; supportEnabled?: boolean;
 }) {
   const { locale, t } = useApp();
   const href = (route: string) => `/${locale}/${route}`;
+  const entry=resolvePublicEntry(path,locale,{creator:creatorEnabled,merchant:merchantEnabled,support:supportEnabled});
+  if(!entry)return null;
+  if(!['help','legal/privacy','for-business','credits'].includes(path))return (
+    <article className="k-page k-prose" data-public-entry={entry.bodyKey}>
+      <h1>{entry.title}</h1>
+      {entry.body.map((paragraph,index)=><p key={index}>{paragraph}</p>)}
+      {entry.notice&&<p className="os-note" role="status">{entry.notice}</p>}
+      <div className="k-actions">
+        <Link className="k-btn primary" href={entry.primary.href}>{entry.primary.label}</Link>
+        {entry.secondary&&<Link className="k-btn" href={entry.secondary.href}>{entry.secondary.label}</Link>}
+      </div>
+    </article>
+  );
   if (path === "credits") return (
     <div className="k-page k-prose">
       <h1>{t("Credits & source", "來源及授權")}</h1>
