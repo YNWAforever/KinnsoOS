@@ -39,6 +39,14 @@ Fresh reviewer 以 boundary doubles 重現4項 P2，原始判斷及 repro 全保
 
 Merchant8個新增 EN/zh-HK held-completion／scope regressions 先全部 FAIL，修正後5個 focused files52 PASS；busy 維持至 durable ACK 及套用狀態，retain/release/complete success/error 都檢查原 scope。旅客新增16個測試：43 PASS／10 FAIL →53 PASS；只修正還原 request 的未知 generation 和切換 demo 時清 preview。最終全套 npm test885 PASS、0FAIL／SKIP，root lint重新PASS；最終 typecheck/build/lint 均PASS，483個app manifest檔案在執行前後指紋相同；修復後完整native suite再驗106/106 PASS，四個fresh資源樣本6.908–7.256GiB RAM、44.481+GiB disk。獨立 reviewer覆核4P2全已修復、無新P1/P2，另行24/24 targeted regressions PASS；同head CI由最終 receipt 綁定；Windows source9PASS/1SKIP，Linux symlink gate仍必須執行。上方861／106／90屬 pre-follow-up source fingerprint，最終 exact candidate 必須重新跑受影響 checks／完整 CI，不直接沿用。
 
+## d49c2ca 的 connected FAIL 與修正候選
+
+`d49c2ca4b840506a629eb237fccce22c158b85fa` 保留為歷史候選：owned integration97 PASS，connected browser223 PASS／1 FAIL。`account-recovery.spec.ts` 原斷言重現 fresh reload後重試 offline draft：server已ACK、沒有較新UI編輯，畫面卻稱還有修改未保存。不是環境問題；沒有改弱該native斷言。
+
+新增EN/zh-HK兩個「無新編輯」對照先2 FAIL；只將保存訊息改按未確認 dirty targets 是否仍存在。原generation規則繼續控制哪些targets能被ACK清除，16個較新輸入／來源切換guards保留；55個trip恢復controls PASS，新全套887 PASS。`playwright.connected.config.ts` 明確收錄U22四例；原`--list`選不到0cases，新列表4cases。獨立 scoped reviewer另跑55/55 PASS，無blocking P1/P2；完整887 unit/component、build/typecheck及root lint均PASS。未改retry/timeout/assertion或network/role/SQL合同。
+
+同d49的operations worker曾因JSR `@panva/jose@6.2.13` manifest connection reset啟動FAIL，`.env.test`未建立，後續report不存在FAIL保持；PR workspace fixture在原10分鐘runtime installation取消，cases NOT_RUN。一次job-only retry請求因workflow仍執行未被GitHub接受，沒有啟動；確認source regression後不再重試過時d49，保存全部結果並取消仍pending的owned舊run。最終修正head必須重新資格化四組CI；d49的SUCCESS／FAIL／CANCELLED不移作新head證據。
+
 ## 交付及恢復
 
 獨立 stacked draft PR，以 PR86 remote head 為 base；使用正常 commit／push，不 reset／force push。新增 app source/tests 納入 `apps/journeys/scripts/source-manifest.json`，本增量其他 source/doc hashes 另有 manifest。未新增 backend schema、API envelope、receipt 或 local-draft schema；回退用本增量 source revert，保留已存在的 drafts、private notes、immutable published versions、reviews、receipt/dedupe/history。

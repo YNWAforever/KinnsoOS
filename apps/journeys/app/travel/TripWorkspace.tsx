@@ -91,7 +91,7 @@ export function TripWorkspace({id,actorId,initialHeading=null,mediaEnabled=false
    setTrip(result.data);void saveLocalSnapshot(actorId!,result.data).catch(()=>{});void clearLocalDraft(actorId!,trip.id,intent.requestId).catch(()=>{});pending.current=null;
    const savedCommand=intent.command!,savedKey=savedCommand.type==='patchTrip'?'trip':savedCommand.type==='updateDay'?'day:'+savedCommand.id:savedCommand.type==='updateStop'?'stop:'+savedCommand.id:null;
    if(savedKey&&(dirtyEdits.current.get(savedKey)??Infinity)<=(intent.editGeneration??-1))dirtyEdits.current.delete(savedKey);
-   setMessage(!dirtyEdits.current.size&&editGeneration.current===intent.editGeneration?t('Saved to your account','已保存至你的帳戶'):t('Earlier edits saved; other changes are not yet saved.','部分修改已保存，仍有修改尚未保存。'));
+   setMessage(!dirtyEdits.current.size?t('Saved to your account','已保存至你的帳戶'):t('Earlier edits saved; other changes are not yet saved.','部分修改已保存，仍有修改尚未保存。'));
   }else{
    intent.terminal=result.code==='INVALID'&&!result.retryable;
    setMessage(result.code==='INVALID'?t('Check the trip details, date and time zone. The edit was rejected; your input is kept.','請檢查行程資料、日期及時區。編輯未獲接納，輸入已保留。'):!navigator.onLine?t('Offline — local draft is not synced','離線 — 本機草稿尚未同步'):result.code==='CONFLICT'?t('Conflict. Your input is kept. Load the current version before applying it again.','版本衝突，輸入已保留，請載入目前版本後再套用。'):result.code==='AUTH_REQUIRED'?t('Session ended. Input is kept; sign in again.','登入已失效，輸入已保留，請重新登入。'):t('Not saved. Your input is kept; retry the same action.','未保存，輸入已保留，請重試同一操作。'));

@@ -270,3 +270,16 @@ for(const locale of ['en','zh-HK']){
   assert.equal(calls.length,2);assert.deepEqual(calls[1],calls[0]);assert.equal(JSON.stringify(guest),original);
  });
 }
+
+for(const locale of ['en','zh-HK'])test('CI restored offline receipt '+locale+': a fresh page with no newer edits confirms the acknowledged command saved',async()=>{
+ const label=(en,zh)=>locale==='en'?en:zh,requestId='88888888-8888-4888-8888-888888888888';
+ const command={type:'updateStop',id:'stop',patch:{travellerNote:'Recovered offline note A'}};let stored={requestId,baseRevision:3,command};const calls=[],cleared=[];
+ const server=snapshot();server.revision=4;server.days[0].stops[0].travellerNote='Recovered offline note A';
+ const h=await component('TripWorkspace',{locale,props:{id:tripId},ports:{drafts:{readLocalDraft:async()=>stored,clearLocalDraft:async(...args)=>{cleared.push(args);stored=null;}},trips:{apply:async(...args)=>{calls.push(JSON.parse(JSON.stringify(args)));return{ok:true,data:server};}}}});
+ // Reload initialized a fresh UI. No authored field has changed since this page loaded.
+ h.button(label('Retry local draft with revision check','以版本檢查重試本機草稿')).props.onClick();await h.settle();
+ assert.deepEqual(calls,[[tripId,3,requestId,command]]);
+ assert.deepEqual(cleared,[['actor-A',tripId,requestId]]);
+ assert.equal(h.status(),label('Saved to your account','已保存至你的帳戶'));
+ assert.equal(stored,null);assert.equal(h.field(label('Trip title','行程標題')).props.value,'Saved trip');
+});

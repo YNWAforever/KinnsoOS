@@ -12,8 +12,8 @@
     "originalSchema": "not_checked",
     "sharedTargetDisposableOwnership": "UNVERIFIED"
   },
-  "code_status": "BOUNDED_PD05_PD13_REPAIRS_REVIEWED_FOUR_P2_FIXED",
-  "test_status": "885_LOCAL_UNIT_COMPONENT_PASS;FINAL_TYPECHECK_BUILD_ROOT_LINT_PASS;SOURCE9_PASS1_WINDOWS_SKIP;WORKFLOW10_PASS;FINAL_NATIVE106_PASS;PUBLIC90_PRE_FOLLOWUP_PASS_SCOPE_UNCHANGED;FINAL_EXACT_CI_REQUIRED",
+  "code_status": "BOUNDED_PD05_PD13_REPAIRS_REVIEWED_PLUS_CONNECTED_RECEIPT_CORRECTION",
+  "test_status": "887_LOCAL_UNIT_COMPONENT_PASS;CORRECTIVE_BUILD_TYPE_ROOT_LINT_PASS;SOURCE9_PASS1_WINDOWS_SKIP;U22_CONNECTED_SELECTION4_PASS;NEW_EXACT_CANDIDATE_CI_REQUIRED",
   "deployment_status": "NO_MANUAL_DEPLOYMENT;NO_PRODUCTION_CHANGE",
   "runtime_status": "LOCAL_SYNTHETIC_COMPONENT_NATIVE_ONLY;ORIGINAL_REMIX_HOSTED_NOT_RUN",
   "requirements": [
@@ -97,7 +97,7 @@
       "pd": "PD06",
       "requirement": "saved／unsaved／unconfirmed及來源facts",
       "source_test_status": "REPAIRED_LOCAL_VERIFIED",
-      "observation": "Edit generations by target prevent old ACK declaring newer/other edits saved; independent source/date unknowns and retained stale facts.",
+      "observation": "Edit generations by target prevent old ACK declaring newer/other edits saved; independent source/date unknowns and retained stale facts. Known restored ACK with no newer dirty targets confirms saved; newer dirty targets remain protected. Connected CI regression preserved and corrected.",
       "evidence": [
         "tests/trip-workflow-recovery.test.mjs",
         "tests/trip-fact-provenance.test.mjs"
@@ -672,5 +672,27 @@
     "disposition": "ALL_FOUR_REPAIRED",
     "followup": "NO_NEW_P1_P2_IN_TARGETED_REVIEW;24REGRESSIONS_PASS",
     "remaining": "Known durable share backend contract; hosted Auth/RLS/provider/scheduler/device/AT NOT_RUN; PD09/13 reused; full checks/docs/manifests parent-owned"
+  },
+  "historicalCandidates": [
+    {
+      "head": "d49c2ca4b840506a629eb237fccce22c158b85fa",
+      "status": "SUPERSEDED_ACTUAL_CONNECTED_ASSERTION_FAIL",
+      "localUnit": 885,
+      "localNativeFixture": 106,
+      "connectedIntegration": 97,
+      "connectedBrowserPassed": 223,
+      "connectedBrowserFailed": 1,
+      "failure": "account-recovery restored offline receipt with no new UI edits incorrectly reported other changes unsaved",
+      "sourceZipSha256": "d543bd8e70cece4d84f46ede0a28453260cac331aaaee3f6b3f17a7fedf77e43",
+      "otherOriginalOutcomes": "push operations JSR connection reset FAIL; PR fixture runtime-install CANCELLED; new source requires fresh CI"
+    }
+  ],
+  "correctiveReview": {
+    "result": "NO_BLOCKING_P1_P2_IN_SCOPED_CORRECTION",
+    "reviewer": "Newton",
+    "independentFocusedTests": 55,
+    "changedProduction": "saved message uses remaining dirty targets; original dirty-target generation guard unchanged",
+    "coverage": "explicit connectedU22 adds4cases; no assertion/retry/timeout/gate weakened",
+    "notAcceptance": "new connected actual browser pass; durable share backend; original hosted roles; PD09/13 reused"
   }
 }

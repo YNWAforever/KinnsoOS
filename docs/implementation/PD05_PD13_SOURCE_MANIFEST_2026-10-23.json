@@ -14,11 +14,12 @@
     "apps/journeys/app/travel/MerchantInsights.tsx": "b5a497955ba7837395d1b4aa389512006f054286d7149e651313595c74641d95",
     "apps/journeys/app/travel/SharePreview.tsx": "e096d881553eb5cc105885c556fc0810d4b3710e864776c6a850065fb64bd75d",
     "apps/journeys/app/travel/TripWarnings.tsx": "d2cb185cb147197bb6b5d8d76c7bbd90ad5e4dbf175310d55166d0ea39fb1333",
-    "apps/journeys/app/travel/TripWorkspace.tsx": "0cc2763f140d53ff7c26fbf3745e1194e2c79b8524ff00fcf1b1b633e4b02b26",
+    "apps/journeys/app/travel/TripWorkspace.tsx": "98bd9187993fceef263813058ad16752195e5992f191a754547e685fdf7e7da4",
     "apps/journeys/lib/collaboration/tasks.ts": "dc698afaf2f4200da1b5778718fff7b85d89eae070953a7ffffcb8b6091c3065",
     "apps/journeys/lib/guides/adoption-preview.ts": "6ad7ac0b5a35c40096df92f388037a35e7350afbb18934821646c0f88f13f6a7",
     "apps/journeys/lib/trips/import.ts": "aa3838188a3df72f3c77e8cc9d35138112b167fe7e611dd8c01046b151d6811f",
     "apps/journeys/lib/trips/input-validation.ts": "768bcb93b8ec877685e519a76fbe153d20ff732c4fd43e1de0187258a683dbff",
+    "apps/journeys/playwright.connected.config.ts": "708dbc8cecfe2487e4b8851bb57a298a201d11eeed95e1751794347fba558633",
     "apps/journeys/playwright.service-state.config.ts": "bbc63b6c85ead4f6325b535eb3743cd27410b01175cedbe2db3e54b46f8b738f",
     "apps/journeys/scripts/source-manifest.json": "16bf6c47cdf0caa89dbc54ae7f11d2f4ef3a451ca2d9dec2b26ea56d55a956f9",
     "apps/journeys/tests/adoption-preview.test.mjs": "6b546c237630160f0a180cb607ff6133b75a9968e8fbdd9f7ba5efffbc673c09",
@@ -35,11 +36,11 @@
     "apps/journeys/tests/share-preview-recovery.test.mjs": "20ceba7d0cfe4a5deda51559240971db18d589110193ff015d12eb93dd8ea1da",
     "apps/journeys/tests/support-draft-isolation.test.mjs": "5f00c5410596dc3ef8dbc828e050d541e33959ff28438a6b8f769622bb4e7358",
     "apps/journeys/tests/trip-fact-provenance.test.mjs": "0e634d0b358681424645128abc8df0c96c48711b27ca1a58e891ff1d8865d8a2",
-    "apps/journeys/tests/trip-workflow-recovery.test.mjs": "8b5e5ad8fcb50b5e958c23ee66d6a42e59af2d0baba9685444af09735f88f2ce",
+    "apps/journeys/tests/trip-workflow-recovery.test.mjs": "0def709ed262f93b26ad249a6390a5bd38e6c9c6da98ef421917d0bbbbe634a8",
     "apps/journeys/tests/workspace-next-step.test.mjs": "b8956424753f5241eda20860a91285a9c609c9c563790643739e78ff73018832",
-    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "b259d13f72d48b0c9cf296822ac5a209e2a6f97d021668033770f5eaca8aa477",
-    "docs/implementation/PD05_PD13_IMPLEMENTATION_REVIEW_2026-10-23.md": "10bec65b1fbbb89899690384d34c69448cdebd1ccc335db805eb77ac75efae5d",
-    "docs/implementation/PD05_PD13_REQUIREMENTS_2026-10-23.json": "1806e858d36038d61077081bfed489e3987682cc7e19d198bf8d5a0f7b79ae5e",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "95166590976c5a8a40d7cd95dbb4b59e3290a94a53346f742590c533abfa7430",
+    "docs/implementation/PD05_PD13_IMPLEMENTATION_REVIEW_2026-10-23.md": "6c74cf015d5d0f1a2bd596ee1860e143b0ba921be1899c52bf73fafbe576bea3",
+    "docs/implementation/PD05_PD13_REQUIREMENTS_2026-10-23.json": "1635fdc35ec9cce41f1b9cb8eea5ef91478ecdc46d08d872635cddf41c2f5948",
     "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "3f0e971c4fd2f841b47c04101a40fdf76baccee5f3d04f929ecf961595f59668",
     "docs/implementation/PREPARATION_SOURCE_MANIFEST_2026-10-23.json": "5fd937f5d36f73c17ab7547b51c59d56ca859a031fad7e726986579a6cfc07f8"
   },
@@ -47,5 +48,10 @@
     "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
     "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
   },
-  "notEvidenceOf": "Runtime permission, hosted acceptance, content rights, merge or production deployment"
+  "notEvidenceOf": "Runtime permission, hosted acceptance, content rights, merge or production deployment",
+  "historicalCandidate": {
+    "head": "d49c2ca4b840506a629eb237fccce22c158b85fa",
+    "status": "SUPERSEDED_CONNECTED223_PASS1FAIL_REPAIRED",
+    "sourceZipSha256": "d543bd8e70cece4d84f46ede0a28453260cac331aaaee3f6b3f17a7fedf77e43"
+  }
 }
