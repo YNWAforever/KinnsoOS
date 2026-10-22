@@ -4,19 +4,20 @@
   "purpose": "Preparation source/document integrity; not runtime or authorization evidence",
   "selfExcludedToAvoidRecursiveHash": true,
   "files": {
-    "apps/journeys/scripts/pilot-preparation.mjs": "11c8f0405ebf44d882624e2820ab7110c4fbe2587c68cdb5bae4a13f10cec1ba",
-    "apps/journeys/scripts/pilot-preparation.template.json": "74e27dd7cedefbade3a24440f4f72f6163c9f1dbd80434b9e8255191caf945a6",
-    "apps/journeys/scripts/pilot-staging.env.example": "36b5c0ac31a2096272a315cbf34f0fffdc41e6dcf72f6476d7de2d18eb5f33e7",
-    "apps/journeys/tests/pilot-preparation.test.mjs": "1929ade2bf8b9c1a499c1ffb00a011c5c382a576d99c56c5e8b7cb3f290e25a9",
-    "apps/journeys/scripts/source-manifest.json": "2f59a27a014d2bafcb615c49f7614c019d7933e722b233bcc1e5e65f1096a35f",
-    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "472e3d89cb12adbcaf54bf27bdb71836028b8420399cfdb47ae9b0032158d602",
+    "apps/journeys/scripts/pilot-preparation.mjs": "46b36d4ae3ebfec1f2bdd7c239cec7657f2165099d8a0bf8f0546913d3318754",
+    "apps/journeys/scripts/pilot-preparation.template.json": "619f35a540e087084b838ed75fb4a0c5584e680052011041aed3df1fc0cbef80",
+    "apps/journeys/scripts/pilot-staging.env.example": "c4f3f18db130b93b67efd2abbc09a1b9845c04c1f83af91f2502b34d7a3807ec",
+    "apps/journeys/tests/pilot-preparation.test.mjs": "d6a327690d2094836c35a5590e80f96ac1233846d888159f7fa250e3120ef6ee",
+    "apps/journeys/scripts/source-manifest.json": "813bdfd9a73ba08e643bb9580ce972aae21d3f7281d49dd15797b8a21199d58a",
+    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "b32b7027d3c5aba497a833d98054e8a4b348acf8f12f49bc763275785a3c6153",
     "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv": "7b75a10aace2671376bdff85950c98d97dd309d815536b5f2672b8b8c7f8530a",
-    "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "45415611ee8c141426b5cd197272a29df1927a74e561955b7d44c9b38cb762b7",
-    "docs/implementation/PILOT_TEST_ACTORS_2026-10-23.csv": "dad9c134094d305b2031c42b9f9805423345696c4b0217aa41f417c93ddc01f1",
-    "docs/implementation/PILOT_MIGRATION_SOURCE_INVENTORY_2026-10-23.json": "454dec8e94b3cad693ec10faadb1b3286ce900c67383724115028fc2c3d9f116",
-    "docs/implementation/KINNSO_PRODUCT_PREPARATION_2026-10-23.json": "98089eaf8be779f29841225faa14ecb7830a30250f67bf2e271f46fade31709f",
-    "docs/implementation/KINNSO_PRODUCT_PREPARATION_TASKS_2026-10-23.csv": "66011b81d57247dd3408828ee18fa36e90f4120976484a5fe31e1cb0c508586c",
-    "docs/implementation/PILOT_APPROVAL_DECISIONS_2026-10-23.md": "3b022585eeeeabc7e797d7019f94a8d44de4efb5585630e551b8f4071f204a27",
-    "docs/superpowers/plans/2026-10-23-kinnsoos-policy-staging-preparation.md": "6855ff6355bd909c98a7b363867f39ee12bec79ebc55cf65b3f87259abf26321"
-  }
+    "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "5206855da18a2a4174c4deddfa73ff0c134e72cdbf1ce566d903456df32b56f2",
+    "docs/implementation/PILOT_TEST_ACTORS_2026-10-23.csv": "74b4774f3ad0eda5537fbafac3ac714cd81e9acff717d35570e0d27e413dbf7e",
+    "docs/implementation/PILOT_MIGRATION_SOURCE_INVENTORY_2026-10-23.json": "1fb4a2d7d3300ade36326f81870dbeab198ab131b9a8d746234dc66376167ca2",
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_2026-10-23.json": "fe63bd600d38426f06b0ecff0d7b0778b3df9f3d41c49f056d5886f576b18822",
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_TASKS_2026-10-23.csv": "bc1f12116ae809be5eb98214a8a7f03ec39d3a25b97fffc85688bd2395c647c5",
+    "docs/implementation/PILOT_APPROVAL_DECISIONS_2026-10-23.md": "80383f6fe0b81c7bd8accc25a96a521634444c35e4c4c768d0407adcfd373cb1",
+    "docs/superpowers/plans/2026-10-23-kinnsoos-policy-staging-preparation.md": "ca334527c6355551f08361ff2aa2f29c8906459e662bc0251aa7156eed7a32f8"
+  },
+  "hashMeaning": "SHA256 of canonical Git-object bytes, not platform checkout CRLF; source files are unchanged by this normalization"
 }
