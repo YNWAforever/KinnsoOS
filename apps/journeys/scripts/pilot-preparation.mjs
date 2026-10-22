@@ -18,7 +18,7 @@ const object=x=>x!==null&&typeof x==='object'&&!Array.isArray(x);
 const ref=x=>typeof x==='string'&&x.trim().length>0&&x===x.trim()&&x.length<=256;
 const sha=x=>typeof x==='string'&&/^[a-f0-9]{40}$/.test(x);
 const project=x=>typeof x==='string'&&/^[a-z]{20}$/.test(x);
-const goal=x=>Number.isSafeInteger(x)&&x>0&&x<=525600;
+const selectedDecisions={D01:'KEEP_CURRENT_NOTICE',D02:'A',D03:'A',D04:'EXISTING_REMIX_KINNSO',D05:'A',D06:'A'};
 function sensitive(value){
  const pending=[value],seen=new Set();let count=0;
  while(pending.length){
@@ -50,11 +50,12 @@ export function assessPilotPreparation(input,{sourceRevision,now=Date.now()}={})
  check('SOURCE_BINDING',sha(sourceRevision)&&p.sourceRevision===sourceRevision);
  for(let i=1;i<=6;i++){
   const id=`D${String(i).padStart(2,'0')}`;
-  let ok=object(p.decisions?.[id])&&ref(p.decisions[id].reference);
+  let ok=object(p.decisions?.[id])&&p.decisions[id].selection===selectedDecisions[id]&&ref(p.decisions[id].reference);
   if(id==='D04')ok=ok&&p.environmentOption==='existing_project_bounded_cohort'&&p.targets?.staging?.kind==='existing_shared_project';
-  if(id==='D06')ok=ok&&ref(p.recovery?.ownerRef)&&goal(p.recovery.rpoMinutes)&&goal(p.recovery.rtoMinutes);
   check(id,Boolean(ok));
  }
+ // Selecting a direction is not evidence of operational ownership or service objectives.
+ check('RECOVERY_PREPARATION',ref(p.recovery?.ownerRef)&&p.recovery?.serviceObjective==='NOT_PROMISED'&&p.recovery?.rpoMinutes===null&&p.recovery?.rtoMinutes===null);
  const a=p.targets?.staging,b=p.targets?.restore;
  const forbidden=p.forbiddenProjectRefs;
  check('DISTINCT_TARGETS',project(a?.projectRef)&&p.selectedExistingProjectRef===a.projectRef&&b?.kind==='owned_local'&&/^kinnsoos-rehearsal-[a-f0-9]{12}$/.test(b?.projectRef??'')&&a.projectRef!==b.projectRef&&Array.isArray(forbidden)&&forbidden.length>0&&forbidden.every(project)&&!forbidden.includes(a.projectRef)&&!forbidden.includes(b.projectRef));
@@ -63,7 +64,7 @@ export function assessPilotPreparation(input,{sourceRevision,now=Date.now()}={})
  const companyOK=Array.isArray(companies)&&companies.length===2&&companies.every(object)&&['company-a','company-b'].every(alias=>companies.some(c=>c.alias===alias&&ref(c.identityRef)))&&new Set(companies.map(c=>c.identityRef)).size===2;
  const actorOK=Array.isArray(actors)&&actors.length===matrix.length&&new Set(actors.map(a=>a?.identityRef)).size===matrix.length&&matrix.every(([alias,persona,company,membershipRole])=>actors.some(a=>object(a)&&a.alias===alias&&a.persona===persona&&a.company===company&&a.membershipRole===membershipRole&&ref(a.identityRef)));
  check('ACTOR_MATRIX',companyOK&&actorOK);
- check('SCOPE',p.scope?.realContent==='BLOCKED'&&p.scope?.schema==='not_checked'&&p.scope?.runtime==='NOT_RUN'&&p.scope?.cloudResetSeedCleanup==='FORBIDDEN'&&p.scope?.schemaChanges==='NOT_AUTHORIZED'&&p.scope?.opsGlobalGrant==='NOT_AUTHORIZED'&&p.scope?.restoreCoverage==='SYNTHETIC_SUBSET_ONLY');
+ check('SCOPE',p.scope?.realContent==='BLOCKED'&&p.scope?.schema==='not_checked'&&p.scope?.runtime==='NOT_RUN'&&p.scope?.cloudResetSeedCleanup==='FORBIDDEN'&&p.scope?.schemaChanges==='NOT_AUTHORIZED'&&p.scope?.opsGlobalGrant==='NOT_AUTHORIZED'&&p.scope?.restoreCoverage==='SYNTHETIC_SUBSET_ONLY'&&p.scope?.policyActivation==='NOT_AUTHORIZED'&&p.scope?.optionalProcessing==='NO_NEW'&&p.scope?.existingFourTaskAi==='UNCHANGED');
  const blocked=checks.some(c=>c.status==='BLOCKED');
  return {status:blocked?'BLOCKED_INPUTS':'REVIEWABLE_NOT_EXECUTABLE',evidenceLevel:'LOCAL_PACKET_VALIDATION_ONLY',sourceRevision:sha(sourceRevision)?sourceRevision:null,checks,schemaStatus:'not_checked',realContentStatus:'BLOCKED',runtimeStatus:'NOT_RUN',isolationStatus:'SHARED_BACKEND_NOT_ISOLATED_STAGING',fullRestoreStatus:'NOT_RUN',authorizedActions:[]};
 }

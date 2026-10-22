@@ -13,14 +13,17 @@ const assess=p=>assessPilotPreparation(p,{sourceRevision,now});
 const blocked=(p,id)=>assert.ok(assess(p).checks.some(c=>c.id===id&&c.status==='BLOCKED'),id);
 function complete(){
  const p=structuredClone(template);p.sourceRevision=sourceRevision;p.environmentOption='existing_project_bounded_cohort';p.forbiddenProjectRefs=['p'.repeat(20)];p.selectedExistingProjectRef='s'.repeat(20);
- for(const id of Object.keys(p.decisions))p.decisions[id]={reference:'private/decision-'+id};
+ for(const [id,selection] of Object.entries({D01:'KEEP_CURRENT_NOTICE',D02:'A',D03:'A',D04:'EXISTING_REMIX_KINNSO',D05:'A',D06:'A'}))p.decisions[id]={selection,reference:'synthetic/decision-'+id};
  p.companies.forEach((c,i)=>c.identityRef='private/company-'+i);
  Object.assign(p.targets.staging,{kind:'existing_shared_project',projectRef:'s'.repeat(20),apiOrigin:'https://'+'s'.repeat(20)+'.supabase.co',ownerRef:'private/owner',managementRef:'private/management-shared',transportRef:'private/transport-shared',cohortRef:'private/exact-synthetic-cohort',observedAt:new Date(now).toISOString()});
  Object.assign(p.targets.restore,{kind:'owned_local',projectRef:'kinnsoos-rehearsal-012345abcdef',apiOrigin:'http://127.0.0.1:59421',ownerRef:'private/owner',managementRef:'private/container-metadata',transportRef:'private/port-mapping',ownershipMarkerRef:'private/ownership-marker',unlinked:true,observedAt:new Date(now).toISOString()});
- p.actors.forEach((a,i)=>a.identityRef='private/actor-'+i);p.recovery={ownerRef:'private/recovery-owner',rpoMinutes:1440,rtoMinutes:240};return p;
+ p.actors.forEach((a,i)=>a.identityRef='private/actor-'+i);p.recovery={ownerRef:'private/recovery-owner',serviceObjective:'NOT_PROMISED',rpoMinutes:null,rtoMinutes:null};Object.assign(p.scope,{policyActivation:'NOT_AUTHORIZED',optionalProcessing:'NO_NEW',existingFourTaskAi:'UNCHANGED'});return p;
 }
-test('empty template fails closed while preserving schema and content unknowns',()=>{
- const x=assess(template);assert.equal(x.status,'BLOCKED_INPUTS');assert.equal(x.schemaStatus,'not_checked');assert.equal(x.realContentStatus,'BLOCKED');assert.equal(x.runtimeStatus,'NOT_RUN');assert.deepEqual(x.authorizedActions,[]);for(const id of ['D01','D02','D03','D05','D06'])blocked(template,id);
+test('recorded user directions do not substitute for missing private operational evidence',()=>{
+ const x=assess(template);assert.equal(x.status,'BLOCKED_INPUTS');assert.equal(x.schemaStatus,'not_checked');assert.equal(x.realContentStatus,'BLOCKED');assert.equal(x.runtimeStatus,'NOT_RUN');assert.deepEqual(x.authorizedActions,[]);
+ for(const id of ['D01','D02','D03','D04','D05','D06'])assert.ok(x.checks.some(c=>c.id===id&&c.status==='PASS'),id);
+ for(const id of ['SOURCE_BINDING','TARGET_IDENTITY','ACTOR_MATRIX','RECOVERY_PREPARATION'])blocked(template,id);
+ assert.equal(template.recovery.ownerRef,null);assert.equal(template.recovery.rpoMinutes,null);assert.equal(template.recovery.rtoMinutes,null);
 });
 test('complete private references allow review only and confer no execution authority',()=>{
  const x=assess(complete());assert.equal(x.status,'REVIEWABLE_NOT_EXECUTABLE');assert.deepEqual(x.authorizedActions,[]);assert.equal(x.schemaStatus,'not_checked');assert.equal(x.runtimeStatus,'NOT_RUN');assert.equal(actorAliases.length,14);assert.equal(x.isolationStatus,'SHARED_BACKEND_NOT_ISOLATED_STAGING');assert.equal(x.fullRestoreStatus,'NOT_RUN');
@@ -33,7 +36,24 @@ test('identity observations expire and future timestamps do not pass',()=>{for(c
 test('actors need unique private identities and actual persona/company role mapping',()=>{const p=complete();p.actors[1].identityRef=p.actors[0].identityRef;blocked(p,'ACTOR_MATRIX');const q=complete();q.actors.find(a=>a.alias==='a-marketing').membershipRole='owner';blocked(q,'ACTOR_MATRIX');});
 test('omitted actor or duplicate company reference is blocked',()=>{const p=complete();p.actors.pop();blocked(p,'ACTOR_MATRIX');const q=complete();q.companies[1].identityRef=q.companies[0].identityRef;blocked(q,'ACTOR_MATRIX');});
 test('unselected environment and missing decisions remain missing despite label or name',()=>{const p=complete();p.environmentOption='shared_staging';blocked(p,'D04');p.environmentOption='existing_project_bounded_cohort';p.decisions.D02=null;blocked(p,'D02');});
-test('numeric recovery goals must be explicit positive bounded planning inputs',()=>{for(const v of [null,0,-1,'240',Infinity]){const p=complete();p.recovery.rtoMinutes=v;blocked(p,'D06');}});
+test('D06 A prepares a measured subset rehearsal with no promised RPO or RTO',()=>{
+ const x=assess(complete());assert.equal(x.status,'REVIEWABLE_NOT_EXECUTABLE');assert.deepEqual(x.authorizedActions,[]);assert.equal(x.fullRestoreStatus,'NOT_RUN');
+});
+
+test('D06 A does not accept invented service goals or omit recovery ownership',()=>{
+ for(const v of [0,-1,240,'240',Infinity]){const p=complete();p.recovery.rpoMinutes=v;p.recovery.rtoMinutes=v;blocked(p,'RECOVERY_PREPARATION');}
+ const p=complete();p.recovery.ownerRef=null;blocked(p,'RECOVERY_PREPARATION');
+ const q=complete();q.recovery.serviceObjective='PROMISED';blocked(q,'RECOVERY_PREPARATION');
+});
+
+test('decision references cannot silently change the directions selected by the user',()=>{
+ for(const [id,selection] of [['D01','A'],['D02','B'],['D03','B'],['D04','NEW_SUPABASE_PROJECTS'],['D05','B'],['D06','B']]){const p=complete();p.decisions[id].selection=selection;blocked(p,id);}
+ const p=complete();delete p.decisions.D03.selection;blocked(p,'D03');
+});
+
+test('keeping the notice and existing four AI tasks blocks policy activation or new optional processing',()=>{
+ for(const [key,value] of [['policyActivation','APPROVED'],['optionalProcessing','ENABLED'],['existingFourTaskAi','DISABLED'],['existingFourTaskAi','NEW_PROVIDER']]){const p=complete();p.scope[key]=value;blocked(p,'SCOPE');}
+});
 test('user-supplied ready or content success flags cannot clear unperformed gates',()=>{const p=complete();p.scope.schema='ready';p.scope.realContent='PASS';p.scope.runtime='PASS';blocked(p,'SCOPE');assert.equal(assess(p).schemaStatus,'not_checked');});
 test('credentials are rejected and never reflected in report',()=>{const p=complete();p.password='do-not-reflect-private-password';p.targets.staging.token='sb_secret_do-not-reflect';const x=assess(p);assert.equal(x.status,'BLOCKED_INPUTS');blocked(p,'NON_SECRET_PACKET');assert.ok(!JSON.stringify(x).includes('do-not-reflect'));});
 test('malformed input cannot throw or create a qualified result',()=>{for(const p of [null,[],{},'invalid'])assert.equal(assess(p).status,'BLOCKED_INPUTS');});

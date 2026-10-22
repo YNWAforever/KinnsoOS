@@ -1,21 +1,23 @@
 # 原有 backend、受控測試角色及恢復演練準備 — 2026-10-23
 
-狀態：**PREPARED_PENDING_DECISIONS**。來源 base 為 PR85 `6126ed900c9fa7f17688ac3261970add46d70cfa`。用戶已決定沿用原有 Remix-Kinnso，**不建立任何新 Supabase project**；兩個新 cloud projects 的原提案已撤回，不查價、不升級或騰 quota。
+狀態：**DIRECTIONS_SELECTED_OPERATIONAL_INPUTS_MISSING**。原來源 base 為 PR85 `6126ed900c9fa7f17688ac3261970add46d70cfa`；本次方向修訂起點為既有branch HEAD `ed47c6cf18d37d8f00ffbeb30d645ebea8221b97`；最終publication head／PR／CI及受測內容差異由publication receipt綁定，不由本文件推定。用戶已決定沿用原有 Remix-Kinnso，**不建立任何新 Supabase project**；兩個新 cloud projects 的原提案已撤回，不查價、不升級或騰 quota。
 
 本輪是可審查準備，沒有建立 Auth identity、派角色、SQL、provider／schedule、外部訊息、merge 或 production deploy。真攻略作者同意及圖片權利維持 **BLOCKED**。
 
-## 方案與需要的決定
+## 已選方向與仍缺的營運輸入
 
-| ID | 建議方案 | 可選替代／取捨 | 仍須輸入或批准 |
+D02、D03、D05、D06已選A；D01保留現行notice，D04沿用原project。這不是文案內容審批、私有證據或操作authority；毋須重選。
+
+| ID | 已選方案 | 不作的能力/授權推定 | 仍須的事實或操作輸入 |
 |---|---|---|---|
-| D01 | 指定營運法律實體及私隱責任人；身份以 private reference 記錄 | 未指定則保留原 notice，不啟動真人 pilot 收集 | 法律名稱、私隱聯絡及責任人。Codex 不代任營運方 |
-| D02 | app case 為正式案件記錄，受控 mailbox 作私隱／未能登入後備；建議香港工作日10:00–18:00、兩個工作日內首次人工回覆作內部目標 | mailbox-only＋人工case reference；無輪值便不承諾服務時間／SLA | 真渠道、primary/backup owner及目標。確認受控 mailbox 前不寄訊息；法定請求時限另處理 |
-| D03 | 審批雙語政策及實際 processor/region/retention inventory；本輪不新增 analytics／AI／marketing | 若要新增處理，先補用途、接收者、保留、consent及驗證 | 實際providers/config與可執行刪除／備份程序，不能把提議當現況 |
-| D04 | **已選：原 Remix-Kinnso backend＋現有 KinnsoOS 的獨立 branch Preview URL＋明確 runId/cohort**。沒有 backend 隔離宣稱 | 若原 project 是共用正式環境，只準備範圍內私有／draft controls；公開寫入及完整流程仍 BLOCKED | project owner確認用途/共用讀者，核准 exact cohort/IDs/讀寫範圍。選用project不等同准schema、Auth config、role、provider變更 |
-| D05 | 13個 synthetic非Ops身份＋一個**現有已獲准Ops**身份 slot、兩家公司/分支；不新增全域Ops/admin grant | 經另審可指定已有測試身份；Auth identity仍不跨persona重用。若要新Ops角色需明確審批其全域影響 | actor/company/branch private refs、建立與role變更的狹窄範圍。所有目前均未建立／未派角色 |
-| D06 | 可丟棄**本機Docker**還原 synthetic cohort。先測一次 recovery drill；pilot候選目標可選RPO24h／RTO4h，未測量前不是承諾 | RPO1h／RTO1h需頻率/輪值/實測；或者暫只做一次無服務承諾的演練。完整原project restore另保留未驗收 | recovery primary/backup owner、目標、snapshot/export/restore授權與readback簽收；原project不覆寫 |
+| D01 | **保留原notice**，雙語草稿未核准/未啟用 | 不虛構營運實體、聯絡/責任人、費用政策，亦不代任營運方 | 法律實體、私隱聯絡、primary/backup owner仍unknown；未核實前不啟動真人pilot收集 |
+| D02 | **A**：既有app case＋受控mailbox作私隱/未能登入後備；香港工作日10:00–18:00作準備窗口、兩工作日首次回覆只作內部目標 | 沒有真輪值/收件證據，不發布已有人當值或對外SLA；不自動寄訊息 | channel、primary/backup、假期/absence與handoff refs；法定請求時限另處理 |
+| D03 | **A**：不新增optional measurement、外部AI分析、marketing；**保留現有四項AI任務、provider與budget** | 不把方向當作實際設定、停用既有AI或已完成政策事實查核 | 已啟用processors/config、用途/regions、retention、刪除/備份程序仍須核實 |
+| D04 | **既有Remix-Kinnso backend＋現有branch Preview＋exact synthetic cohort**，不建立新projects | shared backend不是獨立staging；不推定schema/Auth config/role/provider寫入authority或公開fixture隔離 | project用途/共用讀者、exact cohort/IDs/讀寫範圍及owner readback |
+| D05 | **A**：13非Ops synthetic身份＋一個**既有獲准Ops**slot，兩公司/分支；不新增全域Ops/admin grant | 尚未建立身份、派角色或確認Ops read scope；persona不是DB role | test owner、受控Auth/mailbox管理、actor/company/branch refs及exact setup/role/fixture操作scope |
+| D06 | **A**：一次synthetic subset→owned/unlinked本機Docker演練，先量測再訂目標 | **沒有預設或承諾RPO/RTO**，兩數值null；subset不是完整production restore或migration-release備份 | recovery primary/backup owner、窗口、exact export/readback/保留scope、fresh資源及identity gate；原project不覆寫 |
 
-D01–D03實際可審批雙語copy見 `PRIVACY_SUPPORT_DRAFT_2026-10-23.md`；D04只有用戶選project的決定已收到，其他scope未批准。本文件/工具/文案批准不會自動建立資源或啟用任何服務。
+D01–D03 copy見 `PRIVACY_SUPPORT_DRAFT_2026-10-23.md`；方向已記錄，內容與缺少事實仍待核實。工具/文案/準備方向均不會自動建立資源、啟用服務或授予操作權限。
 
 ## 已核對的事實與身份缺口
 
@@ -37,7 +39,7 @@ D01–D03實際可審批雙語copy見 `PRIVACY_SUPPORT_DRAFT_2026-10-23.md`；D0
 
 | 步驟 | 具體操作及必須記錄 | gate／停止點 | 現況 |
 |---|---|---|---|
-| S0 決定 | D01–D06 refs、明確cohort/IDs/owner、資料用途、範圍、故障/cleanup決定 | D04project選擇不擴成寫入授權；沒有paid資源建立 | PARTIAL |
+| S0 決定 | D01–D06方向已記錄；cohort/IDs/owner、用途、範圍、故障/cleanup仍缺 | 選項reference不擴成寫入授權；沒有paid資源建立 | DIRECTIONS_SELECTED_SCOPE_MISSING |
 | S1 身份 | management exactproject metadata＋DNS/host/gateway/transport＋owner對用途及範圍readback；核對Preview配置指向原project | client import/constructor/health probe前先核實；設定變更重做；不假定可丟棄 | METADATA_ONLY |
 | S2 只讀reconcile | 針對獲准scope比對schema history、owners/grants/role membership、RLS、RPC/views、storage政策 | 另有只讀SQL/client scope才做；configuration check不檢查schema | NOT_RUN |
 | S3 exact setup包 | 如需角色/fixtures/schema，先列精確target、recordIDs來源、ordered delta/hash、影響、測試及rollback | shared target無reset/replay-all；未審scope停在packet | NOT_RUN |
@@ -79,7 +81,7 @@ Synthetic內容／自製幾何圖只作經核准測試，不替代三篇獲作�
 4. **R04 Rebuild／restore**：source inventory先作目標reconcile，經批准才在ownedlocal重建相容schema＋restore subset及self-madeobjectbytes。不是把cloud CIseed/reset套原project；既有`isolated-rehearsal.mjs`有canonical full-schema replay，不宣稱它已匯入或驗過本subset。
 5. **R05 Failure/unknownACK**：本機純guard測試已準備；真target另驗deliberatefailure rollback、commitACK未知保留claim→唯讀catalog/receipt reconcile、COMMIT後freshpostcheck；原requestId/payload不換。原project若將來需SQL，既有fresh≤1h一致**完整DB export**、isolatedrestore和exactfailure/commit/postcheck gates仍未滿足，subset不能頂替。
 6. **R06 Readback**：在核准localapp以自己的cohort身份檢查traveller privatecopy/photo、creator receipt、companyroles、share revoke、Opscase與原dedupe/immutableversions；matched正控制與跨scope負控制都記錄。auth/cloudprovider不能還原的項目保持partial/NOT_RUN。
-7. **R07 Measure/handoff**：本輪subset RPO是fault boundary與最後確定可恢復subset的一致時間差；RTO由故障宣告至指定readback完成（含資源/配置時間）。只對本次subset／local環境報告，不換算production能力；對照D06提議目標，backupowner用receipt接手。
+7. **R07 Measure/handoff**：本輪subset RPO是fault boundary與最後確定可恢復subset的一致時間差；RTO由故障宣告至指定readback完成（含資源/配置時間）。只對本次subset／local環境報告，不換算production能力；D06 A沒有預設目標，不以null當0或強填正數；先記實測loss/time/coverage，backup owner用真receipt接手後再訂候選目標。
 8. **R08 Retain/cleanup**：原project不覆寫；cohort IDs和localtarget保留至owner的explicit cleanup決定。只刪可證明自己本輪建立且已准的exact IDs，不清inbox/dedupe/history來回退。cleanup失敗停止並保存證據。
 
 Receipt：scenario/run、source/tree/deployment、schema/config binding、target/purpose/owner refs、actor/company refs、backup/objectmanifest hashes、expected/observed/status、時間、coverage缺口、next owner/action。公開repo只放角色/reference；個人資料、proof、credentials和原projectexactrefs在private record。
@@ -92,9 +94,9 @@ node scripts/pilot-preparation.mjs --packet scripts/pilot-preparation.template.j
 node --test tests/pilot-preparation.test.mjs
 ```
 
-預期模板exit2 `BLOCKED_INPUTS`；D04的project方向已記，其餘決定/identity/cohort/actors/recovery未填。22個tests覆蓋exactcandidate、原projectbinding、禁止新projects、ref/origin、15分鐘declaredobservations、14個獨立identityrefs、role mapping、禁止cloudreset/schema/globalgrant/fullrestore冒認、secret回顯及malformedinput。工具不連線，報告不回顯inputvalues，JSON上限256KiB。
+預期模板exit2 `BLOCKED_INPUTS`；D01–D06方向已記錄，source/identity/cohort/actors/recovery owner仍未填。25個focused tests覆蓋無RPO/RTO承諾的D06 A、方向不可偷偷更換、禁止啟用草稿或新增optional processing/更換既有AI、exactcandidate、原projectbinding、禁止新projects、ref/origin、15分鐘declaredobservations、14個獨立identityrefs、role mapping、禁止cloudreset/schema/globalgrant/fullrestore冒認、secret回顯及malformedinput。工具不連線，報告不回顯inputvalues，JSON上限256KiB。
 
-填滿references最多得到`REVIEWABLE_NOT_EXECUTABLE`；`authorizedActions:[]`／schema:not_checked／runtime:NOT_RUN／realContent:BLOCKED／fullRestore:NOT_RUN不變，isolation固定`SHARED_BACKEND_NOT_ISOLATED_STAGING`。欄位PASS只表示聲明格式，不證明artifact存在、用途/authority/permission或真正隔離；operator必須另查metadata/transport/ownership再做clients/寫入。
+D01–D06 PASS只表示所選方向及reference格式。`RECOVERY_PREPARATION`獨立要求真owner ref及`serviceObjective: NOT_PROMISED`、`rpoMinutes: null`、`rtoMinutes: null`；準備subset演練不要求正數RPO/RTO，也不以選A虛構owner。填滿所需references最多得到`REVIEWABLE_NOT_EXECUTABLE`；`authorizedActions:[]`／schema:not_checked／runtime:NOT_RUN／realContent:BLOCKED／fullRestore:NOT_RUN不變，isolation固定`SHARED_BACKEND_NOT_ISOLATED_STAGING`。欄位PASS只表示聲明格式，不證明artifact存在、用途/authority/permission或真正隔離；operator必須另查metadata/transport/ownership再做clients/寫入。
 
 `PILOT_MIGRATION_SOURCE_INVENTORY_2026-10-23.json`是source-only排序/hash清單，selectedDelta=null、execution=NOT_RUN。PR55/65舊packet不適用本候選/原target。既有migration release及test-target guards未改。
 

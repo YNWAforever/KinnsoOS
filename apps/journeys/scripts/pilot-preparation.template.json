@@ -2,14 +2,30 @@
   "version": 1,
   "sourceRevision": null,
   "decisions": {
-    "D01": null,
-    "D02": null,
-    "D03": null,
+    "D01": {
+      "selection": "KEEP_CURRENT_NOTICE",
+      "reference": "session/2026-10-23/user-keeps-current-notice; no policy activation or owner evidence"
+    },
+    "D02": {
+      "selection": "A",
+      "reference": "session/2026-10-23/user-selected-D02-A; channel and staffing evidence not supplied"
+    },
+    "D03": {
+      "selection": "A",
+      "reference": "session/2026-10-23/user-selected-D03-A; no new optional processing; existing four AI tasks/provider/budget retained"
+    },
     "D04": {
+      "selection": "EXISTING_REMIX_KINNSO",
       "reference": "session/user-selected-original-project; environment choice only, no write authority"
     },
-    "D05": null,
-    "D06": null
+    "D05": {
+      "selection": "A",
+      "reference": "session/2026-10-23/user-selected-D05-A; matrix only, no identities or role grants"
+    },
+    "D06": {
+      "selection": "A",
+      "reference": "session/2026-10-23/user-selected-D06-A; prepare subset rehearsal, no RPO/RTO promises or owner evidence"
+    }
   },
   "environmentOption": "existing_project_bounded_cohort",
   "forbiddenProjectRefs": [],
@@ -148,6 +164,7 @@
   ],
   "recovery": {
     "ownerRef": null,
+    "serviceObjective": "NOT_PROMISED",
     "rpoMinutes": null,
     "rtoMinutes": null
   },
@@ -158,7 +175,10 @@
     "cloudResetSeedCleanup": "FORBIDDEN",
     "schemaChanges": "NOT_AUTHORIZED",
     "opsGlobalGrant": "NOT_AUTHORIZED",
-    "restoreCoverage": "SYNTHETIC_SUBSET_ONLY"
+    "restoreCoverage": "SYNTHETIC_SUBSET_ONLY",
+    "policyActivation": "NOT_AUTHORIZED",
+    "optionalProcessing": "NO_NEW",
+    "existingFourTaskAi": "UNCHANGED"
   },
   "selectedExistingProjectRef": null
 }

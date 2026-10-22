@@ -1,23 +1,27 @@
 {
   "version": 1,
   "base": "6126ed900c9fa7f17688ac3261970add46d70cfa",
-  "purpose": "Preparation source/document integrity; not runtime or authorization evidence",
+  "purpose": "Selected pilot directions, source-bound preparation and CI registry configuration integrity; not runtime or authority evidence",
   "selfExcludedToAvoidRecursiveHash": true,
   "files": {
-    "apps/journeys/scripts/pilot-preparation.mjs": "46b36d4ae3ebfec1f2bdd7c239cec7657f2165099d8a0bf8f0546913d3318754",
-    "apps/journeys/scripts/pilot-preparation.template.json": "619f35a540e087084b838ed75fb4a0c5584e680052011041aed3df1fc0cbef80",
+    "apps/journeys/scripts/pilot-preparation.mjs": "fdce6fddd1eaf93f8f8ef4673a550f178fccc265c14a560cd656776898dfab3b",
+    "apps/journeys/scripts/pilot-preparation.template.json": "de76ef3670d72e26955c3e101b008d25ff7461e84eb1269db9ff47bafa553ab0",
     "apps/journeys/scripts/pilot-staging.env.example": "c4f3f18db130b93b67efd2abbc09a1b9845c04c1f83af91f2502b34d7a3807ec",
-    "apps/journeys/tests/pilot-preparation.test.mjs": "d6a327690d2094836c35a5590e80f96ac1233846d888159f7fa250e3120ef6ee",
+    "apps/journeys/tests/pilot-preparation.test.mjs": "cf1a65255b6158dedc9f49403bd9ee89f5333dad276e4a03653185976cf8b740",
     "apps/journeys/scripts/source-manifest.json": "813bdfd9a73ba08e643bb9580ce972aae21d3f7281d49dd15797b8a21199d58a",
-    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "b32b7027d3c5aba497a833d98054e8a4b348acf8f12f49bc763275785a3c6153",
+    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "feec01e62d863d2ccdb213ee681c49ffc8ad718617e0892b8d0db95cced40f71",
     "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv": "7b75a10aace2671376bdff85950c98d97dd309d815536b5f2672b8b8c7f8530a",
-    "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "5206855da18a2a4174c4deddfa73ff0c134e72cdbf1ce566d903456df32b56f2",
+    "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "364bbb16170be3e1438b465855e3094754fba63257e5eab235f92eb539e99774",
     "docs/implementation/PILOT_TEST_ACTORS_2026-10-23.csv": "74b4774f3ad0eda5537fbafac3ac714cd81e9acff717d35570e0d27e413dbf7e",
     "docs/implementation/PILOT_MIGRATION_SOURCE_INVENTORY_2026-10-23.json": "1fb4a2d7d3300ade36326f81870dbeab198ab131b9a8d746234dc66376167ca2",
-    "docs/implementation/KINNSO_PRODUCT_PREPARATION_2026-10-23.json": "fe63bd600d38426f06b0ecff0d7b0778b3df9f3d41c49f056d5886f576b18822",
-    "docs/implementation/KINNSO_PRODUCT_PREPARATION_TASKS_2026-10-23.csv": "bc1f12116ae809be5eb98214a8a7f03ec39d3a25b97fffc85688bd2395c647c5",
-    "docs/implementation/PILOT_APPROVAL_DECISIONS_2026-10-23.md": "80383f6fe0b81c7bd8accc25a96a521634444c35e4c4c768d0407adcfd373cb1",
-    "docs/superpowers/plans/2026-10-23-kinnsoos-policy-staging-preparation.md": "ca334527c6355551f08361ff2aa2f29c8906459e662bc0251aa7156eed7a32f8"
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_2026-10-23.json": "070dabb7c50279a9ea0a3bfb88f5a0533bad0cbf7a6b6f0fe0588d099a37221b",
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_TASKS_2026-10-23.csv": "8af0c8bae61f64345d6c242e52b0d5d22d3298ff17b1afde79e3571b7e5982e8",
+    "docs/implementation/PILOT_APPROVAL_DECISIONS_2026-10-23.md": "7c8b1cc6c259022d63f626f6eed20e2b0e55a55ca874a9a9bd99be8b00df348e",
+    "docs/superpowers/plans/2026-10-23-kinnsoos-policy-staging-preparation.md": "ca334527c6355551f08361ff2aa2f29c8906459e662bc0251aa7156eed7a32f8",
+    ".github/workflows/ci.yml": "33996a265126ea8933865e002e051592fae73fa8361c28ccb41b9eb03382d78f",
+    ".github/workflows/journeys.yml": "728cdf419c059ae908f37403682631061b46566d1f83375911fcef25dba88bf1",
+    "scripts/supabase-registry-workflow-test.mjs": "e8e9f8d1d0cc8839c737df4a7c7466aef2467ac757056b25f1ece0851e08aa36",
+    "docs/implementation/CI_REGISTRY_REPAIR_2026-10-23.md": "9a9d537d36e381313adf194c63b11bdd8213b111fa84a2d876638d5a762a15b4"
   },
   "hashMeaning": "SHA256 of canonical Git-object bytes, not platform checkout CRLF; source files are unchanged by this normalization"
 }
