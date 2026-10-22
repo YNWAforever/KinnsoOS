@@ -4494,3 +4494,24 @@ body:has(.k-app) {
   min-height: 100vh;
   min-height: 100svh;
 }
+
+/* Measured 320px/200% reflow: fieldset min-content and technical job references. */
+.k-campaigns fieldset {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+.k-job-observations {
+  overflow-wrap: anywhere;
+}
+
+.k-campaigns input:not([type="checkbox"]):not([type="radio"]),
+.k-campaigns select,
+.k-campaigns textarea {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.k-campaigns .k-merchant-summary dt {
+  overflow-wrap: anywhere;
+}

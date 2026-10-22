@@ -1,3 +1,4 @@
+import {evidenceTimeline} from '../lib/collaboration/evidence-timeline.ts';
 import {recoveryHookModule,serviceStateModule,listFilterModule} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import * as listQueries from '../lib/collaboration/list-query.ts';
@@ -24,6 +25,7 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;
   if(name==='../../lib/creators/collaboration')return{creatorMissions:{get:async()=>({ok:true,data:detail()}),list:async()=>({ok:true,data:{items:[],nextCursor:null}}),...port},creatorEarnings:{get:async()=>({ok:true,data:{section:'settled',totals:[],items:[],nextCursor:null}}),...port}};
+  if(name.endsWith('/collaboration/evidence-timeline'))return{evidenceTimeline};
   if(name.endsWith('/campaign-schedule'))return{scheduleDate};
   throw Error('Unexpected import '+name);
  }}));
@@ -76,4 +78,13 @@ test('earnings show exact separate-currency totals and distinguish tracked volum
  assert.match(h.text(),/HKD 9999999999\.99/);assert.match(h.text(),/USD 1\.20/);
  await h.find('button','Tracked activity').props.onClick();await tick();h.render();assert.match(h.text(),/USD 750\.00/);assert.match(h.text(),/not yet payable/);
  h.invalidate();h.render();assert.doesNotMatch(h.text(),/750\.00/);
+});
+
+test('loaded evidence history links each receipt to its actual milestone context',async()=>{
+ const dto=detail();const other='22222222-2222-4222-8222-222222222222';
+ dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;
+ dto.milestones.push({id:other,title:'Second actual milestone',description:'Original instructions',dueAt:null,repeatable:true});
+ dto.submissions=[{id:'receipt1',milestoneId:id,status:'approved',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]},{id:'receipt2',milestoneId:other,status:'submitted',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]}];
+ const h=await harness({get:async()=>({ok:true,data:dto})});
+ for(const milestone of dto.milestones){const link=h.elements().find(el=>el.type==='a'&&el.props.href==='#milestone-'+milestone.id);assert.ok(link,'history needs milestone anchor for '+milestone.title);assert.ok(h.text(link).includes(milestone.title));}
 });

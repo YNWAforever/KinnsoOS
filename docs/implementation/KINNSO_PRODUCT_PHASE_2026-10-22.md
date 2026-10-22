@@ -1,29 +1,41 @@
-# KinnsoOS 2026-10-22 產品階段執行紀錄
+# KinnsoOS 產品階段執行紀錄
 
-PD01 已完成；PD02 本機修復及 PD03 路由增量進行中。產品仍為 NO_GO。
+計劃日期2026-10-22；執行跨2026-10-22至23（香港時間）。已交付首批PR84，並完成PD05–PD13可獨立實作／重用的source增量。**整體維持NO_GO**，沒有merge／production部署／SQL／provider／角色／排程變更。
 
-- 完整 remote checkout：2051 tracked paths，非 shallow／sparse；來源 PR82 `4b42fdeb`，main `0e9fd55`。原 root main `ad2c8ce` 及舊 worktrees 未修改。
-- 計劃包 8 hashes、audit ZIP 指定 SHA256 及內部15 hashes 全部吻合；讀 report／summary／tasks／limitations 及原始 logs。
-- PR77–80 已合併；10月13日計劃中的整合步驟不重做。source capsule 不用作 remote base。
-- N01–N18 與完整53列 A/G/U/LegacyE 保留原檔；N02 `verified_done` 不變；所有53列 `partial` 不自動結案。
-- CI run 39788143596／39788143594 仍沒有 runner、0 steps，付款／spend annotation 已即時確認；未更改付款、未 rerun。
-- Node 24.18.0，本機 Next 16.3.8／React19.2.4／Playwright1.58.2；已讀 installed Next navigation、lazy loading、metadata docs。與 CI Node22 有版本差異。
-- PR82 u18 已真跑：11 PASS／1 FAIL（英文 collaborations 標題在320px／200%溢出）。歷史12 launch failures不刪除；使用 systematic-debugging 修復。
-- PR82 u20 初次被 Turbopack 的外部 dependency junction 擋住；改用同 lockfile 本機安裝後重跑，原 log 保留。
+## 基線與完整性
 
-## 共用介面與裁決
+- Audit ZIP SHA256 `3d4a976e66245c798891c56d64d9e5d29d29af85bb98ef8baabb1d70827f43ea`；計劃包8個hash及內部15個hash全部吻合。
+- 完整2051-path remote tree；非shallow／sparse；main `0e9fd55`、PR82 draft `4b42fdeb`。PR77–80已合併，沒有重做整合；source capsule沒有當作Git基線推送。
+- 原root main `ad2c8ce`及其他worktrees保留。新工作只在managed worktree／自己的stacked branches。
+- `NEXT_PHASE_LEDGER.json`與`NEXT_PHASE_TRACEABILITY.csv`逐byte保留：18個N、N02 verified_done、完整53列A/G/U/LegacyE及所有partial／原FAIL均未重設。
 
-PD01 → 全部：同一 CandidateRecord／53列原結案規則。PD03 → PD05/06：公開 CTA 只導航；不授權帳戶／公司。PD05 → PD08/09/12：沿用既有 NextAction，沒有新 workflow state。PD08/09 → PD10/11/13：保留 CAS／receipts／scope。PD04/07/14 → PD15/16：政策、真內容、target/recovery 屬外部驗收前置；source-ready 不等於 acceptance-ready。
+## 可觀察成果與實際檔案
 
-Ruling：用戶已要求按附帶設計實作，沿用 typed registry 方案，不再次要求設計批准。
-Ruling：DB target 未指定／核實，所有 DB／hosted／role寫入及owned seed/reset均 NOT_RUN；本機 public browser 關閉 backend。
+| 角色／任務 | Source結果 | 主要檔案 | 驗收界線 |
+|---|---|---|---|
+| Public／PD01–03 | 46條static entries，原4頁保留；其餘42條有真實雙語內容及CTA，unknown404不變 | `public-entry-registry.ts`、`PublicInformation.tsx`、`Workbench.tsx`、`lib/seo/public-entry.ts` | PR84 `a001ce1`；review無阻斷；CI付款/spend blocked |
+| 旅客／PD06–07 | 來源卡呈現作者／版本／發布時間／structured counts；summary不捏造行程，語言／查核日期unknown | `source-summary.ts`、`PublicGuideContent.tsx`、`GuideWorkspace.tsx` | 原adoption／private-copy／draft/share controls重用；真內容及新session/第二裝置未驗 |
+| Creator／PD05/09 | 沿用task selectors；loaded receipt/review歷程可辨識milestone並鍵盤到既有anchor | `evidence-timeline.ts`、`CreatorMissionsWorkspace.tsx` | DTO只有目前提交及review；不聲稱完整重提事件歷史；approval不是payment |
+| Merchant／PD08/10/11 | 唯讀發布摘要、缺欄目的地及saved revision區分；loaded participants/evidence/milestones範圍明確 | `MerchantCampaigns.tsx` | handlers／CAS／terms sealing／same request不變；既有query／insights／CSV／收益模型重用 |
+| Ops／PD12–13 | 最近attempt/result、最後success、owner/runbook可查，null為unknown；四類case交班及bounded reminder恢復程序完成 | `MonitoringWorkspace.tsx`、`PILOT_SUPPORT_RUNBOOK.md` | 不把job記錄當recipient送達；DB dedupe及實際dispatch未跑 |
 
-本次逐項狀態見 JSON 與 `KINNSO_PRODUCT_TASKS_2026-10-22.csv`。新 evidence 追加，不覆寫歷史 FAIL／BLOCKED／NOT_RUN。
+PD04政策、PD07三篇真攻略、PD14 target/recovery操作包已準備。用戶明確表示沒有所需inputs，因此保留BLOCKED，不再要求重複提供。PD15–18所需CI／owned／hosted／實機／AT／numeric performance與營運gates沒有被本機測試取代。PD19可選AI沿用原四任務/provider/budget，未新增呼叫；PD20無實際pilot觀察。
 
-## PD02／PD03 本次本機結果
+## 實際驗證
 
-PR82 原 u20 6PASS；原u18首次11PASS1FAIL（不是launch blocker），英文collaborations長字在60.8px標題／288px內容區溢出。新增正常換行後原12案全PASS，原斷言不改。新candidate的46條公共入口逐一接typed registry；原4頁及private/native handlers保留。
+本機Windows、Node24.18.0、Next16.3.8、React19.2.4、Playwright1.58.2／實際Chromium。與CI Node22不同。
 
-新candidate：682unit、90真Next u20、92無DB native fixture、4workflow、10owned HTTP source contracts全部PASS；build/typecheck PASS。Source package10discovered／9PASS／1Windows symlink-permission SKIP，不能報10PASS。Node24.18與CI Node22分開；尚無此head有效remote CI。
+- 首批PR84：682unit、90真Next公共路由、92無DB native fixture PASS；build/typecheck PASS；source package10 discovered／9PASS／1Windows symlink-permission SKIP；4workflow及10owned HTTP source contracts PASS。
+- 後續候選：完整unit／optimized build／typecheck／native以本輪最終receipt及logs為準；新增10個雙語320px／200%component cases（已納入原service-state gate），public90案已在整合source重跑。這10案是transport fixtures，不是DB/Auth/RLS/hosted。
+- 新helper/handlers均有RED→GREEN；原u18 11PASS1FAIL及其後12PASS保留。新增presentation首次4PASS6FAIL包含真接線／reflow缺陷及fixture about:blank History錯誤；fullunit690PASS4FAIL locale缺口、e2e TS7006及Ops compatibility73PASS2FAIL都保留，未降低斷言／字體／gate。
+- 獨立review：首批無阻斷或minor；後續無Critical/Important，兩項minor（participants標籤、milestone context）已修復並加回歸。
+- PR84 exact CI：Journeys39805891439、CI39805891113；7個failed jobs沒有runner、0steps，另e2e skipped，verify119918865668付款/spend annotation即時核實。沒有rerun或改付款。
+- Owned integration：NOT_RUN。用戶無指定target；Docker Linux daemon未運行；CI-only setup guard保留，未冒充CI、未建立client/fixtures/SQL/cleanup。
 
-User確認沒有policy／content／target／roles／recovery輸入；PD04／PD07真內容／PD14及hosted依賴維持BLOCKED。操作包已完成，繼續獨立source工作；未新增SQL、hosted client、fixture或cleanup。
+## 版本與恢復
+
+每次測試source/HEAD及檔案指紋見phase JSON與`apps/journeys/evidence/pd-20261022/`，交付receipt綁最終head/tree/PR及source archive。只在來源內容相等可證明時引用本機結果；不同head的CI不挪用。最後文件整理不改runtime app tree，仍分開記錄final-head CI。
+
+回退：對應PR source revert；不改schema/flags，不刪私人notes/photos、proof、request receipts、dedupe或immutable versions。正式target、必要delta、fresh recovery、owner RPO/RTO／roles缺失時不部署。具體停止點見`PILOT_RELEASE_DECISION_2026-10-22.md`。
+
+最終後續source結果：695unit0FAIL0SKIP、102真Chromiumcomponent cases PASS、optimized build/typecheck PASS；public90在同整合source重跑通過，最後兩項private-only minor修正後再跑完整unit/native。Source package9PASS1Windows permission SKIP；4workflowcontracts PASS。獨立delta review確認兩項minor已解決且沒有新finding。Standalone來源重建結果由最終交付receipt記錄。

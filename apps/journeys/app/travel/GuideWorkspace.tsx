@@ -14,7 +14,7 @@ import {PublicGuideContent} from '../../lib/seo/PublicGuideContent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
 export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId:string|null;initialGuide?:PublicGuide|null}) {
  const requestNavigation=useDraftNavigation();
- const {t,href}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
+ const {t,href,locale}=useApp(),router=useRouter(),query=useSearchParams(),[guide,setGuide]=useState<PublicGuide|null>(initialGuide),[message,setMessage]=useState(''),[saved,setSaved]=useState(false),[busy,setBusy]=useState(false),[list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[selected,setSelected]=useState('');
  const [preview,setPreview]=useState<ReturnType<typeof adoptionPreview>>(null),[accountValid,setAccountValid]=useState(!!actorId),[next,setNext]=useState<string|null>(null);
  const [bookmarkStatus,setBookmarkStatus]=useState<'loading'|'ready'|'error'>('loading'),bookmarkRead=useRef({ticket:0,loading:false});
  const adoption=useRef<{key:string;id:string;revision:number}|null>(null);
@@ -85,7 +85,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   setBusy(false);lock.current=false;
  }
  if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role="status">{message||t('Loading…','載入中…')}</p></div>;
- return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide}/>
+ return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link><PublicGuideContent guide={guide} locale={locale}/>
  <p className="k-muted">{t('Guide text is shown as published by its author.','攻略原文依作者發布內容顯示。')}</p>
  <p className="k-muted">{t('Original language: not provided.','原文語言：來源未提供。')}</p>
  <p className="k-muted">{t('Last updated: not provided.','最後更新：來源未提供。')}</p>

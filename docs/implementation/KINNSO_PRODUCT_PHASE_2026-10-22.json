@@ -36,18 +36,19 @@
   "candidate": {
     "sourceSha": null,
     "treeSha": null,
-    "baseSha": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+    "baseSha": "a001ce15823d5cc9bf89a4e2d3b2764be93fc210",
     "pr": null,
     "deploymentId": null,
-    "environment": "local backend-disabled / pure component fixtures",
+    "environment": "Windows local Node24.18; no backend capabilities for actual Next public suite; explicit transport ports for role presentation fixtures",
     "schemaFingerprint": null,
-    "configChecks": "All backend capabilities disabled for public browser suite",
+    "configChecks": "Local public capabilities disabled; no hosted configuration or schema check",
     "recoveryRef": null,
     "unknownReasons": {
-      "sourceSha": "working candidate not committed yet",
+      "sourceSha": "PD05-PD13 follow-up branch in progress",
       "deploymentId": "no deployment performed",
       "schemaFingerprint": "no approved hosted target",
-      "recoveryRef": "fresh target-bound rehearsal absent"
+      "recoveryRef": "fresh target-bound rehearsal absent",
+      "pr": "Assigned after publication; exact URL in final delivery receipt and attached PR"
     }
   },
   "integrity": {
@@ -461,7 +462,10 @@
     "Original 53 requirement rows and N02 verified_done remain byte-preserved; phase progress does not close original acceptance.",
     "PR82 required CI remains blocked before execution; native browser failure is separate and must be repaired.",
     "No designated owned DB target means integration/hosted tests remain blocked; public tests disable every backend capability.",
-    "Retained notice pages have no approved canonical/hreflang mapping; keep alternates absent and use existing migrationRobots noindex/nofollow rather than invent ownership or translations."
+    "Retained notice pages have no approved canonical/hreflang mapping; keep alternates absent and use existing migrationRobots noindex/nofollow rather than invent ownership or translations.",
+    "PD05/06/11/13 existing selectors/adoption/insights/reminder contracts are reused, not rebuilt; current pure/native source evidence never closes owned/hosted acceptance.",
+    "Current evidence timeline is a projection of loaded receipt/review records; original submission-event history is not reconstructible from mutable submittedAt and is explicitly not claimed.",
+    "No local Docker Linux daemon and no approved target; preserve CI-only setup guard. Do not manufacture CI identity to start/reset an existing developer environment."
   ],
   "receipts": [
     {
@@ -562,7 +566,116 @@
       "status": "PASS",
       "evidenceRef": "apps/journeys/evidence/pd-20261022/{service-state,workflow-contracts,source-http-contracts}-pd03.log",
       "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD03",
+      "scenarioId": "PR84_EXACT_CI",
+      "candidate": "a001ce15823d5cc9bf89a4e2d3b2764be93fc210",
+      "actorRole": "GitHub runner",
+      "expected": "Required jobs execute",
+      "observed": "Journeys39805891439 andCI39805891113 terminal failure;5Journeys+2CI jobs0steps/no runner;dependent e2e skipped;verify119918865668 payment/spending annotation confirmed",
+      "status": "BLOCKED",
+      "evidenceRef": "https://github.com/YNWAforever/KinnsoOS/actions/runs/39805891439",
+      "cleanupStatus": "NO_EXTERNAL_MUTATIONS"
+    },
+    {
+      "taskId": "PD07/PD08/PD09/PD10/PD12",
+      "scenarioId": "TDD",
+      "candidate": "workflow working tree based on a001ce1",
+      "actorRole": "pure unit / actual component handlers",
+      "expected": "Missing source/presentation behavior fails before implementation",
+      "observed": "4source-summary,2publication-summary,3timeline,1detail-coverage,2Ops-observation RED thenGREEN. Original73PASS2FAIL Ops raw-reference compatibility failure retained and repaired without weakening assertions. Full unit initial690PASS4FAIL locale wiring repaired then694PASS0FAIL0SKIP. Build test-helper TS7006 retained and corrected with Playwright Page type.",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/*{red,green}*.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD07/PD08/PD09/PD12",
+      "scenarioId": "NATIVE_PRESENTATION",
+      "candidate": "workflow working tree based on a001ce1",
+      "actorRole": "synthetic component transport ports",
+      "expected": "EN/zh-HK320px200%, field keyboard navigation, no command writes",
+      "observed": "10PASS0FAIL0SKIP after genuine missing import/native widths/summary DT/technical-reference fixes. Historical4PASS6FAIL retained; about:blank History failure was fixture environment only. No realNext/DB/Auth/RLS/hosted claim for this component fixture.",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/pilot-presentation-all-green.log",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD06/PD08/PD10/PD11/PD13/PD14",
+      "scenarioId": "OWNED_TARGET_GATE",
+      "candidate": null,
+      "actorRole": "operator",
+      "expected": "Prove exact approved disposable target before constructing client",
+      "observed": "User has none;Docker Linux daemon named pipe absent;prepare-connected-ci explicitly CI-only;no spoofed CI/GITHUB_ACTIONS, no client/SQL/fixtures/cleanup. Existing owned integration stories preserved, NOT_RUN.",
+      "status": "BLOCKED",
+      "evidenceRef": "apps/journeys/scripts/prepare-connected-ci.mjs and current Docker read-only version probe",
+      "cleanupStatus": "NO_DB"
+    },
+    {
+      "taskId": "PD05-PD15_LOCAL",
+      "scenarioId": "REVIEWED_FINAL_LOCAL",
+      "candidate": "workflow tested inputs fingerprint envelope",
+      "actorRole": "pure handlers / anonymous Next / explicit component fixtures",
+      "expected": "All applicable local source gates pass; required external gates remain open",
+      "observed": "695unit0fail0skip;build/typecheckPASS;102actualChromiumcomponentfixturesPASS;90realNext publicPASS before final2minor private-only changes;source10discovered9PASS1WindowspermissionSKIP;4workflowcontractsPASS. Independent review no blockers and bothminorfixes delta-reviewed clear.",
+      "status": "PASS",
+      "evidenceRef": "apps/journeys/evidence/pd-20261022/{unit-reviewed-final,type-reviewed-final,build-reviewed-final,native-reviewed-final,public-workflows-green,source-tests-workflows,workflows-tested-inputs}.*",
+      "cleanupStatus": "NO_DB"
     }
   ],
-  "ownerInputReply": "User states i do not have policy/channel, consented real content, target/roles/recovery inputs; 2026-10-22 Hong Kong. Do not request again without new evidence."
+  "ownerInputReply": "User states i do not have policy/channel, consented real content, target/roles/recovery inputs; 2026-10-22 Hong Kong. Do not request again without new evidence.",
+  "deliveries": [
+    {
+      "tasks": [
+        "PD01",
+        "PD02 local repair",
+        "PD03"
+      ],
+      "sourceSha": "a001ce15823d5cc9bf89a4e2d3b2764be93fc210",
+      "treeSha": "532e20794facc43fff3f50da5f3d63d880f4a997",
+      "baseSha": "4b42fdebaf97cd11b91a7b6ca0d4366c92072e8d",
+      "pr": "https://github.com/YNWAforever/KinnsoOS/pull/84",
+      "review": "No Critical/Important/Minor findings; independent7 focused tests and76-entry inventory",
+      "deploymentId": null,
+      "runtime_status": "LOCAL_ANONYMOUS_ONLY"
+    }
+  ],
+  "continuationBranch": "codex/pd-pilot-workflows-20261022",
+  "executionHongKongDates": [
+    "2026-10-22",
+    "2026-10-23"
+  ],
+  "releaseDecision": "NO_GO",
+  "localQualification": {
+    "unit": {
+      "passed": 695,
+      "failed": 0,
+      "skipped": 0
+    },
+    "nativeComponentFixtures": {
+      "passed": 102,
+      "failed": 0,
+      "skipped": 0
+    },
+    "realNextPublic": {
+      "passed": 90,
+      "failed": 0,
+      "skipped": 0,
+      "scopeNote": "Final two minor changes affect private role presentation only; native102 and unit695 rerun after them"
+    },
+    "build": "PASS",
+    "typecheck": "PASS",
+    "sourcePackage": {
+      "discovered": 10,
+      "passed": 9,
+      "skipped": 1,
+      "reason": "Windows symlink privilege"
+    },
+    "workflowContracts": 4,
+    "independentReview": "NO_BLOCKERS; TWO_MINOR_FIXED_AND_DELTA_REVIEWED",
+    "rootIntegration": "BLOCKED_DOCKER_TARGET",
+    "hosted": "NOT_RUN",
+    "physicalAT": "NOT_RUN",
+    "numericPerformance": "NOT_QUALIFIED"
+  }
 }

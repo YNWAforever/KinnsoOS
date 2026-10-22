@@ -24,11 +24,15 @@ jobs:
         run: npm exec playwright install -- --with-deps chromium
       - name: Native workspace contracts without a database
         run: npm exec playwright test -- --config=playwright.service-state.config.ts
+      - name: Public entries on a backend-disabled Next server
+        run: npm exec playwright test -- --config=playwright.public-entry.config.ts
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: failure()
         with:
           name: journeys-workspace-fixture-results
-          path: apps/journeys/evidence/service-state-browser/
+          path: |
+            apps/journeys/evidence/service-state-browser/
+            apps/journeys/evidence/public-entry-browser/
   verify:
     runs-on: ubuntu-latest
     defaults:

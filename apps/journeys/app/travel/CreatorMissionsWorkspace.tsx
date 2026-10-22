@@ -1,4 +1,5 @@
 'use client';
+import {evidenceTimeline} from "../../lib/collaboration/evidence-timeline";
 import Link from 'next/link';
 import {useWorkspaceRecovery} from './useWorkspaceRecovery';
 import {useEffect,useRef,useState} from 'react';
@@ -134,6 +135,17 @@ export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:
     {detail.participant?.status==='active'&&evidenceUrl(detail.couponUrl)&&<a href={detail.couponUrl} target="_blank" rel="noopener noreferrer">{t('Open merchant offer','開啟商戶優惠')}</a>}
     {detail.partnerLinks.map(link=>evidenceUrl(link.url)&&<p key={link.id}><a href={link.url} target="_blank" rel="noopener noreferrer">{t('Your existing partner link','你現有的合作連結')}</a></p>)}
    </article>
+   <section className="k-card" aria-label={t('Recorded evidence history','已記錄交付歷程')}>
+    <h2>{t('Recorded evidence history','已記錄交付歷程')}</h2>
+    <p>{t('Only loaded submission and review records are shown. A submission time can change after revision; this is not a complete event log. Submission labels show the current status. Approval is not payment.','此處只顯示已載入的交付及審核紀錄。修訂後提交時間可能改變，這不是完整事件紀錄；提交項目顯示目前狀態。核准不等於付款。')}</p>
+    {detail.submissions.length===0?<p>{t('No evidence history loaded yet.','暫未載入交付歷程。')}</p>:<ol>{evidenceTimeline(detail).map(event=>{const submission=detail.submissions.find(row=>row.id===event.submissionId),milestone=detail.milestones.find(row=>row.id===submission?.milestoneId);return <li key={event.key}>
+     {milestone&&<Link href={`#milestone-${milestone.id}`}>{t('Milestone: ','里程碑：')}{milestone.title}</Link>}
+     <strong>{event.kind==='submission'?t('Submission record, current status: ','提交紀錄，目前狀態：'):t('Review: ','審核：')}{status(event.kind==='review'?(event.status==='request_revision'?'revision_requested':event.status==='approve'?'approved':event.status==='reject'?'rejected':event.status):event.status)}</strong>
+     <p>{event.at?<time dateTime={event.at}>{scheduleDate(event.at,detail.scheduleTimeZone??'UTC',locale)}</time>:t('Time not recorded','未記錄時間')}</p>
+     {event.note&&<p>{event.note}</p>}<p className="k-muted">{t('Submission reference: ','提交參考編號：')}{event.submissionId}</p>
+    </li>;})}</ol>}
+    {detail.submissionsNextCursor&&<p>{t('Earlier records are available with Load earlier evidence below.','可使用下方「載入較早證明」查看較早紀錄。')}</p>}
+   </section>
    <h2>{t('Milestones and evidence','里程碑及證明')}</h2>
    <p>{t('Evidence links are reviewed by the merchant or Kinnso team. Submitting a link does not automatically verify or approve the work.','商戶或 Kinnso 團隊會審核證明連結。提交連結不會自動驗證或核准作品。')}</p>
    {detail.milestones.length===0&&<p>{t('This brief has no content milestones.','此合作簡介沒有內容里程碑。')}</p>}
