@@ -34,8 +34,8 @@
     ]
   },
   "candidate": {
-    "sourceSha": null,
-    "treeSha": null,
+    "sourceSha": "2b74eaf7111d06bcd2e431143da553330a305b91",
+    "treeSha": "de9276fe5cd55c8f08c721709d215f8d9d805496",
     "baseSha": "a001ce15823d5cc9bf89a4e2d3b2764be93fc210",
     "pr": null,
     "deploymentId": null,
@@ -44,12 +44,12 @@
     "configChecks": "Local public capabilities disabled; no hosted configuration or schema check",
     "recoveryRef": null,
     "unknownReasons": {
-      "sourceSha": "PD05-PD13 follow-up branch in progress",
       "deploymentId": "no deployment performed",
       "schemaFingerprint": "no approved hosted target",
       "recoveryRef": "fresh target-bound rehearsal absent",
-      "pr": "Assigned after publication; exact URL in final delivery receipt and attached PR"
-    }
+      "pr": "Will be assigned after push; final delivery receipt binds publication head, exact PR and CI. Subsequent evidence-only commit preserves app tree."
+    },
+    "sourceMeaning": "Reviewed and locally tested runtime/code commit; delivery evidence commit may follow without app changes."
   },
   "integrity": {
     "packSha256": "1e21320ca6473830a53afda12dcb8e0f2aee09d84c99eaac7d6e5adc757aee79",
@@ -614,7 +614,7 @@
     {
       "taskId": "PD05-PD15_LOCAL",
       "scenarioId": "REVIEWED_FINAL_LOCAL",
-      "candidate": "workflow tested inputs fingerprint envelope",
+      "candidate": "2b74eaf7111d06bcd2e431143da553330a305b91",
       "actorRole": "pure handlers / anonymous Next / explicit component fixtures",
       "expected": "All applicable local source gates pass; required external gates remain open",
       "observed": "695unit0fail0skip;build/typecheckPASS;102actualChromiumcomponentfixturesPASS;90realNext publicPASS before final2minor private-only changes;source10discovered9PASS1WindowspermissionSKIP;4workflowcontractsPASS. Independent review no blockers and bothminorfixes delta-reviewed clear.",
@@ -677,5 +677,14 @@
     "hosted": "NOT_RUN",
     "physicalAT": "NOT_RUN",
     "numericPerformance": "NOT_QUALIFIED"
+  },
+  "reviewSummary": {
+    "scopeBase": "a001ce15823d5cc9bf89a4e2d3b2764be93fc210",
+    "reviewedCodeSha": "2b74eaf7111d06bcd2e431143da553330a305b91",
+    "critical": 0,
+    "important": 0,
+    "minorOriginal": 2,
+    "minorRemaining": 0,
+    "deltaReview": "Both minor fixes resolved; no new findings"
   }
 }

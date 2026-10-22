@@ -39,3 +39,5 @@ PD04政策、PD07三篇真攻略、PD14 target/recovery操作包已準備。用�
 回退：對應PR source revert；不改schema/flags，不刪私人notes/photos、proof、request receipts、dedupe或immutable versions。正式target、必要delta、fresh recovery、owner RPO/RTO／roles缺失時不部署。具體停止點見`PILOT_RELEASE_DECISION_2026-10-22.md`。
 
 最終後續source結果：695unit0FAIL0SKIP、102真Chromiumcomponent cases PASS、optimized build/typecheck PASS；public90在同整合source重跑通過，最後兩項private-only minor修正後再跑完整unit/native。Source package9PASS1Windows permission SKIP；4workflowcontracts PASS。獨立delta review確認兩項minor已解決且沒有新finding。Standalone來源重建結果由最終交付receipt記錄。
+
+後續reviewed/tested source commit：`2b74eaf7111d06bcd2e431143da553330a305b91`；tree `de9276fe5cd55c8f08c721709d215f8d9d805496`。交付文件commit保留相同app tree，final delivery receipt另記其HEAD／PR／CI，不能把此source結果稱為任何新head的CI通過。
