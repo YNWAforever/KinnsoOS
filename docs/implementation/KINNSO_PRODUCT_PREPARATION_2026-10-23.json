@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "base": "6126ed900c9fa7f17688ac3261970add46d70cfa",
+  "candidateBranch": "codex/pd-policy-staging-preparation-20261023",
+  "publicationBinding": "Final delivery receipt binds exact head/PR/CI; no inferred SHA from previous local results",
+  "code_status": "PREPARATION_IMPLEMENTED;POLICY_UNAPPROVED",
+  "test_status": "717_LOCAL_UNIT_PASS;22_NEW_INCLUDED;9_MIGRATION_GUARD_PASS;SOURCE9_PASS1_PERMISSION_SKIP",
+  "deployment_status": "NO_MANUAL_DEPLOYMENT;NO_NEW_SUPABASE_PROJECTS;NO_PRODUCTION_CHANGE",
+  "runtime_status": "MANAGEMENT_METADATA_AND_DNS_ONLY;NO_AUTH_CLIENT_SQL_ACTORS_RESTORE",
+  "userDecisions": {
+    "D04": "CONFIRMED_USE_ORIGINAL_REMIX_KINNSO_NO_NEW_PROJECTS",
+    "D01": "PENDING_OPERATOR_PRIVACY_OWNER",
+    "D02": "PENDING_CHANNEL_STAFFING",
+    "D03": "PENDING_FACTUAL_PROCESSOR_RETENTION_REVIEW",
+    "D05": "PENDING_BOUNDED_ACTOR_SCOPE",
+    "D06": "PENDING_RECOVERY_OWNER_GOALS_SCOPE"
+  },
+  "selectedTarget": {
+    "publicName": "Remix-Kinnso",
+    "privateMetadataRef": ".local-private/pilot-prep-20261023/target-metadata.json",
+    "metadataObserved": "ACTIVE_HEALTHY Singapore Postgres17.6.1.127",
+    "schema": "not_checked",
+    "purposeOwnershipDisposable": "UNVERIFIED",
+    "isolation": "SHARED_BACKEND_NOT_INDEPENDENT_STAGING",
+    "allowedByPacket": []
+  },
+  "sourceFiles": [
+    "apps/journeys/scripts/pilot-preparation.mjs",
+    "apps/journeys/scripts/pilot-preparation.template.json",
+    "apps/journeys/scripts/pilot-staging.env.example",
+    "apps/journeys/tests/pilot-preparation.test.mjs",
+    "apps/journeys/scripts/source-manifest.json"
+  ],
+  "policyFiles": [
+    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md",
+    "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv"
+  ],
+  "roles": {
+    "identitySlots": 14,
+    "proposedNewNonOpsIdentities": 13,
+    "existingOpsSlot": 1,
+    "actualCreated": 0,
+    "actualAssigned": 0
+  },
+  "recovery": {
+    "scope": "SYNTHETIC_SUBSET_TO_OWNED_LOCAL_ONLY",
+    "dockerLinuxDaemon": "UNAVAILABLE",
+    "fullDatabaseAuthStorageProviderRecovery": "NOT_RUN",
+    "actualRehearsal": "NOT_RUN",
+    "existingMigrationReleaseGuard": "UNCHANGED;fresh consistent full export/isolated restore still required for original-target SQL"
+  },
+  "sideEffects": {
+    "newProjects": 0,
+    "projectConfigChanges": 0,
+    "SQL": 0,
+    "hostedClients": 0,
+    "roleAssignments": 0,
+    "messages": 0,
+    "schedules": 0,
+    "merge": 0,
+    "productionDeploy": 0
+  },
+  "tests": [
+    {
+      "command": "npm test",
+      "log": "apps/journeys/evidence/pd-20261023/unit-reviewed-final.log",
+      "pass": 717,
+      "fail": 0,
+      "skip": 0
+    },
+    {
+      "command": "node --test tooling-tests/migration-release.test.mjs",
+      "pass": 9,
+      "fail": 0,
+      "log": "apps/journeys/evidence/pd-20261023/migration-guards.log"
+    },
+    {
+      "command": "python -m unittest discover -s tests -p source_package_test.py",
+      "discovered": 10,
+      "pass": 9,
+      "skip": 1,
+      "skipReason": "Windows symlink privilege unavailable",
+      "log": "apps/journeys/evidence/pd-20261023/source-package.log"
+    }
+  ],
+  "notRun": [
+    "new candidate build/typecheck/browser - no render/type/runtime/Next config changes",
+    "new exact-head CI until publication",
+    "hosted DB/Auth/RLS/cohort role acceptance",
+    "public real content consent/image rights",
+    "H01-H14/PS01-PS06",
+    "actual local/cloud restore",
+    "external mailbox/scheduler/provider delivery",
+    "numeric performance/physical devices/AT"
+  ],
+  "originalLedgerIntegrity": {
+    "NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "traceabilityRows": 53,
+  "originalNTasks": 18,
+  "requirementsStatus": "Original 53 remain partial; original N02 verified_done retained; T08/N16 open",
+  "realGuideConsentImageRights": "BLOCKED",
+  "releaseDecision": "NO_GO",
+  "rollback": "Source revert / keep original notice; no data changes to roll back; future cleanup only exact owned IDs with authority",
+  "historicalEvidence": [
+    "Previous audit675 PASS retained as historical only",
+    "Previous PR84/85 local/native/build evidence not borrowed as this candidate CI/runtime",
+    "Original first proposed new-project packet RED/GREEN preserved; user-steered original-project RED/GREEN retained",
+    "Initial synthetic CSV generator KeyError repaired before delivery, raw note retained",
+    "Independent review RED18PASS4FAIL: reference whitespace, embedded credentials, malformed companies, package/ancestorHEAD. Repaired focused22PASS; full suite rerun after review."
+  ],
+  "sourceReview": {
+    "privacyCopyPairs": 31,
+    "copyMapMatches": true,
+    "reviewFindings": "3 Important +1 Minor resolved; delta review: no remaining or new findings",
+    "redLog": "packet-review-red.log",
+    "greenLog": "packet-review-green.log",
+    "reviewer": "Pasteur"
+  }
+}

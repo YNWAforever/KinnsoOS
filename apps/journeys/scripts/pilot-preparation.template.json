@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "sourceRevision": null,
+  "decisions": {
+    "D01": null,
+    "D02": null,
+    "D03": null,
+    "D04": {
+      "reference": "session/user-selected-original-project; environment choice only, no write authority"
+    },
+    "D05": null,
+    "D06": null
+  },
+  "environmentOption": "existing_project_bounded_cohort",
+  "forbiddenProjectRefs": [],
+  "companies": [
+    {
+      "alias": "company-a",
+      "identityRef": null
+    },
+    {
+      "alias": "company-b",
+      "identityRef": null
+    }
+  ],
+  "targets": {
+    "staging": {
+      "projectRef": null,
+      "apiOrigin": null,
+      "ownerRef": null,
+      "managementRef": null,
+      "transportRef": null,
+      "observedAt": null,
+      "kind": "existing_shared_project",
+      "cohortRef": null
+    },
+    "restore": {
+      "projectRef": null,
+      "apiOrigin": null,
+      "ownerRef": null,
+      "managementRef": null,
+      "transportRef": null,
+      "observedAt": null,
+      "kind": "owned_local",
+      "unlinked": null,
+      "ownershipMarkerRef": null
+    }
+  },
+  "actors": [
+    {
+      "alias": "traveller-a",
+      "persona": "traveller",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    },
+    {
+      "alias": "traveller-b",
+      "persona": "traveller",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    },
+    {
+      "alias": "creator-a",
+      "persona": "creator",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    },
+    {
+      "alias": "creator-b",
+      "persona": "creator",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    },
+    {
+      "alias": "a-owner",
+      "persona": "merchant",
+      "company": "company-a",
+      "membershipRole": "owner",
+      "identityRef": null
+    },
+    {
+      "alias": "a-marketing",
+      "persona": "merchant",
+      "company": "company-a",
+      "membershipRole": "marketing",
+      "identityRef": null
+    },
+    {
+      "alias": "a-clerk",
+      "persona": "merchant",
+      "company": "company-a",
+      "membershipRole": "clerk",
+      "identityRef": null
+    },
+    {
+      "alias": "a-finance",
+      "persona": "merchant",
+      "company": "company-a",
+      "membershipRole": "finance",
+      "identityRef": null
+    },
+    {
+      "alias": "b-owner",
+      "persona": "merchant",
+      "company": "company-b",
+      "membershipRole": "owner",
+      "identityRef": null
+    },
+    {
+      "alias": "b-marketing",
+      "persona": "merchant",
+      "company": "company-b",
+      "membershipRole": "marketing",
+      "identityRef": null
+    },
+    {
+      "alias": "b-clerk",
+      "persona": "merchant",
+      "company": "company-b",
+      "membershipRole": "clerk",
+      "identityRef": null
+    },
+    {
+      "alias": "b-finance",
+      "persona": "merchant",
+      "company": "company-b",
+      "membershipRole": "finance",
+      "identityRef": null
+    },
+    {
+      "alias": "outsider",
+      "persona": "outsider",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    },
+    {
+      "alias": "ops",
+      "persona": "ops",
+      "company": null,
+      "membershipRole": null,
+      "identityRef": null
+    }
+  ],
+  "recovery": {
+    "ownerRef": null,
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  },
+  "scope": {
+    "realContent": "BLOCKED",
+    "schema": "not_checked",
+    "runtime": "NOT_RUN",
+    "cloudResetSeedCleanup": "FORBIDDEN",
+    "schemaChanges": "NOT_AUTHORIZED",
+    "opsGlobalGrant": "NOT_AUTHORIZED",
+    "restoreCoverage": "SYNTHETIC_SUBSET_ONLY"
+  },
+  "selectedExistingProjectRef": null
+}
