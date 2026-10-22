@@ -99,8 +99,9 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  {actorId&&accountValid?<>
   <label htmlFor={'guide-trip-'+id}>{t('Apply to a trip','套用至行程')}</label><select id={'guide-trip-'+id} value={selected} disabled={busy||!!adoption.current} onChange={e=>{setSelected(e.target.value);setPreview(null)}}><option value="">{t('Choose an existing trip','選擇現有行程')}</option>{list.map(item=><option key={item.id} value={item.id}>{item.title}</option>)}</select>
   {next&&<button className="k-btn" disabled={busy||!!adoption.current} onClick={()=>void loadMore()}>{t('More trips','載入更多行程')}</button>}
-  <Link href={href('trips')}>{t('Create a trip first','先建立行程')}</Link><button className="k-btn primary" disabled={busy||!selected||!!adoption.current} onClick={()=>void reviewAdoption()}>{t('Apply published itinerary','套用已發布行程')}</button>
+  <Link href={href('trips')+'?fromGuide='+encodeURIComponent(guide.id)}>{t('Create a trip first','先建立行程')}</Link><button className="k-btn primary" disabled={busy||!selected||!!adoption.current} onClick={()=>void reviewAdoption()}>{t('Apply published itinerary','套用已發布行程')}</button>
   {preview&&<section data-testid="adoption-preview" aria-label={t('Review itinerary changes','核對行程更改')}><h2>{t('Review before applying','套用前核對')} · {preview.tripTitle}</h2>
+   <p>{t('Target trip time zone','目標行程時區')}: {preview.tripTimezone}</p>
    <p>{t('Existing source versions','現有來源版本')}: {preview.existingVersions.length?preview.existingVersions.map(v=>'v'+v).join(', '):t('None','無')}</p><p>{t('Published version','已發布版本')}: v{preview.guideVersion}</p>
    <p>{t('Days','日數')}: {preview.daysBefore} → {preview.daysAfter}</p><p>{t('Stops added','新增站點')}: {preview.stopsAdded}</p><p>{t('Private notes retained','保留私人筆記')}: {preview.privateNotesKept}</p>
    <p>{t('This appends a separate authored copy. Existing days, source copies and your private notes stay in the trip.','此操作會加入獨立的作者行程副本，現有日程、來源副本及私人筆記會保留。')}</p>

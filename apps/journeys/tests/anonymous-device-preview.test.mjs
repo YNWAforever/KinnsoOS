@@ -12,7 +12,7 @@ function preview(actorId,id,valid=true,includeHidden=false){
   if(name==='react')return{useState:initial=>[initial===true&&!valid?false:initial,()=>{}],useRef:initial=>({current:initial}),useEffect:()=>{}};
   if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
   if(name==='next/link')return{__esModule:true,default:'a'};
-  if(name==='next/navigation')return{useRouter:()=>({})};
+  if(name==='next/navigation')return{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()};
   if(name==='./UnsavedDraftGuard')return{useDraftNavigation:()=>()=>{}};
   if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path,ready:true})};
   if(name==='./ImportPreview')return{ImportPreview};

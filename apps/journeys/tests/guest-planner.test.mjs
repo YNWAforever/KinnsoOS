@@ -10,7 +10,7 @@ import {guideDraft,restorableGuideDrafts} from '../lib/trips/guest-drafts.ts';
 const source=await readFile(new URL('../app/travel/GuestPlanner.tsx',import.meta.url),'utf8');
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
 const guide={id:'guide-one',version:2,title:'Kyoto walk',days:[{offset:0,title:'Morning',stops:[{title:'Temple',startMinuteOfDay:540,durationMinutes:60}]}]};
-function planner(actorId=null,initialDraft=null,onSaved=undefined){
+function planner(actorId=null,initialDraft=null,onSaved=undefined,locale='en'){
  const states=[],refs=[],effects=[],writes=[],reads=[],listeners=new Map();let cursor=0,tree,guard;
  const react={
   useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;}];},
@@ -24,7 +24,7 @@ function planner(actorId=null,initialDraft=null,onSaved=undefined){
    if(name==='react')return react;
    if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
    if(name==='next/link')return{__esModule:true,default:'a'};
-   if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
+   if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='zh-HK'?zh:en,href:path=>'/'+locale+'/'+path})};
    if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard:value=>{guard=value;}};
    if(name==='../../lib/trips/guest-drafts')return{guideDraft,restorableGuideDrafts,readGuestTrips:()=>new Promise((resolve,reject)=>reads.push({resolve,reject})),saveGuestTrip:trip=>new Promise((resolve,reject)=>writes.push({trip:structuredClone(trip),resolve,reject}))};
    throw Error('Unexpected dependency '+name);
@@ -163,4 +163,12 @@ test('a signed-in traveller can explicitly repair a device copy and return direc
  p.button('Save device draft').props.onClick();p.render();await p.settle(0);
  const link=p.elements().find(el=>el.type==='a'&&el.props.children==='Review import to your account');assert.ok(link);assert.equal(link.props.href,'/en/trips');
  assert.equal(p.writes[0].trip.ownerId,'guest-local','repair does not assign an account owner or import automatically');assert.equal(p.writes[0].trip.days[0].stops[0].travellerNote,'Retain my note');
+});
+
+for(const locale of ['en','zh-HK'])test(`device planning ${locale}: saved time zone is visible without rewriting the copy or minute values`,()=>{
+ const original=guideDraft({...guide,days:[{offset:0,title:'Original day',stops:[{title:'Midnight',startMinuteOfDay:0,durationMinutes:0},{title:'Unscheduled',startMinuteOfDay:null,durationMinutes:null}]}]},'saved-zone','guest-original','Asia/Tokyo');
+ const before=JSON.stringify(original),p=planner(null,original,undefined,locale);
+ const text=node=>typeof node==='string'||typeof node==='number'?String(node):node&&typeof node==='object'?[node.props?.children].flat(Infinity).map(text).join(' '):'';
+ assert.match(text(p.render()),/Asia\/Tokyo/);assert.equal(JSON.stringify(original),before);assert.equal(p.writes.length,0);
+ assert.equal(original.days[0].stops[0].startMinuteOfDay,0);assert.equal(original.days[0].stops[1].startMinuteOfDay,null);
 });

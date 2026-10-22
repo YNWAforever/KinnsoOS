@@ -8,7 +8,7 @@
     "apps/journeys/scripts/pilot-preparation.template.json": "de76ef3670d72e26955c3e101b008d25ff7461e84eb1269db9ff47bafa553ab0",
     "apps/journeys/scripts/pilot-staging.env.example": "c4f3f18db130b93b67efd2abbc09a1b9845c04c1f83af91f2502b34d7a3807ec",
     "apps/journeys/tests/pilot-preparation.test.mjs": "cf1a65255b6158dedc9f49403bd9ee89f5333dad276e4a03653185976cf8b740",
-    "apps/journeys/scripts/source-manifest.json": "7a3e7a44d13999430c1243698f96e7afeac52094cb8ee129f8af2eb80a1be635",
+    "apps/journeys/scripts/source-manifest.json": "16bf6c47cdf0caa89dbc54ae7f11d2f4ef3a451ca2d9dec2b26ea56d55a956f9",
     "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "feec01e62d863d2ccdb213ee681c49ffc8ad718617e0892b8d0db95cced40f71",
     "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv": "7b75a10aace2671376bdff85950c98d97dd309d815536b5f2672b8b8c7f8530a",
     "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "364bbb16170be3e1438b465855e3094754fba63257e5eab235f92eb539e99774",
@@ -26,5 +26,13 @@
     "apps/journeys/tests/ci-image-downloads.test.mjs": "855044a40c38fbc8b8fe35429777f0c910d94033e1a580a14842e01a31535868",
     "apps/journeys/scripts/ci-image-lock.json": "338c71a2f119d76f04cfe386e842363701513bfc7eb219d344539c9d840676f3"
   },
-  "hashMeaning": "SHA256 of canonical Git-object bytes, not platform checkout CRLF; source files are unchanged by this normalization"
+  "hashMeaning": "SHA256 of canonical Git-object bytes, not platform checkout CRLF; source files are unchanged by this normalization",
+  "continuation": {
+    "baseCandidate": "16456ea32c71c60d42dad8d4bfe73b4832cff288",
+    "phase": "PD05-PD13",
+    "reason": "New corresponding source/tests added to the app manifest. Other preparation source leaves remain unchanged; original164manifest is preserved in Git and sealed evidence.",
+    "historicalLeafHashesAtBase": {
+      "apps/journeys/scripts/source-manifest.json": "7a3e7a44d13999430c1243698f96e7afeac52094cb8ee129f8af2eb80a1be635"
+    }
+  }
 }

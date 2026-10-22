@@ -29,3 +29,9 @@
 遇到target身份不明、cleanup失敗、跨scope資料、unknown外部副作用，停止該動作並保留reference。未指定target時不建立client，不把CI reset/seed/cleanup指向shared staging或production。來源回退使用對應PR revert；資料及immutable versions/receipts保留。
 
 本輪未執行任何真角色case／schedule／provider／cleanup；PS06、H09–H13、PD16/17維持NOT_RUN。
+
+## 未確認的一次性分享（PD06／PD12，2026-10-23）
+
+請保留 trip／actor 私有 reference、發生時間、原 selection／expiry 及所屬 active-link ID；不要在公開 case 貼 raw token／私人筆記／相片。當前 API 沒有 create request receipt 或 token replay，active metadata 空讀、撤銷一個 link 或經過到期時間均不能證明該 create 結果。Client tab-local hold 不可視為 server ledger，也不能保證另一分頁／裝置不重建。
+
+支援須先用獲授權 target／actor 釐清 outcome；未知時保持建立鎖定，不叫用戶清 storage、開另一分頁或重送。已讀到的 owned link 可由原角色明確撤銷，但撤銷不會解除未知 create。未具權限、無 authoritative receipt／audit 證據時只記 case/reference 交班，不承諾能取回一次性 URL／自動解除。durable create receipt／跨裝置 idempotency 合同仍 open；未在本次新增 SQL／API 或派發角色。

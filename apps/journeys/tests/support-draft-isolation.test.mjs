@@ -111,3 +111,112 @@ test('failed completion retains the exact request for receipt reconciliation',as
  assert.deepEqual(writes[0].body,writes[1].body);
  assert.equal(input(h,a,'Reply to this case').props.value,'');assert.equal(input(h,b,'Reply to this case').props.value,'Keep B');
 });
+
+const supportLabels=locale=>locale==='en'?{
+ subject:'Case subject',message:'Message to support',create:'Create support case',refresh:'Refresh cases',retry:'Retry the same request',reply:'Reply to this case',
+}:{
+ subject:'案件主題',message:'給客服的訊息',create:'建立客服案件',refresh:'重新載入案件',retry:'重試相同請求',reply:'回覆此案件',
+};
+const newCaseForm=h=>h.elements().find(n=>n.type==='form'&&!n.props['aria-labelledby']);
+const fillNewCase=(h,labels)=>{
+ h.field(labels.subject).props.onChange({target:{value:'Private unsent subject'}});h.render();
+ h.field(labels.message).props.onChange({target:{value:'Private unsent message'}});h.render();
+};
+
+for(const locale of ['en','zh-HK']){
+ test(`A12-01 ${locale}: an initial failed read blocks creation while read retry can restore authorized editing`,async()=>{
+  const labels=supportLabels(locale),events=[];let unavailable=true;
+  const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:journal(),request:async(url,method,body)=>{
+   events.push({url,method,body});
+   if(method==='POST')return{ok:true,data:{id:body.command.id,revision:1,status:'open'}};
+   return unavailable?{ok:false,code:'UNAVAILABLE'}:reads();
+  }},{locale});
+  assert.equal(h.find('button',labels.create).props.disabled,true);
+  assert.equal(h.find('button',labels.refresh).props.disabled,false);
+  newCaseForm(h).props.onSubmit({preventDefault(){}});await settle(h);
+  assert.equal(events.filter(e=>e.method==='POST').length,0);
+  assert.equal(h.find('button',labels.retry),undefined);
+  unavailable=false;h.find('button',labels.refresh).props.onClick();await settle(h);
+  assert.equal(h.find('button',labels.create).props.disabled,false);
+  fillNewCase(h,labels);newCaseForm(h).props.onSubmit({preventDefault(){}});await settle(h);
+  const posts=events.filter(e=>e.method==='POST');assert.equal(posts.length,1);
+  assert.equal(posts[0].url,'/api/support');assert.equal(posts[0].body.command.subject,'Private unsent subject');
+ });
+
+ test(`A12-01 ${locale}: a failed refresh blocks stale create and reply handlers without losing drafts or read retry`,async()=>{
+  const labels=supportLabels(locale),recovery=journal(),events=[];let unavailable=false;
+  const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{
+   events.push({url,method,body});if(method==='POST')return{ok:true,data:{id:body.command.id,revision:2,status:'open'}};
+   return unavailable?{ok:false,code:'UNAVAILABLE'}:reads();
+  }},{locale});
+  fillNewCase(h,labels);edit(h,b,labels.reply,'Keep the second case');await settle(h);
+  const staleCreate=newCaseForm(h).props.onSubmit,staleReply=h.elements(article(h,b)).find(n=>n.type==='form').props.onSubmit;
+  unavailable=true;h.find('button',labels.refresh).props.onClick();await settle(h);
+  staleCreate({preventDefault(){}});staleReply({preventDefault(){}});await settle(h);
+  assert.equal(events.filter(e=>e.method==='POST').length,0,'stale handlers must not allocate or send a new command after a failed read');
+  assert.equal(h.find('button',labels.create).props.disabled,true);
+  assert.equal(h.find('button',labels.refresh).props.disabled,false);
+  assert.equal(h.find('button',labels.retry),undefined);
+  assert.equal(h.field(labels.subject).props.value,'Private unsent subject');
+  assert.equal(recovery.value.pending,null);
+  assert.equal(recovery.value.draft.cases[b].message,'Keep the second case');
+  unavailable=false;h.find('button',labels.refresh).props.onClick();await settle(h);
+  assert.equal(h.find('button',labels.create).props.disabled,false);
+  assert.equal(h.field(labels.message).props.value,'Private unsent message');
+  assert.equal(input(h,b,labels.reply).props.value,'Keep the second case');
+ });
+
+ test(`A12-01 ${locale}: creation waits for recovery readiness after an authorized read`,async()=>{
+  const labels=supportLabels(locale),events=[];let finish;
+  const recovery=journal();recovery.read=()=>new Promise(resolve=>{finish=resolve;});
+  const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{
+   events.push({url,method,body});return reads();
+  }},{locale});
+  assert.equal(h.find('button',labels.create).props.disabled,true);
+  newCaseForm(h).props.onSubmit({preventDefault(){}});await settle(h);
+  assert.equal(events.filter(e=>e.method==='POST').length,0);
+  finish(null);await settle(h);
+  assert.equal(h.find('button',labels.create).props.disabled,false);
+ });
+
+ for(const denial of ['FORBIDDEN','AUTH_REQUIRED'])test(`A12-01 ${locale}: fresh ${denial} fences stale submission and a late private read`,async()=>{
+  const labels=supportLabels(locale),events=[];let count=0,finish;
+  const held=new Promise(resolve=>{finish=resolve;});
+  const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:journal(),request:async(url,method,body)=>{
+   events.push({url,method,body});if(method==='POST')return{ok:true,data:{id:body.command.id,revision:1,status:'open'}};
+   count++;return count===1?reads():count===2?held:{ok:false,code:denial};
+  }},{locale});
+  fillNewCase(h,labels);await settle(h);
+  const staleCreate=newCaseForm(h).props.onSubmit,refresh=h.find('button',labels.refresh).props.onClick;
+  refresh();refresh();await settle(h);
+  staleCreate({preventDefault(){}});await settle(h);
+  assert.equal(events.filter(e=>e.method==='POST').length,0);
+  assert.notEqual(h.field(labels.subject)?.props.value,'Private unsent subject');
+  if(denial==='FORBIDDEN'){
+   assert.equal(h.find('button',labels.create).props.disabled,true);
+   assert.equal(h.find('button',labels.refresh).props.disabled,false);
+  }else assert.equal(h.find('button',labels.create),undefined);
+  finish({ok:true,data:{items:[{...cases[0],subject:'PRIVATE_LATE_CASE'}],nextCursor:null}});await settle(h);
+  assert.equal(h.text().includes('PRIVATE_LATE_CASE'),false);
+  assert.equal(events.filter(e=>e.method==='POST').length,0);
+ });
+
+ test(`A12-01 ${locale}: a dispatched unknown command keeps its exact identity through failed and empty receipt reads`,async()=>{
+  const labels=supportLabels(locale),recovery=journal(),events=[];let commands=0,receipts=0;
+  const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{
+   if(method!=='POST')return reads();events.push({url,body});
+   if(url.endsWith('/receipt'))return ++receipts===1?{ok:false,code:'UNAVAILABLE'}:{ok:true,data:{result:null}};
+   return ++commands===1?{ok:false,code:'UNAVAILABLE'}:{ok:true,data:{id:body.command.id,revision:1,status:'open'}};
+  }},{locale});
+  fillNewCase(h,labels);newCaseForm(h).props.onSubmit({preventDefault(){}});await settle(h);
+  assert.equal(events.length,1);const original=JSON.stringify(events[0].body);
+  assert.equal(h.find('button',labels.create).props.disabled,true);
+  h.find('button',labels.retry).props.onClick();await settle(h);
+  assert.equal(commands,1);assert.equal(h.find('button',labels.create).props.disabled,true);
+  assert.ok(recovery.value.pending);assert.equal(JSON.stringify(events[1].body),original);
+  h.find('button',labels.retry).props.onClick();await settle(h);
+  assert.deepEqual(events.map(e=>e.url),['/api/support','/api/support/receipt','/api/support/receipt','/api/support']);
+  for(const event of events)assert.equal(JSON.stringify(event.body),original);
+  assert.equal(recovery.value?.pending??null,null);assert.equal(h.field(labels.message).props.value,'');
+ });
+}
