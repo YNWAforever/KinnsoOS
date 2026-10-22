@@ -4,9 +4,9 @@
   "candidateBranch": "codex/pd-policy-staging-preparation-20261023",
   "publicationBinding": "Final delivery receipt binds exact head/PR/CI; no inferred SHA from previous local results",
   "code_status": "DIRECTIONS_RECORDED_PREPARATION_AND_CI_PREFETCH_IMPLEMENTED;POLICY_UNAPPROVED_NOT_ACTIVATED",
-  "test_status": "736_LOCAL_APP_UNIT_PASS;16_LOCKED_IMAGE_CASES_INCLUDED;10_WORKFLOW_PASS;9_MIGRATION_GUARD_PASS;SOURCE9_PASS1_WINDOWS_SKIP;PRIOR_CI_FAIL_RETAINED;EXACT_LOCKED_CANDIDATE_CI_BOUND_BY_DELIVERY_RECEIPT",
+  "test_status": "736_LOCAL_APP_UNIT_PASS_ON_UNCHANGED_APP_SUBTREE;10_WORKFLOW_CONTRACT_PASS;FULL_ROOT_LINT_PASS_0_ERRORS_30_EXISTING_WARNINGS;SOURCE9_PASS1_WINDOWS_SKIP;0a9df21_CI_LINT_FAIL_RETAINED;FINAL_EXACT_CI_BOUND_BY_RECEIPT",
   "deployment_status": "NO_DEPLOYMENT_ACTION_BY_PREPARATION_EDIT;FINAL_VERSION_BOUND_BY_PUBLICATION_RECEIPT;NO_NEW_SUPABASE_PROJECTS;NO_PRODUCTION_CHANGE",
-  "runtime_status": "NO_RUNTIME_ACTION_THIS_EDIT;HISTORICAL_MANAGEMENT_METADATA_AND_DNS_ONLY;NO_AUTH_CLIENT_SQL_ACTORS_RESTORE",
+  "runtime_status": "ORIGINAL_REMIX_HOSTED_ROLES_RESTORE_NOT_RUN;OWNED_CI_0a9df21_IMAGE_STARTUP_PROGRESS_AND_PR_AUTH_MAILBOX_PASS;FINAL_CI_BOUND_BY_RECEIPT",
   "userDecisions": {
     "D01": "CONFIRMED_KEEP_CURRENT_NOTICE_DRAFT_NOT_ACTIVATED",
     "D02": "CONFIRMED_A_APP_CASE_CONTROLLED_MAILBOX_INTERNAL_TARGET_ONLY",
@@ -122,11 +122,18 @@
       "lockedImageCasesIncluded": 16,
       "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-mirror.log",
       "binding": "Dirty locked-image candidate; tested fingerprints and final head bound by delivery receipt"
+    },
+    {
+      "command": "pnpm lint",
+      "environment": "LOCAL_NODE24_PNPM11.6_ESLINT9.39.4",
+      "status": "PASS",
+      "errors": 0,
+      "existingWarnings": 30,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/root-lint-green.log"
     }
   ],
   "notRun": [
     "Next exact prefetch candidate CI and generated Preview must be bound by final delivery receipt; do not reuse 4ee4be9 PASS for a new head",
-    "new candidate build/typecheck/browser - no render/type/runtime/Next config changes",
     "hosted DB/Auth/RLS/cohort role acceptance",
     "public real content consent/image rights",
     "H01-H14/PS01-PS06",
@@ -241,6 +248,21 @@
     "verifiedPublicImageLocks": 10,
     "mirrorRegistry": "original publisher Docker Hub, only for locked identical content after GHCR429",
     "platform": "linux/amd64;runner LinuxX64 only",
-    "lockedImagePureTests": 16
-  }
+    "lockedImagePureTests": 16,
+    "lockedDigestCandidate": "0a9df214c764314358e1f8f8a08cfa69835ad532",
+    "lockedDigestImagePrefetch": "ALL_8_OWNED_DB_JOBS_PASS_PUSH_AND_PR",
+    "lockedDigestRootQualityProgress": "STARTUP_FIXTURE_PREPARATION_DB_TYPES_TYPECHECK_PASS_THEN_NEW_TEST_LINT_FAIL",
+    "lintFinding": "URL missing import;5 no-regex-spaces errors;source defect",
+    "lintRepair": "Explicit node:url import and equivalent regex space quantifiers;no lint rule or assertion change",
+    "localFullRootLint": {
+      "status": "PASS",
+      "errors": 0,
+      "existingWarnings": 30,
+      "rootWarnings": 3,
+      "webWarnings": 27,
+      "eslintVersion": "9.39.4"
+    },
+    "appImpact": "No apps/journeys source changes in lint-only patch;subtree equality bound by final receipt"
+  },
+  "sideEffectsScope": "The zero counters below apply only to original Remix-Kinnso, production and external provider actions by preparation work; owned ephemeral CI migrations/fixtures/Mailpit are separately recorded in delivery evidence."
 }
