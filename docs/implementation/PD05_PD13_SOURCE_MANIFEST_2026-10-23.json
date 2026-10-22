@@ -14,7 +14,7 @@
     "apps/journeys/app/travel/MerchantInsights.tsx": "b5a497955ba7837395d1b4aa389512006f054286d7149e651313595c74641d95",
     "apps/journeys/app/travel/SharePreview.tsx": "e096d881553eb5cc105885c556fc0810d4b3710e864776c6a850065fb64bd75d",
     "apps/journeys/app/travel/TripWarnings.tsx": "d2cb185cb147197bb6b5d8d76c7bbd90ad5e4dbf175310d55166d0ea39fb1333",
-    "apps/journeys/app/travel/TripWorkspace.tsx": "98bd9187993fceef263813058ad16752195e5992f191a754547e685fdf7e7da4",
+    "apps/journeys/app/travel/TripWorkspace.tsx": "2e6f6cef65fe17d6727b7e0dae7902b3443d6b7ce050274eed09b8cfec7f24a0",
     "apps/journeys/lib/collaboration/tasks.ts": "dc698afaf2f4200da1b5778718fff7b85d89eae070953a7ffffcb8b6091c3065",
     "apps/journeys/lib/guides/adoption-preview.ts": "6ad7ac0b5a35c40096df92f388037a35e7350afbb18934821646c0f88f13f6a7",
     "apps/journeys/lib/trips/import.ts": "aa3838188a3df72f3c77e8cc9d35138112b167fe7e611dd8c01046b151d6811f",
@@ -36,11 +36,11 @@
     "apps/journeys/tests/share-preview-recovery.test.mjs": "20ceba7d0cfe4a5deda51559240971db18d589110193ff015d12eb93dd8ea1da",
     "apps/journeys/tests/support-draft-isolation.test.mjs": "5f00c5410596dc3ef8dbc828e050d541e33959ff28438a6b8f769622bb4e7358",
     "apps/journeys/tests/trip-fact-provenance.test.mjs": "0e634d0b358681424645128abc8df0c96c48711b27ca1a58e891ff1d8865d8a2",
-    "apps/journeys/tests/trip-workflow-recovery.test.mjs": "0def709ed262f93b26ad249a6390a5bd38e6c9c6da98ef421917d0bbbbe634a8",
+    "apps/journeys/tests/trip-workflow-recovery.test.mjs": "5b82d54ff5b138552a5045f55f158f821405ea8876112283354f108e49ac75af",
     "apps/journeys/tests/workspace-next-step.test.mjs": "b8956424753f5241eda20860a91285a9c609c9c563790643739e78ff73018832",
-    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "95166590976c5a8a40d7cd95dbb4b59e3290a94a53346f742590c533abfa7430",
-    "docs/implementation/PD05_PD13_IMPLEMENTATION_REVIEW_2026-10-23.md": "6c74cf015d5d0f1a2bd596ee1860e143b0ba921be1899c52bf73fafbe576bea3",
-    "docs/implementation/PD05_PD13_REQUIREMENTS_2026-10-23.json": "1635fdc35ec9cce41f1b9cb8eea5ef91478ecdc46d08d872635cddf41c2f5948",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "e80340f050f08cae81f186346b3f828b2aca44c634a140314b3ceb8701c6e9d1",
+    "docs/implementation/PD05_PD13_IMPLEMENTATION_REVIEW_2026-10-23.md": "78af0badf5ad1234161f8cd9de5fcf0c0e0f9182dc317d240db1f1e9c30aa5bc",
+    "docs/implementation/PD05_PD13_REQUIREMENTS_2026-10-23.json": "8b45e5def51c20f9fa4e0e5a31f3d892e00f0769b20bcf5e4989f10c0df50fb8",
     "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "3f0e971c4fd2f841b47c04101a40fdf76baccee5f3d04f929ecf961595f59668",
     "docs/implementation/PREPARATION_SOURCE_MANIFEST_2026-10-23.json": "5fd937f5d36f73c17ab7547b51c59d56ca859a031fad7e726986579a6cfc07f8"
   },
@@ -53,5 +53,17 @@
     "head": "d49c2ca4b840506a629eb237fccce22c158b85fa",
     "status": "SUPERSEDED_CONNECTED223_PASS1FAIL_REPAIRED",
     "sourceZipSha256": "d543bd8e70cece4d84f46ede0a28453260cac331aaaee3f6b3f17a7fedf77e43"
-  }
+  },
+  "historicalCandidates": [
+    {
+      "head": "d49c2ca4b840506a629eb237fccce22c158b85fa",
+      "status": "SUPERSEDED_ACTUAL_CONNECTED_ASSERTION_FAIL",
+      "sourceZipSha256": "d543bd8e70cece4d84f46ede0a28453260cac331aaaee3f6b3f17a7fedf77e43"
+    },
+    {
+      "head": "6160536d4e7ffbb63208e6727871eed4488a6e6c",
+      "status": "SUPERSEDED_NEW_LATE_CREATE_ACK_INPUT_LOSS_REPRODUCED",
+      "sourceZipSha256": "3eefc462ec8eae9f11b63009fa53045547db7a1a5d290cd60013f7cf75d07b79"
+    }
+  ]
 }

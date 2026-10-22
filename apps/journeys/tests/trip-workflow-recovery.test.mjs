@@ -283,3 +283,38 @@ for(const locale of ['en','zh-HK'])test('CI restored offline receipt '+locale+':
  assert.equal(h.status(),label('Saved to your account','已保存至你的帳戶'));
  assert.equal(stored,null);assert.equal(h.field(label('Trip title','行程標題')).props.value,'Saved trip');
 });
+
+for(const locale of ['en','zh-HK'])for(const flow of ['in-flight ACK','unknown retry ACK'])test('Create receipt '+locale+' '+flow+': a confirmed trip never navigates away from newer unsent input',async()=>{
+ const label=(en,zh)=>locale==='en'?en:zh,calls=[];let finish;
+ const h=await component('TripWorkspace',{locale,search:'fromGuide='+guideId,ports:{trips:{create:async(...args)=>{calls.push(JSON.parse(JSON.stringify(args)));if(flow==='unknown retry ACK'&&calls.length===1)return{ok:false,code:'UNAVAILABLE',retryable:true};return new Promise(resolve=>{finish=resolve;});}}}});
+ await h.edit(label('Trip title','行程標題'),'Confirmed create A');await h.submit();
+ await h.edit(label('Trip title','行程標題'),'  Newer unsent trip B  ');
+ await h.edit(label('Start date (optional)','開始日期（可選）'),'2032-02-29');
+ await h.edit(label('Time zone','時區'),'Asia/Hong_Kong');
+ if(flow==='unknown retry ACK')await h.submit();
+ assert.equal(typeof finish,'function');finish({ok:true,data:{...snapshot(),title:'Confirmed create A'}});await h.settle();
+ assert.equal(h.navigation.length,0,'a late create ACK cannot automatically discard newer input through navigation');
+ assert.equal(h.field(label('Trip title','行程標題')).props.value,'  Newer unsent trip B  ');
+ assert.equal(h.field(label('Start date (optional)','開始日期（可選）')).props.value,'2032-02-29');
+ assert.equal(h.field(label('Time zone','時區')).props.value,'Asia/Hong_Kong');
+ assert.match(h.status(),locale==='en'?/newer.*not.*saved/i:/較新.*尚未保存/);
+ assert.ok(h.nodes().some(node=>node.type==='a'&&node.props.href==='/'+locale+'/trips/'+tripId+'?fromGuide='+guideId),'the confirmed trip is explicitly reachable with original guide context');
+ assert.equal(calls.length,flow==='in-flight ACK'?1:2);if(calls.length===2)assert.deepEqual(calls[1],calls[0]);
+ await h.invalidate('actor-B');assert.ok(!h.nodes().some(node=>node.type==='a'&&node.props.href.includes(tripId)),'account invalidation hides the confirmed private trip link');
+});
+
+for(const locale of ['en','zh-HK']){
+ const label=(en,zh)=>locale==='en'?en:zh;
+ test('Receipt read fence '+locale+': older initial list cannot remove a confirmed create link or newer-input warning',async()=>{
+  let listDone,createDone;const h=await component('TripWorkspace',{locale,search:'fromGuide='+guideId,ports:{trips:{list:()=>new Promise(resolve=>{listDone=resolve;}),create:()=>new Promise(resolve=>{createDone=resolve;})}}});
+  await h.edit(label('Trip title','行程標題'),'Confirmed create A');await h.submit();await h.edit(label('Trip title','行程標題'),'Newer unsent B');createDone({ok:true,data:{...snapshot(),title:'Confirmed create A'}});await h.settle();
+  const receipt=()=>h.nodes().some(node=>node.type==='a'&&node.props.href==='/'+locale+'/trips/'+tripId+'?fromGuide='+guideId);
+  assert.equal(receipt(),true);const status=h.status();listDone({ok:true,data:{items:[],nextCursor:null}});await h.settle();
+  assert.equal(receipt(),true,'an older list cannot hide the server-confirmed receipt');assert.equal(h.status(),status);assert.equal(h.field(label('Trip title','行程標題')).props.value,'Newer unsent B');
+ });
+ test('Receipt read fence '+locale+': older current-version read cannot overwrite a confirmed edit or its saved status',async()=>{
+  let reads=0,readDone;const h=await component('TripWorkspace',{locale,props:{id:tripId},ports:{trips:{get:()=>++reads===1?Promise.resolve({ok:true,data:snapshot()}):new Promise(resolve=>{readDone=resolve;}),apply:async()=>({ok:true,data:{...snapshot(),title:'Acknowledged title',revision:4}})}}});
+  h.button(label('Load current version','載入目前版本')).props.onClick();h.render();await h.settle();await h.edit(label('Trip title','行程標題'),'Acknowledged title');await h.submit();assert.equal(h.status(),label('Saved to your account','已保存至你的帳戶'));
+  readDone({ok:true,data:snapshot()});await h.settle();assert.equal(h.field(label('Trip title','行程標題')).props.value,'Acknowledged title');assert.equal(h.status(),label('Saved to your account','已保存至你的帳戶'));
+ });
+}

@@ -47,6 +47,12 @@ Merchant8個新增 EN/zh-HK held-completion／scope regressions 先全部 FAIL�
 
 同d49的operations worker曾因JSR `@panva/jose@6.2.13` manifest connection reset啟動FAIL，`.env.test`未建立，後續report不存在FAIL保持；PR workspace fixture在原10分鐘runtime installation取消，cases NOT_RUN。一次job-only retry請求因workflow仍執行未被GitHub接受，沒有啟動；確認source regression後不再重試過時d49，保存全部結果並取消仍pending的owned舊run。最終修正head必須重新資格化四組CI；d49的SUCCESS／FAIL／CANCELLED不移作新head證據。
 
+## 首次建立行程的較新輸入保護
+
+再走create late ACK邊界，EN/zh-HK ×首次in-flight／unknown retry四例真斷言重現：即使使用者已輸入較新的title/date/zone，已確認舊create會自動導頁令新輸入消失。原navigation provider只保護已註冊的guest草稿，不能代替此create generation核對。
+
+修復只為原create intent記錄既有editGeneration：沒有較新輸入仍照常開啟已建立trip；有較新輸入則留在form、明示尚未保存，現有清單加入去重的server已確認trip及原fromGuide連結。原payload/requestId不變，沒有第二次隱式寫入；actor invalidation照常清除private link。四例RED→59tripcontrols PASS；獨立review再指出舊list response蓋過confirmed link/warning，同類current-version read亦可蓋過已ACK編輯。另4例RED後加readVersion fence，成功create/apply後拒絕較早讀取，後續明確讀取仍可執行。全63tripcontrols PASS，獨立follow-up另跑63/63、無blocking P1/P2；完整895 unit/component、build/type/root lint PASS，483個app source執行前後指紋不變。下一個source/head須重跑完整CI。616的97integration／228browser及root CI成功屬歷史，不能移作新head驗收。
+
 ## 交付及恢復
 
 獨立 stacked draft PR，以 PR86 remote head 為 base；使用正常 commit／push，不 reset／force push。新增 app source/tests 納入 `apps/journeys/scripts/source-manifest.json`，本增量其他 source/doc hashes 另有 manifest。未新增 backend schema、API envelope、receipt 或 local-draft schema；回退用本增量 source revert，保留已存在的 drafts、private notes、immutable published versions、reviews、receipt/dedupe/history。

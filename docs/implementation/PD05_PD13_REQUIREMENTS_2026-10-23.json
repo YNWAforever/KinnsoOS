@@ -12,8 +12,8 @@
     "originalSchema": "not_checked",
     "sharedTargetDisposableOwnership": "UNVERIFIED"
   },
-  "code_status": "BOUNDED_PD05_PD13_REPAIRS_REVIEWED_PLUS_CONNECTED_RECEIPT_CORRECTION",
-  "test_status": "887_LOCAL_UNIT_COMPONENT_PASS;CORRECTIVE_BUILD_TYPE_ROOT_LINT_PASS;SOURCE9_PASS1_WINDOWS_SKIP;U22_CONNECTED_SELECTION4_PASS;NEW_EXACT_CANDIDATE_CI_REQUIRED",
+  "code_status": "BOUNDED_PD05_PD13_REPAIRS_REVIEWED_LATE_CREATE_AND_READ_RECEIPT_FENCES",
+  "test_status": "895_LOCAL_UNIT_COMPONENT_PASS;FINAL_BUILD_TYPE_ROOT_LINT_PASS;SOURCE9_PASS1_WINDOWS_SKIP;U22_CONNECTED_SELECTION4_PASS;NEW_EXACT_HEAD_CI_REQUIRED",
   "deployment_status": "NO_MANUAL_DEPLOYMENT;NO_PRODUCTION_CHANGE",
   "runtime_status": "LOCAL_SYNTHETIC_COMPONENT_NATIVE_ONLY;ORIGINAL_REMIX_HOSTED_NOT_RUN",
   "requirements": [
@@ -71,7 +71,7 @@
       "pd": "PD06",
       "requirement": "無行程／有行程／guest與返回原攻略",
       "source_test_status": "REPAIRED_LOCAL_VERIFIED",
-      "observation": "Validated fromGuide UUID survives create acknowledgement; explicit g/<id> return, no auto-adopt. Saved guest/target timezones shown unchanged.",
+      "observation": "Validated fromGuide UUID survives create acknowledgement; explicit g/<id> return, no auto-adopt. Saved guest/target timezones shown unchanged. A late known create ACK keeps newer form fields in place and exposes only the server-confirmed trip with original guide context; no implicit second write.",
       "evidence": [
         "tests/guide-review-context.test.mjs",
         "tests/guest-planner.test.mjs",
@@ -685,6 +685,18 @@
       "failure": "account-recovery restored offline receipt with no new UI edits incorrectly reported other changes unsaved",
       "sourceZipSha256": "d543bd8e70cece4d84f46ede0a28453260cac331aaaee3f6b3f17a7fedf77e43",
       "otherOriginalOutcomes": "push operations JSR connection reset FAIL; PR fixture runtime-install CANCELLED; new source requires fresh CI"
+    },
+    {
+      "head": "6160536d4e7ffbb63208e6727871eed4488a6e6c",
+      "status": "SUPERSEDED_NEW_LATE_CREATE_ACK_INPUT_LOSS_REPRODUCED",
+      "localUnit": 887,
+      "connectedIntegration": 97,
+      "connectedBrowserPassed": 228,
+      "connectedBrowserFailed": 0,
+      "rootCi": "PUSH_PR_SUCCESS",
+      "sourceZipSha256": "3eefc462ec8eae9f11b63009fa53045547db7a1a5d290cd60013f7cf75d07b79",
+      "additionalGap": "Late create ACK automatically navigated away from newer title/date/zone inputs;4new real assertions reproduced;59tripfocusedPASS afterrepair",
+      "otherOriginalOutcomes": "PR fixture original10mAPT/Chromium installCANCELLED; casesNOT_RUN; no oldcandidate results reused"
     }
   ],
   "correctiveReview": {
@@ -694,5 +706,12 @@
     "changedProduction": "saved message uses remaining dirty targets; original dirty-target generation guard unchanged",
     "coverage": "explicit connectedU22 adds4cases; no assertion/retry/timeout/gate weakened",
     "notAcceptance": "new connected actual browser pass; durable share backend; original hosted roles; PD09/13 reused"
+  },
+  "createReceiptReview": {
+    "initial": "4lateCreateNavigationRED; review1P2 delayedReadReceiptLoss reproduced4RED",
+    "repair": "create editGeneration protects newer form input; confirmed trip Link keeps original guide context; readVersion fences older reads after successful create/apply",
+    "independentFollowup": "63focusedPASS_0FAIL_0SKIP;NO_BLOCKING_P1_P2_IN_SCOPED_FOLLOWUP",
+    "fullLocal": "895PASS_type_build_rootlintPASS;483filefingerprints unchanged duringcommands",
+    "remaining": "durable share/backend/hosted/cross-device acceptance NOT_RUN/open"
   }
 }
