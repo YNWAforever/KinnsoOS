@@ -14,16 +14,17 @@ test.beforeAll(async()=>{
  const result=await build({stdin:{contents:`
  import React from 'react';import{createRoot}from'react-dom/client';
  import{CreatorWorkspace}from'./app/travel/CreatorWorkspace';import{MerchantWorkspace}from'./app/travel/MerchantWorkspace';
+ import{CreatorMissionsWorkspace}from'./app/travel/CreatorMissionsWorkspace';import{CreatorEarningsWorkspace}from'./app/travel/CreatorEarningsWorkspace';
  const f=window.fixture;window.fixtureReads=0;
- createRoot(document.getElementById('fixture')).render(f.kind==='creator'?<CreatorWorkspace path="studio/guides" actorId={f.actorId} enabled={f.enabled}/>:<MerchantWorkspace actorId={f.actorId} enabled={f.enabled}/>);
+ createRoot(document.getElementById('fixture')).render(f.kind==='creator'?<CreatorWorkspace path="studio/guides" actorId={f.actorId} enabled={f.enabled}/>:f.kind==='collaborations'?<CreatorMissionsWorkspace path="studio/outcomes" actorId={f.actorId} enabled={f.enabled}/>:f.kind==='earnings'?<CreatorEarningsWorkspace actorId={f.actorId} enabled={f.enabled}/>:<MerchantWorkspace actorId={f.actorId} enabled={f.enabled}/>);
  `,loader:'tsx',resolveDir:resolve('.')},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',plugins:[{name:'entry-boundaries',setup(b){
   b.onResolve({filter:/.*/},args=>{const key=args.path==='./ui'?'ui':args.path.endsWith('/trips/local-drafts')?'session':args.path.endsWith('/trips/repository')?'repository':args.path==='next/link'?'link':args.path==='next/navigation'?'router':null;return key?{path:key,namespace:'port'}:null;});
   b.onLoad({filter:/.*/,namespace:'port'},args=>({contents:ports[args.path],loader:'js'}));
  }}]});script=result.outputFiles[0].text;
 });
-for(const locale of ['en','zh-HK'])for(const kind of ['creator','merchant']){
+for(const locale of ['en','zh-HK'])for(const kind of ['creator','merchant','collaborations','earnings']){
  const label=(en:string,zh:string)=>locale==='en'?en:zh;
- for(const state of ['disabled','unavailable'])test(`W03 ${locale} ${kind}: ${state} entry is actionable at 320px and 200% text`,async({page})=>{
+ for(const state of kind==='collaborations'||kind==='earnings'?['disabled']:['disabled','unavailable'])test(`W03 ${locale} ${kind}: ${state} entry is actionable at 320px and 200% text`,async({page})=>{
   await page.setViewportSize({width:320,height:844});
   await page.setContent(`<style>${css}html{font-size:200%}body:has(.k-app){margin:16px;overflow-x:visible}.k-app{font-size:1rem}button,a{white-space:normal}</style><div class="k-app"><main id="fixture"></main></div>`);
   await page.evaluate(f=>{(window as any).fixture=f;},{locale,kind,actorId:state==='disabled'?null:'actor-A',enabled:state!=='disabled',code:'UNAVAILABLE'});
@@ -31,8 +32,11 @@ for(const locale of ['en','zh-HK'])for(const kind of ['creator','merchant']){
   if(state==='disabled'){
    await expect(page.getByRole('status')).toContainText(label('not connected yet','尚未接通'));
    const explore=page.getByRole('link',{name:label('Explore guides','探索攻略'),exact:true});
+   await expect(explore).toBeVisible();
    await expect(explore).toHaveAttribute('href',`/${locale}/explore`);
+   await explore.focus();await expect(explore).toBeFocused();
    await expect(page.getByRole('link',{name:label('Sign in to continue','登入後繼續'),exact:true})).toHaveCount(0);
+   await expect(page.getByRole('alert')).toHaveCount(0);
    expect(await page.evaluate(()=>(window as any).fixtureReads)).toBe(0);
   }else{
    const retry=page.getByRole('button',{name:label('Retry loading','重試載入'),exact:true});await expect(retry).toBeVisible();

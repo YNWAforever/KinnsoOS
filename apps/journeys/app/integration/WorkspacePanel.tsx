@@ -2,103 +2,50 @@
 import Link from "next/link";
 import { useApp } from "../travel/ui";
 import { canonicalRoot } from "../../lib/canonical";
-export function WorkspacePanel() {
-  const { t, locale, href } = useApp();
+import type { CapabilityMode } from "../../lib/contracts/capabilities";
+
+type Features = { catalog?: boolean; trips?: boolean; creator?: boolean; merchant?: boolean; ops?: boolean };
+
+export function WorkspacePanel({ features = {}, mode = "unavailable" }: { features?: Features; mode?: CapabilityMode }) {
+  const { t, locale } = useApp();
   const origin = canonicalRoot(locale);
+  const demo = mode === "demo";
   const roles = [
-    {
-      key: "creator",
-      label: t("Creator studio", "創作者工作室"),
-      text: t(
-        "Publish guides, review missions, track earnings.",
-        "發布攻略、查看任務及跟進收益。",
-      ),
-      route: "studio",
-      demo: "studio",
-      links: [
-        ["studio/guides", t("My guides", "我的攻略")],
-        ["studio/missions", t("Missions", "任務")],
-        ["studio/earnings", t("Earnings", "收益")],
-      ],
-    },
-    {
-      key: "merchant",
-      label: t("Merchant workspace", "商戶工作區"),
-      text: t(
-        "Manage experiences, campaigns and verified visits.",
-        "管理體驗、合作活動及核實到訪。",
-      ),
-      route: "merchants/dashboard",
-      demo: "merchants/dashboard",
-      links: [
-        ["merchants/dashboard/missions", t("Campaigns", "合作活動")],
-        ["merchants/dashboard/offers", t("Offers", "優惠")],
-        ["merchants/dashboard/redeem", t("Redemption", "核銷")],
-      ],
-    },
-    {
-      key: "ops",
-      label: t("Operations", "營運管理"),
-      text: t(
-        "Review applications, submissions and settlement exceptions.",
-        "處理申請、審閱提交及跟進結算例外。",
-      ),
-      route: "admin",
-      demo: "demo-lab",
-      links: [
-        ["admin/creators/directory", t("Creators", "創作者")],
-        ["admin/missions/review", t("Review queue", "待審閱")],
-        ["admin/creators/payouts", t("Payout batches", "付款批次")],
-      ],
-    },
-  ];
+    { key: "creator", label: t("Creator studio", "創作者工作室"), route: "studio", legacy: "studio", demo: "studio",
+      text: t("Write guides and follow your collaborations and earnings records.", "編寫攻略、跟進合作及收益紀錄。") },
+    { key: "merchant", label: t("Merchant workspace", "商戶工作區"), route: "merchant", legacy: "merchants/dashboard", demo: "merchants/dashboard",
+      text: t("Manage your company, team and creator collaborations.", "管理公司、團隊及創作者合作。") },
+    { key: "ops", label: t("Operations", "營運管理"), route: "ops", legacy: "admin", demo: "demo-lab",
+      text: t("Review applications, submissions and reconciliation records.", "處理申請、審閱提交及核對結算紀錄。") },
+  ] as const;
   return (
     <div className="k-page">
-      <div className="os-eyebrow">YOUR WORKSPACE</div>
-      <h1>
-        {t("One place to find your next step.", "每個角色，都有清楚的下一步。")}
-      </h1>
-      <p className="os-intro">
-        {t(
-          "Use the new journey experience and continue established work in the existing Kinnso application.",
-          "以新版體驗規劃旅程，並在現有 Kinnso 系統繼續日常工作。",
-        )}
-      </p>
-      <aside className="os-note">
-        {t(
-          "These links open the existing application. Sign in there with your usual account. A demo profile here never grants access to real records.",
-          "以下連結會開啟現有系統，需要以原有帳戶登入。本頁的示範身份不會授予正式資料權限。",
-        )}
-      </aside>
+      <div className="os-eyebrow">{t("Your workspace", "你的工作區")}</div>
+      <h1>{demo ? t("Demo workspace directory", "示範工作區導覽") : t("One place to find your next step.", "每個角色，都有清楚的下一步。")}</h1>
+      <p className="os-intro">{t("Choose your KinnsoOS workspace. The original application and sample demos have separate links below.", "選擇你的 KinnsoOS 工作區；以下另設原有系統及示範版連結。")}</p>
+      <aside className="os-note">{t("Service availability is shown below. Account access is checked when you open a workspace; an enabled service does not grant a role or company membership.", "以下列出服務啟用狀態。開啟工作區時仍會核對帳戶權限；服務已啟用不代表你已獲授角色或公司存取權。")}</aside>
       <div className="os-workspace-grid">
-        {roles.map((role) => (
-          <section className="os-workspace" key={role.key}>
-            <h2>{role.label}</h2>
+        {roles.map(role => (
+          <section className="os-workspace" key={role.key} aria-labelledby={`workspace-${role.key}`}>
+            <h2 id={`workspace-${role.key}`}>{role.label}</h2>
             <p>{role.text}</p>
-            <a className="k-btn primary" href={origin + "/" + role.route}>
-              {t("Open existing workspace ↗", "開啟現有工作區 ↗")}
-            </a>
-            <ul>
-              {role.links.map(([route, label]) => (
-                <li key={route}>
-                  <a href={origin + "/" + route}>{label} ↗</a>
-                </li>
-              ))}
-            </ul>
-            <Link href={href(role.demo)}>
-              {t("Preview new demo layout", "預覽新版示範版面")} →
+            <p>{demo ? t("Sample data only; no account access is granted.", "只含示範資料，不會授予帳戶權限。") : features[role.key] ? t("Service enabled · account permission required", "服務已啟用 · 需要帳戶權限") : t("Service not connected yet", "服務尚未接通")}</p>
+            <Link className="k-btn primary" href={`/${locale}/${role.route}`}>
+              {features[role.key] && !demo ? t("Open KinnsoOS workspace", "開啟 KinnsoOS 工作區") : t("View KinnsoOS workspace status", "查看 KinnsoOS 工作區狀態")}
             </Link>
+            <a href={`${origin}/${role.legacy}`}>{t("Open original application ↗", "開啟原有系統 ↗")}</a>
+            <Link href={`/${locale}/demo/${role.demo}`}>{t("Open sample demo", "開啟示範版")} →</Link>
           </section>
         ))}
       </div>
-      <section className="os-note">
-        <h2>{t("What works in this first version", "首期功能狀態")}</h2>
-        <p>
-          {t(
-            "Local itinerary editing, maps and private export: available. Published-guide connection: awaiting configuration. Cross-device trip sync and payments are not available here. Existing backend work opens in the original application.",
-            "本機行程編輯、地圖及私人匯出：可使用。已發布攻略接駁：待配置。本版未提供跨裝置行程同步或付款；現有後台工作會於原有系統開啟。",
-          )}
-        </p>
+      <section className="os-note" aria-labelledby="workspace-services">
+        <h2 id="workspace-services">{t("Services on this site", "本網站服務狀態")}</h2>
+        {demo ? <p>{t("This is the sample demo. Open KinnsoOS to check account services.", "這是示範版。請開啟 KinnsoOS 查看帳戶服務狀態。")}</p> : <>
+          <p>{features.catalog ? t("Published guides: connected", "已發布攻略：已接通") : t("Published guides: not connected yet", "已發布攻略：尚未接通")}</p>
+          <p>{features.trips ? t("Account trip sync: enabled · sign in required", "帳戶行程同步：已啟用 · 需要登入") : t("Account trip sync: not connected yet", "帳戶行程同步：尚未接通")}</p>
+        </>}
+        <p>{t("Booking and payments are not available. Demos use sample data and do not create real transactions.", "目前未提供訂位及付款。示範版使用樣本資料，不會產生真實交易。")}</p>
+        <Link href={`/${locale}/explore`}>{t("Explore guides", "探索攻略")} →</Link>
       </section>
     </div>
   );

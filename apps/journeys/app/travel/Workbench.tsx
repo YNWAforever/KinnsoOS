@@ -244,6 +244,9 @@ const CatalogPanel = dynamic(() =>
 const WorkspacePanel = dynamic(() =>
   import("../integration/WorkspacePanel").then((m) => m.WorkspacePanel),
 );
+const PublicInformation = dynamic(() =>
+  import("../integration/PublicInformation").then((m) => m.PublicInformation),
+);
 export function Workbench({
   locale,
   path,
@@ -267,7 +270,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
   creatorMissionEntry?:PrivateCreatorMissionEntry|null;
-  features?:{media:boolean;sharing:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
+  features?:{media:boolean;sharing:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
@@ -539,7 +542,7 @@ export function Workbench({
   let content: ReactNode;
   if (path === "library") content = <CatalogPanel />;
   else if (path === "workspace" || path === "admin")
-    content = <WorkspacePanel />;
+    content = <WorkspacePanel mode={mode} features={features} />;
   else if (!path) content = <HomePage />;
   else if (
     path === "explore" ||
@@ -666,7 +669,8 @@ export function Workbench({
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
-    else content=<WorkspacePanel/>;
+    else if(['help','legal/privacy','for-business','credits'].includes(path))content=<PublicInformation path={path} merchantEnabled={features.merchant===true} supportEnabled={features.notifications===true}/>;
+    else content=<WorkspacePanel mode={mode} features={features}/>;
     if(path.startsWith('studio')&&!path.endsWith('/edit')&&path!=='studio/guides/new'&&path!=='studio/adventures/new')content=<><nav className="k-collab-nav" aria-label={t('Creator workspace navigation','創作者工作區導航')}>{[['studio','Overview','總覽'],['studio/outcomes','My collaborations','我的合作'],['studio/opportunities','Find collaborations','尋找合作'],['studio/guides','Guides','攻略'],['studio/earnings','Earnings records','收益紀錄'],['studio/inbox','Inbox','收件匣']].map(([p,en,zh])=><Link key={p} href={href(p)} aria-current={path===p?'page':undefined}>{t(en,zh)}</Link>)}</nav>{content}</>;
   }
   return (
@@ -764,7 +768,7 @@ export function Workbench({
             {t("Published guides", "已發布攻略")}
           </Link>
           <Link href={href("workspace")}>
-            {t("Existing workspaces", "現有工作區")}
+            {t("Workspaces", "工作區")}
           </Link>
           {mode==='connected'&&actor&&features.notifications&&<Link href={href('inbox')}>{t('Inbox','通知')}</Link>}
           {mode==='connected'&&actor&&features.agent&&<Link href={href('agent')}>{t('Task preview','任務預覽')}</Link>}
