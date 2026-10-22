@@ -264,6 +264,7 @@
     "scripts/check-readiness.mjs",
     "scripts/check-url-parity.mjs",
     "scripts/ci-evidence.mjs",
+    "scripts/ci-image-lock.json",
     "scripts/local-auth-mailbox.mjs",
     "scripts/package-source.py",
     "scripts/performance/README.md",

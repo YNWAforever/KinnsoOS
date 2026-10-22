@@ -4,7 +4,7 @@
   "candidateBranch": "codex/pd-policy-staging-preparation-20261023",
   "publicationBinding": "Final delivery receipt binds exact head/PR/CI; no inferred SHA from previous local results",
   "code_status": "DIRECTIONS_RECORDED_PREPARATION_AND_CI_PREFETCH_IMPLEMENTED;POLICY_UNAPPROVED_NOT_ACTIVATED",
-  "test_status": "731_LOCAL_APP_UNIT_PASS;10_WORKFLOW_CONTRACT_PASS;9_MIGRATION_GUARD_PASS;SOURCE9_PASS1_WINDOWS_SKIP;AUTH_ONLY_4ee4be9_CI_FAIL;NEXT_EXACT_HEAD_CI_BOUND_BY_DELIVERY_RECEIPT",
+  "test_status": "736_LOCAL_APP_UNIT_PASS;16_LOCKED_IMAGE_CASES_INCLUDED;10_WORKFLOW_PASS;9_MIGRATION_GUARD_PASS;SOURCE9_PASS1_WINDOWS_SKIP;PRIOR_CI_FAIL_RETAINED;EXACT_LOCKED_CANDIDATE_CI_BOUND_BY_DELIVERY_RECEIPT",
   "deployment_status": "NO_DEPLOYMENT_ACTION_BY_PREPARATION_EDIT;FINAL_VERSION_BOUND_BY_PUBLICATION_RECEIPT;NO_NEW_SUPABASE_PROJECTS;NO_PRODUCTION_CHANGE",
   "runtime_status": "NO_RUNTIME_ACTION_THIS_EDIT;HISTORICAL_MANAGEMENT_METADATA_AND_DNS_ONLY;NO_AUTH_CLIENT_SQL_ACTORS_RESTORE",
   "userDecisions": {
@@ -111,6 +111,17 @@
       "newPrefetchIncluded": 11,
       "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-prefetch.log",
       "binding": "Dirty prefetch candidate; exact tested fingerprints and final head bound by delivery receipt"
+    },
+    {
+      "command": "npm test",
+      "cwd": "apps/journeys",
+      "environment": "LOCAL_NODE24_PURE_UNIT",
+      "pass": 736,
+      "fail": 0,
+      "skip": 0,
+      "lockedImageCasesIncluded": 16,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-mirror.log",
+      "binding": "Dirty locked-image candidate; tested fingerprints and final head bound by delivery receipt"
     }
   ],
   "notRun": [
@@ -201,7 +212,7 @@
       "39823831295"
     ],
     "originalFailure": "GHCR image layer/config429 even after successful login; database assertions not reached",
-    "candidateStrategy": "pinned sequential image prefetch;429-only bounded backoff;never replay database startup",
+    "candidateStrategy": "immutable linux/amd64 digest locks verified equal across GHCR/original publisher Docker Hub;429-only same-digest publisher fallback;never replay database startup",
     "registry": "ghcr.io",
     "cliVersion": "2.107.0",
     "maximumAttemptsPerImage": 5,
@@ -209,7 +220,8 @@
     "newPurePrefetchTests": 11,
     "newSourceFiles": [
       "apps/journeys/scripts/prefetch-ci-images.mjs",
-      "apps/journeys/tests/ci-image-downloads.test.mjs"
+      "apps/journeys/tests/ci-image-downloads.test.mjs",
+      "apps/journeys/scripts/ci-image-lock.json"
     ],
     "workflowFiles": [
       ".github/workflows/ci.yml",
@@ -217,6 +229,18 @@
       "scripts/supabase-registry-workflow-test.mjs"
     ],
     "finalCI": "NOT_CLAIMED_IN_SOURCE_LEDGER;exact head/run/job results in delivery receipt",
-    "ownedCIIsolation": "Existing ephemeral local targets and all gates retained; original Remix-Kinnso is never a CI target"
+    "ownedCIIsolation": "Existing ephemeral local targets and all gates retained; original Remix-Kinnso is never a CI target",
+    "prefetchOnlyCandidate": "7976a357ffcf26cff268f35f40f7ed8f3b3d823b",
+    "prefetchOnlyFailedRuns": [
+      "39826091989",
+      "39826091970",
+      "39826089047",
+      "39826088934"
+    ],
+    "prefetchOnlyFailure": "firstPostgres image exhausted five bounded attempts;database startups skipped",
+    "verifiedPublicImageLocks": 10,
+    "mirrorRegistry": "original publisher Docker Hub, only for locked identical content after GHCR429",
+    "platform": "linux/amd64;runner LinuxX64 only",
+    "lockedImagePureTests": 16
   }
 }
