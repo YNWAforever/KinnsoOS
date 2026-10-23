@@ -12,7 +12,7 @@
 
 ```text
 cd apps/journeys
-node --experimental-strip-types --test tests/subset-recovery-report.test.mjs
+node --experimental-strip-types --test tests/subset-recovery-report.test.mjs tests/reminder-cleanup.test.mjs
 node scripts/subset-recovery-report.mjs --root scripts --packet subset-recovery.template.json
 ```
 
@@ -37,3 +37,10 @@ Owned CI使用原 fresh local Supabase/Auth/Mailpit profile、原 verifyTestTarg
 - 維持A0、原Remix、不新增Supabase projects、不merge或deploy。PD15完整驗收、PD16／PD17、T08／N16仍OPEN／BLOCKED，PD18 NO_GO。
 
 交付後可直接審查本增量及receipt；有原定owner／target／權利記錄和另次操作授權後，才把catalog中的精確hosted操作包固定為可執行candidate。本輪rollback是普通source revert並重驗；沒有shared schema／config可回退，不刪有效share、requestId、receipt、dedupe或immutable versions。
+
+
+## Review 修正紀錄
+
+初候選c11b728a的兩項P2均先保留RED再修：檔案在fstat後增長時，原whole-file read實讀16,778,268 bytes而超出16MiB；現用opened size＋1 overflow probe的bounded readSync，不載入增長後整個file。原cleanup helper的精確source亦以純filesystem port重現：mission delete failure蓋過原scenario error且無任何readback。
+
+修正後以test-only coordinator保留scenario／cleanup／readback errors及FAIL checkpoint；第一個cleanup失敗即停止後續actor刪除，仍作唯讀exact-ID診斷，不輸出成功cleanup receipt，下一個相關probe停止。這遵守既有isolation停止規則，不盲目重試刪除。29項focused tests在Windows為28 PASS／1 symlink SKIP；新source須重新完成全部exact candidate CI，c11結果只屬歷史。

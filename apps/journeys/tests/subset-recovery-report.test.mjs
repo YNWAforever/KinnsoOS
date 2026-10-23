@@ -120,3 +120,18 @@ test('hard-linked artifacts cannot borrow files from another ownership scope', t
 test('malformed nested target values return a blocked report without throwing', t => {
   const x = example(t); x.packet.target.projectRef = {toString: null}; assert.equal(run(x).status, 'BLOCKED_INPUTS');
 });
+test('growth after fstat is rejected without an unbounded artifact or packet read', t => {
+  const x = example(t), max = 16 * 1024 * 1024;
+  let grew = false, readBytes = 0, wholeRead = false;
+  const originalStat = fs.fstatSync, originalWholeRead = fs.readFileSync, originalRead = fs.readSync;
+  t.mock.method(fs, 'fstatSync', (...args) => {
+    const stat = originalStat(...args);
+    if (!grew) { grew = true; fs.appendFileSync(path.join(x.root, 'subset.json'), Buffer.alloc(max + 1024)); }
+    return stat;
+  });
+  t.mock.method(fs, 'readFileSync', (...args) => { wholeRead = true; try { const data = originalWholeRead(...args); if (typeof args[0] === 'number') readBytes += data.length; return data; } finally { wholeRead = false; } });
+  t.mock.method(fs, 'readSync', (...args) => { const n = originalRead(...args); if (!wholeRead) readBytes += n; return n; });
+  const result = run(x);
+  assert.equal(grew, true); assert.equal(result.status, 'BLOCKED_ARTIFACTS');
+  assert.ok(readBytes > 0); assert.ok(readBytes <= max + 1, `read ${readBytes} bytes beyond cap`);
+});

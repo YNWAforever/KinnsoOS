@@ -32,8 +32,16 @@ function artifactFile(root, relative, maxBytes) {
   try {
     const opened = fs.fstatSync(fd);
     if (before.ino !== opened.ino || before.dev !== opened.dev || opened.nlink !== 1 || opened.size > maxBytes) throw Error();
-    const bytes = fs.readFileSync(fd), after = fs.fstatSync(fd);
-    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs || bytes.length !== opened.size) throw Error();
+    // One overflow byte detects growth without ever loading the enlarged file.
+    const buffer = Buffer.allocUnsafe(opened.size + 1); let count = 0;
+    while (count < buffer.length) {
+      const n = fs.readSync(fd, buffer, count, buffer.length - count, null);
+      if (n === 0) break;
+      count += n;
+    }
+    if (count !== opened.size || count > maxBytes) throw Error();
+    const bytes = buffer.subarray(0, count), after = fs.fstatSync(fd);
+    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs) throw Error();
     return bytes;
   } finally { fs.closeSync(fd); }
 }

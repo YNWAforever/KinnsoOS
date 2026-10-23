@@ -1,3 +1,4 @@
+import {finishReminderCleanup} from '../helpers/reminder-cleanup.mjs';
 import {runCollaborationReminders} from '../../lib/collaboration/reminders.ts';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {execFileSync}from'node:child_process';import{verifyTestTarget}from'../../scripts/verify-test-target.mjs';import {fixture,admin,anonymous} from './local-fixtures.mjs';
 const ok=async p=>{const r=await p;assert.equal(r.error,null);return r.data;};
@@ -63,13 +64,20 @@ test('bounded candidate query applies processed-history exclusion and cursor bef
  const body=sql("select prosrc from pg_proc where oid='kinnso_internal.collaboration_reminder_candidates(timestamptz,uuid,uuid,uuid,uuid,integer)'::regprocedure;").trim();const params=['p_now','p_participant','p_milestone','p_after_participant','p_after_milestone','p_limit'];let query=body;params.forEach((name,i)=>query=query.replace(new RegExp('\\b'+name+'\\b','g'),'$'+(i+1)));const plan=JSON.parse(sql(`prepare owned_reminder_plan(timestamptz,uuid,uuid,uuid,uuid,integer)as ${query.replace(/;\s*$/,'')};explain(analyze,format json)execute owned_reminder_plan('${x.now}',null,null,null,null,2);`).slice('PREPARE\n'.length).trim())[0];const nodes=[];function walk(n){nodes.push(n);for(const child of n.Plans??[])walk(child);}walk(plan.Plan);assert.equal(plan.Plan['Node Type'],'Limit');assert.ok(plan.Plan['Actual Rows']<=2);assert.equal(nodes.some(n=>n['Node Type']==='Function Scan'),false);console.log('owned reminder processed-history plan',JSON.stringify({rows:plan.Plan['Actual Rows'],executionMs:plan['Execution Time'],nodes:nodes.map(n=>n['Node Type'])}));
  }finally{if(x)await x.cleanup();await f.cleanup();}});
 
-async function cleanupOwnedReminderProbe(f,x){
- if(x)await x.cleanup();await f.cleanup();
- if(x){assert.deepEqual(await ok(admin.from('missions').select('id').eq('id',x.mission)),[]);for(const actor of [x.owner,x.creator,x.other]){const r=await admin.auth.admin.getUserById(actor.id);assert.equal(r.error?.status,404);assert.equal(r.data.user,null);}console.log('PD17_OWNED_CLEANUP',JSON.stringify({exactMissionAbsent:true,exactFixtureActorsAbsent:3}));}
+let ownedReminderCleanupBlocked=false;
+async function cleanupOwnedReminderProbe(f,x,scenarioError){
+ try{
+  const report=await finishReminderCleanup({scenarioError,
+   removeMission:async()=>{if(x)await x.cleanup();},removeActors:()=>f.cleanup(),
+   readMissionAbsent:async()=>{if(!x)throw Error('OWNED_SETUP_IDS_UNAVAILABLE');return (await ok(admin.from('missions').select('id').eq('id',x.mission))).length===0;},
+   readActorsAbsent:async()=>{if(!x)throw Error('OWNED_SETUP_IDS_UNAVAILABLE');let absent=true;for(const actor of [x.owner,x.creator,x.other]){const r=await admin.auth.admin.getUserById(actor.id);if(r.error){if(r.error.status!==404)throw r.error;}else absent=false;}return absent;}
+  });
+  console.log('PD17_OWNED_CLEANUP',JSON.stringify({...report,exactMissionAbsent:true,exactFixtureActorsAbsent:3}));
+ }catch(error){if(error.cleanupReport?.status==='FAIL'){ownedReminderCleanupBlocked=true;console.error('PD17_OWNED_CLEANUP_FAILED',JSON.stringify({missionRef:x?.mission??null,actorRefs:x?[x.owner.id,x.creator.id,x.other.id]:[],...error.cleanupReport}));}throw error;}
 }
 
 test('PD17 owned DB: a committed emit with lost ACK recovers from the same tick without duplicate recipient events', async () => {
- const f=await fixture();let x;
+ assert.equal(ownedReminderCleanupBlocked,false,'STOP_AFTER_OWNED_CLEANUP_FAILURE');const f=await fixture();let x,scenarioError;
  try {
   x=await setup(f,3_600_000,5);let emittedCalls=0,lost=null;
   const port={
@@ -89,11 +97,11 @@ test('PD17 owned DB: a committed emit with lost ACK recovers from the same tick 
   assert.deepEqual((await ok(x.creator.client.rpc('get_kinnso_inbox'))).items.filter(n=>n.entityId===x.mission&&n.type==='collaboration.due_soon').map(n=>n.id).sort(),before);
   assert.equal((await ok(x.other.client.rpc('get_kinnso_inbox'))).items.some(n=>n.entityId===x.mission),false);
   console.log('PD17_OWNED_RECOVERY',JSON.stringify({scenario:'committed_ack_loss',source:process.env.GITHUB_SHA??'local',committedBeforeRecovery:3,recipientReadback:5,duplicates:0,externalDelivery:'NOT_RUN'}));
- } finally {await cleanupOwnedReminderProbe(f,x);}
+ } catch(error){scenarioError=error;} finally {await cleanupOwnedReminderProbe(f,x,scenarioError);}
 });
 
 test('PD17 owned DB: bounded cursor and failed reread preserve the checkpoint, then recover every remaining event', async () => {
- const f=await fixture();let x;
+ assert.equal(ownedReminderCleanupBlocked,false,'STOP_AFTER_OWNED_CLEANUP_FAILURE');const f=await fixture();let x,scenarioError;
  try {
   x=await setup(f,3_600_000,5);
   const port={due:async({now,after,limit})=>{assert.equal(now,x.now);const p=await ok(scan(now,after,limit));return {...p,items:p.items.filter(c=>c.participantId===x.participant)};},emit:async(c,now)=>{assert.equal(c.participantId,x.participant);return ok(emit(c,now));}};
@@ -110,5 +118,5 @@ test('PD17 owned DB: bounded cursor and failed reread preserve the checkpoint, t
   assert.equal((await runCollaborationReminders(x.now,port)).emitted,0);
   assert.equal((await ok(x.other.client.rpc('get_kinnso_inbox'))).items.some(n=>n.entityId===x.mission),false);
   console.log('PD17_OWNED_RECOVERY',JSON.stringify({scenario:'bounded_cursor_read_outage',source:process.env.GITHUB_SHA??'local',checkpointRetained:true,recipientReadback:5,duplicates:0,externalDelivery:'NOT_RUN'}));
- } finally {await cleanupOwnedReminderProbe(f,x);}
+ } catch(error){scenarioError=error;} finally {await cleanupOwnedReminderProbe(f,x,scenarioError);}
 });
