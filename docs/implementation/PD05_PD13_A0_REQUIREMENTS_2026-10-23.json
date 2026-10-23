@@ -1,0 +1,629 @@
+{
+  "version": 1,
+  "base": "2adc2550d11e421c06fa29c5b3e613a9a23e462b",
+  "candidateBranch": "codex/pd05-pd13-a0-followup-20261023",
+  "binding": "Final source/head/PR/CI in delivery receipt; no historical CI promoted",
+  "requirements": [
+    {
+      "id": "PD05.01",
+      "pd": "PD05",
+      "requirement": "下一步／等待方／公司／載入範圍",
+      "source_test_status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Await-review copy preserves authorized merchant source; travelpayouts/missing source stays generic; existing selector reused.",
+      "evidence": [
+        "tests/workspace-next-step.test.mjs",
+        "tests/collaboration-tasks.test.mjs",
+        "tests/workspace-loading.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "tasks.ts consumes existing listState/nextDueAt; group text identifies Merchant/Ops; no detail fan-out.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD05.02",
+      "pd": "PD05",
+      "requirement": "空資料／read error／無權限／首頁範圍",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing bounded selectors, scope labels and service states retained; first page never total.",
+      "evidence": [
+        "tests/workspace-loading.test.mjs",
+        "tests/workspace-service-state.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing bounded selectors, scope labels and service states retained; first page never total.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD05.03",
+      "pd": "PD05",
+      "requirement": "未知指令鎖定及撤權晚回應隔離",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing recovery hooks, company locks and permission denial fences retained.",
+      "evidence": [
+        "tests/workspace-recovery.test.mjs",
+        "tests/workspace-service-state.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing recovery hooks, company locks and permission denial fences retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD05.04",
+      "pd": "PD05",
+      "requirement": "owned／native角色對照",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Owned ephemeral CI remains distinct from original Remix hosted acceptance.",
+      "evidence": [
+        "tests/e2e/u06-collaboration-tasks.spec.ts",
+        "tests/e2e/u06-role-bundle.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "CI_EXACT_CANDIDATE_REQUIRED",
+      "previousObservation": "Owned ephemeral CI remains distinct from original Remix hosted acceptance.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD06.01",
+      "pd": "PD06",
+      "requirement": "無行程／有行程／guest與返回原攻略",
+      "source_test_status": "PR88_SOURCE_RETAINED_A0_HOSTED_BLOCKED",
+      "observation": "Current durable encrypted receipt source contract is PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json; no PD06 implementation change here. Original Remix403/admin/schema/key gates remain BLOCKED; A1-A5 not executed.",
+      "evidence": [
+        "tests/guide-review-context.test.mjs",
+        "tests/guest-planner.test.mjs",
+        "tests/trip-workflow-recovery.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Validated fromGuide UUID survives create acknowledgement; explicit g/<id> return, no auto-adopt. Saved guest/target timezones shown unchanged. A late known create ACK keeps newer form fields in place and exposes only the server-confirmed trip with original guide context; no implicit second write.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD06.02",
+      "pd": "PD06",
+      "requirement": "summary／calendar／zone／conflict／unknown同意圖",
+      "source_test_status": "PR88_SOURCE_RETAINED_A0_HOSTED_BLOCKED",
+      "observation": "Current durable encrypted receipt source contract is PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json; no PD06 implementation change here. Original Remix403/admin/schema/key gates remain BLOCKED; A1-A5 not executed.",
+      "evidence": [
+        "tests/trip-workflow-recovery.test.mjs",
+        "tests/adoption-preview.test.mjs",
+        "tests/import-contract.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Strict existing calendar/zone rules, frozen create/import/apply intent; failed device reads/writes cannot admit replacement writer.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD06.03",
+      "pd": "PD06",
+      "requirement": "saved／unsaved／unconfirmed及來源facts",
+      "source_test_status": "PR88_SOURCE_RETAINED_A0_HOSTED_BLOCKED",
+      "observation": "Current durable encrypted receipt source contract is PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json; no PD06 implementation change here. Original Remix403/admin/schema/key gates remain BLOCKED; A1-A5 not executed.",
+      "evidence": [
+        "tests/trip-workflow-recovery.test.mjs",
+        "tests/trip-fact-provenance.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Edit generations by target prevent old ACK declaring newer/other edits saved; independent source/date unknowns and retained stale facts. Known restored ACK with no newer dirty targets confirms saved; newer dirty targets remain protected. Connected CI regression preserved and corrected.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD06.04",
+      "pd": "PD06",
+      "requirement": "離線／帳戶／照片／分享及撤銷",
+      "source_test_status": "PR88_SOURCE_RETAINED_A0_HOSTED_BLOCKED",
+      "observation": "Current durable encrypted receipt source contract is PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json; no PD06 implementation change here. Original Remix403/admin/schema/key gates remain BLOCKED; A1-A5 not executed.",
+      "evidence": [
+        "tests/share-preview-recovery.test.mjs",
+        "tests/photo-upload-lifetime.test.mjs",
+        "tests/guest-draft-recovery.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_WITH_SHARE_CONTRACT_LIMIT",
+      "previousObservation": "Existing offline/photo controls retained. Unknown share creates frozen tab-local hold; no automatic release on empty read/revoke/expiry. API lacks durable creation receipt/token replay; cross-tab/device idempotency unresolved.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD06.05",
+      "pd": "PD06",
+      "requirement": "owned u01/u02/trip editor及真正跨裝置",
+      "source_test_status": "PR88_SOURCE_RETAINED_A0_HOSTED_BLOCKED",
+      "observation": "Current durable encrypted receipt source contract is PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json; no PD06 implementation change here. Original Remix403/admin/schema/key gates remain BLOCKED; A1-A5 not executed.",
+      "evidence": [
+        "tests/e2e/u01-guide-import.spec.ts",
+        "tests/e2e/u02-travel-share.spec.ts",
+        "tests/e2e/trip-editor.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "CI_REQUIRED_HOSTED_NOT_RUN",
+      "previousObservation": "New-session/second-device/physical acceptance remains PD16; reload is not second-device proof.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD07.01",
+      "pd": "PD07",
+      "requirement": "沿用publicationReadiness／缺欄定位",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing authoring/readiness/sealed versions retained.",
+      "evidence": [
+        "tests/publication-readiness.test.mjs",
+        "tests/guide-publication.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing authoring/readiness/sealed versions retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD07.02",
+      "pd": "PD07",
+      "requirement": "source summary作者／版本／發布與null",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing explicit summary projection retained; no publication-to-verification substitution or guessed author language.",
+      "evidence": [
+        "tests/guide-source-summary.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing explicit summary projection retained; no publication-to-verification substitution or guessed author language.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD07.03",
+      "pd": "PD07",
+      "requirement": "已有PlaceFact來源與核實時間",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing authorized facts GET only; safe public HTTP(S) links, original verifiedAt, separate missing source/time.",
+      "evidence": [
+        "tests/trip-fact-provenance.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Existing authorized facts GET only; safe public HTTP(S) links, original verifiedAt, separate missing source/time.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD07.04",
+      "pd": "PD07",
+      "requirement": "三篇真攻略作者同意及圖片權利",
+      "source_test_status": "BLOCKED_CONTENT_INPUT",
+      "observation": "No real rights/consent records supplied; synthetic data cannot satisfy this item.",
+      "evidence": [
+        "docs/implementation/CREATOR_CONTENT_PILOT_2026-10-22.md"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "BLOCKED_CONTENT_INPUT",
+      "previousObservation": "No real rights/consent records supplied; synthetic data cannot satisfy this item.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD07.05",
+      "pd": "PD07",
+      "requirement": "publish/read/adopt/version/withdraw邊界",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing owned integration/native stories retained; private adopted notes remain after source withdraw.",
+      "evidence": [
+        "tests/integration/guide-publication.test.mjs",
+        "tests/e2e/creator-workspace.spec.ts",
+        "tests/e2e/u01-guide-import.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "CI_REQUIRED_HOSTED_NOT_RUN",
+      "previousObservation": "Existing owned integration/native stories retained; private adopted notes remain after source withdraw.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD08.01",
+      "pd": "PD08",
+      "requirement": "發布前摘要／缺欄／未知報酬",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing readonly summary plus readable invalid recovered schedule/calendar/zone; authored raw values retained until explicit correction.",
+      "evidence": [
+        "tests/campaign-publication-summary.test.mjs",
+        "tests/e2e/u22-workflow-continuation.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Existing readonly summary plus readable invalid recovered schedule/calendar/zone; authored raw values retained until explicit correction.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD08.02",
+      "pd": "PD08",
+      "requirement": "時區／terms／CAS／owner-marketing",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Uses existing campaignSchedule/scheduleTimestamp; backend validator, sealed terms, CAS, fresh permission unchanged.",
+      "evidence": [
+        "tests/campaign-schedule.test.mjs",
+        "tests/merchant-campaigns.test.mjs",
+        "tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Uses existing campaignSchedule/scheduleTimestamp; backend validator, sealed terms, CAS, fresh permission unchanged.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD08.03",
+      "pd": "PD08",
+      "requirement": "unknown原payload及已確認發布",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing reconciliation and exact pending command retained; durable completion preserves unrelated edits.",
+      "evidence": [
+        "tests/workspace-service-state.test.mjs",
+        "tests/merchant-review-drafts.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing reconciliation and exact pending command retained; durable completion preserves unrelated edits.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD08.04",
+      "pd": "PD08",
+      "requirement": "direct RPC拒絕及成功保存讀回",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Owned CI only; original Remix schema:not_checked unchanged.",
+      "evidence": [
+        "tests/integration/creator-collaboration.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "CI_EXACT_CANDIDATE_REQUIRED",
+      "previousObservation": "Owned CI only; original Remix schema:not_checked unchanged.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD09.01",
+      "pd": "PD09",
+      "requirement": "交付→修訂→再交付→核准及等待方",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing authorized evidenceTimeline/UI/projections retained, no new event writer.",
+      "evidence": [
+        "tests/evidence-timeline.test.mjs",
+        "tests/creator-collaboration-ui.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing authorized evidenceTimeline/UI/projections retained, no new event writer.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD09.02",
+      "pd": "PD09",
+      "requirement": "repeatable／cursor截斷／accepted期限合同",
+      "source_test_status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Incomplete submission coverage never proves absence; load old nonrepeatable revision and retain original submissionId/CAS; repeatable receipts and complete empty pages unchanged.",
+      "evidence": [
+        "tests/creator-collaboration.test.mjs",
+        "tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Latest submission timestamps are not complete immutable event history. Existing repeatable/paging guards retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD09.03",
+      "pd": "PD09",
+      "requirement": "fresh permission／撤權／lostACK／原payload",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing exact pending/receipt and private draft isolation retained.",
+      "evidence": [
+        "tests/workspace-recovery.test.mjs",
+        "tests/workspace-service-state.test.mjs",
+        "tests/e2e/u11-workspace-recovery.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing exact pending/receipt and private draft isolation retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD09.04",
+      "pd": "PD09",
+      "requirement": "雙語鍵盤／核准不等於付款",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing revision anchors/timeline labels retained, no settlement/payment writer.",
+      "evidence": [
+        "tests/e2e/u21-pilot-presentation.spec.ts",
+        "tests/creator-collaboration-ui.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_NATIVE_CONTROLS",
+      "previousObservation": "Existing revision anchors/timeline labels retained, no settlement/payment writer.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD10.01",
+      "pd": "PD10",
+      "requirement": "公司／campaign／Creator／proof及獨立草稿",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Completing A atomically removes only A draft; B/brief/branch survive paging and real IndexedDB reload.",
+      "evidence": [
+        "tests/merchant-review-drafts.test.mjs",
+        "tests/e2e/u22-workflow-continuation.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_NATIVE_VERIFIED",
+      "previousObservation": "Completing A atomically removes only A draft; B/brief/branch survive paging and real IndexedDB reload.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD10.02",
+      "pd": "PD10",
+      "requirement": "51+filter→page→Back→reload／cursor／截斷",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing scoped cursor/directory/query retained; no total inferred from loaded first page.",
+      "evidence": [
+        "tests/collaboration-query.test.mjs",
+        "tests/e2e/u07-collaboration-query.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing scoped cursor/directory/query retained; no total inferred from loaded first page.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD10.03",
+      "pd": "PD10",
+      "requirement": "公司A→B／撤權／proof角色對照",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Fresh permission and late-result invalidation retained; no membership-to-Ops inference.",
+      "evidence": [
+        "tests/workspace-loading.test.mjs",
+        "tests/e2e/u06-creator-discovery.spec.ts",
+        "tests/e2e/u07-collaboration-query.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Fresh permission and late-result invalidation retained; no membership-to-Ops inference.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD10.04",
+      "pd": "PD10",
+      "requirement": "回正確項目／focus／unknown同request",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Original exact request journal and selection retained; keyboard review A keeps B focused data independent.",
+      "evidence": [
+        "tests/merchant-review-drafts.test.mjs",
+        "tests/e2e/u22-workflow-continuation.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_NATIVE_VERIFIED",
+      "previousObservation": "Original exact request journal and selection retained; keyboard review A keeps B focused data independent.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD11.01",
+      "pd": "PD11",
+      "requirement": "snapshot／period／asOf／比率分母",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Each cohort card and total preserves available counts; 0/0 and unknown/10 have different explanations in both locales.",
+      "evidence": [
+        "tests/merchant-insights.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "Each cohort card and total preserves available counts; 0/0 and unknown/10 have different explanations in both locales.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD11.02",
+      "pd": "PD11",
+      "requirement": "raw→API→UI→CSV與未知不補0",
+      "source_test_status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Forward migration preserves tracked missing profit as JSON null; UI handles nullable amount, known zero/decimal/currency/status/totals retained; shared target NOT_APPLIED.",
+      "evidence": [
+        "tests/merchant-insights.test.mjs",
+        "tests/integration/merchant-insights.test.mjs",
+        "tests/e2e/u10-merchant-insights.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing explicit insights projections, null attribution/submissions and approvalActions meaning unchanged.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD11.03",
+      "pd": "PD11",
+      "requirement": "CSV公式注入／5000／撤權及範圍",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing explicit CSV fields, scope, hard limit and generation fence retained.",
+      "evidence": [
+        "tests/merchant-insights.test.mjs",
+        "tests/e2e/u10-merchant-insights.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing explicit CSV fields, scope, hard limit and generation fence retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD11.04",
+      "pd": "PD11",
+      "requirement": "逐幣別exact金額及tracked/settled/payout",
+      "source_test_status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Nullable tracked amount does not crash negative-correction text and is not added to settlement totals or payout history.",
+      "evidence": [
+        "tests/e2e/u10-merchant-insights.spec.ts",
+        "app/travel/CreatorEarningsWorkspace.tsx"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing earnings contract retained; no new finance writer, payment or ROI claim.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD12.01",
+      "pd": "PD12",
+      "requirement": "四類接手及case/reference",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing support/ops/monitoring runbook retained; added unknown one-time share handling.",
+      "evidence": [
+        "docs/implementation/PILOT_SUPPORT_RUNBOOK.md"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_SOURCE_VERIFIED_HOSTED_NOT_RUN",
+      "previousObservation": "Existing support/ops/monitoring runbook retained; added unknown one-time share handling.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD12.02",
+      "pd": "PD12",
+      "requirement": "A/B/new草稿及customer/internal分隔",
+      "source_test_status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Human-authored newer/cleared support drafts survive failed autosave and failed/successful reads; first hydrate, pending receipts and hard-denial/account/scope clearing unchanged.",
+      "evidence": [
+        "tests/support-draft-isolation.test.mjs",
+        "tests/collaboration-support.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REPAIRED_LOCAL_VERIFIED",
+      "previousObservation": "New command requires successful current read plus recovery readiness before UUID/pending allocation; failed reads keep Refresh available and no unknown deadlock.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD12.03",
+      "pd": "PD12",
+      "requirement": "unknown／last success／last failure",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing job observation controls retained; absent observations never healthy.",
+      "evidence": [
+        "tests/monitoring-partial.test.mjs",
+        "app/travel/MonitoringWorkspace.tsx"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing job observation controls retained; absent observations never healthy.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD12.04",
+      "pd": "PD12",
+      "requirement": "owner／receipt／原角色回讀交班",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Concrete four-category runbook exists; actual named Ops handoff/user readback still NOT_RUN.",
+      "evidence": [
+        "docs/implementation/PILOT_SUPPORT_RUNBOOK.md",
+        "tests/e2e/u05-ops.spec.ts",
+        "tests/e2e/u09-collaboration-support.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_SOURCE_HOSTED_NOT_RUN",
+      "previousObservation": "Concrete four-category runbook exists; actual named Ops handoff/user readback still NOT_RUN.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD13.01",
+      "pd": "PD13",
+      "requirement": "通知時／目前期限及正確anchor",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing reminder context and safe payload fallback retained.",
+      "evidence": [
+        "tests/reminder-context.test.mjs",
+        "tests/e2e/u08-collaboration-reminders.spec.ts"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_VERIFIED",
+      "previousObservation": "Existing reminder context and safe payload fallback retained.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD13.02",
+      "pd": "PD13",
+      "requirement": "dedupe／deadline version／partial／late ACK",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing bounded job and receipt/dedupe controls retained, no new scheduler.",
+      "evidence": [
+        "tests/collaboration-reminders.test.mjs",
+        "tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_LOCAL_CI_REQUIRED",
+      "previousObservation": "Existing bounded job and receipt/dedupe controls retained, no new scheduler.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD13.03",
+      "pd": "PD13",
+      "requirement": "scheduled／recorded／email sent／unknown",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "No email-delivery success invented; existing in-app and monitoring evidence remain separate.",
+      "evidence": [
+        "docs/implementation/NOTIFICATION_ACCEPTANCE_CONTRACT.md",
+        "app/travel/InboxWorkspace.tsx"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_SOURCE_HOSTED_NOT_RUN",
+      "previousObservation": "No email-delivery success invented; existing in-app and monitoring evidence remain separate.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    },
+    {
+      "id": "PD13.04",
+      "pd": "PD13",
+      "requirement": "owner／window／補跑／停止future dispatch",
+      "source_test_status": "REUSED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "observation": "Existing bounded replay/stop procedures retained; actual scheduler/provider/recipient is PD17 NOT_RUN.",
+      "evidence": [
+        "docs/implementation/PILOT_SUPPORT_RUNBOOK.md"
+      ],
+      "hostedRuntime": "NOT_RUN",
+      "previousSourceTestStatus": "REUSED_SOURCE_HOSTED_NOT_RUN",
+      "previousObservation": "Existing bounded replay/stop procedures retained; actual scheduler/provider/recipient is PD17 NOT_RUN.",
+      "ownedCandidateEvidence": "Final exact-head delivery receipt; inherited2adc255 CI is baseline only"
+    }
+  ],
+  "sourceRepairs": [
+    "PD05.01",
+    "PD09.02",
+    "PD11.02",
+    "PD11.04",
+    "PD12.02"
+  ],
+  "localEvidence": {
+    "fullUnit": {
+      "passed": 992,
+      "failed": 0,
+      "skipped": 0
+    },
+    "focusedCreator": 32,
+    "focusedSupport": 55,
+    "focusedFinance": 30,
+    "nativeU21U22": {
+      "passed": 18,
+      "newBaselineFailures": 4,
+      "transport": "fixture"
+    },
+    "typecheck": "PASS",
+    "rootLint": "PASS_0ERROR_EXISTING_WARNINGS",
+    "sqlProjection": "OWNED_LOCAL_PG17_MINIMAL_SCHEMA_ACTOR_STUB_ONLY_RED_GREEN",
+    "sqlOriginalRemix": "NOT_APPLIED",
+    "newOwnedAuthRlsCase": "EXACT_CI_RECEIPT_REQUIRED"
+  },
+  "originalLedgersModified": false,
+  "originalNRows": 18,
+  "originalTraceabilityRows": 53,
+  "authority": {
+    "A1_A5": "NOT_AUTHORIZED_NOT_EXECUTED",
+    "newSupabaseProjects": false,
+    "merge": false,
+    "productionDeploy": false
+  },
+  "trueGuideConsentImageRights": "BLOCKED",
+  "T08": "OPEN",
+  "N16": "OPEN",
+  "PD18": "NO_GO",
+  "D06": {
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  },
+  "priorSnapshot": "PD05_PD13_REQUIREMENTS_2026-10-23.json",
+  "newShareContract": "PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json"
+}

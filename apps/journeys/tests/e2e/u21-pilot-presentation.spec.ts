@@ -9,14 +9,14 @@ test.beforeAll(async()=>{
  const ports:Record<string,string>={
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='en'?en:zh,href:path=>'/'+window.fixture.locale+'/'+path});`,
   drafts:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
-  repository:`export async function request(url,method){if(method&&method!=='GET'){window.commands.push(url);throw Error('Presentation must not issue commands');}if(url.startsWith('/api/merchant/campaigns'))return{ok:true,data:window.fixture.directory};if(url.startsWith('/api/creator/missions/'))return{ok:true,data:window.fixture.detail};if(url==='/api/ops/monitoring')return{ok:true,data:window.fixture.monitoring};throw Error('Unexpected read '+url);}`,
+  repository:`export async function request(url,method){if(method&&method!=='GET'){window.commands.push(url);throw Error('Presentation must not issue commands');}if(url.startsWith('/api/merchant/campaigns'))return{ok:true,data:window.fixture.directory};if(url.startsWith('/api/creator/missions/'))return{ok:true,data:new URL(url,'http://fixture.invalid').searchParams.has('after')?(window.fixture.earlierDetail??window.fixture.detail):window.fixture.detail};if(url.startsWith('/api/creator/earnings'))return{ok:true,data:window.fixture.earnings[new URL(url,'http://fixture.invalid').searchParams.get('section')??'settled']};if(url==='/api/ops/monitoring')return{ok:true,data:window.fixture.monitoring};throw Error('Unexpected read '+url);}`,
   link:`export default 'a';`,image:`export default 'img';`,router:`export const useRouter=()=>({refresh(){}});export const useSearchParams=()=>new URLSearchParams();`,
  };
  const result=await build({stdin:{contents:`
  import React from 'react';import{createRoot}from'react-dom/client';
- import{PublicGuideContent}from'./lib/seo/PublicGuideContent';import{MerchantCampaigns}from'./app/travel/MerchantCampaigns';import{CreatorMissionsWorkspace}from'./app/travel/CreatorMissionsWorkspace';import{MonitoringWorkspace}from'./app/travel/MonitoringWorkspace';
+ import{PublicGuideContent}from'./lib/seo/PublicGuideContent';import{MerchantCampaigns}from'./app/travel/MerchantCampaigns';import{CreatorMissionsWorkspace}from'./app/travel/CreatorMissionsWorkspace';import{MonitoringWorkspace}from'./app/travel/MonitoringWorkspace';import{CreatorEarningsWorkspace}from'./app/travel/CreatorEarningsWorkspace';
  const f=window.fixture;window.commands=[];
- createRoot(document.getElementById('fixture')).render(f.kind==='guide'?<PublicGuideContent guide={f.guide} locale={f.locale}/>:f.kind==='merchant'?<MerchantCampaigns actorId="synthetic-owner" merchantId="${id}" refreshKey={0} locked={false} onLockChange={()=>{}} onChanged={async()=>{}} onDenied={()=>{}}/>:f.kind==='creator'?<CreatorMissionsWorkspace path="studio/missions/${id}" actorId="synthetic-creator" enabled/>:<MonitoringWorkspace actorId="synthetic-ops" enabled/>);
+ createRoot(document.getElementById('fixture')).render(f.kind==='guide'?<PublicGuideContent guide={f.guide} locale={f.locale}/>:f.kind==='merchant'?<MerchantCampaigns actorId="synthetic-owner" merchantId="${id}" refreshKey={0} locked={false} onLockChange={()=>{}} onChanged={async()=>{}} onDenied={()=>{}}/>:f.kind==='creator'?<CreatorMissionsWorkspace path="studio/missions/${id}" actorId="synthetic-creator" enabled/>:f.kind==='earnings'?<CreatorEarningsWorkspace actorId="fixture-creator" enabled/>:<MonitoringWorkspace actorId="synthetic-ops" enabled/>);
  `,loader:'tsx',resolveDir:resolve('.')},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',plugins:[{name:'pure-presentation-ports',setup(b){
   b.onResolve({filter:/.*/},args=>{const key=args.path==='./ui'?'ui':args.path.endsWith('/trips/local-drafts')?'drafts':args.path.endsWith('/trips/repository')?'repository':args.path==='next/link'?'link':args.path==='next/image'?'image':args.path==='next/navigation'?'router':null;return key?{path:key,namespace:'port'}:null;});
   b.onLoad({filter:/.*/,namespace:'port'},args=>({contents:ports[args.path],loader:'js'}));
@@ -25,7 +25,7 @@ test.beforeAll(async()=>{
 async function mount(page:Page,fixture:Record<string,unknown>){
  page.on('pageerror',(error:Error)=>{throw error;});
  await page.route('http://presentation.invalid/**',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'}));
- const path=fixture.kind==='merchant'?'merchant':fixture.kind==='creator'?`studio/missions/${id}`:fixture.kind==='ops'?'ops/monitoring':`g/${id}`;
+ const path=fixture.kind==='merchant'?'merchant':fixture.kind==='creator'?`studio/missions/${id}`:fixture.kind==='earnings'?'studio/earnings':fixture.kind==='ops'?'ops/monitoring':`g/${id}`;
  await page.goto(`http://presentation.invalid/${fixture.locale}/${path}`);
  await page.setViewportSize({width:320,height:844});
  await page.setContent(`<style>${css}html{font-size:200%}body:has(.k-app){margin:16px;overflow-x:visible}.k-app{font-size:1rem}button,a{white-space:normal}</style><div class="k-app"><main id="fixture"></main></div>`);
@@ -75,6 +75,35 @@ for(const locale of ['en','zh-HK']){
   await mount(page,{kind:'ops',locale,monitoring});
   await expect(page.getByText('2026-10-22T10:00:00Z',{exact:true})).toBeVisible();await expect(page.getByText('2026-10-21T10:00:00Z',{exact:true})).toBeVisible();
   await expect(page.getByText(label('Unknown (no result recorded)','未知（未有結果紀錄）'),{exact:true})).toBeVisible();
+  await reflow(page);
+ });
+}
+
+for(const locale of ['en','zh-HK']){
+ const label=(en:string,zh:string)=>locale==='en'?en:zh;
+ test('U21 '+locale+' PD09: paged evidence stays unknown and the earlier revision opens its original form',async({page})=>{
+  const receipt='22222222-2222-4222-8222-222222222222',other='33333333-3333-4333-8333-333333333333',stamp='2026-10-23T01:00:00Z';
+  const detail={id,title:'Paged creator work',summary:'Original authored brief',merchantName:'Owned fixture company',missionType:'coupon_affiliate',missionSource:'merchant',status:'published',visibility:'open',participant:{id,status:'active',updatedAt:stamp},eligible:true,joinAvailable:false,evidenceAvailable:true,acceptAvailable:false,requiresApplication:true,requirements:[],deliverables:[],milestones:[{id,title:'Original nonrepeatable work',description:'Original instructions',dueAt:null,repeatable:false},{id:other,title:'Repeatable receipts',description:'Separate receipts',dueAt:null,repeatable:true}],milestonesTruncated:false,submissions:Array.from({length:50},(_,index)=>({id:'10000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),milestoneId:other,status:'approved',notes:null,proofUrls:[],reviews:[],submittedAt:stamp,updatedAt:stamp})),submissionsNextCursor:'older-page',partnerLinks:[],maxReceipts:null,paidFeeAmount:null,paidFeeCurrency:null,creatorRate:'0',minTier:null,scheduleTimeZone:'UTC',startsAt:null,endsAt:null,applicationOpensAt:null,applicationClosesAt:null};
+  const older={id:receipt,milestoneId:id,status:'revision_requested',notes:'Original retained revision',proofUrls:['https://example.test/retained-proof'],reviews:[],merchantFeedback:'Clarify source',submittedAt:stamp,updatedAt:stamp};
+  await mount(page,{kind:'creator',locale,detail,earlierDetail:{...detail,submissions:[older],submissionsNextCursor:null}});
+  await expect(page.getByRole('heading',{name:'Paged creator work',exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:label('Prepare evidence','準備證明'),exact:true})).toHaveCount(0);
+  await expect(page.getByText(label('Load earlier evidence to check whether this milestone already has a submission.','請載入較早證明，核對此里程碑是否已有交付。'),{exact:true})).toBeVisible();
+  await expect(page.getByRole('button',{name:label('Prepare new receipt','準備新收據'),exact:true})).toBeEnabled();
+  await page.getByRole('button',{name:label('Load earlier evidence','載入較早證明'),exact:true}).focus();await page.keyboard.press('Enter');
+  const revise=page.getByRole('button',{name:label('Edit and resubmit evidence','修改並重新提交證明'),exact:true});await expect(revise).toBeEnabled();await revise.focus();await page.keyboard.press('Enter');
+  await expect(page.getByLabel(label('Notes for reviewer','給審核員的備註'),{exact:true})).toHaveValue('Original retained revision');
+  await expect(page.getByLabel(label('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）'),{exact:true})).toHaveValue('https://example.test/retained-proof');
+  await reflow(page);
+ });
+ test('U21 '+locale+' PD11: unknown tracked amount and confirmed zero remain distinct in the browser',async({page})=>{
+  const base={kind:'affiliate',missionId:null,currency:'HKD',status:'processing',updatedAt:'2026-10-23T01:00:00Z',targetAt:null};
+  const totals=[{currency:'HKD',pending:'123.45',paid:'0.00'}];
+  await mount(page,{kind:'earnings',locale,earnings:{settled:{section:'settled',items:[],totals,nextCursor:null},tracked:{section:'tracked',items:[{...base,id,title:'Unknown tracked amount',amount:null},{...base,id:'22222222-2222-4222-8222-222222222222',title:'Known tracked zero',amount:'0.00'}],totals,nextCursor:null}}});
+  const tracked=page.getByRole('button',{name:label('Tracked activity','追蹤活動'),exact:true});await expect(tracked).toBeEnabled();await tracked.focus();await page.keyboard.press('Enter');
+  await expect(page.getByRole('article').filter({hasText:'Unknown tracked amount'})).toContainText(label('HKD Amount unknown','HKD 金額不詳'));
+  await expect(page.getByRole('article').filter({hasText:'Known tracked zero'})).toContainText('HKD 0.00');
+  await expect(page.getByText('HKD 123.45',{exact:true})).toBeVisible();
   await reflow(page);
  });
 }

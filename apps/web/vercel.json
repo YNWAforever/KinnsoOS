@@ -1,10 +1,23 @@
 {
   "framework": "nextjs",
-  "regions": ["hkg1"],
+  "regions": [
+    "hkg1"
+  ],
   "buildCommand": "cd ../.. && pnpm --filter web build",
   "installCommand": "cd ../.. && pnpm install",
   "crons": [
-    { "path": "/api/cron/travelpayouts-sync", "schedule": "0 3 * * *" },
-    { "path": "/api/cron/traveller-analytics-retention", "schedule": "0 4 * * *" }
-  ]
+    {
+      "path": "/api/cron/travelpayouts-sync",
+      "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/traveller-analytics-retention",
+      "schedule": "0 4 * * *"
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "codex/pd05-pd13-a0-followup-20261023": false
+    }
+  }
 }

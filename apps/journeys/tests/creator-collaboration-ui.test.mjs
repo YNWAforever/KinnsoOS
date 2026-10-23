@@ -10,7 +10,7 @@ import {transform} from 'esbuild';
 const id='11111111-1111-4111-8111-111111111111',stamp='2026-10-10T19:00:00.123456+00:00';
 const tick=()=>new Promise(r=>setImmediate(r));
 const detail=()=>({id,title:'Authored collaboration',summary:'Read the authored brief.',missionType:'coupon_affiliate',missionSource:'merchant',status:'published',visibility:'open',merchantName:'Local merchant',eligible:true,joinAvailable:true,acceptAvailable:false,evidenceAvailable:false,minTier:null,paidFeeAmount:null,paidFeeCurrency:null,creatorRate:'0',startsAt:null,endsAt:null,participant:null,requirements:[],deliverables:[],couponCode:null,couponUrl:null,milestones:[{id,title:'Original route',description:'Write your own route',dueAt:null,repeatable:false}],milestonesTruncated:false,submissions:[],submissionsNextCursor:null,partnerLinks:[],maxReceipts:null});
-async function harness(port={},name='CreatorMissionsWorkspace'){
+async function harness(port={},name='CreatorMissionsWorkspace',locale='en'){
  const source=await readFile(new URL('../app/travel/'+name+'.tsx',import.meta.url),'utf8').catch(()=> '');assert.notEqual(source,'','The connected creator workspace must exist');
  const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic'}),states=[],refs=[],effects=[];let cursor=0,changed=false,tree,invalidate;
  const props={path:'studio/missions/'+id,actorId:'creator-A',enabled:true};
@@ -21,7 +21,7 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
  const recoveryHook=await recoveryHookModule(react);
  runInContext(compiled.code,createContext({module,exports:module.exports,Date,URL,URLSearchParams,window:{location:{search:'',pathname:'/en/studio/missions'},history:{replaceState(){}},addEventListener(){},removeEventListener(){}},crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},require:name=>{
   if(name==='./useWorkspaceRecovery')return recoveryHook;if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-  if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en',href:path=>'/en/'+path})};
+  if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='zh-HK'?zh:en,locale,href:path=>'/'+locale+'/'+path})};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;
   if(name==='../../lib/creators/collaboration')return{creatorMissions:{get:async()=>({ok:true,data:detail()}),list:async()=>({ok:true,data:{items:[],nextCursor:null}}),...port},creatorEarnings:{get:async()=>({ok:true,data:{section:'settled',totals:[],items:[],nextCursor:null}}),...port}};
@@ -87,4 +87,34 @@ test('loaded evidence history links each receipt to its actual milestone context
  dto.submissions=[{id:'receipt1',milestoneId:id,status:'approved',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]},{id:'receipt2',milestoneId:other,status:'submitted',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]}];
  const h=await harness({get:async()=>({ok:true,data:dto})});
  for(const milestone of dto.milestones){const link=h.elements().find(el=>el.type==='a'&&el.props.href==='#milestone-'+milestone.id);assert.ok(link,'history needs milestone anchor for '+milestone.title);assert.ok(h.text(link).includes(milestone.title));}
+});
+
+for(const locale of ['en','zh-HK'])test('Creator '+locale+': a paged nonrepeatable milestone stays unknown until its older revision is loaded',async()=>{
+ const other='22222222-2222-4222-8222-222222222222',revision='33333333-3333-4333-8333-333333333333';
+ const dto=detail();dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;dto.evidenceAvailable=true;
+ dto.milestones.push({id:other,title:'Repeatable receipts',description:'Independent receipts',dueAt:null,repeatable:true});
+ dto.submissions=Array.from({length:50},(_,index)=>({id:'10000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),milestoneId:other,status:'approved',submittedAt:stamp,updatedAt:stamp,notes:null,proofUrls:[],merchantFeedback:null,reviews:[]}));
+ dto.submissionsNextCursor='older-evidence-page';
+ const older={id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision note',proofUrls:['https://example.test/original-proof'],merchantFeedback:'Clarify source',reviews:[]};
+ const reads=[],writes=[];
+ const h=await harness({get:async(missionId,after)=>{reads.push([missionId,after]);return{ok:true,data:after?{...dto,submissions:[older],submissionsNextCursor:null}:dto};},command:async(...args)=>{writes.push(args);return{ok:true,data:{id:revision,status:'submitted',updatedAt:stamp}};}},'CreatorMissionsWorkspace',locale);
+ assert.equal(h.find('button',locale==='en'?'Prepare evidence':'準備證明'),undefined,'unloaded records cannot prove no existing submission');
+ assert.ok(h.find('button',locale==='en'?'Prepare new receipt':'準備新收據'),'repeatable receipts remain available');
+ assert.match(h.text(),locale==='en'?/Load earlier evidence to check/:/請載入較早證明/);
+ assert.equal(writes.length,0);
+ await h.find('button',locale==='en'?'Load earlier evidence':'載入較早證明').props.onClick();await tick();h.render();
+ assert.deepEqual(reads.slice(0,2),[[id,undefined],[id,'older-evidence-page']]);
+ h.find('button',locale==='en'?'Edit and resubmit evidence':'修改並重新提交證明').props.onClick();h.render();
+ assert.equal(h.find('textarea',locale==='en'?'Notes for reviewer':'給審核員的備註').props.value,'Original revision note');
+ h.find('textarea',locale==='en'?'Notes for reviewer':'給審核員的備註').props.onChange({target:{value:'Clarified original submission'}});h.render();
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(writes.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(writes[0].slice(0,2))),[id,{type:'submitEvidence',milestoneId:id,submissionId:revision,expectedUpdatedAt:stamp,proofUrls:['https://example.test/original-proof'],notes:'Clarified original submission'}]);
+ assert.match(writes[0][2],/^[0-9a-f-]{36}$/);
+});
+for(const locale of ['en','zh-HK'])test('Creator '+locale+': complete empty submission coverage still allows the first nonrepeatable evidence',async()=>{
+ const dto=detail();dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;dto.evidenceAvailable=true;
+ const h=await harness({get:async()=>({ok:true,data:dto})},'CreatorMissionsWorkspace',locale);
+ assert.equal(h.find('button',locale==='en'?'Prepare evidence':'準備證明').props.disabled,false);
+ assert.doesNotMatch(h.text(),locale==='en'?/Load earlier evidence to check/:/請載入較早證明/);
 });

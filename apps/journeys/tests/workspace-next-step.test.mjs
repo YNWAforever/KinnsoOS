@@ -18,3 +18,15 @@ for(const locale of ['en','zh-HK'])test(`Creator summary ${locale}: revision is 
  assert.equal(reads,1);assert.equal(privateReads,0);assert.equal(writes,0);
  h.invalidate();assert.doesNotMatch(h.text(),/Revision work|Submitted work/);
 });
+
+for(const locale of ['en','zh-HK'])for(const source of ['travelpayouts',undefined])for(const stage of ['application','submission'])test('Creator '+locale+' '+(source??'unknown-source')+' '+stage+': waiting copy does not invent a merchant reviewer',async()=>{
+ const row={...mission(a,'Source-aware work','submitted'),missionSource:source,merchantName:null,missionType:'receipt_cashback'};
+ if(stage==='application')row.participant={...row.participant,status:'applied'};
+ let reads=0,writes=0;
+ const h=await workspaceHarness('CreatorCollaborationTasks',{creatorMissions:{list:async()=>{reads++;return{ok:true,data:{items:[row],nextCursor:null}};},get:async()=>{throw Error('No detail fan-out');},command:async()=>{writes++;throw Error('No task writes');}}},{locale});
+ const waiting=h.elements().find(el=>el.type==='section'&&[el.props.children].flat(Infinity).some(child=>child?.type==='h3'&&h.text(child)===(locale==='en'?'Waiting for others':'等候對方')));
+ assert.ok(waiting);assert.match(h.text(waiting),/Source-aware work/);
+ assert.doesNotMatch(h.text(waiting),locale==='en'?/\bmerchant\b/i:/商戶/);
+ assert.ok(h.elements().some(el=>el.type==='a'&&el.props.href==='/'+locale+'/studio/missions/'+a));
+ assert.equal(reads,1);assert.equal(writes,0);
+});

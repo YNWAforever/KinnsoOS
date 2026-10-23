@@ -220,3 +220,28 @@ for(const locale of ['en','zh-HK']){
   assert.equal(recovery.value?.pending??null,null);assert.equal(h.field(labels.message).props.value,'');
  });
 }
+
+for(const locale of ['en','zh-HK'])for(const opsMode of [false,true])for(const nextText of ['Newer unsent reply',''])test('PD12 '+locale+' '+(opsMode?'Ops':'customer')+' '+(nextText?'newer text':'cleared text')+': failed autosave and failed read never restore an older device draft over in-memory edits',async()=>{
+ const labels=supportLabels(locale),recovery=journal(),events=[];let failSave=false,unavailable=false;
+ const save=recovery.save,clear=recovery.clear;
+ recovery.save=async(...args)=>{if(failSave)throw Error('LOCAL_STORAGE_UNAVAILABLE');await save(...args);};
+ recovery.clear=async(...args)=>{if(failSave)throw Error('LOCAL_STORAGE_UNAVAILABLE');await clear(...args);};
+ const h=await workspaceHarness('SupportWorkspace',{workspaceRecovery:recovery,request:async(url,method,body)=>{events.push({url,method,body});return unavailable?{ok:false,code:'UNAVAILABLE'}:reads();}},{locale,opsMode});
+ const reply=opsMode?(locale==='en'?'Response visible to the customer':'客戶可見的回覆'):labels.reply;
+ edit(h,a,reply,'Older saved reply');await settle(h);
+ assert.equal(recovery.value.draft.cases[a].message,'Older saved reply');
+ failSave=true;edit(h,a,reply,nextText);
+ if(opsMode)edit(h,b,locale==='en'?'Internal decision reason':'內部決定原因','New private decision reason');
+ else {h.field(labels.message).props.onChange({target:{value:'New unsent support message'}});h.render();}
+ await settle(h);
+ assert.equal(recovery.value.draft.cases[a].message,'Older saved reply');
+ unavailable=true;h.find('button',labels.refresh).props.onClick();await settle(h);
+ assert.equal(h.find('button',labels.refresh).props.disabled,false);
+ unavailable=false;h.find('button',labels.refresh).props.onClick();await settle(h);
+ assert.equal(input(h,a,reply).props.value,nextText,'current authored intent must survive storage/read recovery');
+ if(opsMode)assert.equal(input(h,b,locale==='en'?'Internal decision reason':'內部決定原因').props.value,'New private decision reason');
+ else assert.equal(h.field(labels.message).props.value,'New unsent support message');
+ assert.equal(events.filter(e=>e.method==='POST').length,0);
+ assert.equal(recovery.value.pending,null);
+ h.invalidate();assert.doesNotMatch(h.text(),/Older saved reply|Newer unsent reply|New private decision reason|New unsent support message/);
+});

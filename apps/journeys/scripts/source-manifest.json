@@ -498,6 +498,7 @@
     "tests/contracts/20261011004000_kinnso_merchant_insights.sql": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
     "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql",
     "tests/contracts/20261012170745_kinnso_reminder_context.sql": "supabase/migrations/20261012170745_kinnso_reminder_context.sql",
-    "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql"
+    "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql",
+    "tests/contracts/20261023114944_kinnso_unknown_tracked_profit.sql": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql"
   }
 }
