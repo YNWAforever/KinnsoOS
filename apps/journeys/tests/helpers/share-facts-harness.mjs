@@ -1,5 +1,6 @@
 import {build} from 'esbuild';
 import {createContext,runInContext} from 'node:vm';
+import {webcrypto} from 'node:crypto';
 
 // Same in-memory TSX/hook scheduler as workspace-harness and guest-planner tests.
 // Actual sharing/reason/feasibility code is bundled. Only UI, HTTP and account
@@ -24,11 +25,21 @@ export const factFixture=(patch={})=>({placeId:'55555555-5555-4555-8555-55555555
 export const linkFixture=(id='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb')=>({id,createdAt:'2026-10-23T00:00:00.000Z',expiresAt:'2026-10-29T00:00:00.000Z'});
 export const shareFixture=()=>({id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',url:'https://www.kinnso.ai/share/token-once',projection:{title:'Private Kyoto plan',days:[{id:'22222222-2222-4222-8222-222222222222',offset:0,title:'First day',stops:[{id:'33333333-3333-4333-8333-333333333333',placeId:'55555555-5555-4555-8555-555555555555',title:'Temple',position:0,startMinuteOfDay:0,durationMinutes:0,description:'Original creator text',source:{guideId:'77777777-7777-4777-8777-777777777777',guideVersion:2,creatorId:'88888888-8888-4888-8888-888888888888',creatorName:'Original author',canonicalUrl:'https://www.kinnso.ai/en/g/original',withdrawn:false}}]}],approvedMediaIds:[]}});
 
-export async function shareFactsHarness(name,{request=async()=>{throw Error('Unexpected request')},facts=async()=>{throw Error('Unexpected facts read')},clipboard=async()=>{},locale='en',props={},clock=Date,storage=memoryStorage()}={}){
+export const requestFixture=(patch={})=>({requestId:'99999999-9999-4999-8999-999999999999',tripId:tripFixture().id,stopIds:['33333333-3333-4333-8333-333333333333'],mediaIds:[],expiresAt:'2026-10-29T00:00:00.000Z',...patch});
+export const receiptFixture=(intent=requestFixture(),patch={})=>{
+ const share=shareFixture();
+ share.projection.days=share.projection.days.map(day=>({...day,stops:day.stops.filter(stop=>intent.stopIds.includes(stop.id))}));
+ share.projection.approvedMediaIds=[...intent.mediaIds];
+ return {...share,requestId:intent.requestId,createdAt:'2026-10-23T00:00:00.000Z',expiresAt:intent.expiresAt,state:'active',intent:structuredClone(intent),...patch};
+};
+export const receiptRow=receipt=>Object.fromEntries(['requestId','id','createdAt','expiresAt','state'].map(key=>[key,receipt[key]]));
+export const receiptPage=(items=[],nextCursor=null)=>ok({items,nextCursor});
+
+export async function shareFactsHarness(name,{request=async()=>{throw Error('Unexpected request')},facts=async()=>{throw Error('Unexpected facts read')},clipboard=async()=>{},locale='en',props={},clock=Date,storage=memoryStorage(),crypto=webcrypto,stateBailouts=false}={}){
  const states=[],refs=[],effects=[],invalidators=new Set(),calls=[];let cursor=0,changed=false,tree,mounted=true;
- const currentProps={trip:tripFixture(),enabled:true,save:async()=>true,...props};
+ const currentProps={trip:tripFixture(),enabled:true,recoveryEnabled:true,save:async()=>true,...props};
  const react={
-  useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}]},
+  useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{const next=typeof value==='function'?value(states[i]):value;if(!stateBailouts||!Object.is(next,states[i])){states[i]=next;changed=true;}}]},
   useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial})},
   useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}
  };
@@ -46,7 +57,7 @@ export async function shareFactsHarness(name,{request=async()=>{throw Error('Une
   b.onLoad({filter:/.*/,namespace:'boundary'},args=>({loader:'js',contents:snippets[args.path]}));
  }}]});
  const jsx=(type,props)=>({type,props}),module={exports:{}};
- const context=createContext({module,exports:module.exports,Date:clock,Intl,URL,console,
+ const context=createContext({module,exports:module.exports,Date:clock,Intl,URL,URLSearchParams,crypto,console,
   navigator:{clipboard:{writeText:clipboard}},window:{sessionStorage:storage},
   fetch:async(url,options)=>{calls.push({url,options});if(url!=='/api/trips/'+currentProps.trip.id+'/facts'||options?.cache!=='no-store')throw Error('Unexpected fetch '+url);const data=await facts(url,options);return{ok:data.ok,json:async()=>data};},
   __locale:locale,__request:(...args)=>request(...args),__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},

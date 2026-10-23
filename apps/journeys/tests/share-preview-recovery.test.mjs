@@ -1,6 +1,18 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {shareFactsHarness,deferred,ok,unavailable,tripFixture,linkFixture,shareFixture,memoryStorage} from './helpers/share-facts-harness.mjs';
+import {shareFactsHarness as componentHarness,deferred,ok,unavailable,tripFixture,linkFixture,shareFixture,receiptFixture,memoryStorage} from './helpers/share-facts-harness.mjs';
+
+// These regressions exercise the legacy metadata surface. The separate receipt
+// page route returns its actual DTO; it must never inherit the legacy array fake.
+function shareFactsHarness(name,options={}){
+ return componentHarness(name,{...options,request:(url,...args)=>{
+  if(url.startsWith('/api/shares/receipts?')){
+   assert.equal(new URL(url,'https://fixture.test').searchParams.has('requestId'),false,'unexpected receipt read');
+   return ok({items:[],nextCursor:null});
+  }
+  return options.request(url,...args);
+ }});
+}
 
 const labels={
  en:{create:'Create read-only link',refresh:'Refresh existing links',retry:'Retry loading links',revoke:'Revoke existing link',loading:/loading.*links/i,error:/could not load.*links/i,held:/unknown|unconfirmed/i},
@@ -31,7 +43,7 @@ for(const locale of ['en','zh-HK']){
   const duplicate=original.props.onClick();oldToggle.props.onChange({target:{checked:false}});h.render();
   assert.equal(calls.filter(call=>call.method==='POST').length,1,'same-render double click cannot mint a second token');
   assert.equal(checkboxes(h)[0].props.checked,true,'unknown selection stays pinned');assert.equal(checkboxes(h)[0].props.disabled,true);
-  assert.deepEqual(Object.keys(pinned).sort(),['expiresAt','mediaIds','stopIds','tripId'],'the API has no replay field');
+  assert.deepEqual(Object.keys(pinned).sort(),['expiresAt','mediaIds','requestId','stopIds','tripId'],'v2 carries the stable request identity');
   assert.deepEqual(pinned.stopIds,['33333333-3333-4333-8333-333333333333']);assert.ok(Number.isFinite(Date.parse(pinned.expiresAt)));
   write.resolve(unavailable());await Promise.all([first,duplicate]);await h.settle();
   assert.match(h.text(),l.held);assert.equal(h.button(l.create).props.disabled,true);
@@ -77,7 +89,7 @@ test('late share ACK and captured revoke/copy handlers are fenced on account inv
  const h=await shareFactsHarness('SharePreview',{request:async(url,method='GET')=>{calls.push({url,method});return method==='GET'?ok([]):pending.promise},clipboard:async url=>copies.push(url)});
  await h.settle();const create=h.button(labels.en.create),writing=create.props.onClick();h.render();h.invalidate(null);pending.resolve(ok(shareFixture()));await writing;await h.settle();
  assert.equal(h.elements().some(node=>node.type==='input'&&node.props.value==='https://www.kinnso.ai/share/token-once'),false,'a stale acknowledgement must not expose its token');await create.props.onClick();assert.equal(calls.filter(c=>c.method==='POST').length,1);
- const current=await shareFactsHarness('SharePreview',{request:async(_url,method='GET')=>method==='GET'?ok([]):ok(shareFixture()),clipboard:async url=>copies.push(url)});
+ const current=await shareFactsHarness('SharePreview',{request:async(_url,method='GET',body)=>method==='GET'?ok([]):ok(receiptFixture(body)),clipboard:async url=>copies.push(url)});
  await current.settle();await current.button(labels.en.create).props.onClick();current.render();
  const revoke=current.button('Revoke link'),copy=current.button('Copy link');current.invalidate(null);
  await revoke.props.onClick();await copy.props.onClick();assert.equal(copies.length,0);
@@ -91,7 +103,7 @@ test('a captured revoke cannot write after a failed owned-link refresh',async()=
 
 test('known share revoke refreshes metadata before another create and preserves public numeric zero',async()=>{
  const reads=deferred();let count=0;const writes=[];const h=await shareFactsHarness('SharePreview',{request:async(_url,method='GET',body)=>{
-  if(method==='GET')return ++count===1?ok([]):reads.promise;writes.push({method,body});return method==='POST'?ok(shareFixture()):ok({revoked:true});
+  if(method==='GET')return ++count===1?ok([]):reads.promise;writes.push({method,body});return method==='POST'?ok(receiptFixture(body)):ok({revoked:true});
  }});
  await h.settle();selectFirst(h);await h.button(labels.en.create).props.onClick();h.render();
  const preview=h.elements().find(node=>node.type==='pre');const publicData=JSON.parse(h.text(preview));

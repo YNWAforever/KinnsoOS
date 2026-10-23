@@ -64,6 +64,7 @@
     "app/api/session/route.ts",
     "app/api/shared-media/[token]/[id]/route.ts",
     "app/api/shares/[id]/route.ts",
+    "app/api/shares/receipts/route.ts",
     "app/api/shares/route.ts",
     "app/api/support/[id]/messages/route.ts",
     "app/api/support/context/route.ts",
@@ -176,6 +177,7 @@
     "lib/collaboration/tasks.ts",
     "lib/contracts/capabilities.ts",
     "lib/contracts/readiness.ts",
+    "lib/contracts/share-receipts.ts",
     "lib/contracts/trips.ts",
     "lib/creators/collaboration-validation.ts",
     "lib/creators/collaboration.ts",
@@ -242,6 +244,8 @@
     "lib/trips/local-drafts.ts",
     "lib/trips/private-heading.ts",
     "lib/trips/repository.ts",
+    "lib/trips/share-receipt-api.ts",
+    "lib/trips/share-receipt-crypto.ts",
     "lib/trips/sharing.ts",
     "next-env.d.ts",
     "next.config.ts",
@@ -372,6 +376,7 @@
     "tests/e2e/u20-public-entry.spec.ts",
     "tests/e2e/u21-pilot-presentation.spec.ts",
     "tests/e2e/u22-workflow-continuation.spec.ts",
+    "tests/e2e/u23-share-receipt-recovery.spec.ts",
     "tests/evidence-timeline.test.mjs",
     "tests/feasibility.test.mjs",
     "tests/finance-explanations.test.mjs",
@@ -420,6 +425,7 @@
     "tests/integration/ops-routing.test.mjs",
     "tests/integration/ops-scale.test.mjs",
     "tests/integration/reports-agent-quota.test.mjs",
+    "tests/integration/share-receipts.test.mjs",
     "tests/integration/trips.test.mjs",
     "tests/latency-lab.test.mjs",
     "tests/local-auth-mailbox.test.mjs",
@@ -465,6 +471,9 @@
     "tests/reminder-context.test.mjs",
     "tests/seo-migration.test.mjs",
     "tests/share-preview-recovery.test.mjs",
+    "tests/share-receipt-api.test.mjs",
+    "tests/share-receipt-crypto.test.mjs",
+    "tests/share-receipt-recovery.test.mjs",
     "tests/sitemap-discovery.test.mjs",
     "tests/source-inputs.test.mjs",
     "tests/source_package_test.py",
@@ -488,6 +497,7 @@
   "repositoryFiles": {
     "tests/contracts/20261011004000_kinnso_merchant_insights.sql": "supabase/migrations/20261011004000_kinnso_merchant_insights.sql",
     "tests/contracts/20261003220203_kinnso_financial_reconciliation_reads.sql": "supabase/migrations/20261003220203_kinnso_financial_reconciliation_reads.sql",
-    "tests/contracts/20261012170745_kinnso_reminder_context.sql": "supabase/migrations/20261012170745_kinnso_reminder_context.sql"
+    "tests/contracts/20261012170745_kinnso_reminder_context.sql": "supabase/migrations/20261012170745_kinnso_reminder_context.sql",
+    "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql"
   }
 }

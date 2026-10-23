@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "base": "42ac09c513022991239d3af088ab7f5062904fc0",
+  "branch": "codex/pd06-durable-share-recovery-20261023",
+  "hashMeaning": "SHA-256 of canonical staged Git blobs, not raw Windows checkout bytes. Final head/tree/source/CI in exact delivery overlay.",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    "apps/journeys/.env.example": "fa566012ddbebad45401983899a0c4574040f29162132155b3fa1626ae4368ed",
+    "apps/journeys/app/[locale]/[[...route]]/page.tsx": "23b22e570a5297b898b23674ff1970935d19f64f758f9c06e2548c954a7abc70",
+    "apps/journeys/app/api/shares/receipts/route.ts": "e3190b32d467eddd4d20ae985c97b10b2264b571c75bb5019b0d0c837bea3dca",
+    "apps/journeys/app/api/shares/route.ts": "ad1cd1e2cb8013fba228714b0af95d659468fa037f69594e1b59a5bd10cb1eba",
+    "apps/journeys/app/travel/SharePreview.tsx": "9f653ccc800130268dbb4f40a877a728216e78bc39de6e788b7b7a105c1fd2e8",
+    "apps/journeys/app/travel/TripWorkspace.tsx": "de6c1838615d8556927612472cebd365ac7153e77dc2d2b80b82f7ea1004ebc4",
+    "apps/journeys/app/travel/Workbench.tsx": "4c9851228ed4c0d64ccbf3165fa8b802adddb6cc69e9b6d907590f07892ad645",
+    "apps/journeys/lib/contracts/capabilities.ts": "7c3fb06bb83506975cd87af50c140630b43c3ce6d5dba9713830c6b1d6817ddd",
+    "apps/journeys/lib/contracts/share-receipts.ts": "c0a2234ea2291216b0ca9f8c03dea723642d2f9d76147bb6d46dca237de7a2c5",
+    "apps/journeys/lib/trips/share-receipt-api.ts": "2c7943056c40477121f8cad46d26f155ec54bf066b3b317ebfafed82bf4d9194",
+    "apps/journeys/lib/trips/share-receipt-crypto.ts": "4df7c99567202f703ec7e47e26113c75c950d3e65e828f924c0100e8ab64e339",
+    "apps/journeys/lib/trips/sharing.ts": "c6ff44748a0dfe7103b62dca8a44cf90e36d61b42f9f83694546e7044ddb9391",
+    "apps/journeys/playwright.connected.config.ts": "0e4052a0c3f27829a9a12feadac030fc13ba89fe535f2854803f8ab7dbea1d73",
+    "apps/journeys/scripts/prepare-connected-ci.mjs": "1ea2691765b6aa9543f7d86df40222e95d3672ad411d7a6ac3505186c53bf50f",
+    "apps/journeys/scripts/source-manifest.json": "bcb95f5cac315dbb6504940e2e9d8b81003f862d0d9a3fb99952409bf84f0355",
+    "apps/journeys/tests/ci-local-target.test.mjs": "0060dc2fb7fac760161bf2de861e768593a94f0abee29b56f81989da0c51a63f",
+    "apps/journeys/tests/e2e/u23-share-receipt-recovery.spec.ts": "7d2e154e7592fef4fd19b0c9aca3ae83cd4e8b7f3398e1d4ccf2ee9cdd435a66",
+    "apps/journeys/tests/helpers/share-facts-harness.mjs": "acdae2239515cbe011c25a66fdf262468752c862b3c0138d8de7553c20c805ec",
+    "apps/journeys/tests/integration/share-receipts.test.mjs": "ee94a1394a10d9995fc04977eb994d55d9250585804af2cba314fa39e9cb83a0",
+    "apps/journeys/tests/share-preview-recovery.test.mjs": "2ffd571c8f64982cbc672ad95390c3c40324290c2ba6a8a16baf3ce3adb23f2c",
+    "apps/journeys/tests/share-receipt-api.test.mjs": "6656518aea76b05ec2b9a3ce3b4ef9cbbec84dc7c9e6eb8d23a60458f8b7a3d9",
+    "apps/journeys/tests/share-receipt-crypto.test.mjs": "f99e5cb93ca1a52512e2875caef98c013ed1781f26cb40121cf79f7845b4854b",
+    "apps/journeys/tests/share-receipt-recovery.test.mjs": "01daec1af754f3fc568f86e55718eff010137dadb9875e7760e2f26db7ebe881",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "8e09dc7b0a72e58b525c8af18a47aa2c451c0d0b9d508951c908ed5566e14575",
+    "docs/implementation/PD06_SHARE_RECEIPT_DESIGN_2026-10-23.md": "260f4086b9dc0e707a01a06ea580300dd8fa952bd5dd4c01210b71fd87e4d550",
+    "docs/implementation/PD06_SHARE_RECEIPT_OPERATOR_PACKET_2026-10-23.md": "e9ac75e5869f361e8bfea20e3b8511ab4396f5526cf1159366d4cdd9896d148f",
+    "docs/implementation/PD06_SHARE_RECEIPT_PLAN_2026-10-23.md": "15857a9da1a8ae6b01f8c588d1ad449c39c137cf59f0530195109ba2708f1739",
+    "docs/implementation/PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json": "fd048c01ff9302f770ed8854a046fbe7dfb72fd7bde626701c04cc27e4fbe6d9",
+    "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql": "7a613189b8e006e5d5e3763488fb46e5f64968549585db03b3dd077dd6e33a72"
+  },
+  "preservedOriginalLedgers": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "notEvidenceOf": [
+    "original Remix SQL/key/roles/hosted/restore",
+    "physical-device acceptance",
+    "true guide consents/image rights",
+    "merge or production deploy"
+  ]
+}

@@ -271,7 +271,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
   creatorMissionEntry?:PrivateCreatorMissionEntry|null;
-  features?:{media:boolean;sharing:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
+  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
@@ -655,7 +655,7 @@ export function Workbench({
     else if(path.startsWith('c/')&&publicCreator)content=<PublicCreatorContent creator={publicCreator} locale={locale}/>;
     else if(path.startsWith('articles/')&&publicArticle)content=<PublicArticleContent article={publicArticle} locale={locale}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
-    else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing}/>;
+    else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing} shareRecoveryEnabled={features.shareRecovery}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} initialSnapshot={creatorMissionEntry?.actorId===workspaceActor?.id?creatorMissionEntry:null} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/earnings')content=<CreatorEarningsWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
