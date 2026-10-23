@@ -22,6 +22,10 @@ jobs:
       - run: npm ci
       - name: Install the pinned optional accessibility auditor
         run: npm ci --prefix scripts/accessibility --ignore-scripts
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install the locked Chromium runtime
         run: npm exec playwright install -- --with-deps chromium
       - name: Native workspace contracts without a database
@@ -35,6 +39,7 @@ jobs:
           path: |
             apps/journeys/evidence/service-state-browser/
             apps/journeys/evidence/public-entry-browser/
+            apps/journeys/evidence/ci/browser-mirror.json
   verify:
     runs-on: ubuntu-latest
     defaults:
@@ -124,6 +129,10 @@ jobs:
         run: node scripts/prepare-connected-ci.mjs env
       - run: node scripts/ci-evidence.mjs integration
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install Chromium and required system dependencies
         timeout-minutes: 15
         run: npm exec playwright install -- --with-deps chromium
@@ -184,6 +193,10 @@ jobs:
       - name: Verify local SMTP ownership and required confirmation
         run: node scripts/prepare-connected-ci.mjs env-mailbox
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install Chromium and system dependencies
         timeout-minutes: 15
         run: npm exec playwright install -- --with-deps chromium
@@ -195,6 +208,7 @@ jobs:
           name: journeys-auth-mailbox-summary
           path: |
             apps/journeys/evidence/ci/auth-mailbox.json
+            apps/journeys/evidence/ci/browser-mirror.json
             apps/journeys/evidence/ci/image-downloads.json
           if-no-files-found: warn
 
@@ -245,6 +259,10 @@ jobs:
       - name: Verify local ownership before deriving lab credentials
         run: node scripts/prepare-connected-ci.mjs env
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install the locked Chromium runtime
         run: npm exec playwright install -- --with-deps chromium
       - name: Collect complete operations warm-read baseline without inventing budgets
@@ -276,5 +294,7 @@ jobs:
         if: always()
         with:
           name: journeys-operations-image-downloads
-          path: apps/journeys/evidence/ci/image-downloads.json
+          path: |
+            apps/journeys/evidence/ci/image-downloads.json
+            apps/journeys/evidence/ci/browser-mirror.json
           if-no-files-found: warn

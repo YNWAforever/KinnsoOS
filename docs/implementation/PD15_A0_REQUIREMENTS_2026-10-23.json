@@ -109,6 +109,20 @@
       ],
       "runtime": "NOT_RUN",
       "nextAction": "Retain A0; source/owned results do not unlock shared actions"
+    },
+    {
+      "id": "PD15.08",
+      "requirement": "Owned CI browser installer handles observed Azure mirror failure without weakening dependencies or gates",
+      "status": "LOCAL1012_UNIT_PASS_EXACT_CANDIDATE_CI_RECEIPT",
+      "tests": [
+        "tests/ci-browser-mirror.test.mjs",
+        "scripts/journeys-workflow-test.mjs"
+      ],
+      "target": "repo/source-bound GitHub-hosted Ubuntu22.04/jammy or24.04/noble only",
+      "dependencyInstallerUnchanged": true,
+      "timeoutIncrease": false,
+      "trustOrHashBypass": false,
+      "originalRemixModified": false
     }
   ],
   "authority": {
@@ -133,6 +147,13 @@
       "head": "41b719cc09b85e8f9395bdf11d962c8cb3c0cba4",
       "testStatus": "FAIL_PUBLIC_EN320_WORKSPACE_OPERATIONS_REFLOW",
       "originalFailureRetained": true,
+      "replacementNeedsNewCompleteCi": true
+    },
+    {
+      "head": "119d556f40add8f6e24c30fc7c0a00a6218f5dcf",
+      "push": "PASS_ALL_ORIGINAL_JOBS",
+      "prBrowser": "CANCELLED_APT_INSTALL_TWICE_BEFORE_ASSERTIONS",
+      "prPerformanceInitial": "FAIL_STARTUP_HTTP502_NO_ENV_OR_PRODUCT_SAMPLES;DOWNSTREAM_REPORT_FAILURES_RETAINED",
       "replacementNeedsNewCompleteCi": true
     }
   ]

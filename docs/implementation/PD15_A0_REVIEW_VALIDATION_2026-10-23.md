@@ -21,11 +21,11 @@ axe 的 incomplete 一律保留，不當 PASS。畫面／element stack 先識別
 
 ## 同候選整合與 source
 
-本機完整 unit/component 為1004 PASS、0FAIL／SKIP；其餘最終結果見 receipt，不預填尚未執行的 CI。既有 root 與 Journeys push／PR workflow 全數保留；owned ephemeral Supabase 的 ownership／loopback／container label／schema／actor gates 不變。本輪沒有新 SQL 或 shared target 動作。
+本機完整 unit/component 為1012 PASS、0FAIL／SKIP；其餘最終結果見 receipt，不預填尚未執行的 CI。既有 root 與 Journeys push／PR workflow 全數保留；owned ephemeral Supabase 的 ownership／loopback／container label／schema／actor gates 不變。本輪沒有新 SQL 或 shared target 動作。
 
 新 optional axe-core4.12.1 auditor 有獨立 package-lock，安裝使用 --ignore-scripts，不加入產品 dependency 或 performance lock。兩個 Playwright config 現保存 JSON reporter 的逐項附件；workspace artifact 在成功及失敗時均上傳。原 timeout、retries、worker、數字門檻及既有測試不縮減。
 
-來源 manifest 使用 canonical staged Git blob SHA-256、自身排除以免遞迴；新增6個 app source／test／tool files 加入既有 Journeys 對應 source manifest。歷史 manifests 及18N／53列 traceability 保留原 hash；舊的「final receipt」須按各自 source／head 解讀。
+來源 manifest 使用 canonical staged Git blob SHA-256、自身排除以免遞迴；新增8個 app source／test／tool files 加入既有 Journeys 對應 source manifest。歷史 manifests 及18N／53列 traceability 保留原 hash；舊的「final receipt」須按各自 source／head 解讀。
 
 ## 可達性方法與限制
 
@@ -60,3 +60,17 @@ Rollback：以另一次最小 revert 回到已知 source，保留 records／草�
 ## 首候選 Linux CI 發現及修正
 
 41b719cc09b85e8f9395bdf11d962c8cb3c0cba4 的 push／PR workspace-fixtures均取得真 FAIL：英文320px／雙倍文字，Operations h2 clientWidth230／scrollWidth233；各125公開案例PASS、1FAIL，native162PASS。這是Linux實際字型下的卡片截字，不是browser launch或基建問題。原job logs及官方digest核對artifact保留。只在既有.os-workspace h2補overflow-wrap:anywhere，所有斷言／字級／卡片寬度／sample／timeout不變。後續候選須重新執行完整四個workflow，41b結果不可借用。
+
+## 2026-10-24：owned CI mirror 故障修正
+
+119d556f 的 push 四層原gate與root workflow已成功；PR workflow 的workspace-fixtures兩次在azure.archive.ubuntu.com下載fonts／libnss等套件時耗盡原10分鐘，均未開始browser assertions。原始CANCELLED、logs、attempt及實際下載時間保留。另一個PR性能job初次在owned containers health檢查後502，未產生env或產品量測；後續ENOENT／缺report斷言為實際FAIL，不當LCP／CLS失敗或成功。底層502根因未確證。GitHub首次rerun因整個workflow仍running而回狀態403；終態後已接受失敗jobs重跑，成功jobs只保留原結果。
+
+新helper只在本repo、source SHA相符的GitHub-hosted Linux runner，並且已識別Ubuntu22.04/jammy或24.04/noble時生效。三個固定APT路徑全部驗root-owned regular file／非symlink／realpath後才寫入；只把Azure Ubuntu base URI換為官方HTTPS archive，保留suite／components／signing options、comments及其他hosts。desktop／self-hosted／foreign repo／不支援image拒絕於寫入前。沒有傳入任意target或mirror的介面。
+
+四個原playwright install --with-deps chromium完整保留；Playwright1.58.2及其依賴清單、APT簽署／package hash驗證、10／20／45分鐘、原numeric／source／cleanup gates不改。既有APT安裝仍會更新索引並按其正常candidate選取套件，沒有聲稱固定所有Ubuntu系統套件版本。每個job保存before／after hashes及逐檔套用receipt；沒有改共享runner、原Remix、Supabase／Vercel設定或GitHub權限。
+
+workflow合同先4PASS／1真FAIL，再轉GREEN；新增8項helper資料轉換／目標拒絕／off-target子程序測試，全套unit1012PASS。CI helper從未在Windows或原Remix執行APT。新候選仍須獨立跑完整4 workflows，不能借119d的成功或其相同app code代替。
+
+官方核對：[Ubuntu APT來源格式](https://ubuntu.com/server/docs/how-to/software/package-management/)、[GitHub runner context](https://docs.github.com/en/actions/reference/workflows-and-actions/contexts#runner-context)；另讀installed Playwright1.58.2的dependency installer，原apt-get update及完整install清單保留。
+
+CI rollback：另一次source revert移除mirror step／helper，再用新SHA重驗；runner是一次性host。沒有在原project執行任何SQL／設定動作，無shared rollback；原始FAIL／CANCELLED及已下載artifacts保留。
