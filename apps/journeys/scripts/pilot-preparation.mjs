@@ -70,28 +70,34 @@ export function assessPilotPreparation(input,{sourceRevision,now=Date.now()}={})
  return {status:blocked?'BLOCKED_INPUTS':'REVIEWABLE_NOT_EXECUTABLE',evidenceLevel:'LOCAL_PACKET_VALIDATION_ONLY',sourceRevision:sha(sourceRevision)?sourceRevision:null,checks,schemaStatus:'not_checked',realContentStatus:'BLOCKED',runtimeStatus:'NOT_RUN',isolationStatus:'SHARED_BACKEND_NOT_ISOLATED_STAGING',fullRestoreStatus:'NOT_RUN',authorizedActions:[]};
 }
 export async function resolveCandidateRevision(root=fileURLToPath(new URL('../',import.meta.url))){
- const metadata=path.join(root,'SOURCE_METADATA.json');
- // An extracted package can sit below an unrelated checkout. Never borrow that HEAD.
- if(fs.existsSync(metadata)){
-  try{
-   const p=JSON.parse(fs.readFileSync(metadata,'utf8'));
-   if(p.version!==1||p.dirty!==false||!sha(p.sourceRevision))return null;
-   // The packaged revision is a declaration until all included bytes match.
-   await verifySourceInputs(root,p);
-   return p.sourceRevision;
-  }
-  catch{return null;}
- }
+ let gitRevision=null,canonicalCheckout=false;
  try{
   const options={cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']};
   const top=execFileSync('git',['rev-parse','--show-toplevel'],options).trim();
   const canonical=x=>{const p=fs.realpathSync(x);return process.platform==='win32'?p.toLowerCase():p;};
-  if(canonical(path.join(top,'apps/journeys'))!==canonical(root))return null;
-  const revision=execFileSync('git',['rev-parse','HEAD'],options).trim();
-  if(!sha(revision)||execFileSync('git',['status','--porcelain=v1','--untracked-files=all'],options).trim())return null;
-  // Do not return a source identity if HEAD moved while checking the checkout.
-  return execFileSync('git',['rev-parse','HEAD'],options).trim()===revision?revision:null;
- }catch{return null;}
+  canonicalCheckout=canonical(path.join(top,'apps/journeys'))===canonical(root);
+  if(canonicalCheckout){
+   const revision=execFileSync('git',['rev-parse','HEAD'],options).trim();
+   if(!sha(revision)||execFileSync('git',['status','--porcelain=v1','--untracked-files=all'],options).trim())return null;
+   if(execFileSync('git',['rev-parse','HEAD'],options).trim()!==revision)return null;
+   gitRevision=revision;
+  }
+ }catch{if(canonicalCheckout)return null;}
+ const metadata=path.join(root,'SOURCE_METADATA.json');
+ // Metadata cannot mask a dirty canonical checkout or borrow an unrelated HEAD.
+ if(fs.existsSync(metadata)){
+  try{
+   const p=JSON.parse(fs.readFileSync(metadata,'utf8'));
+   if(p.version!==1||p.dirty!==false||!sha(p.sourceRevision)||(gitRevision!==null&&p.sourceRevision!==gitRevision))return null;
+   await verifySourceInputs(root,p);
+   if(gitRevision!==null){
+    const options={cwd:root,encoding:'utf8',stdio:['ignore','pipe','ignore']};
+    if(execFileSync('git',['rev-parse','HEAD'],options).trim()!==gitRevision||execFileSync('git',['status','--porcelain=v1','--untracked-files=all'],options).trim()||execFileSync('git',['rev-parse','HEAD'],options).trim()!==gitRevision)return null;
+   }
+   return p.sourceRevision;
+  }catch{return null;}
+ }
+ return gitRevision;
 }
 async function main(args){
  try{

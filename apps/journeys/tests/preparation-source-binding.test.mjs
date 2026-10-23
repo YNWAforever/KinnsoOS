@@ -95,3 +95,27 @@ test('both actual CLIs await verified standalone source and reject changed sourc
   pilot = invoke('pilot-preparation.mjs'); assert.equal(pilot.status, 2); assert.equal(JSON.parse(pilot.stdout).checks.find(c => c.id === 'SOURCE_BINDING').status, 'BLOCKED');
   for (const result of [subset, pilot]) { const report = JSON.parse(result.stdout); assert.deepEqual(report.authorizedActions, []); assert.equal(report.runtimeStatus, 'NOT_RUN'); }
 });
+
+test('standalone metadata cannot mask a dirty canonical Git checkout', async t => {
+  const x = checkout(t); extracted(t, x.app);
+  assert.equal(await resolveCandidateRevision(x.app), null);
+});
+
+for (const change of ['dirty', 'head']) test('late canonical Git '+change+' change cannot pass an awaited source verification', async t => {
+ const x=checkout(t), packaged=extracted(t,x.app);
+ put(x.root,'.gitignore','apps/journeys/generated/\napps/journeys/SOURCE_METADATA.json\n');
+ git(x.root,'add','--all');git(x.root,'commit','--quiet','-m','Complete packaged-source fixture');
+ const head=git(x.root,'rev-parse','HEAD'),meta=path.join(x.app,'SOURCE_METADATA.json');
+ packaged.metadata.sourceRevision=head;put(x.app,'SOURCE_METADATA.json',JSON.stringify(packaged.metadata));
+ assert.equal(await resolveCandidateRevision(x.app),head);
+ const original=fs.readFileSync;let changed=false;
+ t.mock.method(fs,'readFileSync',(...args)=>{
+  const value=original(...args);
+  if(!changed&&String(args[0])===meta){changed=true;queueMicrotask(()=>{
+   if(change==='dirty')put(x.root,'late-note.md','Changed during awaited verification');
+   else git(x.root,'commit','--allow-empty','--quiet','-m','Advance source identity during verification');
+  });}
+  return value;
+ });
+ const result=await resolveCandidateRevision(x.app);assert.equal(changed,true);assert.equal(result,null);
+});

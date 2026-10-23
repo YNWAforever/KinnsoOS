@@ -64,3 +64,17 @@ R01補直接source-binding negative controls reference；R02補artifact integrit
 Owned setup逐步保存merchant／mission／milestone／participant的預先分配UUID與stage；fixture的readonly actorIds保留Auth create後、creator update／sign-in未完成前已知ID。Setup不完整時cleanup先FAIL，停止actor刪除；已知mission／actors仍各自唯讀回查。Checkpoint保存已分配IDs、setupComplete:false、stage及原scenario error，不會輸出成功cleanup，後續相關probe保持停止。這沒有在shared target做任何fixture／cleanup。
 
 新增兩項回歸後focused結果為68 PASS／1 Windows file-symlink SKIP；Windows directory-junction race已實際PASS，Linux CI仍須執行全部link案例。最終full unit／source／owned CI和review結果由獨立delivery receipt記錄。Reviewer自身sandbox曾見hardlink EPERM（27 PASS／1 FAIL／1 SKIP）另保留；parent已授權worktree的hardlink案例實際PASS，不能把reviewer結果刪除或改成產品PASS。
+
+### 同候選 CI 真 FAIL 及後續測試準備修正
+
+e673a148是已推送、經審查的中間候選。Push workspace-fixtures的public suite實際124 PASS／2 FAIL：zh-HK 1280 workspace／credits在text×2後logo ratio為0.969358，原gate要求1.0；PR event的同suite曾PASS，兩者分開保留。Parent本機原測試亦重現1 FAIL／1 PASS；加geometry的10次診斷為1 FAIL／9 PASS，失敗當刻scrollY=3、logo y=-3／height97.90625、html scrollBehavior=smooth。這是量測起點未穩定，沒有改成較低ratio或忽略失敗。
+
+只加instant scroll仍失敗（6 FAIL／4 PASS，scrollY31／46亦保留），所以沒有把首次嘗試稱成功。最終在keyboard focus前固定audit-only scrollBehavior:auto，待fonts.ready及兩個animation frames結算文字layout，再instant到(0,0)並讀回核對；之後仍用原ratio1、5000ms與原axe／contrast／reflow／無writes gates。相同10次採樣已10 PASS；完整public suite及最後head CI另由delivery綁定。這不驗收smooth-scroll動畫、native text zoom、physical devices或AT。
+
+本機一次full-suite啟動因上一個owned browser run尚未終態而被原3496 ownership gate擋下；保留NOT_RUN/startup log，沒有reuse或kill其他server。前run終態及unused port後才重新執行。本輪所有RED、intermediate PASS、真正FAIL、SKIP及harness errors由新封包歷史索引保留。
+
+另以1 FAIL補到metadata與Git分支交界：metadata不能遮蔽canonical checkout的dirty狀態，也不能與其HEAD不一致；先驗Git，再驗完整metadata bytes。Standalone在無關ancestor checkout下仍用自己的已驗metadata，35個source/preparation tests已PASS。最終全suite新source結果另記，e673 owned CI只屬該中間候選。
+
+Final precommit補驗：source metadata若位於canonical Git，await byte verification期間變dirty或HEAD前進不能回舊revision；兩個真temp Git RED已保留，現驗證後再核對相同clean HEAD。Focused為71 PASS／1 Windows file-symlink SKIP；完整public126 PASS／0 SKIP、72個axe scans零violations／incomplete。最終full unit、typecheck、source checks及新head CI由delivery綁定，不借用e673結果。
+
+最後canonical source的本機全unit1054 PASS／1 Windows symlink SKIP；typecheck PASS；source-package9 PASS／1 Windows symlink SKIP。Next dev生成的next-env僅兩個dev types路徑，已保存差異及還原原canonical bytes後重跑必要checks；不是用戶檔案清理或reset。

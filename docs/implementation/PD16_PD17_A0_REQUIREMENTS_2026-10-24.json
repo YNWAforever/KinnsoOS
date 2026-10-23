@@ -56,7 +56,7 @@
     },
     {
       "id": "PD16.A0.03",
-      "requirement": "Dirty／untracked／staged checkout不能借用HEAD；ignored generated outputs仍可保留",
+      "requirement": "Dirty／untracked／staged checkout不能借用HEAD；ignored generated outputs仍可保留；metadata不得遮蔽canonical Git，await前後均須同一clean HEAD",
       "sourceSnapshotStatus": "LOCAL_RED_THEN_GREEN;NEW_EXACT_CANDIDATE_CI_REQUIRED"
     },
     {
@@ -78,6 +78,11 @@
       "id": "PD17.A0.09",
       "requirement": "Partial setup保存已分配IDs／stage；停止cleanup寫入、保留原error並獨立唯讀診斷",
       "sourceSnapshotStatus": "EXACT_SOURCE_FILESYSTEM_RED_THEN_GREEN;NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD16.A0.04",
+      "requirement": "Public a11y量測先固定audit-only scroll原點；保留ratio1／200%／5000ms／axe等原gates及e673真FAIL",
+      "sourceSnapshotStatus": "REAL_NEXT_RED_AND_FAILED_FIRST_FIX_RETAINED;TARGETED10PASS;NEW_EXACT_FULL_CI_REQUIRED"
     }
   ],
   "authority": "A0",
@@ -100,7 +105,10 @@
     "preserve primary failure; stop cleanup writes on failure; independent readback checkpoint",
     "Reject dirty Git and changed standalone source/SQL; reuse existing verifier; await in both CLIs",
     "Bind opened artifact to validated ancestor identities before any read and after read",
-    "Preserve progressive partial setup IDs; incomplete setup stops deletion and records independent readbacks"
+    "Preserve progressive partial setup IDs; incomplete setup stops deletion and records independent readbacks",
+    "Canonical Git checked before metadata; scoped audit-origin synchronization with unchanged accessibility assertions",
+    "Fence canonical clean HEAD again after awaited source verification; actual late dirty/head regressions"
   ],
-  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d"
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
+  "intermediateReviewHead": "e673a148e465abe7c21b417b26cbd541101aa395"
 }
