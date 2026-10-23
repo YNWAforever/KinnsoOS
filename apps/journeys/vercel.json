@@ -4,7 +4,8 @@
   "buildCommand": "npm run build",
   "git": {
     "deploymentEnabled": {
-      "codex/pd05-pd13-a0-followup-20261023": false
+      "codex/pd05-pd13-a0-followup-20261023": false,
+      "codex/pd16-pd17-a0-rehearsal-20261024": false
     }
   }
 }

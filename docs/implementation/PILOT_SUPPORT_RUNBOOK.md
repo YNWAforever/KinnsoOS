@@ -30,8 +30,15 @@
 
 本輪未執行任何真角色case／schedule／provider／cleanup；PS06、H09–H13、PD16/17維持NOT_RUN。
 
-## 未確認的一次性分享（PD06／PD12，2026-10-23）
+## 歷史 Legacy 一次性分享（PD06／PD12，2026-10-23）
 
 請保留 trip／actor 私有 reference、發生時間、原 selection／expiry 及所屬 active-link ID；不要在公開 case 貼 raw token／私人筆記／相片。當前 API 沒有 create request receipt 或 token replay，active metadata 空讀、撤銷一個 link 或經過到期時間均不能證明該 create 結果。Client tab-local hold 不可視為 server ledger，也不能保證另一分頁／裝置不重建。
 
 支援須先用獲授權 target／actor 釐清 outcome；未知時保持建立鎖定，不叫用戶清 storage、開另一分頁或重送。已讀到的 owned link 可由原角色明確撤銷，但撤銷不會解除未知 create。未具權限、無 authoritative receipt／audit 證據時只記 case/reference 交班，不承諾能取回一次性 URL／自動解除。durable create receipt／跨裝置 idempotency 合同仍 open；未在本次新增 SQL／API 或派發角色。
+
+
+## PD16／PD17 A0 source update — 2026-10-24
+
+上節記錄 legacy API 的歷史限制；不能再用它描述所有新source。PR88已加入 atomic encrypted durable receipt及跨session同意圖恢復，來源合同見 PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json。原Remix仍受403／管理員／schema／keyring阻擋，新source成功不代表legacy shared RPC已更新。Ops先辨認actual schema／capability與原requestId，不猜測receipt不存在或叫用戶另建request。Read failure不解鎖，未具權限及authoritative receipt時保留hold／reference；raw token不貼公開case。
+
+本輪可執行的離線artifact檢查及owned reminder恢復測試見 PD16_PD17_A0_VALIDATION_2026-10-24.md；完整H／PS／R catalog見 PD16_PD17_A0_CASES_2026-10-24.json。Artifact hash與聲明時間算術不證明restore；owned committed-ACK-loss／cursor補跑也不證明外部送達、真排程或原Remix驗收。原NOT_RUN／BLOCKED及NOT_PROMISED／RPO／RTO null保留。

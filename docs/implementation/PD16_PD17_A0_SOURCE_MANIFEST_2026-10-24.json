@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "base": "9c845c09dc41652d5d05657d2ebcfea7d3701fcd",
+  "branch": "codex/pd16-pd17-a0-rehearsal-20261024",
+  "hashMeaning": "SHA-256 canonical Git blobs; final head/tree in independent delivery receipt",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    "apps/journeys/scripts/source-manifest.json": "6f3d7b786c7cb353dd33525f2f4a2b12dcfd36ff3f7cdcbbfc858a9162d6ca00",
+    "apps/journeys/scripts/subset-recovery-report.mjs": "48b829a043dd2d1ecddb025131958199232122cdd7f6a7816463ea407ca3435d",
+    "apps/journeys/scripts/subset-recovery.template.json": "bca912ca9be702c20545b89e7c2bd2b12ae05d89cc30accb14a4b5357b6ee880",
+    "apps/journeys/tests/integration/collaboration-reminders.test.mjs": "8a72586ef8540b53016df623f5985c18489ac78f17a4c2fab14ec113f5a183b3",
+    "apps/journeys/tests/subset-recovery-report.test.mjs": "725f81f5bc55387f0e143d65d9826fa4149095bf0eb7a68571f3a24a96f40ef9",
+    "apps/journeys/vercel.json": "7cb96d2f23f0cd7e5b0483f15a3412381ff84ff3f1a891632e9550a2f8af9896",
+    "apps/web/vercel.json": "60edbc65f90739a580385a329ac640fe8dc4b5730d898e82b9af4ee1bbb8c952",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "287a1b3eac60ef85ffaa3d5317da14734c62112814590ec56abd8baf4ae3f872",
+    "docs/implementation/PD16_PD17_A0_CASES_2026-10-24.json": "38fd93b8467b45747da4156e94714a7538a84add2f9b1adc555a6eb17cc8b09b",
+    "docs/implementation/PD16_PD17_A0_PLAN_2026-10-24.md": "fff8d76184347c92adb96374b23e594666731e05019c5cf859b62a2cdf584f30",
+    "docs/implementation/PD16_PD17_A0_REQUIREMENTS_2026-10-24.json": "3729bd4b1cb6739c123583d6f1efe8bf99dedb274830061fa34a57af1871d1aa",
+    "docs/implementation/PD16_PD17_A0_VALIDATION_2026-10-24.md": "ef08f9367d900dbcd1ace7949c5d49414e8b182d46a2587a8e9b08b492faac6b",
+    "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "bd55600f40fcbdcbdd34b9f191d8650a67c74eaccce63e4b3334a664bb31cfc4",
+    "vercel.json": "1e04b53e016321bfeb25111475a7a999e6fdde8894c4a3abb286b9e5e6d60e23"
+  },
+  "appManifestFiles": 503,
+  "repositorySqlInputs": 5,
+  "originalLedgerHashes": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "A1_A5": "NOT_EXECUTED",
+  "sharedRemixChanges": false,
+  "realGuideRights": "BLOCKED"
+}
