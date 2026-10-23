@@ -20,6 +20,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
+      - name: Install the pinned optional accessibility auditor
+        run: npm ci --prefix scripts/accessibility --ignore-scripts
       - name: Install the locked Chromium runtime
         run: npm exec playwright install -- --with-deps chromium
       - name: Native workspace contracts without a database
@@ -27,7 +29,7 @@ jobs:
       - name: Public entries on a backend-disabled Next server
         run: npm exec playwright test -- --config=playwright.public-entry.config.ts
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: failure()
+        if: always()
         with:
           name: journeys-workspace-fixture-results
           path: |

@@ -789,7 +789,7 @@ export function Workbench({
             <button onClick={refresh}>{t("Retry", "重試")}</button>
           </div>
         )}
-        <main id="k-main" className="k-main">
+        <main id="k-main" className="k-main" tabIndex={-1}>
           {storageError ? (
             <Empty
               title={t("Saved data needs recovery", "已儲存資料需要復原")}

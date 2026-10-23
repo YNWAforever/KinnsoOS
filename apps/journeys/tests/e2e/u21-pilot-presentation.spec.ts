@@ -8,7 +8,7 @@ test.beforeAll(async()=>{
  css=await readFile('app/globals.css','utf8')+'\n'+await readFile('app/travel/workbench.css','utf8')+'\n'+await readFile('app/integration/integration.css','utf8');
  const ports:Record<string,string>={
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='en'?en:zh,href:path=>'/'+window.fixture.locale+'/'+path});`,
-  drafts:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
+  drafts:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>window.fixture.recovery??null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
   repository:`export async function request(url,method){if(method&&method!=='GET'){window.commands.push(url);throw Error('Presentation must not issue commands');}if(url.startsWith('/api/merchant/campaigns'))return{ok:true,data:window.fixture.directory};if(url.startsWith('/api/creator/missions/'))return{ok:true,data:new URL(url,'http://fixture.invalid').searchParams.has('after')?(window.fixture.earlierDetail??window.fixture.detail):window.fixture.detail};if(url.startsWith('/api/creator/earnings'))return{ok:true,data:window.fixture.earnings[new URL(url,'http://fixture.invalid').searchParams.get('section')??'settled']};if(url==='/api/ops/monitoring')return{ok:true,data:window.fixture.monitoring};throw Error('Unexpected read '+url);}`,
   link:`export default 'a';`,image:`export default 'img';`,router:`export const useRouter=()=>({refresh(){}});export const useSearchParams=()=>new URLSearchParams();`,
  };
@@ -107,3 +107,20 @@ for(const locale of ['en','zh-HK']){
   await reflow(page);
  });
 }
+
+for(const locale of ['en','zh-HK'])test('PR89 recovery '+locale+': restored nonrepeatable form retains text and cannot bypass coverage via native submit',async({page})=>{
+ const other='22222222-2222-4222-8222-222222222222',receipt='33333333-3333-4333-8333-333333333333',stamp='2026-10-23T01:00:00Z',label=(en:string,zh:string)=>locale==='en'?en:zh;
+ const detail={id,title:'Recovered creator work',summary:'Original authored brief',merchantName:'Owned fixture company',missionType:'coupon_affiliate',missionSource:'merchant',status:'published',visibility:'open',participant:{id,status:'active',updatedAt:stamp},eligible:true,joinAvailable:false,evidenceAvailable:true,acceptAvailable:false,requiresApplication:true,requirements:[],deliverables:[],milestones:[{id,title:'Original nonrepeatable work',description:'Original instructions',dueAt:null,repeatable:false},{id:other,title:'Other receipts',description:'Separate work',dueAt:null,repeatable:true}],milestonesTruncated:false,submissions:Array.from({length:50},(_,i)=>({id:'10000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),milestoneId:other,status:'approved',notes:null,proofUrls:[],reviews:[],submittedAt:stamp,updatedAt:stamp})),submissionsNextCursor:'older-page',partnerLinks:[],maxReceipts:null,paidFeeAmount:null,paidFeeCurrency:null,creatorRate:'0',minTier:null,scheduleTimeZone:'UTC',startsAt:null,endsAt:null,applicationOpensAt:null,applicationClosesAt:null};
+ const older={id:receipt,milestoneId:id,status:'revision_requested',notes:'Original saved revision',proofUrls:['https://example.test/original-version'],reviews:[],submittedAt:stamp,updatedAt:stamp};
+ const recovery={draft:{applicationNote:'',form:{milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofText:'https://example.test/recovered-proof',notes:'Keep this recovered draft'}},pending:null};
+ await mount(page,{kind:'creator',locale,detail,earlierDetail:{...detail,submissions:[older],submissionsNextCursor:null},recovery});
+ const notes=page.getByLabel(label('Notes for reviewer','給審核員的備註'),{exact:true}),submit=page.getByRole('button',{name:label('Submit evidence','提交證明'),exact:true});
+ await expect(notes).toHaveValue('Keep this recovered draft');await expect(submit).toBeDisabled();
+ await page.locator('form').evaluate(form=>(form as HTMLFormElement).requestSubmit());
+ await expect(notes).toHaveValue('Keep this recovered draft');expect(await page.evaluate(()=>(window as any).commands)).toEqual([]);
+ await page.getByRole('button',{name:label('Load earlier evidence','載入較早證明'),exact:true}).click();
+ await expect(page.getByRole('button',{name:label('Edit and resubmit evidence','修改並重新提交證明'),exact:true})).toBeEnabled();await expect(submit).toBeDisabled();await expect(notes).toHaveValue('Keep this recovered draft');
+ await page.getByRole('button',{name:label('Edit and resubmit evidence','修改並重新提交證明'),exact:true}).click();
+ await expect(notes).toHaveValue('Original saved revision');await expect(submit).toBeEnabled();await expect(page.getByLabel(label('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）'),{exact:true})).toHaveValue('https://example.test/original-version');
+ expect(await page.evaluate(()=>(window as any).commands)).toEqual([]);
+});

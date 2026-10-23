@@ -1,5 +1,5 @@
 import {evidenceTimeline} from '../lib/collaboration/evidence-timeline.ts';
-import {recoveryHookModule,serviceStateModule,listFilterModule} from './helpers/workspace-harness.mjs';
+import {recoveryHookModule,serviceStateModule,listFilterModule,workspaceHarness} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import * as listQueries from '../lib/collaboration/list-query.ts';
 import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
@@ -117,4 +117,45 @@ for(const locale of ['en','zh-HK'])test('Creator '+locale+': complete empty subm
  const h=await harness({get:async()=>({ok:true,data:dto})},'CreatorMissionsWorkspace',locale);
  assert.equal(h.find('button',locale==='en'?'Prepare evidence':'準備證明').props.disabled,false);
  assert.doesNotMatch(h.text(),locale==='en'?/Load earlier evidence to check/:/請載入較早證明/);
+});
+
+const recoveredDevice=value=>({read:async()=>value,save:async()=>{},clear:async()=>{},release:async()=>{},complete:async()=>{}});
+for(const locale of ['en','zh-HK'])for(const coverage of ['unloaded','existing'])test('PR89 recovery '+locale+' '+coverage+': a restored new nonrepeatable form cannot submit around submission coverage',async()=>{
+ const other='22222222-2222-4222-8222-222222222222',revision='33333333-3333-4333-8333-333333333333';
+ const dto=detail();Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:'older-page'});
+ dto.milestones.push({id:other,title:'Other receipts',description:'Independent work',dueAt:null,repeatable:true});
+ dto.submissions=Array.from({length:50},(_,i)=>({id:'10000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),milestoneId:other,status:'approved',submittedAt:stamp,updatedAt:stamp,notes:null,proofUrls:[],merchantFeedback:null,reviews:[]}));
+ if(coverage==='existing')dto.submissions[0]={id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision',proofUrls:['https://example.test/old'],merchantFeedback:null,reviews:[]};
+ const calls=[],stored={draft:{applicationNote:'',form:{milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofText:'https://example.test/recovered',notes:'Keep recovered authored notes'}},pending:null};
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>({ok:true,data:dto}),command:async(...args)=>{calls.push(args);return{ok:false,code:'CONFLICT',retryable:false};}},workspaceRecovery:recoveredDevice(stored)},{path:'studio/missions/'+id,locale});
+ const notes=locale==='en'?'Notes for reviewer':'給審核員的備註',submit=locale==='en'?'Submit evidence':'提交證明';
+ assert.equal(h.field(notes).props.value,'Keep recovered authored notes');
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(calls.length,0,'restored null-ID drafts must not send a known-conflicting new submission');
+ assert.equal(h.find('button',submit).props.disabled,true);
+ assert.equal(h.field(notes).props.value,'Keep recovered authored notes');
+});
+for(const locale of ['en','zh-HK'])for(const mode of ['complete-empty','repeatable','revision'])test('PR89 recovery '+locale+' '+mode+': valid recovered evidence retains original payload and revision',async()=>{
+ const revision='33333333-3333-4333-8333-333333333333',dto=detail();
+ Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:mode==='complete-empty'?null:'older-page'});
+ dto.milestones[0].repeatable=mode==='repeatable';
+ if(mode==='revision')dto.submissions=[{id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision',proofUrls:['https://example.test/old'],merchantFeedback:null,reviews:[]}];
+ const form={milestoneId:id,submissionId:mode==='revision'?revision:null,expectedUpdatedAt:mode==='revision'?stamp:null,proofText:'https://example.test/recovered',notes:'Retained original input'},calls=[];
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>({ok:true,data:dto}),command:async(...args)=>{calls.push(args);return{ok:true,data:{id:revision,status:'submitted',updatedAt:stamp}};}},workspaceRecovery:recoveredDevice({draft:{applicationNote:'',form},pending:null})},{path:'studio/missions/'+id,locale});
+ assert.equal(h.find('button',locale==='en'?'Submit evidence':'提交證明').props.disabled,false);
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(calls.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].slice(0,2))),[id,{type:'submitEvidence',milestoneId:id,submissionId:mode==='revision'?revision:null,expectedUpdatedAt:mode==='revision'?stamp:null,proofUrls:['https://example.test/recovered'],notes:'Retained original input'}]);
+});
+for(const locale of ['en','zh-HK'])test('PR89 recovery '+locale+': unresolved stored null-ID intent keeps its immutable request across failed reads',async()=>{
+ const dto=detail();Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:'older-page'});
+ const requestId='99999999-9999-4999-8999-999999999999',command={type:'submitEvidence',milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofUrls:['https://example.test/original-pending'],notes:'Original immutable intent'};
+ const calls=[];let failRead=false;
+ const stored={draft:{form:{milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofText:'https://example.test/different-draft',notes:'Different authored draft'}},pending:{command,requestId}};
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>failRead?{ok:false,code:'UNAVAILABLE',retryable:true}:{ok:true,data:dto},command:async(...args)=>{calls.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}},workspaceRecovery:recoveredDevice(stored)},{path:'studio/missions/'+id,locale});
+ const retry=()=>h.find('button',locale==='en'?'Retry the same request':'重試相同請求');
+ failRead=true;await retry().props.onClick();await tick();h.render();assert.equal(calls.length,0);
+ failRead=false;await retry().props.onClick();await tick();h.render();
+ await retry().props.onClick();await tick();h.render();
+ assert.equal(calls.length,2);assert.deepEqual(JSON.parse(JSON.stringify(calls)),[[id,command,requestId],[id,command,requestId]]);
 });

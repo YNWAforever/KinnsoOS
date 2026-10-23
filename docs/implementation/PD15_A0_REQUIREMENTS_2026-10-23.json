@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "base": "ce6f7d3886e1d4b470f31cb295251a599978cc71",
+  "candidateBranch": "codex/pd05-pd13-a0-followup-20261023",
+  "binding": "Final exact-head delivery receipt includes candidate tree, ordered PR merge parents, CI run/job/artifact identities and source ZIP hashes; ce6 evidence is historical only",
+  "priorRequirements": "PD05_PD13_A0_REQUIREMENTS_2026-10-23.json",
+  "requirements": [
+    {
+      "id": "PD09.02.RECOVERY",
+      "requirement": "Recovered unsent submission cannot bypass bounded evidence pagination",
+      "status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "tests": [
+        "tests/creator-collaboration-ui.test.mjs",
+        "tests/e2e/u21-pilot-presentation.spec.ts"
+      ],
+      "observations": "4 true RED;12 new unit/component and2 native EN/zh regressions; pending original payload/requestId/fresh read/CAS retained",
+      "hostedRuntime": "NOT_RUN"
+    },
+    {
+      "id": "PD12.REFLOW",
+      "requirement": "Customer/Ops form controls remain inside320px at doubled computed text size",
+      "status": "REPAIRED_LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "tests": [
+        "tests/e2e/u24-pd15-accessibility.spec.ts"
+      ],
+      "observations": "Reuse5 existing k-form classes; no write/recovery/permission logic change",
+      "hostedRuntime": "NOT_RUN"
+    },
+    {
+      "id": "PD15.01",
+      "requirement": "Exact candidate integration, original workflows and complete source/review binding",
+      "status": "EXACT_CANDIDATE_DELIVERY_RECEIPT",
+      "historicalHead": "ce6f7d3886e1d4b470f31cb295251a599978cc71",
+      "historicalEvidenceIsNewCandidate": false
+    },
+    {
+      "id": "PD15.02",
+      "requirement": "Original operations numeric gate and complete denominators",
+      "status": "EXACT_CANDIDATE_DELIVERY_RECEIPT",
+      "required": {
+        "navigation": 48,
+        "groups": 16,
+        "interactions": 8,
+        "equivalentReads": 24,
+        "lcpMedianMaxMs": 2500,
+        "clsMedianMax": 0.1
+      },
+      "sampleReplacement": false,
+      "timeoutIncrease": false,
+      "fieldAcceptance": false
+    },
+    {
+      "id": "PD15.03",
+      "requirement": "Independent first-usable and per-cache bundle observations",
+      "status": "EXACT_CANDIDATE_DELIVERY_RECEIPT",
+      "required": {
+        "firstUsableSlots": 18,
+        "groups": 6
+      },
+      "crossVersionControlledComparison": "NOT_RUN",
+      "optimizationClaim": false,
+      "latency": {
+        "samples": 960,
+        "warmups": 72,
+        "budget": null,
+        "status": "MEASURED_BUDGET_NOT_SET"
+      }
+    },
+    {
+      "id": "PD15.04",
+      "requirement": "Bilingual320/640/1280 real styles, doubled text, keyboard/error/status and automatic WCAG",
+      "status": "LOCAL_VERIFIED_EXACT_CI_RECEIPT",
+      "matrixProductCases": 84,
+      "validatorNegativeControls": 2,
+      "auditor": "axe-core4.12.1",
+      "disabledRules": [],
+      "publicUnresolvedColorContrastAccepted": false,
+      "textResize": "computed-font-size x2; not native browser text zoom or physical/AT",
+      "fullWcagConformanceClaim": false,
+      "keyboard": "Native focus indicator must change; Skip link Enter focuses main; alert Retry reached by Tab and activated with Enter",
+      "additionalObservedFix": "main tabIndex=-1 after2 real browser focus failures",
+      "unresolvedAutomatedChecksAccepted": false,
+      "earningsNamedGroup": "role=group preserves existing EN/zh-HK label; real named-group assertion RED before fix"
+    },
+    {
+      "id": "PD15.05",
+      "requirement": "Canonical source manifest and retained original ledgers",
+      "status": "FINAL_SOURCE_DELIVERY_RECEIPT",
+      "sourceManifest": "PD15_A0_SOURCE_MANIFEST_2026-10-23.json",
+      "originalNRows": 18,
+      "originalTraceabilityRows": 53,
+      "originalLedgerClosureChanged": false
+    },
+    {
+      "id": "PD15.06",
+      "requirement": "Physical iOS/Android and actual NVDA/VoiceOver",
+      "status": "NOT_RUN",
+      "reason": "No actual device/AT session evidence; automated Chromium is not a substitute",
+      "nextAction": "Provide actual device/browser/AT versions and authorized user session for original acceptance"
+    },
+    {
+      "id": "PD15.07",
+      "requirement": "Original Remix hosted roles, guide cover/rights, field and policy/recovery prerequisites",
+      "status": "BLOCKED",
+      "retainedBlockers": [
+        "PD06_HTTP403",
+        "ADMIN_METADATA_MISSING",
+        "REAL_GUIDE_AUTHOR_CONSENT_AND_IMAGE_RIGHTS"
+      ],
+      "runtime": "NOT_RUN",
+      "nextAction": "Retain A0; source/owned results do not unlock shared actions"
+    }
+  ],
+  "authority": {
+    "A0": true,
+    "A1_A5": "NOT_AUTHORIZED_NOT_EXECUTED",
+    "newSupabaseProjects": false,
+    "merge": false,
+    "productionDeploy": false,
+    "deniedEnvMetadataRetried": false
+  },
+  "trueGuideConsentImageRights": "BLOCKED",
+  "T08": "OPEN",
+  "N16": "OPEN",
+  "PD18": "NO_GO",
+  "D06": {
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  }
+}

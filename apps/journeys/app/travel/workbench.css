@@ -129,7 +129,7 @@ body:has(.k-app) {
 .k-logo {
   font-family: Georgia, serif;
   font-size: 2.55rem;
-  line-height: 1;
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.09em;
   display: flex;
@@ -664,7 +664,7 @@ body:has(.k-app) {
   justify-content: space-between;
   gap: 20px;
   font-size: 0.75rem;
-  color: #7a847e;
+  color: #526751;
 }
 .k-footer > div {
   display: flex;
@@ -2495,9 +2495,10 @@ body:has(.k-app) {
 }
 .k-prose h2 {
   margin: 30px 0 14px;
+  overflow-wrap: anywhere;
 }
 .k-prose p {
-  color: #708364;
+  color: #526751;
   margin-bottom: 18px;
 }
 .k-prose > a {
@@ -2790,7 +2791,7 @@ body:has(.k-app) {
     left: 0;
     right: 0;
     z-index: 90;
-    background: #fffffff7;
+    background: #fff;
     backdrop-filter: blur(10px);
     border-top: 1px solid #dce5d6;
     padding: 7px 10px max(9px, env(safe-area-inset-bottom));
