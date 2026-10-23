@@ -255,7 +255,11 @@
       "sharedSubsetRehearsalStatus": "NOT_RUN",
       "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
       "remaining": "缺真owner／backup、原scope及snapshot boundary",
-      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/preparation-source-binding.test.mjs"
+      ],
+      "localPreparationScope": "Dirty Git / changed standalone bytes are negative controls only; no original owner or target authority verified"
     },
     {
       "id": "R02",
@@ -263,7 +267,12 @@
       "sharedSubsetRehearsalStatus": "NOT_RUN",
       "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
       "remaining": "本輪僅本機artifact integrity checker；未作shared export",
-      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/subset-recovery-report.test.mjs",
+        "apps/journeys/tests/source-inputs.test.mjs"
+      ],
+      "localPreparationScope": "Filesystem integrity only; no shared export or actual database restore"
     },
     {
       "id": "R03",
@@ -327,5 +336,6 @@
     "rpoMinutes": null,
     "rtoMinutes": null
   },
-  "authorizedActions": []
+  "authorizedActions": [],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d"
 }

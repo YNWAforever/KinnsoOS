@@ -71,15 +71,15 @@ test('padded and embedded credentials are blocked without reflecting private val
  }
 });
 test('malformed company entries return blocked instead of throwing',()=>{const p=complete();p.companies[0]=null;assert.doesNotThrow(()=>assess(p));blocked(p,'ACTOR_MATRIX');});
-test('standalone source binds its own clean metadata before any ancestor Git HEAD',()=>{
+test('incomplete standalone metadata cannot borrow a declared or ancestor Git revision',async()=>{
  assert.equal(typeof preparation.resolveCandidateRevision,'function');
  const base=path.resolve(fileURLToPath(new URL('../evidence/pd-20261023/',import.meta.url)));fs.mkdirSync(base,{recursive:true});const dir=fs.mkdtempSync(path.join(base,'source-binding-'));
  try{
   const meta=path.join(dir,'SOURCE_METADATA.json');fs.writeFileSync(meta,JSON.stringify({sourceRevision:'c'.repeat(40),dirty:false}));
-  assert.equal(preparation.resolveCandidateRevision(dir),'c'.repeat(40));
-  fs.writeFileSync(meta,JSON.stringify({sourceRevision:'c'.repeat(40),dirty:true}));assert.equal(preparation.resolveCandidateRevision(dir),null);
-  fs.writeFileSync(meta,'malformed');assert.equal(preparation.resolveCandidateRevision(dir),null);
-  fs.unlinkSync(meta);assert.equal(preparation.resolveCandidateRevision(dir),null);
+  assert.equal(await preparation.resolveCandidateRevision(dir),null);
+  fs.writeFileSync(meta,JSON.stringify({sourceRevision:'c'.repeat(40),dirty:true}));assert.equal(await preparation.resolveCandidateRevision(dir),null);
+  fs.writeFileSync(meta,'malformed');assert.equal(await preparation.resolveCandidateRevision(dir),null);
+  fs.unlinkSync(meta);assert.equal(await preparation.resolveCandidateRevision(dir),null);
  }finally{assert.equal(path.dirname(path.resolve(dir)),base);fs.rmSync(dir,{recursive:true,force:true});}
 });
 test('CLI malformed JSON is sanitized and missing decisions exit blocked',()=>{

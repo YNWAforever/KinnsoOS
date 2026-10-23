@@ -5,24 +5,28 @@
   "hashMeaning": "SHA-256 canonical Git blobs; final head/tree in independent delivery receipt",
   "selfExcludedToAvoidRecursiveHash": true,
   "files": {
-    "apps/journeys/scripts/source-manifest.json": "0ae87618e6fc1de851e23a56bc69a0f50b611a663723e9a68be8de6d7d779b1a",
-    "apps/journeys/scripts/subset-recovery-report.mjs": "9c7a35a8ba59125601642cad5ff21ac866a1557c7e8640ce591016ee5e648d7a",
+    "apps/journeys/scripts/pilot-preparation.mjs": "d2fce2af91aa7ab9b2001fb65e972385d5ce79a9629b85cf58ad7bd8b6af0630",
+    "apps/journeys/scripts/source-manifest.json": "beb7347eef464f830047cba1ec0810a8c8c6b04cb09a36a9126dd0ad102438c8",
+    "apps/journeys/scripts/subset-recovery-report.mjs": "1e8c10d06c83e4b27cf54b7aab3e705548f3b7acb98feb32b4362f77715939a9",
     "apps/journeys/scripts/subset-recovery.template.json": "bca912ca9be702c20545b89e7c2bd2b12ae05d89cc30accb14a4b5357b6ee880",
     "apps/journeys/tests/helpers/reminder-cleanup.mjs": "397b8b53e298ffc02e856dd34d7a1b1b4fc109dc9f1fb09c4c92a789118c185f",
-    "apps/journeys/tests/integration/collaboration-reminders.test.mjs": "7b38fc2fd2d755c77b873632fc9b1ed1293e3205888f5f67d3fa9e117870ad4c",
-    "apps/journeys/tests/reminder-cleanup.test.mjs": "e34b1864fb2e0060efe740f60e2bde6ea6561422d85bc83d398c7bed6f933494",
-    "apps/journeys/tests/subset-recovery-report.test.mjs": "cd48e1eb573e2918309346f5c8e76a5edd8ef87277c7fda13ff54f65e16fd697",
+    "apps/journeys/tests/integration/collaboration-reminders.test.mjs": "44ca896bf181cd9550a5a942267c914db8a4ef867ee8a69e4b8929d9aed7a715",
+    "apps/journeys/tests/integration/local-fixtures.mjs": "fb97ef244f8981bb598e8fc38a9511a61a498fd223bfe8f4a0287f1c9ad8ab98",
+    "apps/journeys/tests/pilot-preparation.test.mjs": "67c011c02f9632fd9b81403ce3f01b0ee7139ed76d36e508db6461cac79cb32f",
+    "apps/journeys/tests/preparation-source-binding.test.mjs": "b6ff98997705b236bc5161ee6923b546a6f3d81e76102db4f6ea8514900107a7",
+    "apps/journeys/tests/reminder-cleanup.test.mjs": "0953a3607b37bfff52e09a93d2b7e0e96a6efd29186a0a1b81bdd5feb7100d7b",
+    "apps/journeys/tests/subset-recovery-report.test.mjs": "7f0fae7193ef259234860cadb413a53d906cb6547be55058ba29992969c02a46",
     "apps/journeys/vercel.json": "7cb96d2f23f0cd7e5b0483f15a3412381ff84ff3f1a891632e9550a2f8af9896",
     "apps/web/vercel.json": "60edbc65f90739a580385a329ac640fe8dc4b5730d898e82b9af4ee1bbb8c952",
-    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "7a9fa01ee63c0506bf78a15a548c02e9afba70c9411322715de16c45db2066ec",
-    "docs/implementation/PD16_PD17_A0_CASES_2026-10-24.json": "38fd93b8467b45747da4156e94714a7538a84add2f9b1adc555a6eb17cc8b09b",
-    "docs/implementation/PD16_PD17_A0_PLAN_2026-10-24.md": "fff8d76184347c92adb96374b23e594666731e05019c5cf859b62a2cdf584f30",
-    "docs/implementation/PD16_PD17_A0_REQUIREMENTS_2026-10-24.json": "a73db324b19ea1b8863748b64232785a829a87a1d2ef6663541efc1b9f936b9d",
-    "docs/implementation/PD16_PD17_A0_VALIDATION_2026-10-24.md": "ad212c863d575cab3fc65390952e03d3b769075639af866fbae88ea26624715f",
-    "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "bd55600f40fcbdcbdd34b9f191d8650a67c74eaccce63e4b3334a664bb31cfc4",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "5b7bdb36da1658a037d580d58f85bc03929ce50220e106412180de918d00b817",
+    "docs/implementation/PD16_PD17_A0_CASES_2026-10-24.json": "7bf31fe0b63b333490c8f30c55a009b437f794b0a7803e0594a7aec67687f98a",
+    "docs/implementation/PD16_PD17_A0_PLAN_2026-10-24.md": "6f02f8db293d45982c968df8f474bfd1ae400a84b58cfa3245bca44b4fdf4dcd",
+    "docs/implementation/PD16_PD17_A0_REQUIREMENTS_2026-10-24.json": "8b190bd20f2e9636705cdb5ed848184375d6caf62d2839c36a6429af1e16df4c",
+    "docs/implementation/PD16_PD17_A0_VALIDATION_2026-10-24.md": "605a12f9e2d32ab2bd7a11023a9b03975489d3a5ad009db1738c7b50a94056dc",
+    "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "dddacd7cb41d28984859cb5b095350868e35c53d80c7d4d10f1fe8d8ac86ac10",
     "vercel.json": "1e04b53e016321bfeb25111475a7a999e6fdde8894c4a3abb286b9e5e6d60e23"
   },
-  "appManifestFiles": 505,
+  "appManifestFiles": 506,
   "repositorySqlInputs": 5,
   "originalLedgerHashes": {
     "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
@@ -33,6 +37,10 @@
   "realGuideRights": "BLOCKED",
   "reviewRepairs": [
     "P2 actual read cap under file growth",
-    "P2 preserve scenario/cleanup/readback errors and stop later cleanup writes"
-  ]
+    "P2 preserve scenario/cleanup/readback errors and stop later cleanup writes",
+    "Exact source binding checks dirty Git and all standalone input bytes; both CLIs await",
+    "Opened artifact stays bound to validated ancestor identities; zero outside bytes read",
+    "Partial setup retains allocated IDs and actor tracker; stops deletion with readonly checkpoint"
+  ],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d"
 }

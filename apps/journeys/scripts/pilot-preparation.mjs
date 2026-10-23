@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
+import {verifySourceInputs} from './verify-source-inputs.mjs';
 
 const matrix = [
  ['traveller-a','traveller',null,null],['traveller-b','traveller',null,null],
@@ -68,11 +69,17 @@ export function assessPilotPreparation(input,{sourceRevision,now=Date.now()}={})
  const blocked=checks.some(c=>c.status==='BLOCKED');
  return {status:blocked?'BLOCKED_INPUTS':'REVIEWABLE_NOT_EXECUTABLE',evidenceLevel:'LOCAL_PACKET_VALIDATION_ONLY',sourceRevision:sha(sourceRevision)?sourceRevision:null,checks,schemaStatus:'not_checked',realContentStatus:'BLOCKED',runtimeStatus:'NOT_RUN',isolationStatus:'SHARED_BACKEND_NOT_ISOLATED_STAGING',fullRestoreStatus:'NOT_RUN',authorizedActions:[]};
 }
-export function resolveCandidateRevision(root=fileURLToPath(new URL('../',import.meta.url))){
+export async function resolveCandidateRevision(root=fileURLToPath(new URL('../',import.meta.url))){
  const metadata=path.join(root,'SOURCE_METADATA.json');
  // An extracted package can sit below an unrelated checkout. Never borrow that HEAD.
  if(fs.existsSync(metadata)){
-  try{const p=JSON.parse(fs.readFileSync(metadata,'utf8'));return p.dirty===false&&sha(p.sourceRevision)?p.sourceRevision:null;}
+  try{
+   const p=JSON.parse(fs.readFileSync(metadata,'utf8'));
+   if(p.version!==1||p.dirty!==false||!sha(p.sourceRevision))return null;
+   // The packaged revision is a declaration until all included bytes match.
+   await verifySourceInputs(root,p);
+   return p.sourceRevision;
+  }
   catch{return null;}
  }
  try{
@@ -80,15 +87,18 @@ export function resolveCandidateRevision(root=fileURLToPath(new URL('../',import
   const top=execFileSync('git',['rev-parse','--show-toplevel'],options).trim();
   const canonical=x=>{const p=fs.realpathSync(x);return process.platform==='win32'?p.toLowerCase():p;};
   if(canonical(path.join(top,'apps/journeys'))!==canonical(root))return null;
-  return execFileSync('git',['rev-parse','HEAD'],options).trim();
+  const revision=execFileSync('git',['rev-parse','HEAD'],options).trim();
+  if(!sha(revision)||execFileSync('git',['status','--porcelain=v1','--untracked-files=all'],options).trim())return null;
+  // Do not return a source identity if HEAD moved while checking the checkout.
+  return execFileSync('git',['rev-parse','HEAD'],options).trim()===revision?revision:null;
  }catch{return null;}
 }
-function main(args){
+async function main(args){
  try{
   if(args.length!==2||args[0]!=='--packet'||fs.statSync(args[1]).size>262144)throw Error();
   const packet=JSON.parse(fs.readFileSync(args[1],'utf8').replace(/^\uFEFF/,''));
-  const report=assessPilotPreparation(packet,{sourceRevision:resolveCandidateRevision()});
+  const report=assessPilotPreparation(packet,{sourceRevision:await resolveCandidateRevision()});
   console.log(JSON.stringify(report));process.exitCode=report.status==='BLOCKED_INPUTS'?2:0;
  }catch{console.log(JSON.stringify({status:'INVALID_PACKET',runtimeStatus:'NOT_RUN',authorizedActions:[]}));process.exitCode=1;}
 }
-if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href)main(process.argv.slice(2));
+if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href)await main(process.argv.slice(2));

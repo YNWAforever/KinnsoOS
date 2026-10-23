@@ -135,3 +135,26 @@ test('growth after fstat is rejected without an unbounded artifact or packet rea
   assert.equal(grew, true); assert.equal(result.status, 'BLOCKED_ARTIFACTS');
   assert.ok(readBytes > 0); assert.ok(readBytes <= max + 1, `read ${readBytes} bytes beyond cap`);
 });
+
+
+test('a parent directory swapped after containment cannot select an outside artifact', t => {
+  const x = example(t), outside = example(t), nested = path.join(x.root, 'nested');
+  fs.mkdirSync(nested); fs.copyFileSync(path.join(x.root, 'subset.json'), path.join(nested, 'subset.json'));
+  const linkType = process.platform === 'win32' ? 'junction' : 'dir', probe = path.join(x.root, 'probe');
+  try { fs.symlinkSync(outside.root, probe, linkType); fs.unlinkSync(probe); }
+  catch (error) { if (['EPERM', 'EACCES'].includes(error.code)) return t.skip('Directory link creation denied; owned Linux CI must execute this boundary'); throw error; }
+  x.packet.artifacts[0].path = 'nested/subset.json';
+  const original = fs.realpathSync, originalRead = fs.readSync; let swapped = false, bytesRead = 0;
+  t.mock.method(fs, 'readSync', (...args) => { const n = originalRead(...args); bytesRead += n; return n; });
+  t.mock.method(fs, 'realpathSync', (...args) => {
+    const result = original(...args);
+    if (!swapped && path.resolve(String(args[0])) === path.join(nested, 'subset.json')) {
+      swapped = true; fs.renameSync(nested, path.join(x.root, 'retained-original'));
+      fs.symlinkSync(outside.root, nested, linkType);
+    }
+    return result;
+  });
+  const result = run(x); assert.equal(swapped, true);
+  assert.equal(result.status, 'BLOCKED_ARTIFACTS'); assert.equal(result.artifactsChecked, 0); assert.equal(bytesRead, 0);
+  assert.deepEqual(result.authorizedActions, []);
+});

@@ -472,6 +472,7 @@
     "tests/photo-upload-lifetime.test.mjs",
     "tests/pilot-preparation.test.mjs",
     "tests/postgres-measurement.test.mjs",
+    "tests/preparation-source-binding.test.mjs",
     "tests/private-creator-mission-entry.test.mjs",
     "tests/private-merchant-entry.test.mjs",
     "tests/public-article.test.mjs",

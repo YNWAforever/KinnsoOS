@@ -37,3 +37,40 @@ test('original scenario and cleanup failures are both retained',async t=>{
 test('a scenario failure is rethrown unchanged after otherwise successful cleanup',async t=>{
  const x=owned(t),scenario=Error('ORIGINAL_SCENARIO_FAILED');x.port.scenarioError=scenario;await assert.rejects(call(x.port),e=>e===scenario);assert.equal(fs.existsSync(x.mission),false);assert.equal(fs.existsSync(x.actors),false);
 });
+
+
+test('partial setup retains exact allocated IDs and stops cleanup writes before actor removal', async t => {
+  const x = owned(t), source = fs.readFileSync(new URL('./integration/collaboration-reminders.test.mjs', import.meta.url), 'utf8');
+  // Execute the actual test setup/wrapper without importing the DB module.
+  const setupSource = source.slice(source.indexOf('async function setup('), source.indexOf('\nconst scan='));
+  const cleanupSource = source.slice(source.indexOf('let ownedReminderCleanupBlocked='), source.indexOf("\ntest('PD17 owned DB:"));
+  assert.ok(setupSource.startsWith('async function setup(')); assert.ok(cleanupSource.startsWith('let ownedReminderCleanupBlocked='));
+  const records = new Map(), actors = ['actor-1', 'actor-2', 'actor-3'];
+  const scenario = Error('CONTROLLED_SETUP_FAILURE_AFTER_MISSION'); let actorRemoved = false, reads = 0, sequence = 0;
+  const f = {actor: async () => ({id: actors[sequence++]}), actorIds: () => [...actors], cleanup: async () => { actorRemoved = true; fs.unlinkSync(x.actors); }};
+  const query = table => ({
+    insert(row) { records.set(table, structuredClone(row)); return this; }, select() { return this; },
+    single() { if (table === 'mission_milestones') throw scenario; return Promise.resolve({data: {...records.get(table), id: records.get(table)?.id ?? table + '-id'}, error: null}); },
+    delete() { return {eq: async () => { fs.unlinkSync(x.mission); return {error: null}; }}; },
+    eq: async () => { reads++; return {data: fs.existsSync(x.mission) ? [{id: 'retained-mission'}] : [], error: null}; },
+  });
+  const admin = {from: query, auth: {admin: {getUserById: async () => { reads++; return {data: {}, error: null}; }}}};
+  const output = [], consolePort = {log: (...args) => output.push(args), error: (...args) => output.push(args)};
+  const ok = async promise => { const r = await promise; assert.equal(r.error, null); return r.data; };
+  const state = {actorRefs: []};
+  const execute = new Function('finishReminderCleanup', 'admin', 'ok', 'console', 'randomUUID', setupSource + '\n' + cleanupSource + '\nreturn {setup, cleanupOwnedReminderProbe, blocked:()=>ownedReminderCleanupBlocked};');
+  let id = 0; const actual = execute(finish, admin, ok, consolePort, () => 'allocated-' + (++id));
+  let result, original; try { result = await actual.setup(f, 3600000, 5, false, state); } catch (error) { original = error; }
+  assert.equal(original, scenario); assert.equal(result, undefined);
+  await assert.rejects(actual.cleanupOwnedReminderProbe(f, result, original, state), error => {
+    assert.ok(error instanceof AggregateError); assert.ok(error.errors.includes(scenario));
+    assert.equal(error.cleanupReport.missionRemoval, 'FAIL'); assert.equal(error.cleanupReport.actorRemoval, 'NOT_ATTEMPTED'); return true;
+  });
+  assert.equal(actorRemoved, false); assert.equal(fs.existsSync(x.actors), true); assert.equal(fs.existsSync(x.mission), true);
+  assert.ok(reads >= 4, 'mission and all known actors receive independent read-only diagnostics');
+  assert.equal(actual.blocked(), true);
+  const receipt = JSON.parse(output.find(row => row[0] === 'PD17_OWNED_CLEANUP_FAILED')[1]);
+  assert.equal(receipt.missionRef, records.get('missions').id); assert.ok(receipt.missionRef);
+  assert.deepEqual(receipt.actorRefs, actors); assert.equal(receipt.setupComplete, false);
+  assert.equal(receipt.setupStage, 'milestone');
+});

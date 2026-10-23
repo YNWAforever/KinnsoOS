@@ -42,3 +42,9 @@
 上節記錄 legacy API 的歷史限制；不能再用它描述所有新source。PR88已加入 atomic encrypted durable receipt及跨session同意圖恢復，來源合同見 PD06_SHARE_RECEIPT_REQUIREMENTS_2026-10-23.json。原Remix仍受403／管理員／schema／keyring阻擋，新source成功不代表legacy shared RPC已更新。Ops先辨認actual schema／capability與原requestId，不猜測receipt不存在或叫用戶另建request。Read failure不解鎖，未具權限及authoritative receipt時保留hold／reference；raw token不貼公開case。
 
 本輪可執行的離線artifact檢查及owned reminder恢復測試見 PD16_PD17_A0_VALIDATION_2026-10-24.md；完整H／PS／R catalog見 PD16_PD17_A0_CASES_2026-10-24.json。Artifact hash與聲明時間算術不證明restore；owned committed-ACK-loss／cursor補跑也不證明外部送達、真排程或原Remix驗收。原NOT_RUN／BLOCKED及NOT_PROMISED／RPO／RTO null保留。
+
+## A0 source reference 不一致的停止點（PR90 再審查）
+
+Ops用兩個離線準備CLI前，先固定exact source。Git有tracked／staged／untracked差異時不沿用HEAD；standalone包先比對既有source manifest所有bytes及mapped SQL，不能只信dirty:false。CLI會保留null source／BLOCKED，不要求清空未知寫入、改requestId或清理用戶checkout來讓檢查通過。先保存diff／packet hash／case reference，回到原作者確認同candidate來源；不要reset用戶工作。
+
+通過此檢查最多仍是REVIEWABLE_NOT_EXECUTABLE，沒有SQL／client／restore／排程或發送authority；shared Remix、原403拒絕及真內容權利仍沿用上節停止點。

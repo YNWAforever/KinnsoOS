@@ -21,17 +21,32 @@ function artifactFile(root, relative, maxBytes) {
   const parts = relative.split('/');
   if (parts.some(p => !p || p.startsWith('.') || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*$/.test(p))) throw Error();
   const absoluteRoot = path.resolve(root), canonicalRoot = fs.realpathSync(absoluteRoot);
-  if (fs.lstatSync(absoluteRoot).isSymbolicLink() || !fs.statSync(canonicalRoot).isDirectory()) throw Error();
+  const ancestors = [{file: absoluteRoot, stat: fs.lstatSync(absoluteRoot)}];
+  if (ancestors[0].stat.isSymbolicLink() || !ancestors[0].stat.isDirectory()) throw Error();
   let file = absoluteRoot;
-  for (const part of parts) { file = path.join(file, part); if (fs.lstatSync(file).isSymbolicLink()) throw Error(); }
-  const relativeReal = path.relative(canonicalRoot, fs.realpathSync(file));
+  for (const part of parts) {
+    file = path.join(file, part); const stat = fs.lstatSync(file);
+    if (stat.isSymbolicLink()) throw Error();
+    ancestors.push({file, stat});
+  }
+  const canonicalFile = fs.realpathSync(file), relativeReal = path.relative(canonicalRoot, canonicalFile);
   if (!relativeReal || relativeReal.startsWith('..') || path.isAbsolute(relativeReal)) throw Error();
-  const before = fs.lstatSync(file);
+  const before = ancestors.at(-1).stat;
   if (!before.isFile() || before.nlink !== 1 || before.size > maxBytes) throw Error();
+  const verifyPath = opened => {
+    if (fs.realpathSync(absoluteRoot) !== canonicalRoot || fs.realpathSync(file) !== canonicalFile) throw Error();
+    for (const item of ancestors) {
+      const current = fs.lstatSync(item.file);
+      if (current.isSymbolicLink() || current.ino !== item.stat.ino || current.dev !== item.stat.dev) throw Error();
+    }
+    const current = fs.lstatSync(file);
+    if (!current.isFile() || current.nlink !== 1 || current.ino !== opened.ino || current.dev !== opened.dev) throw Error();
+  };
   const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0));
   try {
     const opened = fs.fstatSync(fd);
-    if (before.ino !== opened.ino || before.dev !== opened.dev || opened.nlink !== 1 || opened.size > maxBytes) throw Error();
+    if (!opened.isFile() || before.ino !== opened.ino || before.dev !== opened.dev || opened.nlink !== 1 || opened.size > maxBytes) throw Error();
+    verifyPath(opened);
     // One overflow byte detects growth without ever loading the enlarged file.
     const buffer = Buffer.allocUnsafe(opened.size + 1); let count = 0;
     while (count < buffer.length) {
@@ -41,7 +56,8 @@ function artifactFile(root, relative, maxBytes) {
     }
     if (count !== opened.size || count > maxBytes) throw Error();
     const bytes = buffer.subarray(0, count), after = fs.fstatSync(fd);
-    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs) throw Error();
+    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs || after.nlink !== 1) throw Error();
+    verifyPath(opened);
     return bytes;
   } finally { fs.closeSync(fd); }
 }
@@ -83,13 +99,13 @@ export function assessSubsetRecovery(packet, {root, sourceRevision} = {}) {
   return {...r, status: 'REVIEWABLE_NOT_EXECUTABLE', declaredSubsetRpoMs: fault - snapshot, declaredSubsetRtoMs: readback - declared};
 }
 
-function main(args) {
+async function main(args) {
   try {
     if (args.length !== 4 || args[0] !== '--root' || args[2] !== '--packet') throw Error();
     const bytes = artifactFile(args[1], args[3], 262144);
     const packet = JSON.parse(bytes.toString('utf8').replace(/^\uFEFF/, ''));
-    const report = assessSubsetRecovery(packet, {root: args[1], sourceRevision: resolveCandidateRevision()});
+    const report = assessSubsetRecovery(packet, {root: args[1], sourceRevision: await resolveCandidateRevision()});
     console.log(JSON.stringify(report)); process.exitCode = report.status === 'REVIEWABLE_NOT_EXECUTABLE' ? 0 : 2;
   } catch { console.log(JSON.stringify({...initial(), status: 'INVALID_PACKET'})); process.exitCode = 1; }
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) main(process.argv.slice(2));
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) await main(process.argv.slice(2));

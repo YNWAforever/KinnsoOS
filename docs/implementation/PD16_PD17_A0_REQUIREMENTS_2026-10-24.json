@@ -53,6 +53,31 @@
       "id": "PD16.CONTENT",
       "requirement": "三篇作者同意／圖片權利真攻略及新session／第二裝置",
       "sourceSnapshotStatus": "BLOCKED_RIGHTS_HOSTED_INPUTS"
+    },
+    {
+      "id": "PD16.A0.03",
+      "requirement": "Dirty／untracked／staged checkout不能借用HEAD；ignored generated outputs仍可保留",
+      "sourceSnapshotStatus": "LOCAL_RED_THEN_GREEN;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.06",
+      "requirement": "Standalone metadata必須核對manifest完整集合與每檔／mapped SQL bytes；缺失或變更source不能冒稱原候選",
+      "sourceSnapshotStatus": "LOCAL_RED_THEN_GREEN;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.07",
+      "requirement": "兩個actual CLI await相同resolver，來源失配保持BLOCKED／null／authorizedActions空",
+      "sourceSnapshotStatus": "LOCAL_ACTUAL_CLI_VERIFIED;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.08",
+      "requirement": "Containment檢查後父目錄替換不讀root外bytes；opened file與root／ancestor identity前後綁定",
+      "sourceSnapshotStatus": "REAL_WINDOWS_JUNCTION_RED_THEN_GREEN;NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.09",
+      "requirement": "Partial setup保存已分配IDs／stage；停止cleanup寫入、保留原error並獨立唯讀診斷",
+      "sourceSnapshotStatus": "EXACT_SOURCE_FILESYSTEM_RED_THEN_GREEN;NEW_EXACT_OWNED_CI_REQUIRED"
     }
   ],
   "authority": "A0",
@@ -72,6 +97,10 @@
   },
   "reviewRepairs": [
     "bounded read under concurrent file growth",
-    "preserve primary failure; stop cleanup writes on failure; independent readback checkpoint"
-  ]
+    "preserve primary failure; stop cleanup writes on failure; independent readback checkpoint",
+    "Reject dirty Git and changed standalone source/SQL; reuse existing verifier; await in both CLIs",
+    "Bind opened artifact to validated ancestor identities before any read and after read",
+    "Preserve progressive partial setup IDs; incomplete setup stops deletion and records independent readbacks"
+  ],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d"
 }
