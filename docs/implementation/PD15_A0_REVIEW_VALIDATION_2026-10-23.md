@@ -56,3 +56,7 @@ PD06 的原 HTTP403 不重試、不以CLI／UI繞過；管理員 metadata／sche
 PD15 未解部分仍是：真攻略及指定 hosted角色／cross-device acceptance、field／real cover、實體iOS／Android與實際NVDA／VoiceOver、完整受控跨版本比較，以及原政策／管理員／恢復輸入。各項分別列 NOT_RUN／BLOCKED，不能因本輪 CI 或 axe 通過就關閉。
 
 Rollback：以另一次最小 revert 回到已知 source，保留 records／草稿／receipts／immutable versions／keyring；回退後新 SHA 重新驗證。本輪未改原target，因此沒有 shared SQL／設定需要回退。
+
+## 首候選 Linux CI 發現及修正
+
+41b719cc09b85e8f9395bdf11d962c8cb3c0cba4 的 push／PR workspace-fixtures均取得真 FAIL：英文320px／雙倍文字，Operations h2 clientWidth230／scrollWidth233；各125公開案例PASS、1FAIL，native162PASS。這是Linux實際字型下的卡片截字，不是browser launch或基建問題。原job logs及官方digest核對artifact保留。只在既有.os-workspace h2補overflow-wrap:anywhere，所有斷言／字級／卡片寬度／sample／timeout不變。後續候選須重新執行完整四個workflow，41b結果不可借用。

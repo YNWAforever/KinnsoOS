@@ -127,5 +127,13 @@
     "serviceObjective": "NOT_PROMISED",
     "rpoMinutes": null,
     "rtoMinutes": null
-  }
+  },
+  "supersededCandidates": [
+    {
+      "head": "41b719cc09b85e8f9395bdf11d962c8cb3c0cba4",
+      "testStatus": "FAIL_PUBLIC_EN320_WORKSPACE_OPERATIONS_REFLOW",
+      "originalFailureRetained": true,
+      "replacementNeedsNewCompleteCi": true
+    }
+  ]
 }

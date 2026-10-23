@@ -6,6 +6,7 @@
   "selfExcludedToAvoidRecursiveHash": true,
   "files": {
     ".github/workflows/journeys.yml": "cde4a49db7890c768c3abe7bf20be81fc6ae1d10a4b3c66fe46a37381ea34d7a",
+    "apps/journeys/app/integration/integration.css": "1e30f86f23af3e13f5719ecaa389bfd82f7808e782d9854ea07601365d87db32",
     "apps/journeys/app/travel/CreatorEarningsWorkspace.tsx": "ff77f86c4d2176e630036ab0c044d011ef454b82e32bcd07d7bba11546b87d48",
     "apps/journeys/app/travel/CreatorMissionsWorkspace.tsx": "f1d61f785ada91f09728b452c408f723354c7fa6c621ff43799c463558473042",
     "apps/journeys/app/travel/InboxWorkspace.tsx": "6c831c3225778c3e82659d63e0bf50eea5e34c1ad505c4b29cca0710742976ad",
@@ -23,9 +24,9 @@
     "apps/journeys/tests/e2e/u21-pilot-presentation.spec.ts": "2be5439a986fa5d90e77e134ee71a1645f487ff0b7e48242a1ff3c37ddd6a849",
     "apps/journeys/tests/e2e/u24-pd15-accessibility.spec.ts": "18762899ff2666f9207646bde8bcd046898c32824eb605830ef65025cbbab71e",
     "apps/journeys/tests/e2e/u25-public-accessibility.spec.ts": "c00ff4113d2e82b91662623dd9d188f4fad8bf5bac87df558a3d4766aba2a93f",
-    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "e0a39e67408a8a9fe61c3f32d8390a9bdeddb7d16933e1b8d1a2e72ff8ed6d12",
-    "docs/implementation/PD15_A0_REQUIREMENTS_2026-10-23.json": "81f2935018b18cd1e1c7ad6235631af67ebb047a0a0beaaba0b01c737b1902a6",
-    "docs/implementation/PD15_A0_REVIEW_VALIDATION_2026-10-23.md": "60205ccf85c836824b1139d647986398e19b3310023eabcd85f1a68ca1c37987"
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "b14cd259b57eabab55af31d77c5af762df58d6a9b7f90b88cd33587bdc971fc7",
+    "docs/implementation/PD15_A0_REQUIREMENTS_2026-10-23.json": "8bb276ff0bc63b6bacf121b2e22734da50005f900f4e4b304bb858de75ec8954",
+    "docs/implementation/PD15_A0_REVIEW_VALIDATION_2026-10-23.md": "e333b466424f6bb1ca046a9b721473265dc2127077a0d724e5b0d87b58899fee"
   },
   "preservedOriginalLedgers": {
     "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
@@ -41,5 +42,7 @@
     "physical devices or AT",
     "true guide rights",
     "merge or deployment"
-  ]
+  ],
+  "supersededCandidate": "41b719cc09b85e8f9395bdf11d962c8cb3c0cba4",
+  "supersededCandidateFailure": "Linux en320 doubled-text Operations H2 230/233; both events actual FAIL retained"
 }
