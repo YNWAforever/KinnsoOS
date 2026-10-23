@@ -4,7 +4,7 @@
   "branch": "codex/pd06-durable-share-recovery-20261023",
   "candidateBinding": "Final commit/tree/source fingerprints in exact delivery receipt; no self-referential SHA commit",
   "code_status": "ATOMIC_ENCRYPTED_SHARE_RECEIPT_FROZEN_REQUEST_CROSS_SESSION_RECOVERY_LEGACY_PRESERVED",
-  "test_status": "970_LOCAL_UNIT_PASS;BUILD_TYPE_LINT_PASS;SOURCE9PASS1WINDOWS_SKIP;NEW_EXACT_CANDIDATE_DB_AUTH_BROWSER_CI_REQUIRED",
+  "test_status": "970_LOCAL_UNIT_PASS;JOURNEYS_BUILD_TYPE_LINT_PASS;WEB_SHARED_COMPILER_PASS;FULL_WEB_LOCAL_DB_TYPES_BLOCKED;NEW_EXACT_CI_REQUIRED",
   "deployment_status": "NO_MANUAL_OR_PRODUCTION_DEPLOYMENT",
   "runtime_status": "PURE_COMPONENT_ONLY;LOCAL_DOCKER_UNAVAILABLE;ORIGINAL_REMIX_HOSTED_NOT_RUN",
   "requirements": [
@@ -76,7 +76,7 @@
     },
     {
       "id": "PD06R12",
-      "requirement": "owned CI gate後臨時key；原target不寫、不新增project／merge／production",
+      "requirement": "owned CI gate後臨時key；原target不寫、不新增project／merge／production；partial setup精確cleanup，cleanup失敗停止後續fixture writes",
       "evidence": "ci-local-target.test.mjs;PD06_SHARE_RECEIPT_OPERATOR_PACKET_2026-10-23.md",
       "status": "LOCAL_PASS_ORIGINAL_TARGET_NOT_RUN"
     },
@@ -115,5 +115,15 @@
     "Three real guide author consents/image rights BLOCKED",
     "T08/N16 OPEN;PD18 NO_GO"
   ],
-  "rollback": "Normal source revert/disable new shareRecovery writes; preserve valid shares,encrypted receipts,keyring,requestId dedupe; no DROP or destructive SQL"
+  "rollback": "Normal source revert/disable new shareRecovery writes; preserve valid shares,encrypted receipts,keyring,requestId dedupe; no DROP or destructive SQL",
+  "historicalCandidates": [
+    {
+      "head": "62d4f9f9f7cb6d78b69eecd01f9f5433efa6cf79",
+      "rootQuality": "FAIL_TS5097",
+      "ownedIntegration": "97PASS10FAIL_FIXTURE_DURATION_CONSTRAINT",
+      "browser": "NOT_RUN_AFTER_INTEGRATION_FAILURE",
+      "reviewP2": "wrong U23 selected-link revoke selector; repaired after pure two-locale reproduction",
+      "failedFixtureCleanup": "NOT_REACHED_AT_SETUP_FAILURE; next source catches partial setup and blocks later writes on cleanup failure"
+    }
+  ]
 }

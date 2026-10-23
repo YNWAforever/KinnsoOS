@@ -13,16 +13,23 @@ assert.ok(Object.values(db.NetworkSettings.Networks).some(n=>Object.values(gatew
 const {fixture,anonymous}=await import('./local-fixtures.mjs');
 const ok=async p=>{const r=await p;assert.equal(r.error,null,JSON.stringify(r.error));return r.data;};
 const sql=q=>execFileSync('docker',['exec',target.dbContainer,'psql','-U','postgres','-d','postgres','-X','-Atq','-v','ON_ERROR_STOP=1','-c',q],{encoding:'utf8',stdio:['ignore','pipe','pipe']}).trim();
-async function setup(){const f=await fixture(),a=await f.actor(),b=await f.actor(),actors=[a.id,b.id];
+let cleanupBlocked=false;
+async function setup({duration=60,observed=[]}={}){
+ if(cleanupBlocked)throw Error('BLOCKED: prior owned share fixture cleanup failed');
+ const f=await fixture(),actors=[];
+ async function cleanup(){try{await f.cleanup();if(!actors.length)return;const ids=actors.map(x=>`'${x}'`).join(',');assert.equal(sql(`select count(*) from kinnso_internal.trip_share_receipts where owner_id in (${ids});`),'0');assert.equal(sql(`select count(*) from kinnso_internal.trip_shares where owner_id in (${ids});`),'0');}catch(error){cleanupBlocked=true;throw error;}}
+ try{
+ const a=await f.actor();actors.push(a.id);observed.push(a.id);const b=await f.actor();actors.push(b.id);observed.push(b.id);
  const trip=await ok(a.client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Synthetic receipt trip',timezone:'Asia/Hong_Kong',startDate:null}}));
  const day=randomUUID(),stop=randomUUID();let current=await ok(a.client.rpc('apply_trip_command',{p_trip_id:trip.id,p_expected_revision:trip.revision,p_request_id:randomUUID(),p_command:{type:'addDay',id:day,offset:0,title:'Synthetic day'}}));
- current=await ok(a.client.rpc('apply_trip_command',{p_trip_id:trip.id,p_expected_revision:current.revision,p_request_id:randomUUID(),p_command:{type:'addStop',id:stop,dayId:day,position:0,input:{title:'Selected public title',placeId:null,travellerNote:'PRIVATE_RECEIPT_NOTE',startMinuteOfDay:0,durationMinutes:0}}}));
+ current=await ok(a.client.rpc('apply_trip_command',{p_trip_id:trip.id,p_expected_revision:current.revision,p_request_id:randomUUID(),p_command:{type:'addStop',id:stop,dayId:day,position:0,input:{title:'Selected public title',placeId:null,travellerNote:'PRIVATE_RECEIPT_NOTE',startMinuteOfDay:0,durationMinutes:duration}}}));
  const intent={requestId:randomUUID(),tripId:trip.id,stopIds:[stop],mediaIds:[],expiresAt:new Date(Date.now()+300000).toISOString()};
  const args=(command=intent)=>{const x=newShareToken({actorId:a.id,tripId:command.tripId,requestId:command.requestId});return{p_request_id:command.requestId,p_trip_id:command.tripId,p_stop_ids:command.stopIds,p_media_ids:command.mediaIds,p_expires_at:command.expiresAt,p_token_hash:x.tokenHash,p_envelope:x.envelope};};
  const read=(who=a,command=intent)=>who.client.rpc('get_trip_share_receipt',{p_trip_id:command.tripId,p_request_id:command.requestId});
  const counts=()=>JSON.parse(sql(`select json_build_object('shares',(select count(*) from kinnso_internal.trip_shares where owner_id='${a.id}'),'receipts',(select count(*) from kinnso_internal.trip_share_receipts where owner_id='${a.id}'));`));
- async function cleanup(){await f.cleanup();const ids=actors.map(x=>`'${x}'`).join(',');assert.equal(sql(`select count(*) from kinnso_internal.trip_share_receipts where owner_id in (${ids});`),'0');assert.equal(sql(`select count(*) from kinnso_internal.trip_shares where owner_id in (${ids});`),'0');}
+
  return {f,a,b,trip:current,intent,args,read,counts,cleanup,stop};
+ }catch(error){try{await cleanup();}catch(cleanupError){throw new AggregateError([error,cleanupError],'Owned share setup and cleanup failed');}throw error;}
 }
 test('concurrent same-intent share creation commits one immutable receipt/token and excludes private notes',async()=>{const x=await setup();try{
  const results=await Promise.all(Array.from({length:6},()=>x.a.client.rpc('create_trip_share_v2',x.args()))),first=await ok(Promise.resolve(results[0]));
@@ -79,3 +86,5 @@ test('receipt insert failure rolls back the share atomically; same intent can su
 test('stale canonical auth session cannot recover an owner receipt even with its still-signed JWT',async()=>{const x=await setup();try{
  await ok(x.a.client.rpc('create_trip_share_v2',x.args()));sql(`delete from auth.sessions where user_id='${x.a.id}';`);assert.match((await x.read()).error?.message??'',/unauthenticated/);assert.match((await x.a.client.rpc('create_trip_share_v2',x.args())).error?.message??'',/unauthenticated/);
 }finally{await x.cleanup();}});
+
+test('partial owned fixture setup failure cleans exact actors and trips before propagating the original error',async()=>{const observed=[];await assert.rejects(()=>setup({duration:0,observed}),/trip_stops_duration_minutes_check/);assert.equal(observed.length,2);const ids=observed.map(id=>`'${id}'`).join(',');assert.equal(sql(`select count(*) from auth.users where id in (${ids});`),'0');assert.equal(sql(`select count(*) from public.trips where owner_user_id in (${ids});`),'0');assert.equal(sql(`select count(*) from kinnso_internal.trip_share_receipts where owner_id in (${ids});`),'0');});

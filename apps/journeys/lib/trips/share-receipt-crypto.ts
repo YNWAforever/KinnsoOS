@@ -1,5 +1,6 @@
 import {createCipheriv,createDecipheriv,createHash,randomBytes} from 'node:crypto';
-import {shareReceiptKeyring,type ShareTokenEnvelope} from '../contracts/share-receipts.ts';
+import {shareReceiptKeyring} from '../contracts/capabilities.ts';
+import type {ShareTokenEnvelope} from '../contracts/share-receipts';
 type Context={actorId:string;tripId:string;requestId:string};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const unavailable=()=>new Error('Share recovery unavailable');

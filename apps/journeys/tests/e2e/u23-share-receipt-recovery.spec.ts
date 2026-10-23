@@ -12,7 +12,7 @@ test.beforeAll(async()=>{
  expect((gateway.NetworkSettings.Ports['8000/tcp']??[]).some((p:{HostPort:string})=>p.HostPort==='58421')).toBe(true);
  clientFactory=(await import('@supabase/supabase-js')).createClient;admin=clientFactory(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false}});
 });
-const labels={en:{sign:'Sign in',note:'Private note',create:'Create read-only link',field:'Share link',revoke:'Revoke existing link',recover:/^Recover link$/},'zh-HK':{sign:'登入',note:'私人筆記',create:'建立唯讀連結',field:'分享連結',revoke:'撤銷現有連結',recover:/^(取回連結|恢復連結)$/}};
+const labels={en:{sign:'Sign in',note:'Private note',create:'Create read-only link',field:'Share link',revoke:'Revoke link',recover:/^Recover link$/},'zh-HK':{sign:'登入',note:'私人筆記',create:'建立唯讀連結',field:'分享連結',revoke:'撤銷連結',recover:/^(取回連結|恢復連結)$/}};
 async function login(page:Page,locale:'en'|'zh-HK',email:string,password:string,trip:string){await page.goto('/'+locale+'/sign-in?next='+encodeURIComponent('/'+locale+'/trips/'+trip));await page.getByLabel(locale==='en'?'Email':'電郵',{exact:true}).fill(email);await page.getByLabel(locale==='en'?'Password':'密碼',{exact:true}).fill(password);await page.getByRole('button',{name:labels[locale].sign,exact:true}).click();await expect(page.getByLabel(labels[locale].note,{exact:true})).toHaveValue('PRIVATE_DURABLE_SHARE_NOTE',{timeout:15000});}
 for(const locale of ['en','zh-HK'] as const)test('PD06 durable lost-ACK share recovers the same URL in a second authenticated context: '+locale,async({browser})=>{
  test.setTimeout(120000);const ids:string[]=[],contexts:BrowserContext[]=[],l=labels[locale];
@@ -22,7 +22,7 @@ for(const locale of ['en','zh-HK'] as const)test('PD06 durable lost-ACK share re
   const client=clientFactory(process.env.SUPABASE_URL!,process.env.SUPABASE_ANON_KEY!,{auth:{persistSession:false}});expect((await client.auth.signInWithPassword({email,password})).error).toBeNull();
   let r=await client.rpc('create_trip_v2',{p_request_id:randomUUID(),p_payload:{title:'Synthetic durable share',timezone:'Asia/Hong_Kong',startDate:null}});expect(r.error).toBeNull();const trip=r.data.id,day=randomUUID(),stop=randomUUID();
   r=await client.rpc('apply_trip_command',{p_trip_id:trip,p_expected_revision:r.data.revision,p_request_id:randomUUID(),p_command:{type:'addDay',id:day,offset:0,title:'Synthetic day'}});expect(r.error).toBeNull();
-  r=await client.rpc('apply_trip_command',{p_trip_id:trip,p_expected_revision:r.data.revision,p_request_id:randomUUID(),p_command:{type:'addStop',id:stop,dayId:day,position:0,input:{title:'Selected durable place',placeId:null,travellerNote:'PRIVATE_DURABLE_SHARE_NOTE',startMinuteOfDay:0,durationMinutes:0}}});expect(r.error).toBeNull();
+  r=await client.rpc('apply_trip_command',{p_trip_id:trip,p_expected_revision:r.data.revision,p_request_id:randomUUID(),p_command:{type:'addStop',id:stop,dayId:day,position:0,input:{title:'Selected durable place',placeId:null,travellerNote:'PRIVATE_DURABLE_SHARE_NOTE',startMinuteOfDay:0,durationMinutes:60}}});expect(r.error).toBeNull();
   const first=await browser.newContext({viewport:{width:320,height:780}});contexts.push(first);const page=await first.newPage();await login(page,locale,email,password,trip);
   await page.getByRole('checkbox',{name:'Selected durable place',exact:true}).check();
   let intent:Record<string,unknown>|undefined,committed:Record<string,unknown>|undefined,posts=0;
