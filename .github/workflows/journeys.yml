@@ -59,6 +59,8 @@ jobs:
           set -o pipefail
           mkdir -p evidence/ci
           python ../../scripts/deployment_scope_test.py -v 2>&1 | tee evidence/ci/deployment-scope-tests.log
+      - name: Verify the no-deployment integration hold
+        run: python ../../scripts/git_deployment_hold_test.py -v
       - run: node scripts/ci-evidence.mjs unit
       - run: npm run build
       - run: npm run typecheck
