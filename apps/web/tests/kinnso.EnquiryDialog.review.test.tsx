@@ -42,7 +42,12 @@ async function openAndFill() {
   fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'A genuine campaign enquiry.' } })
 }
 
-afterEach(cleanup)
+afterEach(async () => {
+  cleanup()
+  // Radix schedules focus-scope unmount in a zero-delay task. Finish it while
+  // this jsdom Event realm still owns the detached dialog nodes.
+  await new Promise((resolve) => setTimeout(resolve, 0))
+})
 
 beforeEach(() => {
   submitMock.mockReset()

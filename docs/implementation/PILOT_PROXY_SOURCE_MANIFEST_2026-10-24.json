@@ -11,11 +11,13 @@
     "apps/journeys/tests/pilot-proxy-identity.test.mjs": "2ec344c79d1fb3d6b9c24cb09786303c8affa4eaa3190472e8beb982c6fafbb7",
     "apps/journeys/tests/pilot-public-route.test.mjs": "872560d303aedda3627cf3cf847593ca962400ab8d183e20351eca01ac32279e",
     "apps/journeys/scripts/source-manifest.json": "4b967637a990ad38d02c5be712d08c84e18cb027562421808cdbb5c07d8f8f24",
-    "docs/implementation/PILOT_PROXY_IDENTITY_2026-10-24.md": "4746828f8d9693261a60d7351a44c0e115b46decd4576154cb976ec20dd27aed"
+    "docs/implementation/PILOT_PROXY_IDENTITY_2026-10-24.md": "4746828f8d9693261a60d7351a44c0e115b46decd4576154cb976ec20dd27aed",
+    "apps/web/tests/kinnso.EnquiryDialog.review.test.tsx": "98e01ceee8c14fc42f6dd5c637ff5df429f8306394213a06c0c816769b492293"
   },
   "configurationStatus": "BLOCKED_NOT_EXECUTED",
   "A1_A5": "NOT_EXECUTED",
   "hostedAcceptance": "NOT_RUN",
   "originalLedgers": "UNCHANGED",
-  "distributionScope": "Native source package includes new runtime helper and its tests. Monorepo Web and operator documentation remain covered by this repository manifest; SQL-only repository mappings stay unchanged."
+  "distributionScope": "Native source package includes new runtime helper and its tests. Monorepo Web and operator documentation remain covered by this repository manifest; SQL-only repository mappings stay unchanged.",
+  "harnessFix": "Drain Radix zero-delay unmount before jsdom realm teardown; retain all assertions, timeouts and uncaught-error checks."
 }
