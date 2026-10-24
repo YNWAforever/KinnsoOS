@@ -85,3 +85,56 @@ test('incomplete standalone metadata cannot borrow a declared or ancestor Git re
 test('CLI malformed JSON is sanitized and missing decisions exit blocked',()=>{
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'kinnso-prep-'));try{const packet=path.join(dir,'input.json'),cli=fileURLToPath(new URL('../scripts/pilot-preparation.mjs',import.meta.url));fs.writeFileSync(packet,'{private-do-not-reflect');let x=spawnSync(process.execPath,[cli,'--packet',packet],{encoding:'utf8'});assert.equal(x.status,1);assert.ok(!String(x.stdout+x.stderr).includes('do-not-reflect'));fs.writeFileSync(packet,JSON.stringify(template));x=spawnSync(process.execPath,[cli,'--packet',packet],{encoding:'utf8'});assert.equal(x.status,2);assert.equal(JSON.parse(x.stdout).runtimeStatus,'NOT_RUN');}finally{fs.rmSync(dir,{recursive:true,force:true});}
 });
+
+test('actual pilot CLI rejects packet growth after metadata inspection within its byte cap',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'kinnso-pilot-packet-cap-'));
+ const actual=fs.realpathSync(root),parent=fs.realpathSync(os.tmpdir());
+ t.after(()=>{assert.equal(path.dirname(actual).toLowerCase(),parent.toLowerCase());assert.ok(path.basename(actual).startsWith('kinnso-pilot-packet-cap-'));fs.rmSync(actual,{recursive:true});});
+ const packet=path.join(root,'packet.json');fs.writeFileSync(packet,'{}');
+ const harness=`
+ import fs from 'node:fs'; import {pathToFileURL} from 'node:url';
+ const [pilot,packet]=process.argv.slice(1),cap=262144;
+ const originalStat=fs.statSync,originalFstat=fs.fstatSync,originalOpen=fs.openSync,originalRead=fs.readSync,originalWhole=fs.readFileSync;
+ let grew=false,bytesRead=0,packetFd=null,whole=false;
+ const grow=()=>{if(!grew){grew=true;fs.appendFileSync(packet,' '.repeat(cap+1024));}};
+ fs.statSync=(file,...args)=>{const r=originalStat(file,...args);if(file===packet)grow();return r;};
+ fs.openSync=(file,...args)=>{const fd=originalOpen(file,...args);if(file===packet)packetFd=fd;return fd;};
+ fs.fstatSync=(fd,...args)=>{const r=originalFstat(fd,...args);if(fd===packetFd)grow();return r;};
+ fs.readFileSync=(file,...args)=>{const selected=file===packet||file===packetFd;whole=selected;try{const r=originalWhole(file,...args);if(selected)bytesRead+=Buffer.byteLength(r);return r;}finally{whole=false;}};
+ fs.readSync=(fd,...args)=>{const n=originalRead(fd,...args);if(fd===packetFd&&!whole)bytesRead+=n;return n;};
+ process.argv=[process.execPath,pilot,'--packet',packet];await import(pathToFileURL(pilot).href);
+ console.log(JSON.stringify({grew,bytesRead}));
+ `;
+ const r=spawnSync(process.execPath,['--input-type=module','--eval',harness,fileURLToPath(new URL('../scripts/pilot-preparation.mjs',import.meta.url)),packet],{encoding:'utf8'});
+ assert.equal(r.signal,null,r.stderr);
+ const [report,probe]=r.stdout.trim().split(/\r?\n/).map(x=>JSON.parse(x));
+ assert.equal(probe.grew,true,'the actual file grew after its initial metadata was captured');
+ assert.ok(probe.bytesRead<=262145,`unbounded packet read: ${probe.bytesRead} bytes`);
+ assert.equal(r.status,1,r.stdout);assert.equal(report.status,'INVALID_PACKET');
+ assert.deepEqual(report.authorizedActions,[]);assert.equal(report.runtimeStatus,'NOT_RUN');
+});
+
+
+
+test('actual pilot CLI accepts its exact packet byte boundary without granting actions',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'kinnso-pilot-boundary-')),actual=fs.realpathSync(root),parent=fs.realpathSync(os.tmpdir());
+ t.after(()=>{assert.equal(path.dirname(actual).toLowerCase(),parent.toLowerCase());assert.ok(path.basename(actual).startsWith('kinnso-pilot-boundary-'));fs.rmSync(actual,{recursive:true});});
+ const packet=path.join(root,'packet.json');fs.writeFileSync(packet,'{}'+' '.repeat(262144-2));
+ const r=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/pilot-preparation.mjs',import.meta.url)),'--packet',packet],{encoding:'utf8'});
+ assert.equal(r.status,2,r.stderr);const report=JSON.parse(r.stdout);assert.equal(report.status,'BLOCKED_INPUTS');assert.deepEqual(report.authorizedActions,[]);
+});
+
+test('actual pilot CLI rejects an already oversized packet without exposing its bytes',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'kinnso-pilot-oversized-')),actual=fs.realpathSync(root),parent=fs.realpathSync(os.tmpdir());
+ t.after(()=>{assert.equal(path.dirname(actual).toLowerCase(),parent.toLowerCase());assert.ok(path.basename(actual).startsWith('kinnso-pilot-oversized-'));fs.rmSync(actual,{recursive:true});});
+ const packet=path.join(root,'packet.json');fs.writeFileSync(packet,'{}'+' '.repeat(262144-1));
+ const r=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/pilot-preparation.mjs',import.meta.url)),'--packet',packet],{encoding:'utf8'});
+ assert.equal(r.status,1,r.stderr);const report=JSON.parse(r.stdout);assert.equal(report.status,'INVALID_PACKET');assert.deepEqual(report.authorizedActions,[]);
+});
+
+test('actual pilot CLI rejects a directory packet and retains a non-echoing failure',t=>{
+ const root=fs.mkdtempSync(path.join(os.tmpdir(),'kinnso-pilot-directory-')),actual=fs.realpathSync(root),parent=fs.realpathSync(os.tmpdir());
+ t.after(()=>{assert.equal(path.dirname(actual).toLowerCase(),parent.toLowerCase());assert.ok(path.basename(actual).startsWith('kinnso-pilot-directory-'));fs.rmSync(actual,{recursive:true});});
+ const r=spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/pilot-preparation.mjs',import.meta.url)),'--packet',root],{encoding:'utf8'});
+ assert.equal(r.status,1,r.stderr);const report=JSON.parse(r.stdout);assert.equal(report.status,'INVALID_PACKET');assert.deepEqual(report.authorizedActions,[]);assert.ok(!r.stdout.includes(root));
+});

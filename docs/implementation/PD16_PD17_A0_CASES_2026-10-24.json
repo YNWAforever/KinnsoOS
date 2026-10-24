@@ -270,9 +270,10 @@
       "nextAction": "保留原停止點及exact refs；不執行A1–A5",
       "sourceTests": [
         "apps/journeys/tests/subset-recovery-report.test.mjs",
-        "apps/journeys/tests/source-inputs.test.mjs"
+        "apps/journeys/tests/source-inputs.test.mjs",
+        "apps/journeys/tests/pilot-preparation.test.mjs"
       ],
-      "localPreparationScope": "Filesystem integrity only; no shared export or actual database restore"
+      "localPreparationScope": "Filesystem artifact integrity and bounded actual CLI packet ingress only; no shared export or database restore"
     },
     {
       "id": "R03",
@@ -296,7 +297,11 @@
       "sharedSubsetRehearsalStatus": "NOT_RUN",
       "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
       "remaining": "新owned提醒ACK-loss僅通知資料；移轉SQL COMMIT-unknown仍NOT_RUN",
-      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "localPreparationScope": "Owned notification ACK-loss/cursor recovery only; migration SQL COMMIT-unknown and shared subset restore NOT_RUN"
     },
     {
       "id": "R06",
@@ -304,7 +309,11 @@
       "sharedSubsetRehearsalStatus": "NOT_RUN",
       "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
       "remaining": "owned回歸不是原shared restore readback",
-      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "localPreparationScope": "Owned original recipient/outsider and event/dedupe readback only; restored shared roles/Auth/Storage/immutable state NOT_RUN"
     },
     {
       "id": "R07",
@@ -320,7 +329,12 @@
       "sharedSubsetRehearsalStatus": "NOT_RUN",
       "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
       "remaining": "owned fixture exact-ID cleanup另驗；原project cleanup NOT_AUTHORIZED",
-      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/reminder-cleanup.test.mjs"
+      ],
+      "localPreparationScope": "Exact owned mission/actor cleanup and partial-setup/failure checkpoints only; shared target cleanup NOT_AUTHORIZED"
     }
   ],
   "trueGuideRights": "BLOCKED",
@@ -337,5 +351,6 @@
     "rtoMinutes": null
   },
   "authorizedActions": [],
-  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d"
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
+  "followupReviewBaseline": "0a28440a13774084de18987f7c73d52a9d62fc20"
 }

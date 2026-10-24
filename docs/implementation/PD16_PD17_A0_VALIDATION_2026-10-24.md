@@ -78,3 +78,13 @@ e673a148是已推送、經審查的中間候選。Push workspace-fixtures的publ
 Final precommit補驗：source metadata若位於canonical Git，await byte verification期間變dirty或HEAD前進不能回舊revision；兩個真temp Git RED已保留，現驗證後再核對相同clean HEAD。Focused為71 PASS／1 Windows file-symlink SKIP；完整public126 PASS／0 SKIP、72個axe scans零violations／incomplete。最終full unit、typecheck、source checks及新head CI由delivery綁定，不借用e673結果。
 
 最後canonical source的本機全unit1054 PASS／1 Windows symlink SKIP；typecheck PASS；source-package9 PASS／1 Windows symlink SKIP。Next dev生成的next-env僅兩個dev types路徑，已保存差異及還原原canonical bytes後重跑必要checks；不是用戶檔案清理或reset。
+
+### 指定0a28440a及新封包覆核：pilot packet ingress
+
+重新核對0a28440a的sealed delivery：ZIP SHA-256 b9c57f3dfcedc3a992371e17b1d8e4dfbdd5667c2f1822dfabe878535b8651dc，2,172 entries／2,171 hashes及全部CRC正確；其512-entry corresponding source的511 hashes、21 canonical Git leaves、22 PR paths、原18 N／53 traceability及3個no-deploy guards相符。Fresh GitHub metadata與12個原official artifact ZIP bytes／digests／CRC再次相符；仍是原same-candidate16核心jobs SUCCESS／attempt1及16 conditional SKIPs，沒有重新執行舊job或清除歷史FAIL。
+
+Parent actual CLI probe發現pilot preparation先stat上限262144，再readFileSync整檔；真owned temp檔在metadata capture後增長，實讀263170 bytes，原樣RED（app regression1 FAIL／3 PASS）。Subset reader的既有bounded read未受影響。新pilot reader只open一次，fstat regular file及原cap，最多讀opened size＋1，再核對actual count／size／mtime；finally close。可用O_NONBLOCK防止nonregular pipe在fstat前等writer；參數／UTF-8 BOM／INVALID_PACKET exit1／不echo／source resolver合同保留。沒有改authorities、來源驗證、DB／fixture／keyring或產品UI。
+
+四個actual CLI controls修正後4 PASS／0 SKIP；本輪precommit全unit1058 PASS／1既有Windows file-symlink SKIP（1059 tests），source-package9 PASS／1 Windows symlink SKIP。這是本機filesystem／CLI層；final source/head、typecheck及new candidate owned CI由新delivery獨立綁定。0a的1055 Linux unit不能代替新candidate1059測試。Reviewer原始18 offline probes與其未發現此parent-found race的限制均保留。
+
+R02補pilot input integrity control；R05／R06／R08明確對應既有兩個owned DB reminder scenarios和cleanup negative controls。這些證據只涉及notification events／exact fixtures，不證明shared subset restore、SQL移轉COMMIT-unknown、Auth／Storage恢復、外部provider／真scheduler或primary-backup交班。所有28案原hosted／shared觀測仍NOT_RUN；真攻略權利與PD06 403／管理員／schema／keyring仍BLOCKED，T08／N16 OPEN，PD18 NO_GO。

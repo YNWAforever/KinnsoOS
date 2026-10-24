@@ -99,10 +99,26 @@ export async function resolveCandidateRevision(root=fileURLToPath(new URL('../',
  }
  return gitRevision;
 }
+function packetBytes(file){
+ const cap=262144,fd=fs.openSync(file,fs.constants.O_RDONLY|(fs.constants.O_NONBLOCK??0));
+ try{
+  const before=fs.fstatSync(fd);
+  if(!before.isFile()||before.size>cap)throw Error();
+  const buffer=Buffer.allocUnsafe(before.size+1);let count=0;
+  while(count<buffer.length){
+   const n=fs.readSync(fd,buffer,count,buffer.length-count,null);
+   if(n===0)break;
+   count+=n;
+  }
+  const after=fs.fstatSync(fd);
+  if(count!==before.size||after.size!==before.size||after.mtimeMs!==before.mtimeMs)throw Error();
+  return buffer.subarray(0,count);
+ }finally{fs.closeSync(fd);}
+}
 async function main(args){
  try{
-  if(args.length!==2||args[0]!=='--packet'||fs.statSync(args[1]).size>262144)throw Error();
-  const packet=JSON.parse(fs.readFileSync(args[1],'utf8').replace(/^\uFEFF/,''));
+  if(args.length!==2||args[0]!=='--packet')throw Error();
+  const packet=JSON.parse(packetBytes(args[1]).toString('utf8').replace(/^\uFEFF/,''));
   const report=assessPilotPreparation(packet,{sourceRevision:await resolveCandidateRevision()});
   console.log(JSON.stringify(report));process.exitCode=report.status==='BLOCKED_INPUTS'?2:0;
  }catch{console.log(JSON.stringify({status:'INVALID_PACKET',runtimeStatus:'NOT_RUN',authorizedActions:[]}));process.exitCode=1;}

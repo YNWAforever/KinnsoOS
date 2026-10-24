@@ -83,6 +83,11 @@
       "id": "PD16.A0.04",
       "requirement": "Public a11y量測先固定audit-only scroll原點；保留ratio1／200%／5000ms／axe等原gates及e673真FAIL",
       "sourceSnapshotStatus": "REAL_NEXT_RED_AND_FAILED_FIRST_FIX_RETAINED;TARGETED10PASS;NEW_EXACT_FULL_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.10",
+      "requirement": "Pilot packet讀取保持256KiB上限；metadata後增長不得整檔載入；exact cap接受，oversized／nonregular拒絕且不授予動作",
+      "sourceSnapshotStatus": "ACTUAL_CLI_RED1FAIL_3PASS_THEN_GREEN4PASS;LOCAL_FULL1058PASS_1WINDOWS_SKIP;NEW_EXACT_CANDIDATE_CI_REQUIRED"
     }
   ],
   "authority": "A0",
@@ -107,8 +112,10 @@
     "Bind opened artifact to validated ancestor identities before any read and after read",
     "Preserve progressive partial setup IDs; incomplete setup stops deletion and records independent readbacks",
     "Canonical Git checked before metadata; scoped audit-origin synchronization with unchanged accessibility assertions",
-    "Fence canonical clean HEAD again after awaited source verification; actual late dirty/head regressions"
+    "Fence canonical clean HEAD again after awaited source verification; actual late dirty/head regressions",
+    "Pilot ingress uses bounded opened-file read; reject growth or changed length/mtime before packet parsing"
   ],
   "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
-  "intermediateReviewHead": "e673a148e465abe7c21b417b26cbd541101aa395"
+  "intermediateReviewHead": "e673a148e465abe7c21b417b26cbd541101aa395",
+  "followupReviewBaseline": "0a28440a13774084de18987f7c73d52a9d62fc20"
 }

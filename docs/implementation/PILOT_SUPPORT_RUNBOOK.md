@@ -48,3 +48,7 @@
 Ops用兩個離線準備CLI前，先固定exact source。Git有tracked／staged／untracked差異時不沿用HEAD；standalone包先比對既有source manifest所有bytes及mapped SQL，不能只信dirty:false。CLI會保留null source／BLOCKED，不要求清空未知寫入、改requestId或清理用戶checkout來讓檢查通過。先保存diff／packet hash／case reference，回到原作者確認同candidate來源；不要reset用戶工作。
 
 通過此檢查最多仍是REVIEWABLE_NOT_EXECUTABLE，沒有SQL／client／restore／排程或發送authority；shared Remix、原403拒絕及真內容權利仍沿用上節停止點。
+
+## Pilot packet 檔案在讀取期間改變的停止點
+
+Pilot preparation CLI維持256 KiB cap；只接受單一opened regular file，bounded read後再核對size／mtime。超限、讀取期間增長／截斷或nonregular input均回INVALID_PACKET／exit1，runtime NOT_RUN及authorizedActions=[]。遇此結果先保存原packet hash／來源及失敗reference，再由原owner確認穩定輸入；不降低cap、不改source SHA，也不據此執行restore或解鎖未知寫入。這是離線準備檔案檢查，不是shared target的owner／permission證明。
