@@ -44,7 +44,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
   const react={useId:()=> 'fixture-contact',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((value,j)=>!Object.is(value,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
   const jsx=(type,props)=>typeof type==='function'?(initial.shallow?{type:type.name,props}:type(props)):({type,props});
   const snippets={ui:`export const useApp=()=>({locale:globalThis.__locale,t:(en,zh)=>globalThis.__locale==='zh-HK'?zh:en,href:path=>'/'+globalThis.__locale+'/'+path});`,
-    drafts:`export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.read(...args)??null;export const saveLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.save(...args);export const clearLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.clear(...args);export const releaseLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.release(...args);export const completeLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.complete?.(...args);`,
+    drafts:`export const readPendingAdoption=async(...args)=>globalThis.__ports.tripRecovery?.readAdoption?.(...args)??null;export const savePendingAdoption=async(...args)=>globalThis.__ports.tripRecovery?.saveAdoption?.(...args);export const clearPendingAdoption=async(...args)=>globalThis.__ports.tripRecovery?.clearAdoption?.(...args);export const readPendingCreation=async(...args)=>globalThis.__ports.tripRecovery?.readCreation?.(...args)??null;export const clearPendingCreation=async(...args)=>globalThis.__ports.tripRecovery?.clearCreation?.(...args);export const invalidateAccountViews=owner=>globalThis.__invalidate(owner);export const subscribeAccountInvalidation=fn=>globalThis.__subscribe(fn);export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.read(...args)??null;export const saveLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.save(...args);export const clearLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.clear(...args);export const releaseLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.release(...args);export const completeLocalWorkspaceRecovery=async(...args)=>globalThis.__ports.workspaceRecovery?.complete?.(...args);`,
     creator:'export const creatorMissions=globalThis.__ports.creatorMissions; export const creatorEarnings=globalThis.__ports.creatorEarnings;',
     campaigns:'export const merchantCampaigns=globalThis.__ports.merchantCampaigns;',
     insights:'export const merchantInsights=globalThis.__ports.merchantInsights;',
@@ -52,12 +52,20 @@ export async function workspaceHarness(name,ports={},initial={}) {
     merchant:'export const merchants=globalThis.__ports.merchants;',
     discovery:'export const merchantCreators=globalThis.__ports.merchantCreators;',
     onboarding:'export const merchantOnboarding=globalThis.__ports.merchantOnboarding;',
-    repository:'export const request=(...args)=>globalThis.__ports.request(...args);',
+    repository:'export const request=(...args)=>globalThis.__ports.request(...args);export const trips=globalThis.__ports.trips;',
+    guides:'export const guides=globalThis.__ports.guides;',
+    bookmarks:'export const bookmarks=globalThis.__ports.bookmarks;',
+    guideNavigation:'export const useDraftNavigation=()=>()=>{};export const useUnsavedDraftGuard=()=>{};',
+    guideGuest:'export const GuestPlanner=()=>null;',
     missing:'export const WorkspaceServiceState=()=>null;'};
-  const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation'],plugins:[{name:'boundary-ports',setup(b){
+  const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation','next/image'],plugins:[{name:'boundary-ports',setup(b){
     b.onResolve({filter:/.*/},args=>{
       let path;
       if(args.path==='./ui')path='ui';
+      else if(name==='GuideWorkspace'&&args.path==='./GuestPlanner')path='guideGuest';
+      else if(name==='GuideWorkspace'&&args.path==='./UnsavedDraftGuard')path='guideNavigation';
+      else if(name==='GuideWorkspace'&&args.path.endsWith('/guides/repository'))path='guides';
+      else if(name==='GuideWorkspace'&&args.path.endsWith('/bookmarks/repository'))path='bookmarks';
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';
       else if(args.path.endsWith('/creators/collaboration'))path='creator';
       else if(args.path.endsWith('/merchants/campaign-repository'))path='campaigns';
@@ -72,9 +80,9 @@ export async function workspaceHarness(name,ports={},initial={}) {
     });
     b.onLoad({filter:/.*/,namespace:'test'},args=>({loader:'js',contents:snippets[args.path]}));
   }}]});
-  const session=new Map();const module={exports:{}};
-  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,document:initial.document,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',hash:initial.hash??'',reload(){}},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
-    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return'a';if(name==='next/navigation')return{useRouter:()=>({refresh(){}}),useSearchParams:()=>new URLSearchParams(context.window.location.search)};
+  const session=new Map();const module={exports:{}};const router={refresh(){},push(){},replace(){}};
+  const context=createContext({module,exports:module.exports,Date,URL,URLSearchParams,console,setTimeout,clearTimeout,document:initial.document,crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},window:{location:{pathname:'/'+(initial.locale??'en')+'/'+props.path,search:initial.search??'',hash:initial.hash??'',reload(){}},addEventListener(type,fn){if(!listeners.has(type))listeners.set(type,new Set());listeners.get(type).add(fn);},removeEventListener(type,fn){listeners.get(type)?.delete(fn);},sessionStorage:{getItem:key=>session.get(key)??null,setItem:(key,value)=>session.set(key,value),removeItem:key=>session.delete(key)}},__locale:initial.locale??'en',__ports:ports,__invalidate:owner=>{for(const callback of [...invalidators])callback(owner);},__subscribe:fn=>{invalidators.add(fn);return()=>invalidators.delete(fn);},require:name=>{
+    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return'a';if(name==='next/image')return'img';if(name==='next/navigation')return{useRouter:()=>router,useSearchParams:()=>new URLSearchParams(context.window.location.search)};
     return require(name);
   }});
   if(initial.recordLocation)context.window.history={replaceState(_state,_title,path){const url=new URL(path,'https://owned.test');context.window.location.pathname=url.pathname;context.window.location.search=url.search;}};

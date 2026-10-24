@@ -327,4 +327,22 @@ describe('ExperiencePublicPage', () => {
     const ld = document.querySelector('script[type="application/ld+json"]')?.innerHTML ?? ''
     expect(ld).toContain('"aggregateRating"')
   })
+
+  it('does not present a signed-in viewer as unsaved when the saved-state read fails', async () => {
+    getExperienceBySlugMock.mockResolvedValue({
+      id: 'e1', slug: 'sunset-tour', title: 'Sunset junk boat tour', summary: 'Two hours on the harbour.',
+      description: 'Full description.', city: 'Hong Kong', priceAmount: 480, currency: 'HKD',
+      durationMinutes: 120, coverUrl: null, publishedAt: '2026-07-01T00:00:00Z', savesCount: 42,
+      merchant: { slug: 'acme-travel', companyName: 'Acme Travel' },
+    })
+    getUserMock.mockResolvedValueOnce({ data: { user: { email: 'traveler@example.com', id: 'u1' } } })
+    isExperienceSavedMock.mockRejectedValueOnce(new Error('read failed'))
+    const el = await ExperiencePublicPage({
+      params: Promise.resolve({ locale: 'en', slug: 'sunset-tour' }),
+      searchParams: Promise.resolve({}),
+    })
+    render(el)
+    expect(screen.getByRole('button', { name: 'Saved status could not be checked. Retry' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
+  })
 })

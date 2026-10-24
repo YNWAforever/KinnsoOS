@@ -177,3 +177,31 @@ test('creator earnings keep exact currency totals, exclude other creators and pa
   const batches=await ok(s.creator.client.rpc('get_kinnso_creator_earnings',{p_section:'payouts'}));assert.deepEqual(batches.items,[]);
  }finally{await s.cleanup();}
 });
+
+test('tracked earnings preserve missing provider profit as null, distinguish zero and keep fresh actor totals isolated',async()=>{
+ const s=await setup(),eventIds=Array.from({length:5},()=>randomUUID());
+ try{
+  const before=await ok(s.creator.client.rpc('get_kinnso_creator_earnings'));
+  await ok(admin.from('affiliate_network_events').insert([
+   {id:eventIds[0],network:'travelpayouts',external_action_id:'owned-unknown-'+eventIds[0],creator_id:s.creator.id,event_state:'processing',profit_amount:null,currency:'hkd'},
+   {id:eventIds[1],network:'travelpayouts',external_action_id:'owned-unknown-paid-'+eventIds[1],creator_id:s.creator.id,event_state:'paid',profit_amount:null,currency:'usd'},
+   {id:eventIds[2],network:'travelpayouts',external_action_id:'owned-zero-'+eventIds[2],creator_id:s.creator.id,event_state:'processing',profit_amount:'0.00',currency:'hkd'},
+   {id:eventIds[3],network:'travelpayouts',external_action_id:'owned-decimal-'+eventIds[3],creator_id:s.creator.id,event_state:'processing',profit_amount:'9999999999.99',currency:'hkd'},
+   {id:eventIds[4],network:'travelpayouts',external_action_id:'owned-outsider-'+eventIds[4],creator_id:s.other.id,event_state:'processing',profit_amount:'999.00',currency:'hkd'},
+  ]));
+  const tracked=await ok(s.creator.client.rpc('get_kinnso_creator_earnings',{p_section:'tracked'}));
+  assert.equal(tracked.items.length,4);assert.deepEqual(tracked.totals,before.totals);
+  const byId=new Map(tracked.items.map(item=>[item.id,item]));
+  assert.equal(byId.get(eventIds[0]).amount,null);assert.equal(byId.get(eventIds[0]).currency,'HKD');assert.equal(byId.get(eventIds[0]).status,'processing');
+  assert.equal(byId.get(eventIds[1]).amount,null);assert.equal(byId.get(eventIds[1]).currency,'USD');assert.equal(byId.get(eventIds[1]).status,'paid');
+  assert.equal(byId.get(eventIds[2]).amount,'0.00');assert.equal(byId.get(eventIds[3]).amount,'9999999999.99');
+  assert.equal(byId.has(eventIds[4]),false);
+  const other=await ok(s.other.client.rpc('get_kinnso_creator_earnings',{p_section:'tracked'}));assert.deepEqual(other.items.map(item=>item.id),[eventIds[4]]);
+  assert.equal((await anonymous.rpc('get_kinnso_creator_earnings',{p_section:'tracked'})).error?.code,'42501');
+  await ok(admin.from('creators').update({status:'suspended'}).eq('id',s.creator.id));
+  assert.equal((await s.creator.client.rpc('get_kinnso_creator_earnings',{p_section:'tracked'})).error?.message,'creator_required');
+ }finally{
+  await ok(admin.from('affiliate_network_events').delete().in('id',eventIds));
+  await s.cleanup();
+ }
+});

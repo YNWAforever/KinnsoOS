@@ -130,6 +130,9 @@
 .os-workspace p {
   margin: 0;
 }
+.os-workspace h2 {
+  overflow-wrap: anywhere;
+}
 .os-workspace p {
   line-height: 1.8;
   color: #58655d;

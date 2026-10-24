@@ -12,3 +12,19 @@ test('finance presents scoped source references and an exact blocked negative am
 test('unknown finance review reads authoritative scope before replaying the unchanged command and request ID',async()=>{const events=[],writes=[];const h=await workspaceHarness('FinanceWorkspace',{finance:{get:async()=>{events.push('read');return{ok:true,data:report}},review:async(...args)=>{events.push('write');writes.push(args);return writes.length===1?{ok:false,code:'UNAVAILABLE'}:{ok:true,data:{id,revision:1}}}}},{opsMode:true});h.field('Review reason').props.onChange({target:{value:'Owned source needs further investigation'}});h.render();h.find('button','Open source-linked review').props.onClick();await tick();h.render();h.find('button','Retry the same review request').props.onClick();await tick();h.render();assert.equal(events[2],'read');assert.deepEqual(writes[1],writes[0]);});
 test('failed finance reconciliation preserves the original unknown intent and prevents a premature replay',async()=>{let canRead=false,lost=false;const writes=[];const h=await workspaceHarness('FinanceWorkspace',{finance:{get:async()=>lost&&!canRead?{ok:false,code:'UNAVAILABLE'}:{ok:true,data:report},review:async(...args)=>{writes.push(args);if(!lost){lost=true;return{ok:false,code:'UNAVAILABLE'}}return{ok:true,data:{id,revision:1}}}}},{opsMode:true});h.field('Review reason').props.onChange({target:{value:'Owned original reconciliation reason'}});h.render();h.find('button','Open source-linked review').props.onClick();await tick();h.render();h.find('button','Retry the same review request').props.onClick();await tick();h.render();assert.equal(writes.length,1);assert.equal(h.field('Review reason').props.value,'Owned original reconciliation reason');canRead=true;h.find('button','Retry the same review request').props.onClick();await tick();h.render();assert.deepEqual(writes[1],writes[0]);});
 test('financial read auth denial clears private data and returns sign-in to the same reconciliation task',async()=>{let count=0;const h=await workspaceHarness('FinanceWorkspace',{finance:{get:async()=>++count===1?{ok:true,data:report}:{ok:false,code:'AUTH_REQUIRED'}}},{opsMode:true});h.find('button','Refresh records').props.onClick();await tick();h.render();assert.ok(!h.text().includes('Owned finance source'));const sign=h.find('a','Sign in');assert.ok(sign);assert.equal(new URL(sign.props.href,'https://local.test').searchParams.get('next'),'/en/ops/reconciliation');});
+
+for(const locale of ['en','zh-HK'])test('PD11 '+locale+': tracked unknown profit is distinct from zero without changing settlement totals',async()=>{
+ const unknownTitle='Tracked unknown profit',zeroTitle='Tracked confirmed zero';
+ const pages={
+  settled:earnings(),
+  tracked:{section:'tracked',totals:earnings().totals,items:[{...earning('affiliate'),title:unknownTitle,amount:null,status:'processing'},{...earning('affiliate'),id:submission,title:zeroTitle,amount:'0',status:'processing'}],nextCursor:null}
+ };
+ const h=await workspaceHarness('CreatorEarningsWorkspace',{creatorEarnings:{get:async section=>({ok:true,data:pages[section]})}},{locale});
+ h.find('button',locale==='en'?'Tracked activity':'追蹤活動').props.onClick();for(let n=0;n<4;n++){await tick();h.render();}
+ const card=title=>h.elements().find(el=>el.type==='article'&&h.text(el).includes(title));
+ assert.match(h.text(card(unknownTitle)),locale==='en'?/HKD Amount unknown/:/HKD 金額不詳/);
+ assert.doesNotMatch(h.text(card(unknownTitle)),/HKD (?:0|null)/);
+ assert.match(h.text(card(zeroTitle)),/HKD 0/);
+ assert.match(h.text(),/HKD 9007199254740993\.01/);
+ assert.match(h.text(),locale==='en'?/excluded from your earnings totals/:/不計入收益總額/);
+});

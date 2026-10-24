@@ -1,8 +1,9 @@
+import {randomBytes} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { verifyTestTarget, approvedLocalProjects } from './verify-test-target.mjs';
+import { verifyTestTarget, testTargetConfiguration, approvedLocalProjects } from './verify-test-target.mjs';
 import { verifyMailboxRuntime } from './local-auth-mailbox.mjs';
 const project = 'kinnsoos-b1-20261002', api = 'http://127.0.0.1:58421';
 export function localConfiguration(source, {mailbox = false, projectRef = project, ciDatabasePorts = false} = {}) {
@@ -40,7 +41,9 @@ export function localTestEnvironment(status, label, {mailbox = false, projectRef
   if (status.MAILPIT_URL !== 'http://127.0.0.1:58424') throw Error('Exact owned Mailpit origin required');
   env.KINNSO_TEST_MAILBOX_ORIGIN = status.MAILPIT_URL; env.KINNSO_TEST_EMAIL_CONFIRMATION = 'required';
  }
- verifyTestTarget(env); return env;
+ testTargetConfiguration(env);
+ env.KINNSO_SHARE_RECEIPT_ACTIVE_KEY='ci-job';env.KINNSO_SHARE_RECEIPT_KEYS=JSON.stringify({'ci-job':randomBytes(32).toString('base64')});
+ return env;
 }
 export function prepare(command, env = process.env) {
  if (env.CI !== 'true' || env.GITHUB_ACTIONS !== 'true') throw Error('CI-only setup; preserve existing developer environments');
@@ -59,6 +62,7 @@ export function prepare(command, env = process.env) {
   if (!container.State.Running || !container.Config.Labels) throw Error('Owned CI database required');
   const status = JSON.parse(execFileSync('supabase', ['status', '--workdir', stack, '--output', 'json'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }));
   const values = localTestEnvironment(status, container.Config.Labels['com.supabase.cli.project'], {mailbox});
+  verifyTestTarget(values);
   if (mailbox) {
    const inspect = name => JSON.parse(execFileSync('docker', ['inspect', 'supabase_'+name+'_'+project], {encoding:'utf8'}))[0];
    verifyMailboxRuntime(values, inspect('auth'), inspect('inbucket'));

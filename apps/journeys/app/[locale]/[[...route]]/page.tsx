@@ -4,6 +4,7 @@ import { Workbench } from "../../travel/Workbench";
 import { isKnownRoute } from "../../travel/routes";
 import { fixtures } from "../../travel/model";
 import type { Metadata } from "next";
+import {publicEntryMetadata} from "../../../lib/seo/public-entry";
 import {currentActor} from '../../../lib/auth/actor';
 import {capabilities} from '../../../lib/contracts/capabilities';
 import {readPublicGuidePage,guidePageMetadata} from '../../../lib/seo/guide-publication';
@@ -37,6 +38,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if(!published)notFound();
     return guidePageMetadata(published);
   }
+  const entryMetadata=route[0]!=='demo'?publicEntryMetadata(route.join('/'),locale as 'en'|'zh-HK'):null;
+  if(entryMetadata)return entryMetadata;
   const guide = route[0]==='demo'&&route[1]==='g'?fixtures.find(g=>g.slug===route[2]):undefined;
   return {
     title: guide
@@ -86,7 +89,7 @@ export default async function Page({ params,searchParams }: Props) {
         tripHeading={tripHeading}
         merchantEntry={merchantEntry}
         creatorMissionEntry={creatorMissionEntry}
-        features={{media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
+        features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
       />
     </Suspense>
   );

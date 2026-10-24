@@ -260,6 +260,8 @@ export interface TravelerTripsMessages {
   savedExperiencesEmpty: string
   reviewCta: string
   reviewedLabel: string
+  unsaveFailed: string
+  unsaveSignIn: string
 }
 
 export interface MerchantsDirectoryMessages {
@@ -1372,16 +1374,20 @@ export interface Messages {
     unnamed: string
   }
   guideSave: {
+    planFromGuide: string
+    planningUnavailable: string
     save: string
     saved: string
     signInToSave: string
     saveFailed: string
+    statusUnavailable: string
   }
   experienceSave: {
     save: string
     saved: string
     signInToSave: string
     saveFailed: string
+    statusUnavailable: string
   }
   reviews: {
     formHeading: string
@@ -2773,6 +2779,8 @@ const messages: Messages = {
     savedExperiencesEmpty: "You haven't saved any experiences yet.",
     reviewCta: 'Leave a review',
     reviewedLabel: 'Reviewed',
+    unsaveFailed: 'That did not remove it. Please try again.',
+    unsaveSignIn: 'Sign in to finish removing',
   },
   merchantsOps: {
     title: 'Merchants',
@@ -3042,16 +3050,20 @@ const messages: Messages = {
     unnamed: 'Unnamed',
   },
   guideSave: {
+    planFromGuide: 'Plan from this guide',
+    planningUnavailable: 'Account trip planning is not connected yet.',
     save: 'Save',
     saved: 'Saved',
     signInToSave: 'Sign in to save',
     saveFailed: 'That did not save. Please try again.',
+    statusUnavailable: 'Saved status could not be checked. Retry',
   },
   experienceSave: {
     save: 'Save',
     saved: 'Saved',
     signInToSave: 'Sign in to save',
     saveFailed: 'That did not save. Please try again.',
+    statusUnavailable: 'Saved status could not be checked. Retry',
   },
   reviews: {
     formHeading: 'Leave a review',

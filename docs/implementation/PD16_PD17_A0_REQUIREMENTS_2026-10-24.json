@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "base": "9c845c09dc41652d5d05657d2ebcfea7d3701fcd",
+  "branch": "codex/pd16-pd17-a0-rehearsal-20261024",
+  "binding": "Final source/head/CI statuses recorded in independent delivery receipt; source statuses here are preserved snapshots",
+  "requirements": [
+    {
+      "id": "PD16.A0.01",
+      "requirement": "14H＋6PS＋8R逐案保留原NOT_RUN／BLOCKED，owned reference不替代hosted",
+      "sourceSnapshotStatus": "SOURCE_PREPARED"
+    },
+    {
+      "id": "PD16.A0.02",
+      "requirement": "exact候選／tree／PR parents／CI artifacts綁定；原source不挪用",
+      "sourceSnapshotStatus": "FINAL_DELIVERY_RECEIPT_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.01",
+      "requirement": "真artifact bytes／SHA／size，缺失／篡改／路徑逃逸拒絕",
+      "sourceSnapshotStatus": "LOCAL28PASS_1WINDOWS_SYMLINK_SKIP;GROWTH_CAP_AND_CLEANUP_REDS_RETAINED"
+    },
+    {
+      "id": "PD17.A0.02",
+      "requirement": "未知／FAIL／NOT_RUN readback不稱恢復；D06目標null",
+      "sourceSnapshotStatus": "LOCAL_VERIFIED"
+    },
+    {
+      "id": "PD17.A0.03",
+      "requirement": "真owned DB commit後ACK loss，同candidate／tick恢復至5筆無重複",
+      "sourceSnapshotStatus": "NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.04",
+      "requirement": "partial cursor遇read outage不改窗口，補剩餘3筆並dedupe",
+      "sourceSnapshotStatus": "NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.05",
+      "requirement": "recipient成功／outsider空讀及exact mission／3actor cleanup readback",
+      "sourceSnapshotStatus": "NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.OPS",
+      "requirement": "actual scheduler／provider／recipient／primary-backup交班",
+      "sourceSnapshotStatus": "BLOCKED_OWNER_TARGET_SCOPE"
+    },
+    {
+      "id": "PD17.RESTORE",
+      "requirement": "原shared subset export／fresh local restore／實際RPO-RTO及full coverage",
+      "sourceSnapshotStatus": "NOT_RUN"
+    },
+    {
+      "id": "PD16.CONTENT",
+      "requirement": "三篇作者同意／圖片權利真攻略及新session／第二裝置",
+      "sourceSnapshotStatus": "BLOCKED_RIGHTS_HOSTED_INPUTS"
+    },
+    {
+      "id": "PD16.A0.03",
+      "requirement": "Dirty／untracked／staged checkout不能借用HEAD；ignored generated outputs仍可保留；metadata不得遮蔽canonical Git，await前後均須同一clean HEAD",
+      "sourceSnapshotStatus": "LOCAL_RED_THEN_GREEN;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.06",
+      "requirement": "Standalone metadata必須核對manifest完整集合與每檔／mapped SQL bytes；缺失或變更source不能冒稱原候選",
+      "sourceSnapshotStatus": "LOCAL_RED_THEN_GREEN;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.07",
+      "requirement": "兩個actual CLI await相同resolver，來源失配保持BLOCKED／null／authorizedActions空",
+      "sourceSnapshotStatus": "LOCAL_ACTUAL_CLI_VERIFIED;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.08",
+      "requirement": "Containment檢查後父目錄替換不讀root外bytes；opened file與root／ancestor identity前後綁定",
+      "sourceSnapshotStatus": "REAL_WINDOWS_JUNCTION_RED_THEN_GREEN;NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.09",
+      "requirement": "Partial setup保存已分配IDs／stage；停止cleanup寫入、保留原error並獨立唯讀診斷",
+      "sourceSnapshotStatus": "EXACT_SOURCE_FILESYSTEM_RED_THEN_GREEN;NEW_EXACT_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD16.A0.04",
+      "requirement": "Public a11y量測先固定audit-only scroll原點；保留ratio1／200%／5000ms／axe等原gates及e673真FAIL",
+      "sourceSnapshotStatus": "REAL_NEXT_RED_AND_FAILED_FIRST_FIX_RETAINED;TARGETED10PASS;NEW_EXACT_FULL_CI_REQUIRED"
+    },
+    {
+      "id": "PD17.A0.10",
+      "requirement": "Pilot packet讀取保持256KiB上限；metadata後增長不得整檔載入；exact cap接受，oversized／nonregular拒絕且不授予動作",
+      "sourceSnapshotStatus": "ACTUAL_CLI_RED1FAIL_3PASS_THEN_GREEN4PASS;LOCAL_FULL1058PASS_1WINDOWS_SKIP;NEW_EXACT_CANDIDATE_CI_REQUIRED"
+    }
+  ],
+  "authority": "A0",
+  "A1_A5": "NOT_EXECUTED",
+  "originalRemixChanges": false,
+  "guideRights": "BLOCKED",
+  "originalPD15": "OPEN",
+  "PD16": "BLOCKED_HOSTED_ACCEPTANCE",
+  "PD17": "BLOCKED_REAL_OPERATIONS",
+  "T08": "OPEN",
+  "N16": "OPEN",
+  "PD18": "NO_GO",
+  "D06": {
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  },
+  "reviewRepairs": [
+    "bounded read under concurrent file growth",
+    "preserve primary failure; stop cleanup writes on failure; independent readback checkpoint",
+    "Reject dirty Git and changed standalone source/SQL; reuse existing verifier; await in both CLIs",
+    "Bind opened artifact to validated ancestor identities before any read and after read",
+    "Preserve progressive partial setup IDs; incomplete setup stops deletion and records independent readbacks",
+    "Canonical Git checked before metadata; scoped audit-origin synchronization with unchanged accessibility assertions",
+    "Fence canonical clean HEAD again after awaited source verification; actual late dirty/head regressions",
+    "Pilot ingress uses bounded opened-file read; reject growth or changed length/mtime before packet parsing"
+  ],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
+  "intermediateReviewHead": "e673a148e465abe7c21b417b26cbd541101aa395",
+  "followupReviewBaseline": "0a28440a13774084de18987f7c73d52a9d62fc20"
+}

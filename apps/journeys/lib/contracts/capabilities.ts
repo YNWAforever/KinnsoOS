@@ -57,13 +57,27 @@ export function mediaRuntimeConfigured(env: Environment): boolean {
   } catch { return false; }
 }
 
+export function shareReceiptKeyring(env:Environment):{active:string;keys:Record<string,string>}|null {
+ try{
+  const active=env.KINNSO_SHARE_RECEIPT_ACTIVE_KEY,raw=env.KINNSO_SHARE_RECEIPT_KEYS;
+  if(!active||!/^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$/.test(active)||!raw||raw.length>8192)return null;
+  const keys:unknown=JSON.parse(raw);if(!keys||typeof keys!=='object'||Array.isArray(keys))return null;
+  const entries=Object.entries(keys);if(entries.length<1||entries.length>8)return null;
+  for(const [id,key] of entries){if(!/^[A-Za-z0-9][A-Za-z0-9_-]{0,31}$/.test(id)||typeof key!=='string'||!/^[A-Za-z0-9+/]{43}=$/.test(key))return null;
+   const bytes=Buffer.from(key,'base64');if(bytes.length!==32||bytes.toString('base64')!==key)return null;
+  }
+  if(!Object.hasOwn(keys,active))return null;return {active,keys:keys as Record<string,string>};
+ }catch{return null;}
+}
+export const shareRecoveryConfigured=(env:Environment)=>shareReceiptKeyring(env)!==null;
+
 export function capabilities(env: Environment): Record<string, Capability> {
   const configured = backendTarget(env) !== null;
   const ready = new Set((env.KINNSO_ENABLED_CAPABILITIES ?? '').split(','));
-  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
+  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'shareRecovery', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
     .map((name) => [name, {
       mode: configured && (name === 'auth' || name === 'catalog' ||
-        (name === 'mediaUpload' ? ready.has('media') && mediaRuntimeConfigured(env) :
+        (name === 'shareRecovery' ? ready.has('sharing') && shareRecoveryConfigured(env) : name === 'mediaUpload' ? ready.has('media') && mediaRuntimeConfigured(env) :
           ready.has(name) && !['booking', 'payment'].includes(name))) ? 'connected' : 'unavailable',
       dataOwner: 'backend', session: !['catalog', 'sharing'].includes(name),
       visibility: name === 'catalog' ? 'public' : 'private', transactionOwner: 'backend',

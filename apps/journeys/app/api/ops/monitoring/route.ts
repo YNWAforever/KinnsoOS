@@ -9,5 +9,7 @@ export async function GET(request:Request){
  // Separately released monthly definitions must not hide existing measurements.
  // Authorization and other backend failures still fail closed.
  if(monthly.error&&!['PGRST202','42883'].includes(monthly.error.code))return backendFailure(monthly.error);
- return reply({ok:true,data:{...r.data,monthlyCosts:monthly.error?null:monthly.data}});
+ const pilot=await ctx.client.rpc('get_kinnso_pilot_metrics',day?{p_day:day}:{});
+ if(pilot.error&&!['PGRST202','42883'].includes(pilot.error.code))return backendFailure(pilot.error);
+ return reply({ok:true,data:{...r.data,monthlyCosts:monthly.error?null:monthly.data,pilot:pilot.error?null:pilot.data}});
 }

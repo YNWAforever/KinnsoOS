@@ -1,0 +1,11 @@
+{
+  "name": "kinnso-accessibility-lab",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "axe-core": "4.12.1"
+  }
+}

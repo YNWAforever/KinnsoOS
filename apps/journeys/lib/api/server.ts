@@ -1,7 +1,7 @@
 import { serverClient } from '../supabase/server';
 import { capabilities } from '../contracts/capabilities';
 import type { ErrorCode } from '../contracts/capabilities';
-import { sameOrigin } from './validation';
+import { sameOrigin, uuid } from './validation';
 import {observeRequest} from '../telemetry/server';
 
 export function reply(data: unknown, status = 200) {
@@ -27,6 +27,9 @@ export async function apiContext(request: Request, capability: string, write = f
   if (!client) return {response:failure('UNAVAILABLE',503)} as const;
   const {data:{user},error} = await client.auth.getUser();
   if (error || !user) return {response:failure('AUTH_REQUIRED',401)} as const;
+  const intentActor = request.headers.get('X-Kinnso-Intent-Actor');
+  if (intentActor !== null && (!uuid(intentActor) || intentActor.toLowerCase() !== user.id.toLowerCase()))
+    return {response:failure('AUTH_REQUIRED',401)} as const;
   // The RPC also verifies the current auth.sessions row and authoritative roles.
   const actor = await client.rpc('kinnso_actor');
   if (actor.error || actor.data?.id !== user.id) return {response:failure('AUTH_REQUIRED',401)} as const;

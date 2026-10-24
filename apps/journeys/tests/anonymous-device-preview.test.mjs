@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createContext,runInContext} from 'node:vm';
 import {transform} from 'esbuild';
+import * as adoptionIntent from '../lib/guides/adoption-intent.ts';
 
 const source=await readFile(new URL('../app/travel/TripWorkspace.tsx',import.meta.url),'utf8');
 const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
@@ -12,9 +13,10 @@ function preview(actorId,id,valid=true,includeHidden=false){
   if(name==='react')return{useState:initial=>[initial===true&&!valid?false:initial,()=>{}],useRef:initial=>({current:initial}),useEffect:()=>{}};
   if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
   if(name==='next/link')return{__esModule:true,default:'a'};
-  if(name==='next/navigation')return{useRouter:()=>({})};
+  if(name==='next/navigation')return{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()};
+  if(name==='../../lib/guides/adoption-intent')return adoptionIntent;
   if(name==='./UnsavedDraftGuard')return{useDraftNavigation:()=>()=>{}};
-  if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path,ready:true})};
+  if(name==='./ui')return{useApp:()=>({locale:'en',t:en=>en,href:path=>'/en/'+path,ready:true})};
   if(name==='./ImportPreview')return{ImportPreview};
   return{};
  }});
@@ -43,11 +45,13 @@ function guideRecovery(actorId,valid=true,kind='itinerary',all=false,locale='en'
  runInContext(guideCode.code,createContext({module,exports:module.exports,require:name=>{
   if(name==='react')return{useState:initial=>[initial===true&&!valid?false:initial,()=>{}],useRef:initial=>({current:initial}),useEffect:()=>{}};
   if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-  if(name==='next/navigation')return{useRouter:()=>({}),useSearchParams:()=>({get:()=>null})};
+  if(name==='next/navigation')return{useRouter:()=>({}),useSearchParams:()=>new URLSearchParams()};
+  if(name==='../../lib/guides/adoption-intent')return adoptionIntent;
   if(name==='./UnsavedDraftGuard')return{useDraftNavigation:()=>()=>{}};
-  if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='en'?en:zh,href:path=>'/'+locale+'/'+path})};if(name==='./GuestPlanner')return{GuestPlanner};return{};
+  if(name==='./ui')return{useApp:()=>({locale,t:(en,zh)=>locale==='en'?en:zh,href:path=>'/'+locale+'/'+path})};if(name==='./GuestPlanner')return{GuestPlanner};return{};
  }}));
- const tree=module.exports.GuideWorkspace({id:'guide-one',actorId,initialGuide:{id:'guide-one',kind,version:2}});
+ const id='11111111-1111-4111-8111-111111111111';
+ const tree=module.exports.GuideWorkspace({id,actorId,initialGuide:{id,kind,version:2}});
  const nodes=node=>!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(nodes)];
  return all?nodes(tree):nodes(tree).filter(node=>node.type===GuestPlanner);
 }

@@ -20,15 +20,26 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
+      - name: Install the pinned optional accessibility auditor
+        run: npm ci --prefix scripts/accessibility --ignore-scripts
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install the locked Chromium runtime
         run: npm exec playwright install -- --with-deps chromium
       - name: Native workspace contracts without a database
         run: npm exec playwright test -- --config=playwright.service-state.config.ts
+      - name: Public entries on a backend-disabled Next server
+        run: npm exec playwright test -- --config=playwright.public-entry.config.ts
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
-        if: failure()
+        if: always()
         with:
           name: journeys-workspace-fixture-results
-          path: apps/journeys/evidence/service-state-browser/
+          path: |
+            apps/journeys/evidence/service-state-browser/
+            apps/journeys/evidence/public-entry-browser/
+            apps/journeys/evidence/ci/browser-mirror.json
   verify:
     runs-on: ubuntu-latest
     defaults:
@@ -49,12 +60,14 @@ jobs:
       - name: Read-only production source and mapped-input contracts (owned HTTP fixture only)
         run: python -m unittest discover -s ../../scripts -p verify_journeys_production_test.py -v
       - name: Owned CI concurrency and cancellation contracts
-        run: node --test ../../scripts/journeys-workflow-test.mjs
+        run: node --test ../../scripts/journeys-workflow-test.mjs ../../scripts/supabase-registry-workflow-test.mjs
       - name: Deployment scope native contracts (metadata only)
         run: |
           set -o pipefail
           mkdir -p evidence/ci
           python ../../scripts/deployment_scope_test.py -v 2>&1 | tee evidence/ci/deployment-scope-tests.log
+      - name: Verify the no-deployment integration hold
+        run: python ../../scripts/git_deployment_hold_test.py -v
       - run: node scripts/ci-evidence.mjs unit
       - run: npm run build
       - run: npm run typecheck
@@ -75,6 +88,9 @@ jobs:
             apps/journeys/evidence/ci/deployment-scope-tests.log
           if-no-files-found: warn
   connected:
+    permissions:
+      contents: read
+      packages: read
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -90,14 +106,35 @@ jobs:
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
         with:
           version: 2.107.0
+      - name: Isolate ephemeral registry configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/kinnso-ghcr"
+          chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
+          printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Authenticate Supabase image downloads
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
       - name: Prepare the isolated CI target
         run: node scripts/prepare-connected-ci.mjs config
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile connected
       - name: Start current local migrations without sample seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Derive local test environment after ownership verification
         run: node scripts/prepare-connected-ci.mjs env
       - run: node scripts/ci-evidence.mjs integration
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install Chromium and required system dependencies
         timeout-minutes: 15
         run: npm exec playwright install -- --with-deps chromium
@@ -115,6 +152,9 @@ jobs:
           name: journeys-connected-local-results
           path: apps/journeys/evidence/connected-browser/
   auth-mailbox:
+    permissions:
+      contents: read
+      packages: read
     runs-on: ubuntu-latest
     timeout-minutes: 20
     defaults:
@@ -131,13 +171,34 @@ jobs:
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
         with:
           version: 2.107.0
+      - name: Isolate ephemeral registry configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/kinnso-ghcr"
+          chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
+          printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Authenticate Supabase image downloads
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
       - name: Prepare a fresh local confirmation and SMTP capture profile
         run: node scripts/prepare-connected-ci.mjs config-mailbox
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile mailbox
       - name: Start owned local Auth and Mailpit without application seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Verify local SMTP ownership and required confirmation
         run: node scripts/prepare-connected-ci.mjs env-mailbox
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install Chromium and system dependencies
         timeout-minutes: 15
         run: npm exec playwright install -- --with-deps chromium
@@ -147,10 +208,16 @@ jobs:
         if: always()
         with:
           name: journeys-auth-mailbox-summary
-          path: apps/journeys/evidence/ci/auth-mailbox.json
+          path: |
+            apps/journeys/evidence/ci/auth-mailbox.json
+            apps/journeys/evidence/ci/browser-mirror.json
+            apps/journeys/evidence/ci/image-downloads.json
           if-no-files-found: warn
 
   operations-performance:
+    permissions:
+      contents: read
+      packages: read
     runs-on: ubuntu-22.04
     timeout-minutes: 45
     defaults:
@@ -160,7 +227,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version: 22
           cache: npm
@@ -170,13 +237,34 @@ jobs:
       - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
         with:
           version: 2.107.0
+      - name: Isolate ephemeral registry configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/kinnso-ghcr"
+          chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
+          printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Authenticate Supabase image downloads
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          logout: true
       - name: Prepare owned isolated operations lab
         run: node scripts/prepare-connected-ci.mjs config
+      - name: Prefetch pinned images before database startup
+        timeout-minutes: 10
+        run: node scripts/prefetch-ci-images.mjs --profile connected
       - name: Start fresh localhost migrations without sample seeds
         run: supabase start --workdir ../../.local-private/connected-ci-stack
       - name: Verify local ownership before deriving lab credentials
         run: node scripts/prepare-connected-ci.mjs env
       - run: npm run build
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
       - name: Install the locked Chromium runtime
         run: npm exec playwright install -- --with-deps chromium
       - name: Collect complete operations warm-read baseline without inventing budgets
@@ -203,3 +291,12 @@ jobs:
           name: journeys-operations-performance
           path: apps/journeys/evidence/performance/
           if-no-files-found: error
+      - name: Preserve registry-only download diagnostics
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: journeys-operations-image-downloads
+          path: |
+            apps/journeys/evidence/ci/image-downloads.json
+            apps/journeys/evidence/ci/browser-mirror.json
+          if-no-files-found: warn

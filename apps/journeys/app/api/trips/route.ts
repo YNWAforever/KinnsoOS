@@ -13,12 +13,27 @@ export async function GET(request: Request) {
 }
 export async function POST(request: Request) {
   const ctx = await apiContext(request,'trips',true); if (ctx.response) return ctx.response;
+  let command:{requestId:string;input:Record<string,unknown>};
   try {
     const body = object(await boundedBody(request),['requestId','input']);
     if (!uuid(body.requestId)) return failure('INVALID',400);
-    const input = object(body.input,['title','timezone','startDate','destinationId']);
-    const result = await timedRpc(ctx.client,'create_trip_v2',{p_request_id:body.requestId,p_payload:input},ctx.actor);
-    if(!result.error)await successEvent(ctx.actor,'trip_created',body.requestId);
-    return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data},201);
+    command={requestId:String(body.requestId),input:object(body.input,['title','timezone','startDate','destinationId'])};
   } catch { return failure('INVALID',400); }
+  let result:Awaited<ReturnType<typeof timedRpc>>;
+  try {
+    result=await timedRpc(ctx.client,'create_trip_v2',{p_request_id:command.requestId,p_payload:command.input},ctx.actor);
+  } catch {
+    // A transport exception may follow a commit. Never call it validation failure.
+    return failure('UNAVAILABLE',503);
+  }
+  if(result.error){
+    const response=backendFailure(result.error),code=result.error.code??'';
+    // Only an actual PostgreSQL statement rejection can be terminal INVALID.
+    if(response.status===400&&code!=='P0001'&&code!=='23514'&&!code.startsWith('22'))return failure('UNAVAILABLE',503);
+    return response;
+  }
+  try{await successEvent(ctx.actor,'trip_created',command.requestId)}catch{
+    // Optional measurement cannot discard a known durable acknowledgement.
+  }
+  return reply({ok:true,data:result.data},201);
 }

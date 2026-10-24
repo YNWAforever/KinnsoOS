@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "scope": "Approved no-deployment code integration, creation/adoption recovery, progress source contracts and fail-closed real-suite source inputs. No hosted or release qualification.",
+  "files": [
+    ".github/workflows/journeys.yml",
+    "apps/journeys/app/api/trips/[id]/adopt/route.ts",
+    "apps/journeys/app/travel/GuideWorkspace.tsx",
+    "apps/journeys/app/travel/workbench.css",
+    "apps/journeys/playwright.stale-tab.config.ts",
+    "apps/journeys/scripts/real-integration-runner.mjs",
+    "apps/journeys/scripts/real-suite-source.mjs",
+    "apps/journeys/scripts/source-manifest.json",
+    "apps/journeys/tests/adoption-handoff.test.mjs",
+    "apps/journeys/tests/integration/trip-progress.test.mjs",
+    "apps/journeys/tests/real-integration/stale-tab.spec.ts",
+    "apps/journeys/tests/real-integration/target-catalog.sql",
+    "apps/journeys/tests/real-integration/target.mjs",
+    "apps/journeys/tests/real-suite-source.test.mjs",
+    "apps/journeys/tests/trip-creation-api.test.mjs",
+    "apps/journeys/tests/trip-progress-schema.test.mjs",
+    "apps/journeys/vercel.json",
+    "apps/web/tests/design.k2-tokens.test.ts",
+    "apps/web/vercel.json",
+    "docs/implementation/PR_INTEGRATION_SOURCE_MANIFEST.json",
+    "scripts/git_deployment_hold_test.py",
+    "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql",
+    "vercel.json"
+  ]
+}

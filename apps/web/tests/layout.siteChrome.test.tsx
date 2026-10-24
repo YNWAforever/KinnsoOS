@@ -26,7 +26,7 @@ vi.mock('@/lib/auth/useViewerRole', () => ({ useViewerRole: () => viewerRole.val
 vi.mock('@/lib/product-state', () => ({
   getProductState: async () => productState,
 }))
-// app/layout.tsx calls next/font/local at module eval; it is not callable under
+// app/fonts.ts calls next/font/local at module eval; it is not callable under
 // vitest (no Next SWC font transform). Stub it to {variable}.
 vi.mock('next/font/local', () => ({
   default: (o: { variable: string }) => ({ variable: o.variable }),
@@ -38,6 +38,9 @@ import en from '@/lib/i18n/messages/en'
 describe('[locale]/layout mounts the global shell', () => {
   it('wraps children in SiteChrome (navbar + footer present)', async () => {
     const ui = await LocaleLayout({ children: <div>BODY</div>, params: Promise.resolve({ locale: 'en' }) })
+    for (const variable of ['--font-jetbrains-mono', '--font-fraunces', '--font-inter']) {
+      expect(ui.props.className).toContain(variable)
+    }
     // The layout returns <html><body>…</body></html>; render the <body>'s children subtree.
     render(<>{ui.props.children.props.children}</>)
     expect(screen.getByText('BODY')).toBeTruthy()

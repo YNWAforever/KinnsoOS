@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import {PilotReferralLink} from './pilot/PilotReferralLink'
 import type { PublicExperience } from '@/lib/experiences/public-queries'
 import type { Locale } from '@/lib/i18n/config'
 
@@ -7,13 +7,14 @@ import type { Locale } from '@/lib/i18n/config'
  * pages both render a small grid of these. Same markup as the /m/[slug]
  * experiences grid (PublicMerchantProfileView) for visual consistency.
  */
-export function ExperienceLinkCard({ locale, experience, hrefQuery }: {
+export function ExperienceLinkCard({ locale, experience, hrefQuery, guideId }: {
   locale: Locale
   experience: PublicExperience
   hrefQuery: string
+  guideId?: string
 }) {
   return (
-    <Link
+    <PilotReferralLink locale={locale} guideId={guideId} experienceId={experience.id}
       href={`/${locale}/experiences/${experience.slug}?${hrefQuery}`}
       className="k2-card block p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-kinnso-orange"
     >
@@ -21,7 +22,7 @@ export function ExperienceLinkCard({ locale, experience, hrefQuery }: {
       <p className="mt-2 text-sm text-kinnso-ink/70">
         {experience.city} · {experience.currency} {experience.priceAmount.toLocaleString()}
       </p>
-    </Link>
+    </PilotReferralLink>
   )
 }
 

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "sourceRevision": null,
+  "scope": "SYNTHETIC_SUBSET_ONLY",
+  "target": {
+    "kind": "owned_local",
+    "projectRef": null,
+    "unlinked": true,
+    "identityRef": null,
+    "ownershipRef": null
+  },
+  "ownerRef": null,
+  "backupOwnerRef": null,
+  "serviceObjective": "NOT_PROMISED",
+  "rpoMinutes": null,
+  "rtoMinutes": null,
+  "artifacts": [],
+  "timing": null,
+  "readback": {
+    "status": "NOT_RUN",
+    "evidenceRef": null
+  }
+}

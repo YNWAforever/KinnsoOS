@@ -5,15 +5,15 @@ import { describe, it, expect, vi } from 'vitest'
 // next/font/local is not callable under vitest (no SWC font transform) — stub
 // it, same pattern as tests/layout.siteChrome.test.tsx. The stub echoes the
 // `variable` option it was called with, so the assertions below bind
-// layout.tsx's option strings to the var(--font-*) references that globals.css
+// fonts.ts's option strings to the var(--font-*) references that globals.css
 // uses.
 vi.mock('next/font/local', () => ({
   default: (o: { variable: string }) => ({ variable: o.variable }),
 }))
 
-import { fontVariables } from '@/app/layout'
+import { fontVariables } from '@/app/fonts'
 
-const layoutSource = readFileSync(resolve(process.cwd(), 'app/layout.tsx'), 'utf8')
+const fontSource = readFileSync(resolve(process.cwd(), 'app/fonts.ts'), 'utf8')
 
 describe('R1C typography wiring', () => {
   it('exposes JetBrains Mono, Fraunces, and Inter variables', () => {
@@ -28,8 +28,8 @@ describe('R1C typography wiring', () => {
   })
 
   it('self-hosts every face instead of fetching from Google Fonts at build time', () => {
-    expect(layoutSource).not.toMatch(/from 'next\/font\/google'/)
-    const sources = [...layoutSource.matchAll(/src: '(\.\/fonts\/[^']+\.woff2)'/g)].map((m) => m[1])
+    expect(fontSource).not.toMatch(/from 'next\/font\/google'/)
+    const sources = [...fontSource.matchAll(/src: '(\.\/fonts\/[^']+\.woff2)'/g)].map((m) => m[1])
     expect(sources).toHaveLength(3)
     for (const src of sources) expect(existsSync(resolve(process.cwd(), 'app', src)), src).toBe(true)
   })

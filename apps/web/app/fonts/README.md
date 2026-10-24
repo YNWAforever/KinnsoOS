@@ -1,6 +1,6 @@
 # Self-hosted brand fonts
 
-`app/layout.tsx` loads these through `next/font/local`, so `next build` and `next dev`
+`app/fonts.ts` loads these through `next/font/local`, so `next build` and `next dev`
 never fetch from Google Fonts. (Fetching at build time made CI builds fail whenever Google
 returned unexpected font CSS.)
 

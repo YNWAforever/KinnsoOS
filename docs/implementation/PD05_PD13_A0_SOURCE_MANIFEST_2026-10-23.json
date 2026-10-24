@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "base": "2adc2550d11e421c06fa29c5b3e613a9a23e462b",
+  "candidateBranch": "codex/pd05-pd13-a0-followup-20261023",
+  "hashMeaning": "SHA-256 canonical staged Git blobs; final head/tree/CI in delivery receipt",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    "apps/journeys/app/travel/CollaborationTasks.tsx": "0024e71e1c24e97fb06ae1a8ade60112f58386d18eb902f17cdedb8a892f9111",
+    "apps/journeys/app/travel/CreatorEarningsWorkspace.tsx": "ac0dbfdd3730604b038fce8b42f1be5664970129e7e38b886d489ab1cd5ae97d",
+    "apps/journeys/app/travel/CreatorMissionsWorkspace.tsx": "e835304004c27fde9b170ccd91e45bdc675e6eb924e0580b81d10cfeea9f7cc0",
+    "apps/journeys/app/travel/InboxWorkspace.tsx": "912cb4663da4614d1160351954c769bd140bb5945eecb54f299fe8a5af9573fc",
+    "apps/journeys/lib/collaboration/tasks.ts": "687f9470c47b54053ee804714a59c8c5b0d0b782bb2591a63314a2b735ac3745",
+    "apps/journeys/lib/creators/collaboration.ts": "53415840b83099052845e5feb7c9c2e2d93f46d5cfd3a7f13a0535b3a0c4807e",
+    "apps/journeys/scripts/source-manifest.json": "66bdce89f51cf4cd7f6e3691a0b3f3b9aaee318402e4056cb664bbadd992e986",
+    "apps/journeys/tests/creator-collaboration-ui.test.mjs": "620230cfb463dc6413a89bad4bf6605e9cc6f2a92e1f17e45f81e17729b0ce45",
+    "apps/journeys/tests/e2e/u21-pilot-presentation.spec.ts": "55343b4378352e0ce525954170302df78bc59a9608cbaadaf953cd28cac1cef0",
+    "apps/journeys/tests/finance-explanations.test.mjs": "3ce55fc1a30bff377bf1130346c3eaaf9d53e5efba0b72fdc7afaf0b1d4ed3a1",
+    "apps/journeys/tests/integration/creator-collaboration.test.mjs": "8806668a18651e6602d6758a3c2edc1145abf6be4e281bdfcf4a899c73e6aad4",
+    "apps/journeys/tests/support-draft-isolation.test.mjs": "2439555ff234e98ae32a65af7d1803b96544806a8a19fc63c42ac756a03a3bbd",
+    "apps/journeys/tests/workspace-next-step.test.mjs": "fd3f8bda9cd28c46e539adbcff2a45ad1430874c1b4a708ef91c616c82f5dd6a",
+    "apps/journeys/vercel.json": "29ec726550170532daad9fe44a0b7bb664347e1915c067b1463d1351cf1e7d65",
+    "apps/web/vercel.json": "4559bb272622e6d4f67a1b7d60932289a6746d59d9d592ab82259709f15cd78f",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "b8d16ef3156d2b60e2a2fc1dc57f2d584873b65cd673d26c6dd7bee069cc849c",
+    "docs/implementation/PD05_PD13_A0_FOLLOWUP_2026-10-23.md": "08b83f59eb1dfe858b1eb282e934238cf37d829a9a88074146178f69f62b13b8",
+    "docs/implementation/PD05_PD13_A0_REQUIREMENTS_2026-10-23.json": "dbf490dc13ea569788ad8baa9d748414ad337f4107a3ff4e1ebec2f86a273294",
+    "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql": "0aaed9cd0f7436c0acd4bbe00130fc0a6c340f9d3fd377f1bca41e6aa57fed40",
+    "vercel.json": "48a5f4adf2ff797980368d040434dc1c4b4f25a127161d7f3d5373b95b42aa86"
+  },
+  "preservedOriginalLedgers": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "sourceOnlyMigration": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql",
+  "originalRemixMigrationApplied": false,
+  "notEvidenceOf": [
+    "A1-A5 authority",
+    "hosted original Remix roles",
+    "true guide rights",
+    "merge or production deploy"
+  ]
+}

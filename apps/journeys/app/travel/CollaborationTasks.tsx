@@ -15,6 +15,8 @@ export function CollaborationTasks({actions,locale,disabled=false}:{actions:Next
    return <section key={group}><h3>{group==='mine'?t('To do','待我處理'):group==='waiting'?t('Waiting for others','等候對方'):t('Completed','已完成')}</h3>
     {!items.length?<p>{t('No tasks on this page.','本頁沒有此類工作。')}</p>:<ul>{items.map(action=><li key={action.kind+':'+action.entityId}>
      <a className="k-btn" href={disabled?undefined:action.href} aria-disabled={disabled||undefined}>{t(...labels[action.kind])}{action.title?' · '+action.title:''}</a>
+     {action.kind==='await-review'&&<p className="k-muted">{action.reviewer==='merchant'?t('The merchant is reviewing your application or submitted work. Open the collaboration for its remaining milestones.','商戶正審核你的申請或已提交作品。請開啟合作，查看其餘里程碑。'):t('Your application or submitted work is awaiting review. Open the collaboration for its remaining milestones.','你的申請或已提交作品正在等候審核。請開啟合作，查看其餘里程碑。')}</p>}
+     {action.kind==='await-merchant-review'&&<p className="k-muted">{t('Platform operations are reviewing this company application. Open it to read the current decision.','平台營運團隊正審核此公司申請。請開啟申請，查看目前決定。')}</p>}
      {action.dueAt&&<p>{t('Due (UTC)','到期（UTC）')} · <time dateTime={action.dueAt}>{new Date(action.dueAt).toLocaleString(locale==='zh-HK'?'zh-HK':'en-GB',{timeZone:'UTC'})}</time></p>}
     </li>)}</ul>}
    </section>;

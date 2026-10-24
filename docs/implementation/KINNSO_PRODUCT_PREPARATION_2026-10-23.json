@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "base": "6126ed900c9fa7f17688ac3261970add46d70cfa",
+  "candidateBranch": "codex/pd-policy-staging-preparation-20261023",
+  "publicationBinding": "Final delivery receipt binds exact head/PR/CI; no inferred SHA from previous local results",
+  "code_status": "DIRECTIONS_RECORDED_PREPARATION_AND_CI_PREFETCH_IMPLEMENTED;POLICY_UNAPPROVED_NOT_ACTIVATED",
+  "test_status": "736_LOCAL_APP_UNIT_PASS_ON_UNCHANGED_APP_SUBTREE;10_WORKFLOW_CONTRACT_PASS;FULL_ROOT_LINT_PASS_0_ERRORS_30_EXISTING_WARNINGS;SOURCE9_PASS1_WINDOWS_SKIP;0a9df21_CI_LINT_FAIL_RETAINED;FINAL_EXACT_CI_BOUND_BY_RECEIPT",
+  "deployment_status": "NO_DEPLOYMENT_ACTION_BY_PREPARATION_EDIT;FINAL_VERSION_BOUND_BY_PUBLICATION_RECEIPT;NO_NEW_SUPABASE_PROJECTS;NO_PRODUCTION_CHANGE",
+  "runtime_status": "ORIGINAL_REMIX_HOSTED_ROLES_RESTORE_NOT_RUN;OWNED_CI_0a9df21_IMAGE_STARTUP_PROGRESS_AND_PR_AUTH_MAILBOX_PASS;FINAL_CI_BOUND_BY_RECEIPT",
+  "userDecisions": {
+    "D01": "CONFIRMED_KEEP_CURRENT_NOTICE_DRAFT_NOT_ACTIVATED",
+    "D02": "CONFIRMED_A_APP_CASE_CONTROLLED_MAILBOX_INTERNAL_TARGET_ONLY",
+    "D03": "CONFIRMED_A_NO_NEW_OPTIONAL_PROCESSING_EXISTING_FOUR_AI_TASKS_PROVIDER_BUDGET_RETAINED",
+    "D04": "CONFIRMED_USE_ORIGINAL_REMIX_KINNSO_NO_NEW_PROJECTS",
+    "D05": "CONFIRMED_A_13_NON_OPS_SYNTHETIC_PLUS_EXISTING_AUTHORIZED_OPS_SLOT_NO_NEW_GLOBAL_GRANT",
+    "D06": "CONFIRMED_A_SUBSET_LOCAL_REHEARSAL_MEASURE_FIRST_NO_PROMISED_RPO_RTO"
+  },
+  "selectedTarget": {
+    "publicName": "Remix-Kinnso",
+    "privateMetadataRef": ".local-private/pilot-prep-20261023/target-metadata.json",
+    "metadataObserved": "ACTIVE_HEALTHY Singapore Postgres17.6.1.127",
+    "schema": "not_checked",
+    "purposeOwnershipDisposable": "UNVERIFIED",
+    "isolation": "SHARED_BACKEND_NOT_INDEPENDENT_STAGING",
+    "allowedByPacket": []
+  },
+  "sourceFiles": [
+    "apps/journeys/scripts/pilot-preparation.mjs",
+    "apps/journeys/scripts/pilot-preparation.template.json",
+    "apps/journeys/scripts/pilot-staging.env.example",
+    "apps/journeys/tests/pilot-preparation.test.mjs",
+    "apps/journeys/scripts/source-manifest.json"
+  ],
+  "policyFiles": [
+    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md",
+    "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv"
+  ],
+  "roles": {
+    "identitySlots": 14,
+    "proposedNewNonOpsIdentities": 13,
+    "existingOpsSlot": 1,
+    "actualCreated": 0,
+    "actualAssigned": 0,
+    "selectedDirection": "A_MATRIX_ONLY_NO_EXECUTION_AUTHORITY"
+  },
+  "recovery": {
+    "scope": "SYNTHETIC_SUBSET_TO_OWNED_LOCAL_ONLY",
+    "dockerLinuxDaemon": "UNAVAILABLE",
+    "fullDatabaseAuthStorageProviderRecovery": "NOT_RUN",
+    "actualRehearsal": "NOT_RUN",
+    "existingMigrationReleaseGuard": "UNCHANGED;fresh consistent full export/isolated restore still required for original-target SQL",
+    "selectedDirection": "A_MEASURE_FIRST",
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null,
+    "primaryOwnerRef": null,
+    "backupOwnerRef": null,
+    "windowRef": null,
+    "subsetExportReadbackRetentionRef": null
+  },
+  "sideEffects": {
+    "newProjects": 0,
+    "projectConfigChanges": 0,
+    "SQL": 0,
+    "hostedClients": 0,
+    "roleAssignments": 0,
+    "messages": 0,
+    "schedules": 0,
+    "merge": 0,
+    "productionDeploy": 0
+  },
+  "tests": [
+    {
+      "command": "node --test apps/journeys/tests/pilot-preparation.test.mjs",
+      "environment": "LOCAL_CONNECTION_FREE_NODE",
+      "sourceHead": "Decision edit starts at ed47c6cf18d37d8f00ffbeb30d645ebea8221b97; tested assessor/template/tests content and final head bound separately by publication receipt",
+      "red": {
+        "pass": 19,
+        "fail": 6,
+        "skip": 0
+      },
+      "green": {
+        "pass": 25,
+        "fail": 0,
+        "skip": 0
+      }
+    },
+    {
+      "command": "node apps/journeys/scripts/pilot-preparation.mjs --packet apps/journeys/scripts/pilot-preparation.template.json",
+      "expectedExit": 2,
+      "observed": "BLOCKED_INPUTS; D01-D06 direction PASS only; missing source/target/actor/recovery-owner evidence remains BLOCKED",
+      "authorizedActions": []
+    },
+    {
+      "command": "npm test",
+      "cwd": "apps/journeys",
+      "environment": "LOCAL_NODE_UNIT_NO_HOSTED_ACCEPTANCE",
+      "pass": 720,
+      "fail": 0,
+      "skip": 0,
+      "durationMs": 18324.9814,
+      "binding": "Assessor/template/tests content tested before final prose-only publication-binding edits; final integrated head and packaging are separate receipt gates"
+    },
+    {
+      "command": "npm test",
+      "cwd": "apps/journeys",
+      "environment": "LOCAL_NODE24_PURE_UNIT",
+      "pass": 731,
+      "fail": 0,
+      "skip": 0,
+      "newPrefetchIncluded": 11,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-prefetch.log",
+      "binding": "Dirty prefetch candidate; exact tested fingerprints and final head bound by delivery receipt"
+    },
+    {
+      "command": "npm test",
+      "cwd": "apps/journeys",
+      "environment": "LOCAL_NODE24_PURE_UNIT",
+      "pass": 736,
+      "fail": 0,
+      "skip": 0,
+      "lockedImageCasesIncluded": 16,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/unit-mirror.log",
+      "binding": "Dirty locked-image candidate; tested fingerprints and final head bound by delivery receipt"
+    },
+    {
+      "command": "pnpm lint",
+      "environment": "LOCAL_NODE24_PNPM11.6_ESLINT9.39.4",
+      "status": "PASS",
+      "errors": 0,
+      "existingWarnings": 30,
+      "log": "apps/journeys/evidence/pd-decisions-ci-20261023/root-lint-green.log"
+    }
+  ],
+  "notRun": [
+    "Next exact prefetch candidate CI and generated Preview must be bound by final delivery receipt; do not reuse 4ee4be9 PASS for a new head",
+    "hosted DB/Auth/RLS/cohort role acceptance",
+    "public real content consent/image rights",
+    "H01-H14/PS01-PS06",
+    "actual local/cloud restore",
+    "external mailbox/scheduler/provider delivery",
+    "numeric performance/physical devices/AT"
+  ],
+  "originalLedgerIntegrity": {
+    "NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "traceabilityRows": 53,
+  "originalNTasks": 18,
+  "requirementsStatus": "Original 53 remain partial; original N02 verified_done retained; T08/N16 open",
+  "realGuideConsentImageRights": "BLOCKED",
+  "releaseDecision": "NO_GO",
+  "rollback": "Source revert / keep original notice; no data changes to roll back; future cleanup only exact owned IDs with authority",
+  "historicalEvidence": [
+    "Previous audit675 PASS retained as historical only",
+    "Previous PR84/85 local/native/build evidence not borrowed as this candidate CI/runtime",
+    "Original first proposed new-project packet RED/GREEN preserved; user-steered original-project RED/GREEN retained",
+    "Initial synthetic CSV generator KeyError repaired before delivery, raw note retained",
+    "Independent review RED18PASS4FAIL: reference whitespace, embedded credentials, malformed companies, package/ancestorHEAD. Repaired focused22PASS; full suite rerun after review.",
+    "This decision edit RED19PASS6FAIL -> focused25PASS: D06 A no-goal preparation, recorded selections, policy/optional-processing limits. Earlier goal-required behavior retained as historical, not the chosen D06 A contract.",
+    "CSV update initially encountered UTF-8 BOM header KeyError id; no partial CSV write occurred. Re-read with utf-8-sig, preserved BOM and validated 29 rows; no source/runtime failure implied."
+  ],
+  "sourceReview": {
+    "privacyCopyPairs": 31,
+    "copyMapMatches": true,
+    "reviewFindings": "3 Important +1 Minor resolved; delta review: no remaining or new findings",
+    "redLog": "packet-review-red.log",
+    "greenLog": "packet-review-green.log",
+    "reviewer": "Pasteur",
+    "decisionEditReview": "LOCAL_DIFF_REVIEW; previous independent reviewer result applies only to prior source; final integrated review belongs to publication receipt"
+  },
+  "workingTreeBinding": {
+    "baseHead": "ed47c6cf18d37d8f00ffbeb30d645ebea8221b97",
+    "publicationBinding": "Final publication receipt records the published head/PR/CI and the tested content differences; this overlay does not infer a final SHA",
+    "scope": "Selected directions and connection-free preparation only; manifests and CI handled separately"
+  },
+  "operationalInputs": {
+    "decisionReferences": "SESSION_DIRECTIONS_ONLY_NOT_PRIVATE_EVIDENCE",
+    "D01": "OPERATOR_PRIVACY_OWNER_CONTACT_AND_CONTENT_APPROVAL_UNKNOWN",
+    "D02": "REAL_CHANNEL_PRIMARY_BACKUP_STAFFING_RECEIPT_HANDOFF_UNKNOWN",
+    "D03": "ACTUAL_PROCESSORS_REGIONS_RETENTION_DELETION_BACKUP_FACTS_UNKNOWN",
+    "D04": "SHARED_PURPOSE_READERS_EXACT_COHORT_SCOPE_AUTHORITY_UNVERIFIED",
+    "D05": "TEST_OWNER_AUTH_MAILBOX_ACTOR_COMPANY_BRANCH_REFS_AND_SETUP_SCOPE_UNKNOWN",
+    "D06": "RECOVERY_PRIMARY_BACKUP_WINDOW_SUBSET_EXPORT_READBACK_RETENTION_SCOPE_UNKNOWN",
+    "ownerLabels": "Task owner role labels are responsibility placeholders, not named assignments or approvals"
+  },
+  "historicalTests": [
+    {
+      "command": "npm test",
+      "log": "apps/journeys/evidence/pd-20261023/unit-reviewed-final.log",
+      "pass": 717,
+      "fail": 0,
+      "skip": 0,
+      "evidenceBinding": "PR86 previous preparation work; not rerun evidence for this uncommitted edit"
+    },
+    {
+      "command": "node --test tooling-tests/migration-release.test.mjs",
+      "pass": 9,
+      "fail": 0,
+      "log": "apps/journeys/evidence/pd-20261023/migration-guards.log",
+      "evidenceBinding": "PR86 previous preparation work; not rerun evidence for this uncommitted edit"
+    },
+    {
+      "command": "python -m unittest discover -s tests -p source_package_test.py",
+      "discovered": 10,
+      "pass": 9,
+      "skip": 1,
+      "skipReason": "Windows symlink privilege unavailable",
+      "log": "apps/journeys/evidence/pd-20261023/source-package.log",
+      "evidenceBinding": "PR86 previous preparation work; not rerun evidence for this uncommitted edit"
+    }
+  ],
+  "ciRepair": {
+    "authOnlyCandidate": "4ee4be9ee8785ecf15782fb9dba795aee37b5008",
+    "originalFailedRuns": [
+      "39823822828",
+      "39823831292",
+      "39823822793",
+      "39823831295"
+    ],
+    "originalFailure": "GHCR image layer/config429 even after successful login; database assertions not reached",
+    "candidateStrategy": "immutable linux/amd64 digest locks verified equal across GHCR/original publisher Docker Hub;429-only same-digest publisher fallback;never replay database startup",
+    "registry": "ghcr.io",
+    "cliVersion": "2.107.0",
+    "maximumAttemptsPerImage": 5,
+    "maximumPreparationMinutes": 8,
+    "newPurePrefetchTests": 11,
+    "newSourceFiles": [
+      "apps/journeys/scripts/prefetch-ci-images.mjs",
+      "apps/journeys/tests/ci-image-downloads.test.mjs",
+      "apps/journeys/scripts/ci-image-lock.json"
+    ],
+    "workflowFiles": [
+      ".github/workflows/ci.yml",
+      ".github/workflows/journeys.yml",
+      "scripts/supabase-registry-workflow-test.mjs"
+    ],
+    "finalCI": "NOT_CLAIMED_IN_SOURCE_LEDGER;exact head/run/job results in delivery receipt",
+    "ownedCIIsolation": "Existing ephemeral local targets and all gates retained; original Remix-Kinnso is never a CI target",
+    "prefetchOnlyCandidate": "7976a357ffcf26cff268f35f40f7ed8f3b3d823b",
+    "prefetchOnlyFailedRuns": [
+      "39826091989",
+      "39826091970",
+      "39826089047",
+      "39826088934"
+    ],
+    "prefetchOnlyFailure": "firstPostgres image exhausted five bounded attempts;database startups skipped",
+    "verifiedPublicImageLocks": 10,
+    "mirrorRegistry": "original publisher Docker Hub, only for locked identical content after GHCR429",
+    "platform": "linux/amd64;runner LinuxX64 only",
+    "lockedImagePureTests": 16,
+    "lockedDigestCandidate": "0a9df214c764314358e1f8f8a08cfa69835ad532",
+    "lockedDigestImagePrefetch": "ALL_8_OWNED_DB_JOBS_PASS_PUSH_AND_PR",
+    "lockedDigestRootQualityProgress": "STARTUP_FIXTURE_PREPARATION_DB_TYPES_TYPECHECK_PASS_THEN_NEW_TEST_LINT_FAIL",
+    "lintFinding": "URL missing import;5 no-regex-spaces errors;source defect",
+    "lintRepair": "Explicit node:url import and equivalent regex space quantifiers;no lint rule or assertion change",
+    "localFullRootLint": {
+      "status": "PASS",
+      "errors": 0,
+      "existingWarnings": 30,
+      "rootWarnings": 3,
+      "webWarnings": 27,
+      "eslintVersion": "9.39.4"
+    },
+    "appImpact": "No apps/journeys source changes in lint-only patch;subtree equality bound by final receipt"
+  },
+  "sideEffectsScope": "The zero counters below apply only to original Remix-Kinnso, production and external provider actions by preparation work; owned ephemeral CI migrations/fixtures/Mailpit are separately recorded in delivery evidence."
+}

@@ -1282,6 +1282,8 @@ const messages: Messages = {
     savedExperiencesEmpty: '你还没有保存任何体验。',
     reviewCta: '撰写评价',
     reviewedLabel: '已评价',
+    unsaveFailed: '未能取消，请再试一次。',
+    unsaveSignIn: '登录以完成取消',
   },
   merchantsOps: {
     title: '商家', subtitle: '了解、管理和分析你的商家。',
@@ -1514,16 +1516,20 @@ const messages: Messages = {
     unnamed: '未命名',
   },
   guideSave: {
+    planFromGuide: '用这篇攻略规划行程',
+    planningUnavailable: '账户行程规划服务尚未接通。',
     save: '保存',
     saved: '已保存',
     signInToSave: '登录以保存',
     saveFailed: '未能保存，请再试一次。',
+    statusUnavailable: '未能核对保存状态，请重试',
   },
   experienceSave: {
     save: '保存',
     saved: '已保存',
     signInToSave: '登录以保存',
     saveFailed: '未能保存，请再试一次。',
+    statusUnavailable: '未能核对保存状态，请重试',
   },
   reviews: {
     formHeading: '撰写评价',

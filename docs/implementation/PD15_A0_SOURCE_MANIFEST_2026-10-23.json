@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "base": "ce6f7d3886e1d4b470f31cb295251a599978cc71",
+  "candidateBranch": "codex/pd05-pd13-a0-followup-20261023",
+  "hashMeaning": "SHA-256 of canonical staged Git blobs; final head/tree/CI in independent delivery receipt",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    ".github/workflows/journeys.yml": "e1b36d1e87ca0ea5fa9a13f42baf89f8bd3843a15d350e8a5e6a541f32e31719",
+    "apps/journeys/app/integration/integration.css": "1e30f86f23af3e13f5719ecaa389bfd82f7808e782d9854ea07601365d87db32",
+    "apps/journeys/app/travel/CreatorEarningsWorkspace.tsx": "ff77f86c4d2176e630036ab0c044d011ef454b82e32bcd07d7bba11546b87d48",
+    "apps/journeys/app/travel/CreatorMissionsWorkspace.tsx": "f1d61f785ada91f09728b452c408f723354c7fa6c621ff43799c463558473042",
+    "apps/journeys/app/travel/InboxWorkspace.tsx": "6c831c3225778c3e82659d63e0bf50eea5e34c1ad505c4b29cca0710742976ad",
+    "apps/journeys/app/travel/Workbench.tsx": "dfae6b5ff613dd610132aea11f77041bb15af2321cc75c6d6b1c0549f64791a9",
+    "apps/journeys/app/travel/workbench.css": "d1e2dff128c7818075044633c61744628f422cb015ff4f5471a8b9384ed09abc",
+    "apps/journeys/next.config.ts": "0cf333818932c23e4a129fb30d81ec651f8f6536a4017816d36b0ab622c19bac",
+    "apps/journeys/playwright.public-entry.config.ts": "0468c5e541cd9a9aaf2e8564351fd3e16f06e708378dff013eceb7956f5a2a9a",
+    "apps/journeys/playwright.service-state.config.ts": "8f95caa6a38273d3483c37f745fe0130d559c655c64eacfa2169b6bc7c9ec4fe",
+    "apps/journeys/scripts/accessibility/README.md": "b8bc14285a84266695fd9936258c2f354bbcc0e3f4d5761c50296d8891bde307",
+    "apps/journeys/scripts/accessibility/package-lock.json": "5f1daad3ccb3ffa055133f84e834ff7724414b000154a09b19246c41a8c761d3",
+    "apps/journeys/scripts/accessibility/package.json": "c95eefa941502bb3d758f3e88e62e5d603705fb01e50bbfd297d738f655479e2",
+    "apps/journeys/scripts/ci-browser-mirror.mjs": "1f49fc1a1e7b4439c03d188f9b4875769011bb51092936234537df4c0b661340",
+    "apps/journeys/scripts/source-manifest.json": "7c622abc03416113b19e697555255bc6c61f3528ef22c7066ca26c8509e6e491",
+    "apps/journeys/tests/ci-browser-mirror.test.mjs": "30cabaa17f79776c746b7f01cc4cfecdfcb5ec3eb350e4afa8f57ddff1861d75",
+    "apps/journeys/tests/creator-collaboration-ui.test.mjs": "f99c60cf6f1e1fc7051015b1538bdbda9daeb9be2a8c9e69dffb3c40b0544a02",
+    "apps/journeys/tests/e2e/helpers/accessibility.ts": "0dd857aa2831380944fa5a6b8ce94fb736ec50b6f267ae721ed36beb91619957",
+    "apps/journeys/tests/e2e/u21-pilot-presentation.spec.ts": "2be5439a986fa5d90e77e134ee71a1645f487ff0b7e48242a1ff3c37ddd6a849",
+    "apps/journeys/tests/e2e/u24-pd15-accessibility.spec.ts": "18762899ff2666f9207646bde8bcd046898c32824eb605830ef65025cbbab71e",
+    "apps/journeys/tests/e2e/u25-public-accessibility.spec.ts": "c00ff4113d2e82b91662623dd9d188f4fad8bf5bac87df558a3d4766aba2a93f",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "7da08ced495ec14bdf2be07069185a17a42f927f0edf799e7d6695822cccae84",
+    "docs/implementation/PD15_A0_REQUIREMENTS_2026-10-23.json": "f24467f86853a27e892a9c09fd13f44868ce4b2d9adafb506d1b8a8bb72e67a6",
+    "docs/implementation/PD15_A0_REVIEW_VALIDATION_2026-10-23.md": "4ff3c82ab0cc945bab333209a4f607c7f66a23e7c144194b7dbb0fe9dace1cb7",
+    "scripts/journeys-workflow-test.mjs": "5b0e90eecfcb1f603b449556322dc66da8190862e35844fafbb796e76530cfb0"
+  },
+  "preservedOriginalLedgers": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "originalNRows": 18,
+  "originalTraceabilityRows": 53,
+  "A1_A5": "NOT_EXECUTED",
+  "originalRemixMigrationApplied": false,
+  "notEvidenceOf": [
+    "A1-A5 authority",
+    "shared Remix hosted acceptance",
+    "physical devices or AT",
+    "true guide rights",
+    "merge or deployment"
+  ],
+  "supersededCandidate": "41b719cc09b85e8f9395bdf11d962c8cb3c0cba4",
+  "supersededCandidateFailure": "Linux en320 doubled-text Operations H2 230/233; both events actual FAIL retained",
+  "supersededCandidates": [
+    "41b719cc09b85e8f9395bdf11d962c8cb3c0cba4",
+    "119d556f40add8f6e24c30fc7c0a00a6218f5dcf"
+  ],
+  "ciMirrorScope": "owned source-bound GitHub-hosted Ubuntu22.04/24.04 only;original installers/trust/timeouts/gates retained"
+}

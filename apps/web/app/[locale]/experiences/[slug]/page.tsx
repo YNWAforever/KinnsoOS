@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { isLocale, type Locale } from '@/lib/i18n/config'
 import { getDictionary } from '@/lib/i18n/dictionaries'
 import { getExperienceBySlug } from '@/lib/experiences/public-queries'
+import { getGuideBySlug } from '@/lib/guides/queries'
 import { listPublicAvailability } from '@/lib/experiences/public-availability-queries'
 import { isExperienceSaved } from '@/lib/saves/experience-queries'
 import { getExperienceRatingAggregate, listPublishedReviewsForExperience } from '@/lib/reviews/queries'
@@ -17,6 +18,7 @@ import { ExperiencePublicView } from '@/components/kinnso/pages/ExperiencePublic
 import { resolveConfiguredProductState } from '@/lib/product-state'
 import { isApprovedEntityMediaUrl } from '@/lib/media/entity-media'
 import { AnalyticsEntityView } from '@/components/kinnso/analytics/AnalyticsEntityView'
+import { PilotExperienceArrival } from '@/components/kinnso/pilot/PilotExperienceArrival'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,6 +45,8 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
   const { bookingLive } = resolveConfiguredProductState()
   const experience = await getExperienceBySlug(slug)
   if (!experience) notFound()
+  const sourceGuide=sourceSurface==='guide'&&guideSlug&&/^[a-z0-9-]{1,160}$/.test(guideSlug)
+    ?await optionalQuery('experience-guide-source',()=>getGuideBySlug(guideSlug),null):null
 
   const availability = await optionalQuery(
     'experience-availability',
@@ -52,8 +56,10 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
   const viewer = await optionalQuery('experience-viewer', async () => {
     const supabase = await createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
+    // `null` means "could not tell"; `false` would assert the viewer has not
+    // saved this experience, which this read has not established.
     const isSaved = user
-      ? await optionalQuery('experience-save-state', () => isExperienceSaved(supabase, experience.id, user.id), false)
+      ? await optionalQuery<boolean | null>('experience-save-state', () => isExperienceSaved(supabase, experience.id, user.id), null)
       : false
     return { user, isSaved }
   }, { user: null, isSaved: false })
@@ -89,6 +95,7 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
     <>
       <JsonLd data={ld} />
       <AnalyticsEntityView locale={locale as Locale} routeKey="experience_detail" entityType="experience" entityId={experience.id} />
+      <PilotExperienceArrival locale={locale as Locale} guideId={sourceGuide?.city===experience.city?sourceGuide.id:undefined} experienceId={experience.id} flowId={firstOf(sp.flow)}/>
       <ExperiencePublicView
         locale={locale as Locale}
         t={messages.experiencePublic}
@@ -101,11 +108,13 @@ export default async function ExperiencePublicPage({ params, searchParams }: {
         availability={availability}
         viewerEmail={viewer.user?.email ?? null}
         viewerId={viewer.user?.id ?? null}
-        isSaved={viewer.isSaved}
+        isSaved={viewer.isSaved === true}
+        saveStateUnavailable={viewer.isSaved === null}
         rating={rating}
         reviews={reviews}
         sourceSurface={sourceSurface}
         guideSlug={guideSlug}
+        sourceGuideId={sourceGuide?.city===experience.city?sourceGuide.id:undefined}
       />
     </>
   )

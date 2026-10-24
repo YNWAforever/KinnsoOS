@@ -2,7 +2,7 @@
 import { beforeEach, describe, it, expect, afterEach, vi } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 
-afterEach(cleanup)
+afterEach(()=>{cleanup();vi.unstubAllEnvs()})
 const { notFound } = vi.hoisted(() => ({
   notFound: vi.fn(() => { throw new Error('NEXT_NOT_FOUND') }),
 }))
@@ -54,6 +54,18 @@ vi.mock('@/components/kinnso/GuideExperienceLinks', () => ({
 }))
 
 describe('/[locale]/g/[slug] host', () => {
+  it('connects a published guide to its approved private planning preview',async()=>{
+    const id='11111111-1111-4111-8111-111111111111'
+    getGuideBySlugMock.mockResolvedValueOnce({...defaultGuide,id})
+    vi.stubEnv('KINNSO_JOURNEYS_ORIGIN','https://planner.example')
+    vi.stubEnv('KINNSO_APPROVED_JOURNEYS_ORIGIN','https://planner.example')
+    const route=await import('@/app/[locale]/g/[slug]/page')
+    render(await route.default({params:Promise.resolve({locale:'en',slug:defaultGuide.slug})}))
+    const href=new URL(screen.getByRole('link',{name:'Plan from this guide'}).getAttribute('href')!)
+    expect(href.origin+href.pathname).toBe(`https://planner.example/en/g/${id}`)
+    expect(href.searchParams.get('adopt')).toBe('1')
+    expect(href.searchParams.get('flow')).toMatch(/^[0-9a-f-]{36}$/)
+  })
   beforeEach(() => {
     getGuideBySlugMock.mockReset()
     getGuideBySlugMock.mockResolvedValue(defaultGuide)
@@ -146,5 +158,17 @@ describe('/[locale]/g/[slug] host', () => {
     const ld = document.querySelector('script[type="application/ld+json"]')?.innerHTML ?? ''
     expect(ld).toContain('"aggregateRating"')
     expect(ld).toContain('"ratingValue":4.5')
+  })
+
+  it('does not present a signed-in viewer as unsaved when the saved-state read fails', async () => {
+    // Degrading the saved-state read to `false` told a viewer who may well have
+    // saved this guide that they had not — an explicit, wrong claim.
+    getUserMock.mockResolvedValueOnce({ data: { user: { id: 'u1' } } })
+    isGuideSavedMock.mockRejectedValueOnce(new Error('read failed'))
+    const route = await import('@/app/[locale]/g/[slug]/page')
+    const ui = await route.default({ params: Promise.resolve({ locale: 'en', slug: 'kyoto-tea' }) })
+    render(ui)
+    expect(screen.getByRole('button', { name: 'Saved status could not be checked. Retry' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
   })
 })
