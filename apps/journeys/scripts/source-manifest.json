@@ -454,7 +454,8 @@
     "tests/workspace-recovery-storage.test.mjs",
     "tests/workspace-recovery.test.mjs",
     "tests/workspace-service-state.test.mjs",
-    "tsconfig.json"
+    "tsconfig.json",
+    "vercel.json"
   ],
   "version": 1,
   "repositoryFiles": {
