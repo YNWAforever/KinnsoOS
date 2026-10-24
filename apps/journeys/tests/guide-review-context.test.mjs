@@ -7,7 +7,9 @@ const trip={id:tripId,ownerId:'actor-A',title:'My private trip',timezone:'Americ
 for(const locale of ['en','zh-HK'])test(`guide ${locale}: first-trip entry retains guide identity and adoption review shows the actual target zone without a write`,async()=>{
  let reads=0,writes=0;const before=JSON.stringify(trip);
  const h=await workspaceHarness('GuideWorkspace',{guides:{get:async()=>({ok:true,data:guide})},bookmarks:{list:async()=>({ok:true,data:{items:[],nextCursor:null}})},trips:{list:async()=>({ok:true,data:{items:[{id:tripId,title:trip.title,revision:3}],nextCursor:null}}),get:async()=>{reads++;return{ok:true,data:trip};},adopt:async()=>{writes++;throw Error('Review must not write');}}},{id,initialGuide:guide,locale,document:{visibilityState:'visible',addEventListener(){},removeEventListener(){}}});
- const create=h.find('a',locale==='en'?'Create a trip first':'先建立行程');assert.ok(create);assert.equal(create.props.href,`/${locale}/trips?fromGuide=${id}`);
+ const create=h.find('a',locale==='en'?'Create a new trip and apply':'建立新行程並採用');assert.ok(create);
+ const target=new URL(create.props.href,'https://offline.example.test');assert.equal(target.origin,'https://offline.example.test');assert.equal(target.pathname,`/${locale}/trips`);
+ const intent=new URL(target.searchParams.get('next'),'https://offline.example.test');assert.equal(intent.origin,'https://offline.example.test');assert.equal(intent.pathname,`/${locale}/g/${id}`);assert.equal(intent.searchParams.get('adopt'),'1');assert.equal(intent.searchParams.get('version'),String(guide.version));assert.equal(writes,0);
  h.elements().find(el=>el.type==='select').props.onChange({target:{value:tripId}});h.render();
  h.find('button',locale==='en'?'Apply published itinerary':'套用已發布行程').props.onClick();for(let i=0;i<4;i++){await tick();h.render();}
  assert.match(h.text(),/America\/New_York/);assert.equal(reads,1);assert.equal(writes,0);assert.equal(JSON.stringify(trip),before);
