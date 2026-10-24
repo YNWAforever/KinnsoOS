@@ -35,6 +35,9 @@ for (const kind of ['parent', 'absolute', 'dot-alias', 'empty-segment']) {
     const name = {parent: '../unrelated-owned.txt', absolute: x.outside.split(path.sep).join('/'), 'dot-alias': 'scripts/../input.mjs', 'empty-segment': 'scripts//input.mjs'}[kind];
     const metadata = packet(x, name), read = fs.promises.readFile;
     let outsideReads = 0, manifestReads = 0;
+    const open=fs.openSync,readDescriptor=fs.readSync,names=new Map();
+    t.mock.method(fs,'openSync',(...args)=>{const fd=open(...args);names.set(fd,String(args[0]));return fd;});
+    t.mock.method(fs,'readSync',(...args)=>{const n=readDescriptor(...args);if(n>0&&names.get(args[0])===x.outside)outsideReads++;if(n>0&&names.get(args[0])===path.join(x.app,'scripts/source-manifest.json'))manifestReads++;return n;});
     t.mock.method(fs.promises, 'readFile', async (file, ...args) => {
       if (String(file) === x.outside) outsideReads++;
       if (String(file) === path.join(x.app, 'scripts/source-manifest.json')) manifestReads++;

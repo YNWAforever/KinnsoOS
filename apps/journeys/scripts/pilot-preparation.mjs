@@ -4,6 +4,7 @@ import path from 'node:path';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import {verifySourceInputs} from './verify-source-inputs.mjs';
+import {readContainedFile} from './read-contained-file.mjs';
 
 const matrix = [
  ['traveller-a','traveller',null,null],['traveller-b','traveller',null,null],
@@ -87,7 +88,7 @@ export async function resolveCandidateRevision(root=fileURLToPath(new URL('../',
  // Metadata cannot mask a dirty canonical checkout or borrow an unrelated HEAD.
  if(fs.existsSync(metadata)){
   try{
-   const p=JSON.parse(fs.readFileSync(metadata,'utf8'));
+   const p=JSON.parse(readContainedFile(root,'SOURCE_METADATA.json',262144).toString('utf8'));
    if(p.version!==1||p.dirty!==false||!sha(p.sourceRevision)||(gitRevision!==null&&p.sourceRevision!==gitRevision))return null;
    await verifySourceInputs(root,p);
    if(gitRevision!==null){

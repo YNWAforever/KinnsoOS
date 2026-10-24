@@ -1,0 +1,482 @@
+{
+  "version": 1,
+  "reviewedMain": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "binding": "Final head/tree/PR/owned CI in independent delivery receipt; historical results stay bound to their source",
+  "code_status": "SOURCE_METADATA_DESCRIPTOR_BINDING_REPAIRED",
+  "test_status": "LOCAL_FOCUSED84PASS_2WINDOWS_SKIPS_NEW_EXACT_HEAD_CHECKS_IN_DELIVERY",
+  "deployment_status": "NOT_DEPLOYED_THREE_EXISTING_GIT_HOLDS",
+  "runtime_status": "ORIGINAL_HOSTED_SHARED_RESTORE_SCHEDULER_PROVIDER_HANDOFF_NOT_RUN",
+  "cases": [
+    {
+      "id": "H01",
+      "expected": "Merchant onboarding／moderator→owner持久化",
+      "remaining": "原target及真moderator／owner、new login",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-onboarding.test.mjs",
+        "apps/journeys/tests/e2e/u04-merchant.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H02",
+      "expected": "Owner發布→Creator申請→接受",
+      "remaining": "公開fixture隔離及hosted角色scope",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/integration/merchant-application-review.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H03",
+      "expected": "交付→修訂→關閉招募後再交付→核准",
+      "remaining": "真Creator／owner同candidate回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H04",
+      "expected": "tracked／settled／歷史payout，不以approval當payment",
+      "remaining": "原schema與真finance／Creator逐幣別記錄",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/finance-reconciliation.test.mjs",
+        "apps/journeys/tests/e2e/u12-finance-membership-retry.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H05",
+      "expected": "Creator B不能讀寫A私人參與／proof／收益",
+      "remaining": "兩個hostedCreator matched正負控制",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/integration/creator-workspace.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H06",
+      "expected": "公司B不能讀寫公司A資料",
+      "remaining": "兩公司真角色及branch／proof隔離",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-access.test.mjs",
+        "apps/journeys/tests/integration/merchant-campaigns.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H07",
+      "expected": "marketing有brief權限，private proof／review仍owner-only",
+      "remaining": "原target fresh permission matched對照",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-application-review.test.mjs",
+        "apps/journeys/tests/integration/merchant-access.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H08",
+      "expected": "clerk branch及finance範圍限制",
+      "remaining": "原target branch／role matrix",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-branches.test.mjs",
+        "apps/journeys/tests/integration/finance-reconciliation.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H09",
+      "expected": "Ops reason／history／conflict，company非Ops",
+      "remaining": "既有Ops exact case範圍與owner交班",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/ops-routing.test.mjs",
+        "apps/journeys/tests/e2e/u05-ops.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H10",
+      "expected": "撤權後舊tab／cursor／export／RPC失權",
+      "remaining": "另授權真role revoke與fresh role readback",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-access.test.mjs",
+        "apps/journeys/tests/e2e/u11-workspace-recovery.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H11",
+      "expected": "未知ACK→同原request／payload，一次副作用",
+      "remaining": "PD06 schema／keyring及hosted同request回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/share-receipts.test.mjs",
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/e2e/u23-share-receipt-recovery.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H12",
+      "expected": "reload／new login保存及草稿／CAS恢復",
+      "remaining": "真hosted新session／第二裝置",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/trips.test.mjs",
+        "apps/journeys/tests/e2e/u11-workspace-recovery.spec.ts",
+        "apps/journeys/tests/e2e/u22-workflow-continuation.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H13",
+      "expected": "指定mailbox confirmation／recovery及redirect／cookie",
+      "remaining": "原target受控真mailbox／Auth config及recipient scope",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/e2e/auth-mailbox.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "H14",
+      "expected": "EN／zh-HK、keyboard、320px／200%及error狀態",
+      "remaining": "實體iOS／Android、native text zoom、NVDA／VoiceOver",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/e2e/u24-pd15-accessibility.spec.ts",
+        "apps/journeys/tests/e2e/u25-public-accessibility.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS01",
+      "expected": "真structured guide明確採用→私人筆記→新session",
+      "remaining": "三篇攻略同意／圖片權利BLOCKED，真第二裝置",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/trips.test.mjs",
+        "apps/journeys/tests/e2e/u01-guide-import.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS02",
+      "expected": "時間／照片／分享預覽與撤銷",
+      "remaining": "PD06 hosted schema／keyring及實際媒體／recipient",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/share-receipts.test.mjs",
+        "apps/journeys/tests/integration/media-cleanup.test.mjs",
+        "apps/journeys/tests/e2e/u23-share-receipt-recovery.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS03",
+      "expected": "Creator structured draft→readiness→publish／withdraw",
+      "remaining": "真內容權利及公開projection隔離",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/guide-publication.test.mjs",
+        "apps/journeys/tests/e2e/creator-source.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS04",
+      "expected": "合作→交付→修訂→核准／收益限制",
+      "remaining": "真雙Creator／owner完整hosted流程",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS05",
+      "expected": "Merchant brief／審批／insights／CSV可信範圍",
+      "remaining": "真雙公司／finance／outsider及CSV回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-campaigns.test.mjs",
+        "apps/journeys/tests/integration/merchant-insights.test.mjs",
+        "apps/journeys/tests/e2e/u10-merchant-insights.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "PS06",
+      "expected": "Ops case／通知故障→恢復→原角色回讀／交班",
+      "remaining": "真owner／backup、bounded provider及recipient證據",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-support.test.mjs",
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/e2e/u09-collaboration-support.spec.ts"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R01",
+      "expected": "candidate／owner／subset一致邊界",
+      "remaining": "缺真owner／backup、原scope及snapshot boundary",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/preparation-source-binding.test.mjs",
+        "apps/journeys/tests/source-input-boundaries.test.mjs",
+        "apps/journeys/tests/source-file-binding-race.test.mjs",
+        "apps/journeys/tests/subset-fifo-race.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R02",
+      "expected": "逐檔SHA／DB rows與Storagebytes分開",
+      "remaining": "本輪僅本機artifact integrity checker；未作shared export",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/subset-recovery-report.test.mjs",
+        "apps/journeys/tests/source-inputs.test.mjs",
+        "apps/journeys/tests/pilot-preparation.test.mjs",
+        "apps/journeys/tests/source-input-boundaries.test.mjs",
+        "apps/journeys/tests/source-file-binding-race.test.mjs",
+        "apps/journeys/tests/subset-fifo-race.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R03",
+      "expected": "owned／unlinked local target身份及資源",
+      "remaining": "既定四次4GiB RAM及6GiB disk與container／marker gate前不啟動restore",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R04",
+      "expected": "相容schema／subset實際restore",
+      "remaining": "NOT_RUN；不把canonical full-schema replay當subset restore",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R05",
+      "expected": "failure rollback／unknown outcome reconcile",
+      "remaining": "新owned提醒ACK-loss僅通知資料；移轉SQL COMMIT-unknown仍NOT_RUN",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R06",
+      "expected": "原角色saved state／權限／immutable／dedupe回讀",
+      "remaining": "owned回歸不是原shared restore readback",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R07",
+      "expected": "量測／涵蓋缺口／primary→backup交班",
+      "remaining": "僅聲明時間算術；真restore和他人handoff未跑；目標null",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    },
+    {
+      "id": "R08",
+      "expected": "保留／exact owned cleanup及失敗checkpoint",
+      "remaining": "owned fixture exact-ID cleanup另驗；原project cleanup NOT_AUTHORIZED",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "originalStatus": "NOT_RUN",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/reminder-cleanup.test.mjs"
+      ],
+      "code_status": "SOURCE_REVIEWED_REFERENCES_ONLY",
+      "test_status": "OWNED_RESULTS_MUST_BIND_NEW_EXACT_HEAD_DELIVERY",
+      "deployment_status": "NOT_DEPLOYED",
+      "runtime_status": "ORIGINAL_HOSTED_OR_SHARED_REHEARSAL_NOT_RUN"
+    }
+  ],
+  "newRequirements": [
+    {
+      "id": "PD17.A0.11",
+      "requirement": "Manifest names must remain canonical relative app paths; reject before reading outside bytes",
+      "localResult": "RED4FAIL_1PASS_TO_GREEN5PASS",
+      "sourceTests": [
+        "apps/journeys/tests/source-input-boundaries.test.mjs"
+      ]
+    },
+    {
+      "id": "PD17.A0.12",
+      "requirement": "Bind source/manifest descriptors before reading; race/link controls require zero unrelated bytes",
+      "localResult": "ACTUAL_FS_RED4FAIL_TO_GREEN4PASS",
+      "sourceTests": [
+        "apps/journeys/tests/source-file-binding-race.test.mjs"
+      ]
+    },
+    {
+      "id": "PD17.A0.13",
+      "requirement": "Linked/unsafe/oversized SOURCE_METADATA returnsnull; late Git state rechecked after awaited verifier",
+      "localResult": "FOCUSED_PASS_WINDOWS",
+      "sourceTests": [
+        "apps/journeys/tests/source-file-binding-race.test.mjs",
+        "apps/journeys/tests/preparation-source-binding.test.mjs"
+      ]
+    },
+    {
+      "id": "PD17.A0.14",
+      "requirement": "POSIX FIFO open must not wait for a writer; f18 exact reader watchdog proves baseline",
+      "localResult": "WINDOWS_SKIP_NEW_OWNED_LINUX_REQUIRED",
+      "sourceTests": [
+        "apps/journeys/tests/subset-fifo-race.test.mjs"
+      ]
+    }
+  ],
+  "A1_A5": "NOT_EXECUTED",
+  "sharedRemixChanges": false,
+  "PD06": "BLOCKED_403_ADMIN_SCHEMA_KEYRING",
+  "guideRights": "BLOCKED",
+  "R03": "BLOCKED_UNVERIFIED_TARGET_NO_DOCKER_RESTORE_ATTEMPT",
+  "D06": {
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  },
+  "T08": "OPEN",
+  "N16": "OPEN",
+  "PD18": "NO_GO",
+  "authorizedActions": [],
+  "reviewParent": "f18a3a630a5d13f9198b1877c588bad069db2752",
+  "priorSnapshot": "f18a3a63:docs/implementation/PD16_PD17_MAIN_REVIEW_REQUIREMENTS_2026-10-25.json"
+}
