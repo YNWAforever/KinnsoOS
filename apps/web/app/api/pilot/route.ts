@@ -20,7 +20,7 @@ export async function POST(request:Request){
   if(!pilotProxyConfigured())return reply({queued:false},503)
   const body=JSON.stringify(event),identity=pilotProxyHeaders(await getClientIp(),origin,body)
   if(!identity)return reply({queued:false},503)
-  const response=await fetch(origin+'/api/telemetry/pilot',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,'X-Kinnso-Analytics-Consent':'accepted',Cookie:'kinnso-analytics-consent=v1:accepted',...identity},body,cache:'no-store',signal:AbortSignal.timeout(3000)})
+  const response=await fetch(origin+'/api/telemetry/pilot',{method:'POST',headers:{'Content-Type':'application/json',Origin:origin,'X-Kinnso-Analytics-Consent':'accepted',Cookie:'kinnso-analytics-consent=v1:accepted',...identity},body,cache:'no-store',redirect:'error',signal:AbortSignal.timeout(3000)})
   return reply(await response.json(),response.status)
  }catch{return reply({queued:false},503)}
 }

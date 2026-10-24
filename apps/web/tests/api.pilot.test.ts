@@ -1,6 +1,8 @@
 import {afterEach,beforeEach,it,expect,vi} from 'vitest'
 import {POST} from '@/app/api/pilot/route'
 import {createHmac} from 'node:crypto'
+import {createServer,type Server,type RequestListener} from 'node:http'
+const nativeFetch=globalThis.fetch
 import {getClientIp} from '@/lib/http/client-ip'
 vi.mock('@/lib/http/client-ip',()=>({getClientIp:vi.fn()}))
 vi.mock('../../journeys/lib/api/server',()=>({boundedBody:async(request:Request)=>request.json()}))
@@ -56,4 +58,30 @@ for(const ip of ['unknown','','198.51.100.10, 198.51.100.11','not-an-ip'])it('un
 for(const mode of ['local','synthetic'])it('local and synthetic public events do not read ingress identity or forward: '+mode,async()=>{
  if(mode==='local')vi.stubEnv('KINNSO_ENVIRONMENT','local');else vi.stubEnv('KINNSO_SYNTHETIC_RUN','true')
  await POST(request());expect(getClientIp).not.toHaveBeenCalled();expect(fetch).not.toHaveBeenCalled()
+})
+
+it('an actual307 cannot forward internal visitor metadata beyond the approved receiver',async()=>{
+ const owned:Server[]=[];let leaked=0,received=0
+ const listen=async(handler:RequestListener)=>{
+  const server=createServer(handler);owned.push(server)
+  await new Promise<void>((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve)})
+  const address=server.address()
+  if(!address||typeof address==='string'||address.address!=='127.0.0.1'||address.port<1)throw Error('Owned loopback target not established')
+  return `http://127.0.0.1:${address.port}`
+ }
+ try{
+  const trap=await listen((_request,response)=>{leaked++;response.writeHead(202,{'Content-Type':'application/json'});response.end(JSON.stringify({ok:true,data:{queued:true}}))})
+  const receiver=await listen((_request,response)=>{received++;response.writeHead(307,{Location:trap+'/unapproved'});response.end()})
+  vi.stubGlobal('fetch',vi.fn(async(input:RequestInfo|URL,options?:RequestInit)=>{
+   if(input!=='https://planner.example/api/telemetry/pilot')throw Error('Unexpected target')
+   // Both exact owned loopback targets exist before using the real Node Fetch transport.
+   return nativeFetch(receiver+'/api/telemetry/pilot',options)
+  }))
+  const response=await POST(request())
+  expect(received).toBe(1);expect(leaked).toBe(0);expect(response.status).toBe(503)
+ }finally{
+  await Promise.all(owned.map(server=>new Promise<void>((resolve,reject)=>{
+   server.close(error=>error?reject(error):resolve());server.closeAllConnections()
+  })))
+ }
 })
