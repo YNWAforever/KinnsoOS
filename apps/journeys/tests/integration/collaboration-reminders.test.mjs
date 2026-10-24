@@ -1,6 +1,29 @@
+import {finishReminderCleanup} from '../helpers/reminder-cleanup.mjs';
+import {runCollaborationReminders} from '../../lib/collaboration/reminders.ts';
 import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {execFileSync}from'node:child_process';import{verifyTestTarget}from'../../scripts/verify-test-target.mjs';import {fixture,admin,anonymous} from './local-fixtures.mjs';
 const ok=async p=>{const r=await p;assert.equal(r.error,null);return r.data;};
-async function setup(f,offset=30_000,count=1,differentDeadlines=false){const owner=await f.actor(),creator=await f.actor(true),other=await f.actor(true);const merchant=await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Synthetic reminder',contact_email:'synthetic@example.test'}).select('id').single());const now=new Date().toISOString(),due=offset===null?null:new Date(Date.parse(now)+offset).toISOString();const mission=await ok(admin.from('missions').insert({merchant_profile_id:merchant.id,title:'Synthetic reminder brief',summary:'Synthetic only',mission_type:'coupon_affiliate',status:'draft',coupon_code:'X',coupon_url:'https://example.test'}).select('id').single());const milestone=await ok(admin.from('mission_milestones').insert({mission_id:mission.id,title:'Original guide',description:'Synthetic reminder work',due_at:due}).select('id').single());if(count>1)await ok(admin.from('mission_milestones').insert(Array.from({length:count-1},(_,i)=>({mission_id:mission.id,title:'Synthetic reminder '+i,description:'Owned work',due_at:differentDeadlines?new Date(Date.parse(due)+(i+1)*3600_000).toISOString():due,sort_order:i+1}))));await ok(admin.from('missions').update({status:'published'}).eq('id',mission.id));const participant=await ok(admin.from('mission_participants').insert({mission_id:mission.id,creator_id:creator.id,status:'active',source:'open_join'}).select('id').single());return{owner,creator,other,merchant:merchant.id,mission:mission.id,milestone:milestone.id,participant:participant.id,now,due,cleanup:()=>ok(admin.from('missions').delete().eq('id',mission.id))};}
+async function setup(f,offset=30_000,count=1,differentDeadlines=false,ownership={}){
+ ownership.setupComplete=false;ownership.setupStage='actors';ownership.actorRefs=[];
+ const owner=await f.actor();ownership.actorRefs=f.actorIds();
+ const creator=await f.actor(true);ownership.actorRefs=f.actorIds();
+ const other=await f.actor(true);ownership.actorRefs=f.actorIds();
+ ownership.setupStage='merchant';ownership.merchantRef=randomUUID();
+ const merchant=await ok(admin.from('merchant_profiles').insert({id:ownership.merchantRef,user_id:owner.id,company_name:'Synthetic reminder',contact_email:'synthetic@example.test'}).select('id').single());
+ const now=new Date().toISOString(),due=offset===null?null:new Date(Date.parse(now)+offset).toISOString();
+ ownership.setupStage='mission';ownership.missionRef=randomUUID();
+ const mission=await ok(admin.from('missions').insert({id:ownership.missionRef,merchant_profile_id:merchant.id,title:'Synthetic reminder brief',summary:'Synthetic only',mission_type:'coupon_affiliate',status:'draft',coupon_code:'X',coupon_url:'https://example.test'}).select('id').single());
+ ownership.setupStage='milestone';ownership.milestoneRefs=[randomUUID()];
+ const milestone=await ok(admin.from('mission_milestones').insert({id:ownership.milestoneRefs[0],mission_id:mission.id,title:'Original guide',description:'Synthetic reminder work',due_at:due}).select('id').single());
+ if(count>1){
+  const rows=Array.from({length:count-1},(_,i)=>({id:randomUUID(),mission_id:mission.id,title:'Synthetic reminder '+i,description:'Owned work',due_at:differentDeadlines?new Date(Date.parse(due)+(i+1)*3600_000).toISOString():due,sort_order:i+1}));
+  ownership.milestoneRefs.push(...rows.map(row=>row.id));await ok(admin.from('mission_milestones').insert(rows));
+ }
+ ownership.setupStage='publish';await ok(admin.from('missions').update({status:'published'}).eq('id',mission.id));
+ ownership.setupStage='participant';ownership.participantRef=randomUUID();
+ const participant=await ok(admin.from('mission_participants').insert({id:ownership.participantRef,mission_id:mission.id,creator_id:creator.id,status:'active',source:'open_join'}).select('id').single());
+ ownership.setupStage='complete';ownership.setupComplete=true;
+ return{owner,creator,other,merchant:merchant.id,mission:mission.id,milestone:milestone.id,participant:participant.id,now,due,cleanup:()=>ok(admin.from('missions').delete().eq('id',mission.id))};
+}
 const scan=(now,after=null,limit=50)=>admin.rpc('due_kinnso_collaboration_reminders',{p_now:now,p_after:after,p_limit:limit});const emit=(c,now)=>admin.rpc('emit_kinnso_collaboration_reminder',{p_now:now,p_candidate:c});
 test('W08 reminder payload is a canonical milestone deadline snapshot with a bounded private inbox projection',async()=>{
  const f=await fixture();let x;
@@ -61,3 +84,61 @@ test('final rejected non-repeatable work is absent from scan and suppressed afte
 test('bounded candidate query applies processed-history exclusion and cursor before its internal limit',async()=>{const f=await fixture();let x;try{x=await setup(f,30_000,1001);sql(`insert into kinnso_internal.collaboration_reminder_facts(event_kind,milestone_id,recipient_id,deadline_version)select 'collaboration.due_soon',id,'${x.creator.id}',due_at from public.mission_milestones where mission_id='${x.mission}'order by id limit 999;`);const rows=JSON.parse(sql(`select coalesce(jsonb_agg(c),'[]')from kinnso_internal.collaboration_reminder_candidates('${x.now}',null,null,null,null,2)c;`).trim());assert.equal(rows.length,2);const page=await ok(scan(x.now,null,1));assert.equal(page.items.length,1);assert.ok(page.nextCursor);const last=await ok(scan(x.now,page.nextCursor,1));assert.equal(last.items.length,1);assert.equal(last.nextCursor,null);assert.notEqual(page.items[0].milestoneId,last.items[0].milestoneId);
  const body=sql("select prosrc from pg_proc where oid='kinnso_internal.collaboration_reminder_candidates(timestamptz,uuid,uuid,uuid,uuid,integer)'::regprocedure;").trim();const params=['p_now','p_participant','p_milestone','p_after_participant','p_after_milestone','p_limit'];let query=body;params.forEach((name,i)=>query=query.replace(new RegExp('\\b'+name+'\\b','g'),'$'+(i+1)));const plan=JSON.parse(sql(`prepare owned_reminder_plan(timestamptz,uuid,uuid,uuid,uuid,integer)as ${query.replace(/;\s*$/,'')};explain(analyze,format json)execute owned_reminder_plan('${x.now}',null,null,null,null,2);`).slice('PREPARE\n'.length).trim())[0];const nodes=[];function walk(n){nodes.push(n);for(const child of n.Plans??[])walk(child);}walk(plan.Plan);assert.equal(plan.Plan['Node Type'],'Limit');assert.ok(plan.Plan['Actual Rows']<=2);assert.equal(nodes.some(n=>n['Node Type']==='Function Scan'),false);console.log('owned reminder processed-history plan',JSON.stringify({rows:plan.Plan['Actual Rows'],executionMs:plan['Execution Time'],nodes:nodes.map(n=>n['Node Type'])}));
  }finally{if(x)await x.cleanup();await f.cleanup();}});
+
+let ownedReminderCleanupBlocked=false;
+async function cleanupOwnedReminderProbe(f,x,scenarioError,ownership={}){
+ const actorRefs=f.actorIds(),missionRef=x?.mission??ownership.missionRef??null;
+ try{
+  const report=await finishReminderCleanup({scenarioError,
+   removeMission:async()=>{if(!x||ownership.setupComplete!==true)throw Error('OWNED_SETUP_INCOMPLETE_STOP_CLEANUP');await x.cleanup();},removeActors:()=>f.cleanup(),
+   readMissionAbsent:async()=>{if(!missionRef)throw Error('OWNED_SETUP_IDS_UNAVAILABLE');return (await ok(admin.from('missions').select('id').eq('id',missionRef))).length===0;},
+   readActorsAbsent:async()=>{if(!actorRefs.length)throw Error('OWNED_SETUP_IDS_UNAVAILABLE');let absent=true;for(const id of actorRefs){const r=await admin.auth.admin.getUserById(id);if(r.error){if(r.error.status!==404)throw r.error;}else absent=false;}return absent;}
+  });
+  console.log('PD17_OWNED_CLEANUP',JSON.stringify({...report,exactMissionAbsent:true,exactFixtureActorsAbsent:actorRefs.length}));
+ }catch(error){if(error.cleanupReport?.status==='FAIL'){ownedReminderCleanupBlocked=true;console.error('PD17_OWNED_CLEANUP_FAILED',JSON.stringify({...ownership,missionRef,actorRefs,setupComplete:ownership.setupComplete===true,...error.cleanupReport}));}throw error;}
+}
+
+test('PD17 owned DB: a committed emit with lost ACK recovers from the same tick without duplicate recipient events', async () => {
+ assert.equal(ownedReminderCleanupBlocked,false,'STOP_AFTER_OWNED_CLEANUP_FAILURE');const ownership={};const f=await fixture();let x,scenarioError;
+ try {
+  x=await setup(f,3_600_000,5,false,ownership);let emittedCalls=0,lost=null;
+  const port={
+   due:async({now,after,limit})=>{assert.equal(now,x.now);const page=await ok(scan(now,after,limit));return {...page,items:page.items.filter(c=>c.participantId===x.participant)};},
+   emit:async(c,now)=>{assert.equal(c.participantId,x.participant);const result=await ok(emit(c,now));if(++emittedCalls===3){lost={candidate:structuredClone(c),now};throw Error('owned transport ACK lost after committed RPC');}return result;},
+  };
+  await assert.rejects(runCollaborationReminders(x.now,port),/ACK lost after committed RPC/);
+  assert.ok(lost);assert.equal(lost.now,x.now);
+  let events=(await ok(x.creator.client.rpc('get_kinnso_inbox'))).items.filter(n=>n.entityId===x.mission&&n.type==='collaboration.due_soon');
+  assert.equal(events.length,3,'the unknown third result really committed in the owned DB');
+  assert.equal((await ok(emit(lost.candidate,lost.now))).emitted,false,'reconcile/retry the identical candidate and tick, never invent an event');
+  const resumed=await runCollaborationReminders(x.now,port);
+  assert.equal(resumed.completed,true);assert.equal(resumed.emitted,2);
+  events=(await ok(x.creator.client.rpc('get_kinnso_inbox'))).items.filter(n=>n.entityId===x.mission&&n.type==='collaboration.due_soon');
+  assert.equal(events.length,5);assert.equal(new Set(events.map(n=>n.payload.milestoneId)).size,5);
+  const before=events.map(n=>n.id).sort();assert.equal((await runCollaborationReminders(x.now,port)).emitted,0);
+  assert.deepEqual((await ok(x.creator.client.rpc('get_kinnso_inbox'))).items.filter(n=>n.entityId===x.mission&&n.type==='collaboration.due_soon').map(n=>n.id).sort(),before);
+  assert.equal((await ok(x.other.client.rpc('get_kinnso_inbox'))).items.some(n=>n.entityId===x.mission),false);
+  console.log('PD17_OWNED_RECOVERY',JSON.stringify({scenario:'committed_ack_loss',source:process.env.GITHUB_SHA??'local',committedBeforeRecovery:3,recipientReadback:5,duplicates:0,externalDelivery:'NOT_RUN'}));
+ } catch(error){scenarioError=error;} finally {await cleanupOwnedReminderProbe(f,x,scenarioError,ownership);}
+});
+
+test('PD17 owned DB: bounded cursor and failed reread preserve the checkpoint, then recover every remaining event', async () => {
+ assert.equal(ownedReminderCleanupBlocked,false,'STOP_AFTER_OWNED_CLEANUP_FAILURE');const ownership={};const f=await fixture();let x,scenarioError;
+ try {
+  x=await setup(f,3_600_000,5,false,ownership);
+  const port={due:async({now,after,limit})=>{assert.equal(now,x.now);const p=await ok(scan(now,after,limit));return {...p,items:p.items.filter(c=>c.participantId===x.participant)};},emit:async(c,now)=>{assert.equal(c.participantId,x.participant);return ok(emit(c,now));}};
+  const first=await runCollaborationReminders(x.now,port,{limit:2,maxPages:1});
+  assert.equal(first.completed,false);assert.ok(first.nextCursor);const checkpoint=first.nextCursor;
+  const ownEvents=async()=>(await ok(x.creator.client.rpc('get_kinnso_inbox'))).items.filter(n=>n.entityId===x.mission&&n.type==='collaboration.due_soon');
+  const before=await ownEvents();assert.equal(before.length,2);
+  await assert.rejects(runCollaborationReminders(x.now,{...port,due:async()=>{throw Error('owned controlled reread outage');}},{after:checkpoint}),/controlled reread outage/);
+  assert.deepEqual((await ownEvents()).map(n=>n.id).sort(),before.map(n=>n.id).sort(),'failed read caused no replay write or unlocked new window');
+  assert.equal(first.nextCursor,checkpoint);
+  const resumed=await runCollaborationReminders(x.now,port,{after:checkpoint});
+  assert.equal(resumed.completed,true);assert.equal(resumed.emitted,3);
+  const events=await ownEvents();assert.equal(events.length,5);assert.equal(new Set(events.map(n=>n.payload.milestoneId)).size,5);
+  assert.equal((await runCollaborationReminders(x.now,port)).emitted,0);
+  assert.equal((await ok(x.other.client.rpc('get_kinnso_inbox'))).items.some(n=>n.entityId===x.mission),false);
+  console.log('PD17_OWNED_RECOVERY',JSON.stringify({scenario:'bounded_cursor_read_outage',source:process.env.GITHUB_SHA??'local',checkpointRetained:true,recipientReadback:5,duplicates:0,externalDelivery:'NOT_RUN'}));
+ } catch(error){scenarioError=error;} finally {await cleanupOwnedReminderProbe(f,x,scenarioError,ownership);}
+});

@@ -3,8 +3,8 @@ import type {CampaignDirectory} from '../merchants/campaign-repository';
 import type {MerchantOnboarding} from '../merchants/onboarding';
 
 export type ActionKind='respond-invite'|'continue'|'deliver'|'revise'|'await-review'|'completed'|'draft-campaign'|'review-application'|'review-delivery'|'setup-merchant'|'await-merchant-review'|'revise-merchant-application'|'open-company';
-export type NextAction={kind:ActionKind;entityId:string;title:string;dueAt:string|null;href:string;priority:number};
-type CreatorTaskRecord=Pick<CreatorMission,'id'|'title'|'participant'>&Partial<Pick<CreatorMissionDetail,'milestones'|'submissions'>>;
+export type NextAction={kind:ActionKind;entityId:string;title:string;dueAt:string|null;href:string;priority:number;reviewer?:'merchant'};
+type CreatorTaskRecord=Pick<CreatorMission,'id'|'title'|'participant'>&Partial<Pick<CreatorMission,'listState'|'nextDueAt'|'missionSource'>>&Partial<Pick<CreatorMissionDetail,'milestones'|'submissions'>>;
 const uuid=(id:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 const language=(locale:string)=>locale==='zh-HK'?'zh-HK':'en';
 const ordered=(actions:NextAction[])=>actions.sort((a,b)=>a.priority-b.priority||(a.dueAt??'9999').localeCompare(b.dueAt??'9999')||a.entityId.localeCompare(b.entityId));
@@ -15,12 +15,12 @@ export function creatorTasks(items:CreatorTaskRecord[],locale:string):NextAction
  for(const item of items){
   if(!uuid(item.id)||!item.participant)continue;
   const href=`/${language(locale)}/studio/missions/${item.id}`;
-  const add=(kind:ActionKind,priority:number,title=item.title,entityId=item.id,dueAt:string|null=null)=>actions.push({kind,priority,title,entityId,dueAt,href});
+  const add=(kind:ActionKind,priority:number,title=item.title,entityId=item.id,dueAt:string|null=null)=>actions.push({kind,priority,title,entityId,dueAt,href,...kind==='await-review'&&item.missionSource==='merchant'?{reviewer:'merchant' as const}:{}});
   if(item.participant.status==='invited')add('respond-invite',0);
   else if(item.participant.status==='applied')add('await-review',3);
   else if(item.participant.status==='completed')add('completed',4);
   else if(item.participant.status==='active'){
-   if(!item.milestones?.length){add('continue',1);continue;}
+   if(!item.milestones?.length){const kind=item.listState==='revision_requested'?'revise':item.listState==='submitted'?'await-review':'continue';add(kind,kind==='revise'?0:kind==='await-review'?3:1,item.title,item.id,item.nextDueAt??null);continue;}
    for(const milestone of item.milestones){
     if(!uuid(milestone.id))continue;
     const evidence=item.submissions?.find(s=>s.milestoneId===milestone.id);

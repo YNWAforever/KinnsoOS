@@ -55,7 +55,7 @@ function harness(options = {}) {
   const telemetry = {
     observeRequest:() => state.events.push(['observeRequest']),
     timedRpc:(port, name, args) => port.rpc(name, args),
-    successEvent:async () => {},
+    successEvent:async () => {if(state.telemetryThrows)throw Error('PRIVATE optional measurement');},
   };
   const cache = {};
   function load(name) {
@@ -261,4 +261,34 @@ test('SQL source contract exposes only authenticated receipt execution and adds 
   assert.match(sql, /grant execute on function public\.get_trip_creation_receipt\(uuid\) to authenticated/i);
   assert.equal((sql.match(/create function /gi) ?? []).length, 1);
   assert.doesNotMatch(sql, /\b(insert\s+into|update\s+(?:public|kinnso_internal)\.|delete\s+from|alter\s+(?:table|role)|create\s+(?:table|schema)|drop\s+|set\s+role)\b/i);
+});
+
+
+test('create POST transport failure is unknown and never a definite INVALID',async()=>{
+ const h=harness({rpcThrows:true});const response=await h.trips.POST(post(actorId));
+ await denied(response,'UNAVAILABLE',503);
+ assert.equal(eventNames(h).filter(name=>name==='create_trip_v2').length,1);
+});
+test('create POST malformed input is rejected before a writer is invoked',async()=>{
+ const h=harness();const request=new Request('https://journeys.test/api/trips',{method:'POST',
+  headers:{host:'journeys.test',origin:'https://journeys.test','content-type':'application/json','X-Kinnso-Intent-Actor':actorId},body:'{'});
+ await denied(await h.trips.POST(request),'INVALID',400);
+ assert.equal(eventNames(h).includes('create_trip_v2'),false);
+});
+test('create POST a database validation error retains its explicit invalid classification',async()=>{
+ const h=harness({rpcError:{message:'invalid_trip_title',code:'P0001'}});
+ await denied(await h.trips.POST(post(actorId)),'INVALID',400);
+});
+test('create POST keeps a known successful acknowledgement when optional measurement fails',async()=>{
+ const h=harness({telemetryThrows:true});const response=await h.trips.POST(post(actorId));
+ assert.equal(response.status,201);const body=await response.json();assert.equal(body.ok,true);assert.equal(body.data.id,tripId);
+ assert.equal(eventNames(h).filter(name=>name==='create_trip_v2').length,1);
+});
+
+
+test('create POST invalid-looking gateway errors without PostgreSQL proof remain unknown',async()=>{
+ for(const code of [undefined,'PGRST000']){
+  const h=harness({rpcError:{message:'invalid_gateway_response',...(code?{code}:{})}});
+  await denied(await h.trips.POST(post(actorId)),'UNAVAILABLE',503);
+ }
 });

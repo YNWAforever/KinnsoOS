@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "base": "6126ed900c9fa7f17688ac3261970add46d70cfa",
+  "purpose": "Selected pilot directions, source-bound preparation and CI registry configuration integrity; not runtime or authority evidence",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    "apps/journeys/scripts/pilot-preparation.mjs": "fdce6fddd1eaf93f8f8ef4673a550f178fccc265c14a560cd656776898dfab3b",
+    "apps/journeys/scripts/pilot-preparation.template.json": "de76ef3670d72e26955c3e101b008d25ff7461e84eb1269db9ff47bafa553ab0",
+    "apps/journeys/scripts/pilot-staging.env.example": "c4f3f18db130b93b67efd2abbc09a1b9845c04c1f83af91f2502b34d7a3807ec",
+    "apps/journeys/tests/pilot-preparation.test.mjs": "cf1a65255b6158dedc9f49403bd9ee89f5333dad276e4a03653185976cf8b740",
+    "apps/journeys/scripts/source-manifest.json": "16bf6c47cdf0caa89dbc54ae7f11d2f4ef3a451ca2d9dec2b26ea56d55a956f9",
+    "docs/implementation/PRIVACY_SUPPORT_DRAFT_2026-10-23.md": "feec01e62d863d2ccdb213ee681c49ffc8ad718617e0892b8d0db95cced40f71",
+    "docs/implementation/PRIVACY_SUPPORT_COPY_MAP_2026-10-23.csv": "7b75a10aace2671376bdff85950c98d97dd309d815536b5f2672b8b8c7f8530a",
+    "docs/implementation/STAGING_ACTOR_RECOVERY_PREPARATION_2026-10-23.md": "364bbb16170be3e1438b465855e3094754fba63257e5eab235f92eb539e99774",
+    "docs/implementation/PILOT_TEST_ACTORS_2026-10-23.csv": "74b4774f3ad0eda5537fbafac3ac714cd81e9acff717d35570e0d27e413dbf7e",
+    "docs/implementation/PILOT_MIGRATION_SOURCE_INVENTORY_2026-10-23.json": "1fb4a2d7d3300ade36326f81870dbeab198ab131b9a8d746234dc66376167ca2",
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_2026-10-23.json": "5672c8113a41cce7c26d4749b1c78755bcc1b09c920d665ef07f220b975668fb",
+    "docs/implementation/KINNSO_PRODUCT_PREPARATION_TASKS_2026-10-23.csv": "bad1af82ca8b519cb03aa98caadf5631873b8a3b382b13a5ba6ff911e614f607",
+    "docs/implementation/PILOT_APPROVAL_DECISIONS_2026-10-23.md": "7c8b1cc6c259022d63f626f6eed20e2b0e55a55ca874a9a9bd99be8b00df348e",
+    "docs/superpowers/plans/2026-10-23-kinnsoos-policy-staging-preparation.md": "ca334527c6355551f08361ff2aa2f29c8906459e662bc0251aa7156eed7a32f8",
+    ".github/workflows/ci.yml": "c2b9e71a8e8cbd78d450969bfb2bedfaf6ba4b23d89bbb11cffe6c8a0be62449",
+    ".github/workflows/journeys.yml": "ca35394301093a8c7b962dfe2b2de84aee26a8757af8919c2173676850b114b7",
+    "scripts/supabase-registry-workflow-test.mjs": "2df0d509bbb295e45a51758ea9b667bb7f8f043821a1e588ece7ed1e5d038a5e",
+    "docs/implementation/CI_REGISTRY_REPAIR_2026-10-23.md": "944c16b00afed59ff3a6968224cc628274bf847e205c13acfb5d3032ad9255c1",
+    "apps/journeys/scripts/prefetch-ci-images.mjs": "cd1da9c61e709aafb91c2e00f5626e447698532e8d7bc015ff42ce71ecb34508",
+    "apps/journeys/tests/ci-image-downloads.test.mjs": "855044a40c38fbc8b8fe35429777f0c910d94033e1a580a14842e01a31535868",
+    "apps/journeys/scripts/ci-image-lock.json": "338c71a2f119d76f04cfe386e842363701513bfc7eb219d344539c9d840676f3"
+  },
+  "hashMeaning": "SHA256 of canonical Git-object bytes, not platform checkout CRLF; source files are unchanged by this normalization",
+  "continuation": {
+    "baseCandidate": "16456ea32c71c60d42dad8d4bfe73b4832cff288",
+    "phase": "PD05-PD13",
+    "reason": "New corresponding source/tests added to the app manifest. Other preparation source leaves remain unchanged; original164manifest is preserved in Git and sealed evidence.",
+    "historicalLeafHashesAtBase": {
+      "apps/journeys/scripts/source-manifest.json": "7a3e7a44d13999430c1243698f96e7afeac52094cb8ee129f8af2eb80a1be635"
+    }
+  }
+}

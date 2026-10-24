@@ -45,12 +45,16 @@ test('503 is a service state rather than an empty creator list or earnings categ
  }
 });
 
-test('disabled creator services report unavailability before inviting a signed-out actor to log in',async()=>{
- for(const locale of ['en','zh-HK'])for(const name of ['CreatorMissionsWorkspace','CreatorEarningsWorkspace']){
+test('disabled creator services offer public exploration without sign-in, outage recovery or private reads',async()=>{
+ for(const locale of ['en','zh-HK'])for(const name of ['CreatorMissionsWorkspace','CreatorEarningsWorkspace'])for(const actorId of [null,'actor-A']){
   let reads=0;const read=async()=>{reads++;return unavailable;};
-  const h=await workspaceHarness(name,{creatorMissions:{list:read},creatorEarnings:{get:read}},{locale,actorId:null,enabled:false});
-  assert.match(h.text(),locale==='en'?/temporarily unavailable/i:/暫時未能使用/);
+  const path=name==='CreatorMissionsWorkspace'?'studio/outcomes':'studio/earnings';
+  const h=await workspaceHarness(name,{creatorMissions:{list:read,get:read},creatorEarnings:{get:read}},{locale,path,actorId,enabled:false});
+  assert.match(h.text(),locale==='en'?/not connected yet/i:/尚未接通/);
+  assert.ok(h.elements().some(n=>n.props?.role==='status'));
+  assert.equal(h.find('a',locale==='en'?'Explore guides':'探索攻略')?.props.href,`/${locale}/explore`);
   assert.equal(h.elements().some(n=>n.type==='a'&&n.props.href?.includes('/sign-in')),false);
+  assert.equal(h.elements().some(n=>n.props?.role==='alert'||n.type==='button'),false);
   assert.equal(reads,0);
  }
 });

@@ -1,0 +1,356 @@
+{
+  "version": 1,
+  "base": "9c845c09dc41652d5d05657d2ebcfea7d3701fcd",
+  "binding": "Final delivery receipt binds source/tree/PR/CI; references alone do not qualify observations",
+  "authority": "A0",
+  "cases": [
+    {
+      "id": "H01",
+      "expected": "Merchant onboarding／moderator→owner持久化",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-onboarding.test.mjs",
+        "apps/journeys/tests/e2e/u04-merchant.spec.ts"
+      ],
+      "remaining": "原target及真moderator／owner、new login",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H02",
+      "expected": "Owner發布→Creator申請→接受",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/integration/merchant-application-review.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "remaining": "公開fixture隔離及hosted角色scope",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H03",
+      "expected": "交付→修訂→關閉招募後再交付→核准",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "remaining": "真Creator／owner同candidate回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H04",
+      "expected": "tracked／settled／歷史payout，不以approval當payment",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/finance-reconciliation.test.mjs",
+        "apps/journeys/tests/e2e/u12-finance-membership-retry.spec.ts"
+      ],
+      "remaining": "原schema與真finance／Creator逐幣別記錄",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H05",
+      "expected": "Creator B不能讀寫A私人參與／proof／收益",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/integration/creator-workspace.test.mjs"
+      ],
+      "remaining": "兩個hostedCreator matched正負控制",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H06",
+      "expected": "公司B不能讀寫公司A資料",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-access.test.mjs",
+        "apps/journeys/tests/integration/merchant-campaigns.test.mjs"
+      ],
+      "remaining": "兩公司真角色及branch／proof隔離",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H07",
+      "expected": "marketing有brief權限，private proof／review仍owner-only",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-application-review.test.mjs",
+        "apps/journeys/tests/integration/merchant-access.test.mjs"
+      ],
+      "remaining": "原target fresh permission matched對照",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H08",
+      "expected": "clerk branch及finance範圍限制",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-branches.test.mjs",
+        "apps/journeys/tests/integration/finance-reconciliation.test.mjs"
+      ],
+      "remaining": "原target branch／role matrix",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H09",
+      "expected": "Ops reason／history／conflict，company非Ops",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/ops-routing.test.mjs",
+        "apps/journeys/tests/e2e/u05-ops.spec.ts"
+      ],
+      "remaining": "既有Ops exact case範圍與owner交班",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H10",
+      "expected": "撤權後舊tab／cursor／export／RPC失權",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-access.test.mjs",
+        "apps/journeys/tests/e2e/u11-workspace-recovery.spec.ts"
+      ],
+      "remaining": "另授權真role revoke與fresh role readback",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H11",
+      "expected": "未知ACK→同原request／payload，一次副作用",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/share-receipts.test.mjs",
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/e2e/u23-share-receipt-recovery.spec.ts"
+      ],
+      "remaining": "PD06 schema／keyring及hosted同request回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H12",
+      "expected": "reload／new login保存及草稿／CAS恢復",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/trips.test.mjs",
+        "apps/journeys/tests/e2e/u11-workspace-recovery.spec.ts",
+        "apps/journeys/tests/e2e/u22-workflow-continuation.spec.ts"
+      ],
+      "remaining": "真hosted新session／第二裝置",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H13",
+      "expected": "指定mailbox confirmation／recovery及redirect／cookie",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/e2e/auth-mailbox.spec.ts"
+      ],
+      "remaining": "原target受控真mailbox／Auth config及recipient scope",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "H14",
+      "expected": "EN／zh-HK、keyboard、320px／200%及error狀態",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/e2e/u24-pd15-accessibility.spec.ts",
+        "apps/journeys/tests/e2e/u25-public-accessibility.spec.ts"
+      ],
+      "remaining": "實體iOS／Android、native text zoom、NVDA／VoiceOver",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS01",
+      "expected": "真structured guide明確採用→私人筆記→新session",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/trips.test.mjs",
+        "apps/journeys/tests/e2e/u01-guide-import.spec.ts"
+      ],
+      "remaining": "三篇攻略同意／圖片權利BLOCKED，真第二裝置",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS02",
+      "expected": "時間／照片／分享預覽與撤銷",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/share-receipts.test.mjs",
+        "apps/journeys/tests/integration/media-cleanup.test.mjs",
+        "apps/journeys/tests/e2e/u23-share-receipt-recovery.spec.ts"
+      ],
+      "remaining": "PD06 hosted schema／keyring及實際媒體／recipient",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS03",
+      "expected": "Creator structured draft→readiness→publish／withdraw",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/guide-publication.test.mjs",
+        "apps/journeys/tests/e2e/creator-source.spec.ts"
+      ],
+      "remaining": "真內容權利及公開projection隔離",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS04",
+      "expected": "合作→交付→修訂→核准／收益限制",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/creator-collaboration.test.mjs",
+        "apps/journeys/tests/e2e/u03-u04-collaboration.spec.ts"
+      ],
+      "remaining": "真雙Creator／owner完整hosted流程",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS05",
+      "expected": "Merchant brief／審批／insights／CSV可信範圍",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/merchant-campaigns.test.mjs",
+        "apps/journeys/tests/integration/merchant-insights.test.mjs",
+        "apps/journeys/tests/e2e/u10-merchant-insights.spec.ts"
+      ],
+      "remaining": "真雙公司／finance／outsider及CSV回讀",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "PS06",
+      "expected": "Ops case／通知故障→恢復→原角色回讀／交班",
+      "originalHostedStatus": "NOT_RUN",
+      "ownedScope": "REFERENCE_ONLY_UNTIL_NEW_EXACT_CANDIDATE_CI",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-support.test.mjs",
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/e2e/u09-collaboration-support.spec.ts"
+      ],
+      "remaining": "真owner／backup、bounded provider及recipient證據",
+      "nextAction": "先固定exact source／target／actor／schema／config及此案操作scope；未授權不建立hosted client"
+    },
+    {
+      "id": "R01",
+      "expected": "candidate／owner／subset一致邊界",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "缺真owner／backup、原scope及snapshot boundary",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/preparation-source-binding.test.mjs"
+      ],
+      "localPreparationScope": "Dirty Git / changed standalone bytes are negative controls only; no original owner or target authority verified"
+    },
+    {
+      "id": "R02",
+      "expected": "逐檔SHA／DB rows與Storagebytes分開",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "本輪僅本機artifact integrity checker；未作shared export",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/subset-recovery-report.test.mjs",
+        "apps/journeys/tests/source-inputs.test.mjs",
+        "apps/journeys/tests/pilot-preparation.test.mjs"
+      ],
+      "localPreparationScope": "Filesystem artifact integrity and bounded actual CLI packet ingress only; no shared export or database restore"
+    },
+    {
+      "id": "R03",
+      "expected": "owned／unlinked local target身份及資源",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "既定四次4GiB RAM及6GiB disk與container／marker gate前不啟動restore",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+    },
+    {
+      "id": "R04",
+      "expected": "相容schema／subset實際restore",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "NOT_RUN；不把canonical full-schema replay當subset restore",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+    },
+    {
+      "id": "R05",
+      "expected": "failure rollback／unknown outcome reconcile",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "新owned提醒ACK-loss僅通知資料；移轉SQL COMMIT-unknown仍NOT_RUN",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "localPreparationScope": "Owned notification ACK-loss/cursor recovery only; migration SQL COMMIT-unknown and shared subset restore NOT_RUN"
+    },
+    {
+      "id": "R06",
+      "expected": "原角色saved state／權限／immutable／dedupe回讀",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "owned回歸不是原shared restore readback",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs"
+      ],
+      "localPreparationScope": "Owned original recipient/outsider and event/dedupe readback only; restored shared roles/Auth/Storage/immutable state NOT_RUN"
+    },
+    {
+      "id": "R07",
+      "expected": "量測／涵蓋缺口／primary→backup交班",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "僅聲明時間算術；真restore和他人handoff未跑；目標null",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5"
+    },
+    {
+      "id": "R08",
+      "expected": "保留／exact owned cleanup及失敗checkpoint",
+      "sharedSubsetRehearsalStatus": "NOT_RUN",
+      "ownedScope": "LOCAL_PREPARATION_ONLY;DB_PROBE_WHERE_EXPLICIT",
+      "remaining": "owned fixture exact-ID cleanup另驗；原project cleanup NOT_AUTHORIZED",
+      "nextAction": "保留原停止點及exact refs；不執行A1–A5",
+      "sourceTests": [
+        "apps/journeys/tests/integration/collaboration-reminders.test.mjs",
+        "apps/journeys/tests/reminder-cleanup.test.mjs"
+      ],
+      "localPreparationScope": "Exact owned mission/actor cleanup and partial-setup/failure checkpoints only; shared target cleanup NOT_AUTHORIZED"
+    }
+  ],
+  "trueGuideRights": "BLOCKED",
+  "PD06": "BLOCKED_403_ADMIN_SCHEMA_KEYRING",
+  "originalPD15": "OPEN",
+  "PD16": "BLOCKED_HOSTED_PREREQUISITES",
+  "PD17": "BLOCKED_REAL_OPERATIONS",
+  "T08": "OPEN",
+  "N16": "OPEN",
+  "PD18": "NO_GO",
+  "D06": {
+    "serviceObjective": "NOT_PROMISED",
+    "rpoMinutes": null,
+    "rtoMinutes": null
+  },
+  "authorizedActions": [],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
+  "followupReviewBaseline": "0a28440a13774084de18987f7c73d52a9d62fc20"
+}

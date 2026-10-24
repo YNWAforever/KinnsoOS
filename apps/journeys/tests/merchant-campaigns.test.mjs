@@ -2,7 +2,7 @@ import {recoveryHookModule} from './helpers/workspace-harness.mjs';
 import {serviceStateModule,taskComponentModule,listFilterModule} from './helpers/workspace-harness.mjs';
 import * as listQueries from '../lib/collaboration/list-query.ts';
 import {campaignTasks} from '../lib/collaboration/tasks.ts';
-import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
+import * as campaignScheduleModule from '../lib/merchants/campaign-schedule.ts';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
@@ -74,7 +74,7 @@ async function uiHarness(port){
  const taskComponent=await taskComponentModule(jsx);
  const recoveryHook=await recoveryHookModule(react);
  runInContext(compiled.code,createContext({module,exports:module.exports,URL,URLSearchParams,Date,window:{location:{search:''},addEventListener:(name,callback)=>{if(name==='beforeunload')unload=callback;},removeEventListener:()=>{}},crypto:{randomUUID:()=>`11111111-1111-4111-8111-${String(uuidIndex++).padStart(12,'0')}`},require:name=>{
-  if(name==='./useWorkspaceRecovery')return recoveryHook;if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='./CollaborationTasks')return taskComponent;if(name.endsWith('/collaboration/tasks'))return{campaignTasks};if(name.endsWith('/campaign-schedule'))return{scheduleDate};if(name==='next/navigation')return{useSearchParams:()=>new URLSearchParams('')};if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
+  if(name==='./useWorkspaceRecovery')return recoveryHook;if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='./CollaborationTasks')return taskComponent;if(name.endsWith('/collaboration/tasks'))return{campaignTasks};if(name.endsWith('/campaign-schedule'))return campaignScheduleModule;if(name==='next/navigation')return{useSearchParams:()=>new URLSearchParams('')};if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en'})};if(name.endsWith('/local-drafts'))return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};if(name.endsWith('/campaign-repository'))return{merchantCampaigns:port};if(name.endsWith('/campaigns'))return helpers;if(name.endsWith('/access'))return{parseCommissionPercent:value=>value===''?null:Number(value)};throw Error(name);
  }}));
  function render(){for(let n=0;n<10;n++){cursor=0;changed=false;tree=module.exports.MerchantCampaigns(props);for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;}return tree;}
  function elements(node){if(arguments.length===0)node=tree;return!node||typeof node!=='object'?[]:[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}

@@ -16,3 +16,27 @@ test('CSV uses the exact server-applied default dates even when editable filters
 
 import{readFile}from'node:fs/promises';
 test('actual live-user SQL denial maps to sign-in and clears an already loaded private report',async()=>{const sql=await readFile(insightsMigrationUrl,'utf8'),guard=sql.match(/if not found then raise exception '([^']+)'/)[1];const out=await build({entryPoints:[fileURLToPath(new URL('../lib/api/server.ts',import.meta.url))],bundle:true,write:false,platform:'node',format:'cjs',external:['next/server','next/headers'],plugins:[{name:'unused-auth-client',setup(b){b.onResolve({filter:/supabase\/server$/},()=>({path:'auth',namespace:'test'}));b.onLoad({filter:/.*/,namespace:'test'},()=>({loader:'js',contents:'export const serverClient=async()=>null;'}));}}]});const module={exports:{}};new Function('require','module','exports',out.outputFiles[0].text)(createRequire(import.meta.url),module,module.exports);const denial=module.exports.backendFailure({message:guard}),body=await denial.json();assert.equal(denial.status,401);assert.equal(body.code,'AUTH_REQUIRED');assert.equal(body.retryable,false);let reads=0;const h=await workspaceHarness('MerchantInsights',{merchantInsights:{load:async()=>++reads===1?{ok:true,data:{...emptyReport,perCampaign:[{id,title:'PRIVATE_REPORT_BEFORE_BAN',status:'draft',snapshot:{},invitationCohort:{issued:0,accepted:0},periodEvents:{}}]}}:body}});assert.match(h.text(),/PRIVATE_REPORT_BEFORE_BAN/);h.find('button','Apply report filters').props.onClick();await tick();h.render();assert.ok(!h.text().includes('PRIVATE_REPORT_BEFORE_BAN'));assert.match(h.text(),/Sign in|sign in/);});
+
+for(const locale of ['en','zh-HK'])test(`A11-01 ${locale}: mixed campaign cohorts retain counts and distinguish empty from missing acceptance`,async()=>{
+ const unknown=locale==='en'?'Unknown':'未知',emptyReason=locale==='en'?'No invitations in this cohort':'此群組沒有邀請',missingReason=locale==='en'?'Historical acceptance timestamps are missing':'歷史接受時間有缺漏';
+ const row=(suffix,title,invitationCohort)=>({id:`00000000-0000-4000-8000-${suffix.padStart(12,'0')}`,title,status:'published',snapshot:{...emptyReport.counts.snapshot},invitationCohort,periodEvents:{...emptyReport.counts.periodEvents}});
+ let report={...emptyReport,counts:{...emptyReport.counts,invitationCohort:{issued:30,accepted:null}},coverage:{...emptyReport.coverage,acceptance:'unknown_missing_timestamp'},perCampaign:[
+  row('1','Empty invitation cohort',{issued:0,accepted:0}),
+  row('2','Missing historical acceptance',{issued:10,accepted:null}),
+  row('3','Known acceptance',{issued:10,accepted:3}),
+  row('4','Known zero acceptance',{issued:10,accepted:0}),
+ ]};
+ const h=await workspaceHarness('MerchantInsights',{merchantInsights:{load:async()=>({ok:true,data:report})}},{locale});
+ const cards=h.elements().filter(n=>n.type==='article'),text=cards.map(card=>h.text(card));
+ assert.match(text[0],/0 \/ 0/);assert.ok(text[0].includes(emptyReason));
+ assert.ok(text[1].includes(unknown+' / 10'));assert.ok(text[1].includes(missingReason));
+ assert.match(text[2],/3 \/ 10/);assert.match(text[3],/0 \/ 10/);
+ for(const value of text.slice(2)){assert.ok(!value.includes(emptyReason));assert.ok(!value.includes(missingReason));}
+ const summary=()=>h.elements().find(n=>n.type==='p'&&h.text(n).startsWith(locale==='en'?'Invitation records:':'邀請紀錄：'));
+ assert.ok(h.text(summary()).includes(unknown+' / 30'));
+ assert.ok(h.text(summary()).includes(missingReason));
+ assert.ok(!h.text().includes('0%'));
+ report={...report,counts:{...report.counts,invitationCohort:{issued:0,accepted:0}},perCampaign:[report.perCampaign[0]],coverage:{...report.coverage,acceptance:'recorded'}};
+ h.find('button',locale==='en'?'Apply report filters':'套用成果篩選').props.onClick();await tick();h.render();
+ assert.match(h.text(summary()),/0 \/ 0/);assert.ok(h.text(summary()).includes(emptyReason));
+});

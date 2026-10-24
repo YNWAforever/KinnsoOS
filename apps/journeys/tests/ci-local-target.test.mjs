@@ -78,3 +78,5 @@ test('generated CI DB profile rejects changed canonical database ports instead o
  for(const source of [databaseMailConfig.replace('port = 54422','port = 54425'),databaseMailConfig.replace('shadow_port = 54420','shadow_port = 54425')])assert.throws(()=>localConfiguration(source,{ciDatabasePorts:true}));
  assert.throws(()=>localConfiguration(databaseMailConfig,{ciDatabasePorts:true,projectRef:'production'}));
 });
+
+test('owned CI environment supplies a fresh ephemeral share key after target identity validation',()=>{const one=localTestEnvironment(status(),'kinnsoos-b1-20261002'),two=localTestEnvironment(status(),'kinnsoos-b1-20261002');assert.equal(one.KINNSO_SHARE_RECEIPT_ACTIVE_KEY,'ci-job');const a=JSON.parse(one.KINNSO_SHARE_RECEIPT_KEYS),b=JSON.parse(two.KINNSO_SHARE_RECEIPT_KEYS);assert.equal(Buffer.from(a['ci-job'],'base64').length,32);assert.notEqual(a['ci-job'],b['ci-job']);assert.equal(Object.keys(a).length,1);});

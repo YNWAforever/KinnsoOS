@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "cliVersion": "2.107.0",
+  "platform": "linux/amd64",
+  "sourceInventory": "https://github.com/supabase/cli/blob/v2.107.0/apps/cli-go/pkg/config/templates/Dockerfile",
+  "sourceInventoryGitBlob": "cf5906e8face5a550d4361dcc67840f6e2989dc2",
+  "meaning": "Public GHCR platform manifests verified equal to original publisher Docker Hub platform manifests; same-content digests, unchanged service versions. Type-generation pg-meta uses the observed v0.96.1 workaround.",
+  "images": [
+    {
+      "image": "ghcr.io/supabase/postgres:17.6.1.136",
+      "mirror": "docker.io/supabase/postgres",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:56:18.465168+00:00",
+      "primaryIndexDigest": "sha256:f371b5f3f2ac0a05703f33d6e6134515fb2498cab708fb948a0aeb7481467c00",
+      "mirrorIndexDigest": "sha256:f371b5f3f2ac0a05703f33d6e6134515fb2498cab708fb948a0aeb7481467c00",
+      "digest": "sha256:5a4314708484bec672de2c09653a5c01fb1c84a998564ac231b0325e2238ed5b"
+    },
+    {
+      "image": "ghcr.io/supabase/kong:2.8.1",
+      "mirror": "docker.io/library/kong",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:58:44.760726+00:00",
+      "primaryIndexDigest": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "mirrorIndexDigest": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "digest": "sha256:e21b0b793879ab96720ed4188f9441260273f4bf775bcbff8d435e019ffb759a"
+    },
+    {
+      "image": "ghcr.io/supabase/postgrest:v14.13",
+      "mirror": "docker.io/postgrest/postgrest",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:58:49.023542+00:00",
+      "primaryIndexDigest": "sha256:488093de819567422bc1d37cb79da6e84bca3726bac321daeed618f0ed957888",
+      "mirrorIndexDigest": "sha256:488093de819567422bc1d37cb79da6e84bca3726bac321daeed618f0ed957888",
+      "digest": "sha256:9a969514d609cc3c0de292ecc8fe3346dad92c6bfe30abe6026d9f4cc456b977"
+    },
+    {
+      "image": "ghcr.io/supabase/gotrue:v2.190.0",
+      "mirror": "docker.io/supabase/gotrue",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:58:53.373918+00:00",
+      "primaryIndexDigest": "sha256:f106c022ebb1362d733a52711a32b25ba4a8757e460f56da843d9521d4515d4e",
+      "mirrorIndexDigest": "sha256:f106c022ebb1362d733a52711a32b25ba4a8757e460f56da843d9521d4515d4e",
+      "digest": "sha256:27ea83c4cc053eae26e10e4ab33b7dfe8d4d8a9f94442f6b79091b4455f49949"
+    },
+    {
+      "image": "ghcr.io/supabase/realtime:v2.107.5",
+      "mirror": "docker.io/supabase/realtime",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:58:57.667751+00:00",
+      "primaryIndexDigest": "sha256:86096c6d7fa57c3bc73db380b71b74b1b2a35dc58d8ed1d2f2989b8a6ccd9968",
+      "mirrorIndexDigest": "sha256:86096c6d7fa57c3bc73db380b71b74b1b2a35dc58d8ed1d2f2989b8a6ccd9968",
+      "digest": "sha256:3056727b0f4b1aa134b7c0953c4c1a3297752041ed87546584813ac6afe49b29"
+    },
+    {
+      "image": "ghcr.io/supabase/storage-api:v1.60.20",
+      "mirror": "docker.io/supabase/storage-api",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T18:01:51.061172+00:00",
+      "primaryIndexDigest": "sha256:21433097b2b1874671d82df2e328b1752d89af534fbb0aa17c02420c77eb5490",
+      "mirrorIndexDigest": "sha256:21433097b2b1874671d82df2e328b1752d89af534fbb0aa17c02420c77eb5490",
+      "digest": "sha256:1beb53c9bfc1dfb926a8352e9d6545891bc298916ca4bc209b942810d1df7ccc"
+    },
+    {
+      "image": "ghcr.io/supabase/imgproxy:v3.8.0",
+      "mirror": "docker.io/darthsim/imgproxy",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T18:02:09.060310+00:00",
+      "primaryIndexDigest": "sha256:0facd355d50f3be665ebe674486f2b2e9cdaebd3f74404acd9b7fece2f661435",
+      "mirrorIndexDigest": "sha256:0facd355d50f3be665ebe674486f2b2e9cdaebd3f74404acd9b7fece2f661435",
+      "digest": "sha256:e1a8f4b99dd65b374b5705550505ace929b9dac98694614bbab3510f9e5107dd"
+    },
+    {
+      "image": "ghcr.io/supabase/edge-runtime:v1.74.1",
+      "mirror": "docker.io/supabase/edge-runtime",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:59:03.592741+00:00",
+      "primaryIndexDigest": "sha256:ac1fdaad6d62b892f3309578006ce208f4150bf2c484113cf2c32655ec7e6893",
+      "mirrorIndexDigest": "sha256:ac1fdaad6d62b892f3309578006ce208f4150bf2c484113cf2c32655ec7e6893",
+      "digest": "sha256:271272bfd171d82763442aa7d5ecf800d1fd9b999ee5da8ed4fd9c890aaf422f"
+    },
+    {
+      "image": "ghcr.io/supabase/mailpit:v1.22.3",
+      "mirror": "docker.io/axllent/mailpit",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T18:02:11.641431+00:00",
+      "primaryIndexDigest": "sha256:f7f7c31de4de59540ad6515a0ca057a77525bca2069b6e747d873ca66c10fe08",
+      "mirrorIndexDigest": "sha256:f7f7c31de4de59540ad6515a0ca057a77525bca2069b6e747d873ca66c10fe08",
+      "digest": "sha256:168f762c218e167ba88ae7e48194126eb5ba5e99ef652063e3f14f9c4f0ee70f"
+    },
+    {
+      "image": "ghcr.io/supabase/postgres-meta:v0.96.1",
+      "mirror": "docker.io/supabase/postgres-meta",
+      "platform": "linux/amd64",
+      "observedAt": "2026-10-22T17:59:08.660596+00:00",
+      "primaryIndexDigest": "sha256:2559d20aaa50f2eb86a6cb2e5af4e847e87139673bc214b4655c126d96c160b2",
+      "mirrorIndexDigest": "sha256:2559d20aaa50f2eb86a6cb2e5af4e847e87139673bc214b4655c126d96c160b2",
+      "digest": "sha256:6111fe3317ef6022178d12d23624983fe6b0d28ad853dec9067a344337409b9a"
+    }
+  ]
+}

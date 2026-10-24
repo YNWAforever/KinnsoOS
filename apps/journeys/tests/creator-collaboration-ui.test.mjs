@@ -1,4 +1,5 @@
-import {recoveryHookModule,serviceStateModule,listFilterModule} from './helpers/workspace-harness.mjs';
+import {evidenceTimeline} from '../lib/collaboration/evidence-timeline.ts';
+import {recoveryHookModule,serviceStateModule,listFilterModule,workspaceHarness} from './helpers/workspace-harness.mjs';
 import {test} from 'node:test';
 import * as listQueries from '../lib/collaboration/list-query.ts';
 import {scheduleDate} from '../lib/merchants/campaign-schedule.ts';
@@ -9,7 +10,7 @@ import {transform} from 'esbuild';
 const id='11111111-1111-4111-8111-111111111111',stamp='2026-10-10T19:00:00.123456+00:00';
 const tick=()=>new Promise(r=>setImmediate(r));
 const detail=()=>({id,title:'Authored collaboration',summary:'Read the authored brief.',missionType:'coupon_affiliate',missionSource:'merchant',status:'published',visibility:'open',merchantName:'Local merchant',eligible:true,joinAvailable:true,acceptAvailable:false,evidenceAvailable:false,minTier:null,paidFeeAmount:null,paidFeeCurrency:null,creatorRate:'0',startsAt:null,endsAt:null,participant:null,requirements:[],deliverables:[],couponCode:null,couponUrl:null,milestones:[{id,title:'Original route',description:'Write your own route',dueAt:null,repeatable:false}],milestonesTruncated:false,submissions:[],submissionsNextCursor:null,partnerLinks:[],maxReceipts:null});
-async function harness(port={},name='CreatorMissionsWorkspace'){
+async function harness(port={},name='CreatorMissionsWorkspace',locale='en'){
  const source=await readFile(new URL('../app/travel/'+name+'.tsx',import.meta.url),'utf8').catch(()=> '');assert.notEqual(source,'','The connected creator workspace must exist');
  const compiled=await transform(source,{loader:'tsx',format:'cjs',jsx:'automatic'}),states=[],refs=[],effects=[];let cursor=0,changed=false,tree,invalidate;
  const props={path:'studio/missions/'+id,actorId:'creator-A',enabled:true};
@@ -20,10 +21,11 @@ async function harness(port={},name='CreatorMissionsWorkspace'){
  const recoveryHook=await recoveryHookModule(react);
  runInContext(compiled.code,createContext({module,exports:module.exports,Date,URL,URLSearchParams,window:{location:{search:'',pathname:'/en/studio/missions'},history:{replaceState(){}},addEventListener(){},removeEventListener(){}},crypto:{randomUUID:()=>`00000000-0000-4000-8000-${String(++sequence).padStart(12,'0')}`},require:name=>{
   if(name==='./useWorkspaceRecovery')return recoveryHook;if(name==='./CollaborationListFilters')return filters;if(name.endsWith('/collaboration/list-query'))return listQueries;if(name==='./WorkspaceServiceState')return service;if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-  if(name==='./ui')return{useApp:()=>({t:en=>en,locale:'en',href:path=>'/en/'+path})};
+  if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='zh-HK'?zh:en,locale,href:path=>'/'+locale+'/'+path})};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidate=fn;return()=>{};}};
   if(name==='../../lib/creators/collaboration-validation')return validation;
   if(name==='../../lib/creators/collaboration')return{creatorMissions:{get:async()=>({ok:true,data:detail()}),list:async()=>({ok:true,data:{items:[],nextCursor:null}}),...port},creatorEarnings:{get:async()=>({ok:true,data:{section:'settled',totals:[],items:[],nextCursor:null}}),...port}};
+  if(name.endsWith('/collaboration/evidence-timeline'))return{evidenceTimeline};
   if(name.endsWith('/campaign-schedule'))return{scheduleDate};
   throw Error('Unexpected import '+name);
  }}));
@@ -76,4 +78,84 @@ test('earnings show exact separate-currency totals and distinguish tracked volum
  assert.match(h.text(),/HKD 9999999999\.99/);assert.match(h.text(),/USD 1\.20/);
  await h.find('button','Tracked activity').props.onClick();await tick();h.render();assert.match(h.text(),/USD 750\.00/);assert.match(h.text(),/not yet payable/);
  h.invalidate();h.render();assert.doesNotMatch(h.text(),/750\.00/);
+});
+
+test('loaded evidence history links each receipt to its actual milestone context',async()=>{
+ const dto=detail();const other='22222222-2222-4222-8222-222222222222';
+ dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;
+ dto.milestones.push({id:other,title:'Second actual milestone',description:'Original instructions',dueAt:null,repeatable:true});
+ dto.submissions=[{id:'receipt1',milestoneId:id,status:'approved',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]},{id:'receipt2',milestoneId:other,status:'submitted',submittedAt:stamp,notes:'Repeated notes',proofUrls:[],reviews:[]}];
+ const h=await harness({get:async()=>({ok:true,data:dto})});
+ for(const milestone of dto.milestones){const link=h.elements().find(el=>el.type==='a'&&el.props.href==='#milestone-'+milestone.id);assert.ok(link,'history needs milestone anchor for '+milestone.title);assert.ok(h.text(link).includes(milestone.title));}
+});
+
+for(const locale of ['en','zh-HK'])test('Creator '+locale+': a paged nonrepeatable milestone stays unknown until its older revision is loaded',async()=>{
+ const other='22222222-2222-4222-8222-222222222222',revision='33333333-3333-4333-8333-333333333333';
+ const dto=detail();dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;dto.evidenceAvailable=true;
+ dto.milestones.push({id:other,title:'Repeatable receipts',description:'Independent receipts',dueAt:null,repeatable:true});
+ dto.submissions=Array.from({length:50},(_,index)=>({id:'10000000-0000-4000-8000-'+String(index+1).padStart(12,'0'),milestoneId:other,status:'approved',submittedAt:stamp,updatedAt:stamp,notes:null,proofUrls:[],merchantFeedback:null,reviews:[]}));
+ dto.submissionsNextCursor='older-evidence-page';
+ const older={id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision note',proofUrls:['https://example.test/original-proof'],merchantFeedback:'Clarify source',reviews:[]};
+ const reads=[],writes=[];
+ const h=await harness({get:async(missionId,after)=>{reads.push([missionId,after]);return{ok:true,data:after?{...dto,submissions:[older],submissionsNextCursor:null}:dto};},command:async(...args)=>{writes.push(args);return{ok:true,data:{id:revision,status:'submitted',updatedAt:stamp}};}},'CreatorMissionsWorkspace',locale);
+ assert.equal(h.find('button',locale==='en'?'Prepare evidence':'準備證明'),undefined,'unloaded records cannot prove no existing submission');
+ assert.ok(h.find('button',locale==='en'?'Prepare new receipt':'準備新收據'),'repeatable receipts remain available');
+ assert.match(h.text(),locale==='en'?/Load earlier evidence to check/:/請載入較早證明/);
+ assert.equal(writes.length,0);
+ await h.find('button',locale==='en'?'Load earlier evidence':'載入較早證明').props.onClick();await tick();h.render();
+ assert.deepEqual(reads.slice(0,2),[[id,undefined],[id,'older-evidence-page']]);
+ h.find('button',locale==='en'?'Edit and resubmit evidence':'修改並重新提交證明').props.onClick();h.render();
+ assert.equal(h.find('textarea',locale==='en'?'Notes for reviewer':'給審核員的備註').props.value,'Original revision note');
+ h.find('textarea',locale==='en'?'Notes for reviewer':'給審核員的備註').props.onChange({target:{value:'Clarified original submission'}});h.render();
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(writes.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(writes[0].slice(0,2))),[id,{type:'submitEvidence',milestoneId:id,submissionId:revision,expectedUpdatedAt:stamp,proofUrls:['https://example.test/original-proof'],notes:'Clarified original submission'}]);
+ assert.match(writes[0][2],/^[0-9a-f-]{36}$/);
+});
+for(const locale of ['en','zh-HK'])test('Creator '+locale+': complete empty submission coverage still allows the first nonrepeatable evidence',async()=>{
+ const dto=detail();dto.participant={id,status:'active',updatedAt:stamp};dto.joinAvailable=false;dto.evidenceAvailable=true;
+ const h=await harness({get:async()=>({ok:true,data:dto})},'CreatorMissionsWorkspace',locale);
+ assert.equal(h.find('button',locale==='en'?'Prepare evidence':'準備證明').props.disabled,false);
+ assert.doesNotMatch(h.text(),locale==='en'?/Load earlier evidence to check/:/請載入較早證明/);
+});
+
+const recoveredDevice=value=>({read:async()=>value,save:async()=>{},clear:async()=>{},release:async()=>{},complete:async()=>{}});
+for(const locale of ['en','zh-HK'])for(const coverage of ['unloaded','existing'])test('PR89 recovery '+locale+' '+coverage+': a restored new nonrepeatable form cannot submit around submission coverage',async()=>{
+ const other='22222222-2222-4222-8222-222222222222',revision='33333333-3333-4333-8333-333333333333';
+ const dto=detail();Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:'older-page'});
+ dto.milestones.push({id:other,title:'Other receipts',description:'Independent work',dueAt:null,repeatable:true});
+ dto.submissions=Array.from({length:50},(_,i)=>({id:'10000000-0000-4000-8000-'+String(i+1).padStart(12,'0'),milestoneId:other,status:'approved',submittedAt:stamp,updatedAt:stamp,notes:null,proofUrls:[],merchantFeedback:null,reviews:[]}));
+ if(coverage==='existing')dto.submissions[0]={id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision',proofUrls:['https://example.test/old'],merchantFeedback:null,reviews:[]};
+ const calls=[],stored={draft:{applicationNote:'',form:{milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofText:'https://example.test/recovered',notes:'Keep recovered authored notes'}},pending:null};
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>({ok:true,data:dto}),command:async(...args)=>{calls.push(args);return{ok:false,code:'CONFLICT',retryable:false};}},workspaceRecovery:recoveredDevice(stored)},{path:'studio/missions/'+id,locale});
+ const notes=locale==='en'?'Notes for reviewer':'給審核員的備註',submit=locale==='en'?'Submit evidence':'提交證明';
+ assert.equal(h.field(notes).props.value,'Keep recovered authored notes');
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(calls.length,0,'restored null-ID drafts must not send a known-conflicting new submission');
+ assert.equal(h.find('button',submit).props.disabled,true);
+ assert.equal(h.field(notes).props.value,'Keep recovered authored notes');
+});
+for(const locale of ['en','zh-HK'])for(const mode of ['complete-empty','repeatable','revision'])test('PR89 recovery '+locale+' '+mode+': valid recovered evidence retains original payload and revision',async()=>{
+ const revision='33333333-3333-4333-8333-333333333333',dto=detail();
+ Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:mode==='complete-empty'?null:'older-page'});
+ dto.milestones[0].repeatable=mode==='repeatable';
+ if(mode==='revision')dto.submissions=[{id:revision,milestoneId:id,status:'revision_requested',submittedAt:stamp,updatedAt:stamp,notes:'Original revision',proofUrls:['https://example.test/old'],merchantFeedback:null,reviews:[]}];
+ const form={milestoneId:id,submissionId:mode==='revision'?revision:null,expectedUpdatedAt:mode==='revision'?stamp:null,proofText:'https://example.test/recovered',notes:'Retained original input'},calls=[];
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>({ok:true,data:dto}),command:async(...args)=>{calls.push(args);return{ok:true,data:{id:revision,status:'submitted',updatedAt:stamp}};}},workspaceRecovery:recoveredDevice({draft:{applicationNote:'',form},pending:null})},{path:'studio/missions/'+id,locale});
+ assert.equal(h.find('button',locale==='en'?'Submit evidence':'提交證明').props.disabled,false);
+ await h.elements().find(el=>el.type==='form').props.onSubmit({preventDefault(){}});await tick();h.render();
+ assert.equal(calls.length,1);
+ assert.deepEqual(JSON.parse(JSON.stringify(calls[0].slice(0,2))),[id,{type:'submitEvidence',milestoneId:id,submissionId:mode==='revision'?revision:null,expectedUpdatedAt:mode==='revision'?stamp:null,proofUrls:['https://example.test/recovered'],notes:'Retained original input'}]);
+});
+for(const locale of ['en','zh-HK'])test('PR89 recovery '+locale+': unresolved stored null-ID intent keeps its immutable request across failed reads',async()=>{
+ const dto=detail();Object.assign(dto,{participant:{id,status:'active',updatedAt:stamp},joinAvailable:false,evidenceAvailable:true,submissionsNextCursor:'older-page'});
+ const requestId='99999999-9999-4999-8999-999999999999',command={type:'submitEvidence',milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofUrls:['https://example.test/original-pending'],notes:'Original immutable intent'};
+ const calls=[];let failRead=false;
+ const stored={draft:{form:{milestoneId:id,submissionId:null,expectedUpdatedAt:null,proofText:'https://example.test/different-draft',notes:'Different authored draft'}},pending:{command,requestId}};
+ const h=await workspaceHarness('CreatorMissionsWorkspace',{creatorMissions:{get:async()=>failRead?{ok:false,code:'UNAVAILABLE',retryable:true}:{ok:true,data:dto},command:async(...args)=>{calls.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}},workspaceRecovery:recoveredDevice(stored)},{path:'studio/missions/'+id,locale});
+ const retry=()=>h.find('button',locale==='en'?'Retry the same request':'重試相同請求');
+ failRead=true;await retry().props.onClick();await tick();h.render();assert.equal(calls.length,0);
+ failRead=false;await retry().props.onClick();await tick();h.render();
+ await retry().props.onClick();await tick();h.render();
+ assert.equal(calls.length,2);assert.deepEqual(JSON.parse(JSON.stringify(calls)),[[id,command,requestId],[id,command,requestId]]);
 });

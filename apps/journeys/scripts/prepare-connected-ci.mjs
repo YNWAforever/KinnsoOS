@@ -1,3 +1,4 @@
+import {randomBytes} from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -40,7 +41,9 @@ export function localTestEnvironment(status, label, {mailbox = false, projectRef
   if (status.MAILPIT_URL !== 'http://127.0.0.1:58424') throw Error('Exact owned Mailpit origin required');
   env.KINNSO_TEST_MAILBOX_ORIGIN = status.MAILPIT_URL; env.KINNSO_TEST_EMAIL_CONFIRMATION = 'required';
  }
- testTargetConfiguration(env); return env;
+ testTargetConfiguration(env);
+ env.KINNSO_SHARE_RECEIPT_ACTIVE_KEY='ci-job';env.KINNSO_SHARE_RECEIPT_KEYS=JSON.stringify({'ci-job':randomBytes(32).toString('base64')});
+ return env;
 }
 export function prepare(command, env = process.env) {
  if (env.CI !== 'true' || env.GITHUB_ACTIONS !== 'true') throw Error('CI-only setup; preserve existing developer environments');

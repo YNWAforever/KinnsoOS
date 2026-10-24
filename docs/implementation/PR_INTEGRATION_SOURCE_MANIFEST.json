@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "scope": "PR integration deployment hold and PR82 narrow heading repair; not hosted or release acceptance",
+  "files": [
+    ".github/workflows/journeys.yml",
+    "apps/journeys/app/travel/workbench.css",
+    "apps/journeys/scripts/source-manifest.json",
+    "apps/journeys/vercel.json",
+    "apps/web/vercel.json",
+    "docs/implementation/PR_INTEGRATION_SOURCE_MANIFEST.json",
+    "scripts/git_deployment_hold_test.py",
+    "vercel.json"
+  ]
+}

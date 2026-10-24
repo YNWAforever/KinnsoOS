@@ -91,6 +91,18 @@ export async function recordCreatedTrip(ownerId:string,guideId:string|null,reque
   };
  });
 }
+// Only the first POST's definite rejection may release an unconfirmed creation.
+// Unknown/recovered requests must retain their original payload and requestId.
+export async function clearRejectedCreation(ownerId:string,guideId:string|null,requestId:string,input:CreationInput){
+ const inputHash=await creationInputHash(input);
+ await creationTransaction<void>(ownerId,(tx,done,fail)=>{
+  const store=tx.objectStore('creations'),key=creationKey(ownerId,guideId),row=store.get(key);
+  row.onsuccess=()=>{
+   if(row.result?.value.requestId!==requestId||row.result.value.tripId||creationIntent(row.result.value).inputHash!==inputHash){fail('PENDING_DRAFT');return}
+   store.delete(key);tx.objectStore('recoveries').delete(ownerId+':trip-create:'+requestId);done();
+  };
+ });
+}
 export async function clearPendingCreation(ownerId:string,guideId:string|null,requestId:string){
  await creationTransaction<void>(ownerId,(tx,done,fail)=>{
   const store=tx.objectStore('creations'),key=creationKey(ownerId,guideId),row=store.get(key);

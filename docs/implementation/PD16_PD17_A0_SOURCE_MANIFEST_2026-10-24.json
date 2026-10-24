@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "base": "9c845c09dc41652d5d05657d2ebcfea7d3701fcd",
+  "branch": "codex/pd16-pd17-a0-rehearsal-20261024",
+  "hashMeaning": "SHA-256 canonical Git blobs; final head/tree in independent delivery receipt",
+  "selfExcludedToAvoidRecursiveHash": true,
+  "files": {
+    "apps/journeys/scripts/pilot-preparation.mjs": "d5a6feabedf9757fb5e2c8da8fc0681de5f73e76315716ac0df9594cc981a127",
+    "apps/journeys/scripts/source-manifest.json": "beb7347eef464f830047cba1ec0810a8c8c6b04cb09a36a9126dd0ad102438c8",
+    "apps/journeys/scripts/subset-recovery-report.mjs": "1e8c10d06c83e4b27cf54b7aab3e705548f3b7acb98feb32b4362f77715939a9",
+    "apps/journeys/scripts/subset-recovery.template.json": "bca912ca9be702c20545b89e7c2bd2b12ae05d89cc30accb14a4b5357b6ee880",
+    "apps/journeys/tests/e2e/u25-public-accessibility.spec.ts": "e14e04878284bfcd0ad1b34137a3e4662d7f6935f924371455b384bab1c65254",
+    "apps/journeys/tests/helpers/reminder-cleanup.mjs": "397b8b53e298ffc02e856dd34d7a1b1b4fc109dc9f1fb09c4c92a789118c185f",
+    "apps/journeys/tests/integration/collaboration-reminders.test.mjs": "44ca896bf181cd9550a5a942267c914db8a4ef867ee8a69e4b8929d9aed7a715",
+    "apps/journeys/tests/integration/local-fixtures.mjs": "fb97ef244f8981bb598e8fc38a9511a61a498fd223bfe8f4a0287f1c9ad8ab98",
+    "apps/journeys/tests/pilot-preparation.test.mjs": "a2613a0fb6ff651ba8a667151d4db528e9b88274eb99e47b5f0a4daa965e8fd0",
+    "apps/journeys/tests/preparation-source-binding.test.mjs": "35692093000f70d94cf8af7168dca46177c132bad62a5eaa16a171f0d171cd6f",
+    "apps/journeys/tests/reminder-cleanup.test.mjs": "0953a3607b37bfff52e09a93d2b7e0e96a6efd29186a0a1b81bdd5feb7100d7b",
+    "apps/journeys/tests/subset-recovery-report.test.mjs": "7f0fae7193ef259234860cadb413a53d906cb6547be55058ba29992969c02a46",
+    "apps/journeys/vercel.json": "7cb96d2f23f0cd7e5b0483f15a3412381ff84ff3f1a891632e9550a2f8af9896",
+    "apps/web/vercel.json": "60edbc65f90739a580385a329ac640fe8dc4b5730d898e82b9af4ee1bbb8c952",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "9af6b04c3af4070d241f0772dd32cb286f23898ecb3f65ead519929a4252bd50",
+    "docs/implementation/PD16_PD17_A0_CASES_2026-10-24.json": "47bca793ba9861f1679d9555e7d4dfcf33d419c994f07bd4f723bf2a8a5e70e7",
+    "docs/implementation/PD16_PD17_A0_PLAN_2026-10-24.md": "4b663d77521dc00dd35d16a2c8af6bb190ae9a6a2c4ca2e64a1982d45cdfd94e",
+    "docs/implementation/PD16_PD17_A0_REQUIREMENTS_2026-10-24.json": "56bd94fc1741f4e57e9e6347754a579b3fbbe4e6a864e39e2ac966db8c860139",
+    "docs/implementation/PD16_PD17_A0_VALIDATION_2026-10-24.md": "62df90c4984c8a150ee306bfe389bfd5bdcc6eae2f6bf28607416c5f551ae685",
+    "docs/implementation/PILOT_SUPPORT_RUNBOOK.md": "b2fc09066240567dac7fd19df9e2e267b0d94f5435b9865a87d250082de7d127",
+    "vercel.json": "1e04b53e016321bfeb25111475a7a999e6fdde8894c4a3abb286b9e5e6d60e23"
+  },
+  "appManifestFiles": 506,
+  "repositorySqlInputs": 5,
+  "originalLedgerHashes": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "A1_A5": "NOT_EXECUTED",
+  "sharedRemixChanges": false,
+  "realGuideRights": "BLOCKED",
+  "reviewRepairs": [
+    "P2 actual read cap under file growth",
+    "P2 preserve scenario/cleanup/readback errors and stop later cleanup writes",
+    "Exact source binding checks dirty Git and all standalone input bytes; both CLIs await",
+    "Opened artifact stays bound to validated ancestor identities; zero outside bytes read",
+    "Partial setup retains allocated IDs and actor tracker; stops deletion with readonly checkpoint",
+    "Canonical Git cannot be shadowed by metadata; same clean HEAD before and after awaited byte verification",
+    "Normalize only public accessibility audit scroll origin; retain original gates and all real failures",
+    "Pilot packet ingress enforces the existing cap on one opened descriptor; actual growth RED/GREEN and unchanged boundary controls"
+  ],
+  "pr90ReviewBaseline": "da222ef9bb26667e77c4daf689d33a70241a3a0d",
+  "intermediateCandidate": "e673a148e465abe7c21b417b26cbd541101aa395",
+  "followupReviewBaseline": "0a28440a13774084de18987f7c73d52a9d62fc20"
+}

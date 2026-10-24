@@ -41,7 +41,7 @@ export type EarningsSection = 'settled'|'tracked'|'payouts';
 export type EarningsPage = {
  section:EarningsSection;
  totals:{currency:string|null;pending:string;paid:string}[];
- items:{id:string;kind:'mission'|'booking'|'affiliate'|'payout_batch';title:string;missionId:string|null;amount:string;currency:string|null;status:string;updatedAt:string|null;targetAt:string|null}[];
+ items:{id:string;kind:'mission'|'booking'|'affiliate'|'payout_batch';title:string;missionId:string|null;amount:string|null;currency:string|null;status:string;updatedAt:string|null;targetAt:string|null}[];
  nextCursor:string|null;
 };
 export const creatorEarnings = {get:(section:EarningsSection='settled',after?:string)=>request<EarningsPage>('/api/creator/earnings?'+new URLSearchParams({section,...after?{after}:{}}))};

@@ -1,4 +1,5 @@
 'use client';
+import {evidenceTimeline} from "../../lib/collaboration/evidence-timeline";
 import Link from 'next/link';
 import {useWorkspaceRecovery} from './useWorkspaceRecovery';
 import {useEffect,useRef,useState} from 'react';
@@ -84,6 +85,8 @@ export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:
   pending.current=null;setUnknown(false);setForm(null);setAgreed(false);setApplicationNote('');setMessage(t('Your update is saved.','更新已保存。'));await load();
  }
  function prepare(milestoneId:string,submission?:Evidence){setForm({milestoneId,submissionId:submission?.id??null,expectedUpdatedAt:submission?.updatedAt??null,proofText:submission?.proofUrls.join('\n')??'',notes:submission?.notes??''});setError('');setMessage('');}
+ function canCreateEvidence(milestoneId:string){const milestone=detail?.milestones.find(row=>row.id===milestoneId);return !!detail?.evidenceAvailable&&!!milestone&&(milestone.repeatable||!detail.submissionsNextCursor&&!detail.submissions.some(row=>row.milestoneId===milestoneId));}
+ const formBlocked=!!form&&!form.submissionId&&!canCreateEvidence(form.milestoneId);
  const locked=busy||unknown||!!detail&&!recovery.ready;
  const status=(value:string)=>{
   const labels:Record<string,[string,string]>={invited:['Invitation received','收到邀請'],applied:['Application under review','申請審核中'],active:['Active collaboration','合作進行中'],completed:['Completed','已完成'],cancelled:['Withdrawn','已撤回'],rejected:['Rejected','未獲接納'],submitted:['Submitted for review','已提交審核'],approved:['Approved','已核准'],revision_requested:['Revision requested','需要修改'],pending:['Draft evidence','證明草稿'],published:['Open','開放中'],paused:['Closed to new applications','已停止接受新申請']};
@@ -94,7 +97,7 @@ export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:
   error==='FORBIDDEN'?t('Complete your creator profile or check your account access to continue.','請先完成創作者檔案，或檢查帳戶存取權。'):
   error==='INVALID'?t('This action is unavailable or the evidence needs correction. Check the campaign status, eligibility and HTTPS links.','此操作目前不可用或證明資料需要修正。請檢查合作狀態、資格及 HTTPS 連結。'):
   t('The request was not completed. Your input is retained; retry when the connection is available.','請求尚未完成，輸入仍保留，請在連線恢復後重試。');
- if(!enabled)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="UNAVAILABLE" retryState="blocked"/></section>;
+ if(!enabled)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><p role="status">{t('Creator collaborations are not connected yet.','創作者合作服務尚未接通。')}</p><Link className="k-btn" href={href('explore')}>{t('Explore guides','探索攻略')}</Link></section>;
  if(!actorId||!valid)return <section className="k-page"><h1>{t('Creator collaborations','創作者合作')}</h1><WorkspaceServiceState locale={locale} code="AUTH_REQUIRED" retryState="blocked" returnPath={href(path)}/></section>;
  return <section className="k-page" data-testid="creator-collaborations">
   <p className="k-eyebrow">{t('CREATOR STUDIO','創作者工作室')}</p>
@@ -134,17 +137,29 @@ export function CreatorMissionsWorkspace({path,actorId,enabled,initialSnapshot}:
     {detail.participant?.status==='active'&&evidenceUrl(detail.couponUrl)&&<a href={detail.couponUrl} target="_blank" rel="noopener noreferrer">{t('Open merchant offer','開啟商戶優惠')}</a>}
     {detail.partnerLinks.map(link=>evidenceUrl(link.url)&&<p key={link.id}><a href={link.url} target="_blank" rel="noopener noreferrer">{t('Your existing partner link','你現有的合作連結')}</a></p>)}
    </article>
+   <section className="k-card" aria-label={t('Recorded evidence history','已記錄交付歷程')}>
+    <h2>{t('Recorded evidence history','已記錄交付歷程')}</h2>
+    <p>{t('Only loaded submission and review records are shown. A submission time can change after revision; this is not a complete event log. Submission labels show the current status. Approval is not payment.','此處只顯示已載入的交付及審核紀錄。修訂後提交時間可能改變，這不是完整事件紀錄；提交項目顯示目前狀態。核准不等於付款。')}</p>
+    {detail.submissions.length===0?<p>{t('No evidence history loaded yet.','暫未載入交付歷程。')}</p>:<ol>{evidenceTimeline(detail).map(event=>{const submission=detail.submissions.find(row=>row.id===event.submissionId),milestone=detail.milestones.find(row=>row.id===submission?.milestoneId);return <li key={event.key}>
+     {milestone&&<Link href={`#milestone-${milestone.id}`}>{t('Milestone: ','里程碑：')}{milestone.title}</Link>}
+     <strong>{event.kind==='submission'?t('Submission record, current status: ','提交紀錄，目前狀態：'):t('Review: ','審核：')}{status(event.kind==='review'?(event.status==='request_revision'?'revision_requested':event.status==='approve'?'approved':event.status==='reject'?'rejected':event.status):event.status)}</strong>
+     <p>{event.at?<time dateTime={event.at}>{scheduleDate(event.at,detail.scheduleTimeZone??'UTC',locale)}</time>:t('Time not recorded','未記錄時間')}</p>
+     {event.note&&<p>{event.note}</p>}<p className="k-muted">{t('Submission reference: ','提交參考編號：')}{event.submissionId}</p>
+    </li>;})}</ol>}
+    {detail.submissionsNextCursor&&<p>{t('Earlier records are available with Load earlier evidence below.','可使用下方「載入較早證明」查看較早紀錄。')}</p>}
+   </section>
    <h2>{t('Milestones and evidence','里程碑及證明')}</h2>
    <p>{t('Evidence links are reviewed by the merchant or Kinnso team. Submitting a link does not automatically verify or approve the work.','商戶或 Kinnso 團隊會審核證明連結。提交連結不會自動驗證或核准作品。')}</p>
    {detail.milestones.length===0&&<p>{t('This brief has no content milestones.','此合作簡介沒有內容里程碑。')}</p>}
    {detail.milestonesTruncated&&<p>{t('This campaign has more milestones than this view can show. Contact support for the complete brief.','此合作的里程碑超出本頁顯示範圍，請聯絡客服取得完整簡介。')}</p>}
    {detail.milestones.map(milestone=><article className="k-card" key={milestone.id} id={`milestone-${milestone.id}`} tabIndex={-1}><h3>{milestone.title}</h3><p>{milestone.description}</p>{milestone.dueAt&&<p>{t('Due: ','期限：')}<time dateTime={milestone.dueAt}>{scheduleDate(milestone.dueAt,detail.scheduleTimeZone??'UTC',locale)}</time>{Date.parse(milestone.dueAt)<Date.now()&&' · '+t('Past the stated deadline; accepted work can still be submitted or revised.','已過列明期限；已接受的工作仍可提交或修改。')}</p>}{milestone.repeatable&&detail.maxReceipts!==null&&<p>{t('Maximum submitted or approved receipts: ','已提交或核准收據上限：')}{detail.maxReceipts}</p>}
-    {detail.evidenceAvailable&&(milestone.repeatable||!detail.submissions.some(s=>s.milestoneId===milestone.id))&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id)}>{milestone.repeatable?t('Prepare new receipt','準備新收據'):t('Prepare evidence','準備證明')}</button>}
+    {canCreateEvidence(milestone.id)&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id)}>{milestone.repeatable?t('Prepare new receipt','準備新收據'):t('Prepare evidence','準備證明')}</button>}
+    {detail.evidenceAvailable&&!milestone.repeatable&&detail.submissionsNextCursor&&!detail.submissions.some(s=>s.milestoneId===milestone.id)&&<p className="k-muted">{t('Load earlier evidence to check whether this milestone already has a submission.','請載入較早證明，核對此里程碑是否已有交付。')}</p>}
     {detail.submissions.filter(s=>s.milestoneId===milestone.id).map(submission=><div key={submission.id}><h4>{status(submission.status)}</h4>{submission.notes&&<p>{submission.notes}</p>}{submission.proofUrls.map((url,i)=>evidenceUrl(url)?<p key={i}><a href={url} target="_blank" rel="noopener noreferrer">{t('Evidence link ','證明連結 ')}{i+1}</a></p>:<p key={i}>{url}</p>)}{submission.merchantFeedback&&<p><strong>{t('Reviewer feedback: ','審核意見：')}</strong>{submission.merchantFeedback}</p>}{submission.reviews.length>0&&<details><summary>{t('Review history','審核紀錄')}</summary>{submission.reviews.map(review=><p key={review.id}>{status(review.action==='request_revision'?'revision_requested':review.action==='approve'?'approved':'rejected')} · {review.reason} <time dateTime={review.createdAt}>{new Date(review.createdAt).toLocaleDateString(locale)}</time></p>)}</details>}{detail.evidenceAvailable&&['pending','submitted','revision_requested'].includes(submission.status)&&<button className="k-btn" disabled={locked} onClick={()=>prepare(milestone.id,submission)}>{t('Edit and resubmit evidence','修改並重新提交證明')}</button>}</div>)}
    </article>)}
    {detail.submissionsNextCursor&&<button className="k-btn" disabled={locked} onClick={()=>load(detail.submissionsNextCursor!)}>{t('Load earlier evidence','載入較早證明')}</button>}
-   {form&&<form className="k-card os-editor" onSubmit={event=>{event.preventDefault();const proofUrls=form.proofText.split('\n').map(x=>x.trim()).filter(Boolean);if(proofUrls.length<1||proofUrls.length>5||!proofUrls.every(evidenceUrl)){setError('INVALID');return;}void send({type:'submitEvidence',milestoneId:form.milestoneId,submissionId:form.submissionId,expectedUpdatedAt:form.expectedUpdatedAt,proofUrls,notes:form.notes});}}>
-    <h2>{t('Your evidence','你的證明')}</h2><fieldset disabled={locked}><label>{t('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）')}<textarea aria-label={t('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）')} required maxLength={10244} value={form.proofText} onChange={event=>setForm({...form,proofText:event.target.value})}/></label><label>{t('Notes for reviewer','給審核員的備註')}<textarea aria-label={t('Notes for reviewer','給審核員的備註')} maxLength={4000} value={form.notes} onChange={event=>setForm({...form,notes:event.target.value})}/></label><button className="k-btn primary" disabled={locked} type="submit">{t('Submit evidence','提交證明')}</button><button className="k-btn" type="button" onClick={()=>setForm(null)}>{t('Cancel editing','取消編輯')}</button>
+   {form&&<form className="k-card os-editor" onSubmit={event=>{event.preventDefault();if(formBlocked)return;const proofUrls=form.proofText.split('\n').map(x=>x.trim()).filter(Boolean);if(proofUrls.length<1||proofUrls.length>5||!proofUrls.every(evidenceUrl)){setError('INVALID');return;}void send({type:'submitEvidence',milestoneId:form.milestoneId,submissionId:form.submissionId,expectedUpdatedAt:form.expectedUpdatedAt,proofUrls,notes:form.notes});}}>
+    <h2>{t('Your evidence','你的證明')}</h2>{formBlocked&&<p role="status">{t('Your draft is retained. Load earlier evidence or review the existing submission before continuing.','草稿仍然保留。繼續前請載入較早證明，或核對現有交付。')}</p>}<fieldset disabled={locked}><label>{t('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）')}<textarea aria-label={t('Evidence links (one HTTPS link per line)','證明連結（每行一條 HTTPS 連結）')} required maxLength={10244} value={form.proofText} onChange={event=>setForm({...form,proofText:event.target.value})}/></label><label>{t('Notes for reviewer','給審核員的備註')}<textarea aria-label={t('Notes for reviewer','給審核員的備註')} maxLength={4000} value={form.notes} onChange={event=>setForm({...form,notes:event.target.value})}/></label><button className="k-btn primary" disabled={locked||formBlocked} type="submit">{t('Submit evidence','提交證明')}</button><button className="k-btn" type="button" onClick={()=>setForm(null)}>{t('Cancel editing','取消編輯')}</button>
     {form.submissionId&&detail.submissions.some(s=>s.id===form.submissionId)&&<button className="k-btn" type="button" onClick={()=>prepare(form.milestoneId,detail.submissions.find(s=>s.id===form.submissionId))}>{t('Load saved evidence (replace this form)','載入已保存證明（替換此表格）')}</button>}</fieldset>
    </form>}
   </>}

@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "base": "42ac09c513022991239d3af088ab7f5062904fc0",
+  "branch": "codex/pd06-durable-share-recovery-20261023",
+  "candidateBinding": "Final commit/tree/source fingerprints in exact delivery receipt; no self-referential SHA commit",
+  "code_status": "ATOMIC_ENCRYPTED_SHARE_RECEIPT_FROZEN_REQUEST_CROSS_SESSION_RECOVERY_LEGACY_PRESERVED",
+  "test_status": "970_LOCAL_UNIT_PASS;JOURNEYS_BUILD_TYPE_LINT_PASS;WEB_SHARED_COMPILER_PASS;FULL_WEB_LOCAL_DB_TYPES_BLOCKED;NEW_EXACT_CI_REQUIRED",
+  "deployment_status": "NO_MANUAL_OR_PRODUCTION_DEPLOYMENT",
+  "runtime_status": "PURE_COMPONENT_ONLY;LOCAL_DOCKER_UNAVAILABLE;ORIGINAL_REMIX_HOSTED_NOT_RUN",
+  "requirements": [
+    {
+      "id": "PD06R01",
+      "requirement": "同一 payload/requestId 併發及 lost ACK 安全重試",
+      "evidence": "share-receipt-recovery.test.mjs;share-receipt-api.test.mjs;integration/share-receipts.test.mjs",
+      "status": "LOCAL_CONTROLS_PASS_OWNED_DB_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R02",
+      "requirement": "分享／encrypted receipt 原子 commit；receipt insert失敗不留orphan",
+      "evidence": "integration/share-receipts.test.mjs",
+      "status": "OWNED_DB_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R03",
+      "requirement": "AES-256-GCM、AAD actor/trip/request、key rotation／tamper fail closed",
+      "evidence": "share-receipt-crypto.test.mjs;share-receipt-api.test.mjs",
+      "status": "LOCAL_PASS"
+    },
+    {
+      "id": "PD06R04",
+      "requirement": "fresh session/owner isolation、private RLS/ACL及invoker wrappers",
+      "evidence": "share-receipt-api.test.mjs;integration/share-receipts.test.mjs",
+      "status": "LOCAL_BFF_PASS_OWNED_AUTH_RLS_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R05",
+      "requirement": "跨session從server receipt取回同URL，不依賴舊device storage",
+      "evidence": "share-receipt-recovery.test.mjs;e2e/u23-share-receipt-recovery.spec.ts",
+      "status": "LOCAL_COMPONENT_PASS_TWO_OWNED_CONTEXTS_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R06",
+      "requirement": "revoke/expiry terminal不重建／不解密舊token；public notes/media projection",
+      "evidence": "share-receipt-api.test.mjs;share-receipt-recovery.test.mjs;integration/share-receipts.test.mjs;e2e/u02-travel-share.spec.ts",
+      "status": "LOCAL_CONTROLS_PASS_OWNED_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R07",
+      "requirement": "original expiry/selection/requestId；null/read failure不解鎖；legacy v1不能補造receipt",
+      "evidence": "share-receipt-recovery.test.mjs;share-preview-recovery.test.mjs",
+      "status": "LOCAL_PASS"
+    },
+    {
+      "id": "PD06R08",
+      "requirement": "actor/trip/disable/unmount/lifetime及read/write晚回應fences",
+      "evidence": "share-receipt-recovery.test.mjs;share-preview-recovery.test.mjs",
+      "status": "LOCAL_PASS"
+    },
+    {
+      "id": "PD06R09",
+      "requirement": "metadata20-row keyset、microseconds、同actor跨trip legacy/v2 quota",
+      "evidence": "share-receipt-api.test.mjs;share-receipt-recovery.test.mjs;integration/share-receipts.test.mjs",
+      "status": "LOCAL_CONTROLS_PASS_OWNED_DB_CI_REQUIRED"
+    },
+    {
+      "id": "PD06R10",
+      "requirement": "缺key停止新能力；legacy list/revoke保留；config非permission/schema readiness",
+      "evidence": "share-receipt-crypto.test.mjs;share-receipt-api.test.mjs;share-receipt-recovery.test.mjs",
+      "status": "LOCAL_PASS_SCHEMA_NOT_CHECKED_PRESERVED"
+    },
+    {
+      "id": "PD06R11",
+      "requirement": "EN/zh-HK keyboard、320px及200%32px文字；不是physical device",
+      "evidence": "share-receipt-recovery.test.mjs;e2e/u23-share-receipt-recovery.spec.ts",
+      "status": "LOCAL_COMPONENT_PASS_OWNED_BROWSER_CI_REQUIRED_PHYSICAL_NOT_RUN"
+    },
+    {
+      "id": "PD06R12",
+      "requirement": "owned CI gate後臨時key；原target不寫、不新增project／merge／production；partial setup精確cleanup，cleanup失敗停止後續fixture writes",
+      "evidence": "ci-local-target.test.mjs;PD06_SHARE_RECEIPT_OPERATOR_PACKET_2026-10-23.md",
+      "status": "LOCAL_PASS_ORIGINAL_TARGET_NOT_RUN"
+    },
+    {
+      "id": "PD06R13",
+      "requirement": "source manifests／exact-candidate evidence、原18N/53trace/T08/N16保留",
+      "evidence": "scripts/source-manifest.json;source_package_test.py;final delivery overlay",
+      "status": "SOURCE9PASS_1WINDOWS_SKIP_NEW_CI_REQUIRED"
+    }
+  ],
+  "historicalTaskRowAt42ac09c": {
+    "id": "PD06",
+    "phase": "M1",
+    "priority": "P1",
+    "task": "旅客首次行程、恢復與分享",
+    "depends_on": "PD01 PD03",
+    "dependency_scope": "Source-ready；owned tests需target gate",
+    "owner": "Full stack / QA",
+    "status": "SOURCE_REPAIRED_LOCAL_VERIFIED_CI_REQUIRED",
+    "code_status": "IMMUTABLE_TRIP_IMPORT_INTENT_RECOVERY_GATES_DIRTY_ACK_GUIDE_RETURN_SHARE_HOLD",
+    "test_status": "895_LOCAL_UNIT_BUILD_TYPE_LINT_PASS;LATE_CREATE4RED_READ_FENCE4RED_TO63FOCUSED_PASS;NEW_EXACT_HEAD_CI_REQUIRED",
+    "deployment_status": "NO_MANUAL_DEPLOYMENT_NO_PRODUCTION_CHANGE",
+    "runtime_status": "LOCAL_SYNTHETIC_NATIVE_ONLY_ORIGINAL_REMIX_HOSTED_NOT_RUN",
+    "acceptance": "明確採用並保存；summary無假adoption；時間/時區錯誤可恢復；unknown/CAS/草稿/分享撤銷成立",
+    "evidence": "PD05_PD13_IMPLEMENTATION_REVIEW_2026-10-23.md;PD05_PD13_REQUIREMENTS_2026-10-23.json;exact final delivery receipt",
+    "next_action": "Qualify u01/u02/trip editor on current owned CI; original new-session/second-device/photo/share readback NOT_RUN; unknown share backend receipt/token-replay contract remains open",
+    "rollback": "UI revert；保留trip/draft/receipt",
+    "original_refs": "PS01 PS02;N04 N08 N09",
+    "historical_input_status": "PLANNED"
+  },
+  "openGates": [
+    "Original Remix schema/keys/roles/hosted/restore NOT_RUN",
+    "Physical second-device acceptance NOT_RUN",
+    "Uncommitted/unsent intents are not replicated across devices; null receipt is not evidence of failure",
+    "Legacy v1/hash-only tokens cannot be reconstructed",
+    "Three real guide author consents/image rights BLOCKED",
+    "T08/N16 OPEN;PD18 NO_GO"
+  ],
+  "rollback": "Normal source revert/disable new shareRecovery writes; preserve valid shares,encrypted receipts,keyring,requestId dedupe; no DROP or destructive SQL",
+  "historicalCandidates": [
+    {
+      "head": "62d4f9f9f7cb6d78b69eecd01f9f5433efa6cf79",
+      "rootQuality": "FAIL_TS5097",
+      "ownedIntegration": "97PASS10FAIL_FIXTURE_DURATION_CONSTRAINT",
+      "browser": "NOT_RUN_AFTER_INTEGRATION_FAILURE",
+      "reviewP2": "wrong U23 selected-link revoke selector; repaired after pure two-locale reproduction",
+      "failedFixtureCleanup": "NOT_REACHED_AT_SETUP_FAILURE; next source catches partial setup and blocks later writes on cleanup failure"
+    }
+  ]
+}

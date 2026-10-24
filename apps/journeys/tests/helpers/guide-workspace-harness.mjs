@@ -14,7 +14,7 @@ const STUBS = {
   guides: `export const guides={get:id=>globalThis.__ports.guidesGet(id)};`,
   adoption: `export const adoptionPreview=(...a)=>globalThis.__ports.adoptionPreview?.(...a)??null;`,
   bookmarks: `export const bookmarks={list:(...a)=>globalThis.__ports.bookmarksList(...a),toggle:(...a)=>globalThis.__ports.bookmarksToggle(...a)};`,
-  trips: `export const trips={list:(...a)=>globalThis.__ports.tripsList?.(...a)??Promise.resolve({ok:true,data:{items:[],nextCursor:null}}),get:(...a)=>globalThis.__ports.tripsGet?.(...a)??Promise.resolve({ok:false,code:'NOT_FOUND',retryable:false,requestId:'x'}),adopt:(...a)=>globalThis.__ports.tripsAdopt?.(...a)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'}),create:(...a)=>globalThis.__ports.tripsCreate?.(...a),creation:(...a)=>globalThis.__ports.creationReceipt?.(...a)??Promise.resolve({ok:true,data:{tripId:null}})};`,
+  trips: `export const request=(...args)=>globalThis.__ports.request?.(...args)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'});export const trips={list:(...a)=>globalThis.__ports.tripsList?.(...a)??Promise.resolve({ok:true,data:{items:[],nextCursor:null}}),get:(...a)=>globalThis.__ports.tripsGet?.(...a)??Promise.resolve({ok:false,code:'NOT_FOUND',retryable:false,requestId:'x'}),adopt:(...a)=>globalThis.__ports.tripsAdopt?.(...a)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'}),create:(...a)=>globalThis.__ports.tripsCreate?.(...a),creation:(...a)=>globalThis.__ports.creationReceipt?.(...a)??Promise.resolve({ok:true,data:{tripId:null}})};`,
   drafts: `export const subscribeAccountInvalidation=(...a)=>globalThis.__ports.subscribeInvalidation?.(...a)??(()=>{});export const invalidateAccountViews=(...a)=>globalThis.__ports.invalidateAccount?.(...a);
    export const synchronizeAccountCache=async()=>{};
    export const readPendingAdoption=async(...a)=>globalThis.__ports.readPending?.(...a)??null;
@@ -24,6 +24,7 @@ const STUBS = {
    export const savePendingCreation=async(...a)=>globalThis.__ports.saveCreation?.(...a);
    export const recordCreatedTrip=async(...a)=>globalThis.__ports.recordCreated?.(...a);
    export const clearPendingCreation=async(...a)=>globalThis.__ports.clearCreation?.(...a);
+   export const clearRejectedCreation=async(...a)=>globalThis.__ports.clearRejectedCreation?.(...a);
    export const restoreOriginalCreation=async(...a)=>globalThis.__ports.restoreCreation?.(...a);
    export const saveLocalSnapshot=async()=>{};export const readLocalSnapshot=async()=>null;
    export const saveLocalDraft=async()=>{};export const readLocalDraft=async()=>null;export const clearLocalDraft=async()=>{};`,

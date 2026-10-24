@@ -40,6 +40,7 @@ body:has(.k-app) {
   margin: 0;
 }
 .k-app h1 {
+  overflow-wrap: anywhere;
   font-size: clamp(1.9rem, 3vw, 2.7rem);
   line-height: 1.25;
   font-weight: 720;
@@ -128,7 +129,7 @@ body:has(.k-app) {
 .k-logo {
   font-family: Georgia, serif;
   font-size: 2.55rem;
-  line-height: 1;
+  line-height: 1.2;
   font-weight: 700;
   letter-spacing: -0.09em;
   display: flex;
@@ -663,7 +664,7 @@ body:has(.k-app) {
   justify-content: space-between;
   gap: 20px;
   font-size: 0.75rem;
-  color: #7a847e;
+  color: #526751;
 }
 .k-footer > div {
   display: flex;
@@ -2494,9 +2495,10 @@ body:has(.k-app) {
 }
 .k-prose h2 {
   margin: 30px 0 14px;
+  overflow-wrap: anywhere;
 }
 .k-prose p {
-  color: #708364;
+  color: #526751;
   margin-bottom: 18px;
 }
 .k-prose > a {
@@ -2789,7 +2791,7 @@ body:has(.k-app) {
     left: 0;
     right: 0;
     z-index: 90;
-    background: #fffffff7;
+    background: #fff;
     backdrop-filter: blur(10px);
     border-top: 1px solid #dce5d6;
     padding: 7px 10px max(9px, env(safe-area-inset-bottom));
@@ -4283,7 +4285,6 @@ body:has(.k-app) {
   --k-muted: #53665f;
 }
 .k-header {
-  height: 72px;
   background: #f7f6f1;
 }
 .k-home-heading h1 {
@@ -4319,9 +4320,6 @@ body:has(.k-app) {
   .k-home-heading h1 {
     font-size: 32px;
     letter-spacing: -0.6px;
-  }
-  .k-header {
-    height: 68px;
   }
 }
 
@@ -4500,4 +4498,25 @@ body:has(.k-app) {
 .k-main:has(> [data-testid="creator-collaborations"]) {
   min-height: 100vh;
   min-height: 100svh;
+}
+
+/* Measured 320px/200% reflow: fieldset min-content and technical job references. */
+.k-campaigns fieldset {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+}
+.k-job-observations {
+  overflow-wrap: anywhere;
+}
+
+.k-campaigns input:not([type="checkbox"]):not([type="radio"]),
+.k-campaigns select,
+.k-campaigns textarea {
+  inline-size: 100%;
+  max-inline-size: 100%;
+  min-inline-size: 0;
+}
+
+.k-campaigns .k-merchant-summary dt {
+  overflow-wrap: anywhere;
 }

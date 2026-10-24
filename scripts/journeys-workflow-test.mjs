@@ -45,3 +45,17 @@ test('operations release assessment is required after collection and retains evi
  assert.match(job,/Enforce the source-bound operations assessment[\s\S]*if: always\(\)[\s\S]*journeys-operations-performance/);
  assert.match(job,/fetch-depth: 2/,'the PR mapping needs both verified parents and their trees');
 });
+
+test('every owned browser job prepares its mirror before the unchanged complete dependency installer',()=>{
+ for(const name of ['workspace-fixtures','connected','auth-mailbox','operations-performance']){
+  const job=workflow.split('  '+name+':')[1]?.split(/\n {2}[a-z][a-z-]*:/)[0];
+  assert.ok(job,'browser job must exist: '+name);
+  const installer=job.indexOf('npm exec playwright install -- --with-deps chromium');
+  const mirror=job.indexOf('node scripts/ci-browser-mirror.mjs');
+  assert.ok(mirror>=0&&mirror<installer,'mirror preflight must precede full dependency installation: '+name);
+  assert.match(job,/KINNSO_CI_RUNNER_ENVIRONMENT:.*runner\.environment/);
+  assert.doesNotMatch(job,/continue-on-error/);
+ }
+ assert.match(workflow.split('  workspace-fixtures:')[1].split('  verify:')[0],/timeout-minutes: 10/);
+ assert.match(workflow.split('  operations-performance:')[1],/timeout-minutes: 45/);
+});

@@ -10,6 +10,8 @@ const config: NextConfig = {
   outputFileTracingRoot:workspaceRoot,
   allowedDevOrigins:['127.0.0.1','localhost'],
   logging:{incomingRequests:{ignore:[/^\/share\//,/^\/api\/shared-media\//]},browserToTerminal:false},
+  // Keep the development toolbar from covering product controls in owned browser fixtures.
+  devIndicators: process.env.KINNSO_SYNTHETIC_RUN === "true" ? false : undefined,
   poweredByHeader: false,
   images: {
     remotePatterns: [

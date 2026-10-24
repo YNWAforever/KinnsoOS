@@ -104,6 +104,7 @@ export function GuestPlanner({guide,actorId=null,initialDraft,onSaved,onDeleted}
  </section>;
  return <section className="os-guide os-stop">
   <h2>{t('Device-only draft','只在此裝置的草稿')}</h2>
+   <p>{t('Planning time zone','規劃時區')}: {draft.timezone}</p>
   {initialDraft&&<p>{draft.title} · {t('Local identity','本機身份')}: {draft.ownerId} · v{draft.source?.version}</p>}
   <p>{t('This device copy is separate from your account. Review and confirm its import to save an account copy. Original local data is kept.','此裝置副本與帳戶分開。須核對及確認匯入，才會保存至帳戶，原本機資料會保留。')}</p>
   {draft.days.map((day,index)=><section key={index}>

@@ -90,3 +90,26 @@ test('an unresolved adoption cannot change payload or request identity, and only
  await s.clearPendingAdoption('A',uuid,uuid);assert.equal(await s.readPendingAdoption('A',uuid),null);
  await assert.rejects(s.savePendingAdoption('A',{...adoption,privateNote:'do not store this'}),/INVALID_ADOPTION/);
 });
+
+
+test('first-attempt rejection release CAS checks owner, request and original input hash',async()=>{
+ const s=await storage(),next='22222222-2222-4222-8222-222222222222';
+ const intent={requestId:uuid,guideId:null,version:null,flowId:null,tripId:null},input={title:'Original private input',timezone:'UTC',startDate:null};
+ await s.synchronizeAccountCache('A');await s.savePendingCreation('A',intent,input);
+ assert.equal(typeof s.clearRejectedCreation,'function');
+ await assert.rejects(s.clearRejectedCreation('B',null,uuid,input),/CACHE_ACCOUNT_CHANGED/);
+ await assert.rejects(s.clearRejectedCreation('A',null,next,input),/PENDING_DRAFT/);
+ await assert.rejects(s.clearRejectedCreation('A',null,uuid,{...input,title:'Newer input'}),/PENDING_DRAFT/);
+ assert.equal((await s.readPendingCreation('A',null)).intent.requestId,uuid);
+ await s.clearRejectedCreation('A',null,uuid,input);assert.equal(await s.readPendingCreation('A',null),null);
+ await s.savePendingCreation('A',{...intent,requestId:next},input);
+ await assert.rejects(s.clearRejectedCreation('A',null,uuid,input),/PENDING_DRAFT/);
+ assert.equal((await s.readPendingCreation('A',null)).intent.requestId,next);
+});
+test('rejection release cannot discard an already confirmed trip receipt',async()=>{
+ const s=await storage(),trip='22222222-2222-4222-8222-222222222222',input={title:'Confirmed input',timezone:'UTC',startDate:null};
+ await s.synchronizeAccountCache('A');await s.savePendingCreation('A',{requestId:uuid,guideId:null,version:null,flowId:null,tripId:null},input);
+ await s.recordCreatedTrip('A',null,uuid,trip);
+ await assert.rejects(s.clearRejectedCreation('A',null,uuid,input),/PENDING_DRAFT/);
+ assert.equal((await s.readPendingCreation('A',null)).intent.tripId,trip);
+});

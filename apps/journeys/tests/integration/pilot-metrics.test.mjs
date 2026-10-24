@@ -1,12 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,existsSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {randomUUID} from 'node:crypto';
 import {fixture,admin} from './local-fixtures.mjs';
-const archived=new URL('../contracts/20261016000953_kinnso_private_trip_pilot_metrics.sql',import.meta.url);
-const migration=existsSync(archived)?archived:new URL('../../../../supabase/migrations/20261016000953_kinnso_private_trip_pilot_metrics.sql',import.meta.url);
-test('real pilot measurement deduplicates receipts, proves edited readback and new-session reopen; migration is rolled back',async()=>{
+test('real pilot measurement deduplicates receipts, proves edited readback and new-session reopen; synthetic events are rolled back',async()=>{
  const f=await fixture();
  const merchantId=randomUUID(),experienceId=randomUUID();
  try{
@@ -42,7 +39,7 @@ DO $claims$ BEGIN PERFORM set_config('request.jwt.claims','${JSON.stringify(clai
 SET LOCAL ROLE authenticated;
 SELECT json_build_object('historicalPilot',public.get_kinnso_pilot_metrics((now() at time zone 'UTC')::date-30));
 RESET ROLE;`;
-  const script=`BEGIN;\nSET LOCAL statement_timeout='15s';\n${readFileSync(migration,'utf8')}\nSET LOCAL ROLE service_role;\n${calls}\n${referrals}\n${oldEvents}\nRESET ROLE;\nUPDATE kinnso_internal.pilot_events SET recorded_at=recorded_at-interval '1 day' WHERE request_id='${yesterday}';\nSET LOCAL ROLE service_role;\n${failedToday}\nRESET ROLE;\nSELECT kinnso_internal.pilot_metrics((now() at time zone 'UTC')::date);\n${historical}\nSELECT json_build_object('anonIngest',has_function_privilege('anon','public.record_kinnso_pilot_event(uuid,jsonb)','EXECUTE'),'authIngest',has_function_privilege('authenticated','public.record_kinnso_pilot_event(uuid,jsonb)','EXECUTE'),'anonTable',has_table_privilege('anon','kinnso_internal.pilot_events','SELECT'),'authTable',has_table_privilege('authenticated','kinnso_internal.pilot_events','SELECT'));\nROLLBACK;\n`;
+  const script=`BEGIN;\nSET LOCAL statement_timeout='15s';\nSET LOCAL ROLE service_role;\n${calls}\n${referrals}\n${oldEvents}\nRESET ROLE;\nUPDATE kinnso_internal.pilot_events SET recorded_at=recorded_at-interval '1 day' WHERE request_id='${yesterday}';\nSET LOCAL ROLE service_role;\n${failedToday}\nRESET ROLE;\nSELECT kinnso_internal.pilot_metrics((now() at time zone 'UTC')::date);\n${historical}\nSELECT json_build_object('anonIngest',has_function_privilege('anon','public.record_kinnso_pilot_event(uuid,jsonb)','EXECUTE'),'authIngest',has_function_privilege('authenticated','public.record_kinnso_pilot_event(uuid,jsonb)','EXECUTE'),'anonTable',has_table_privilege('anon','kinnso_internal.pilot_events','SELECT'),'authTable',has_table_privilege('authenticated','kinnso_internal.pilot_events','SELECT'));\nROLLBACK;\n`;
   const output=execFileSync('docker',['exec','-i',process.env.KINNSO_TEST_DB_CONTAINER,'psql','-U','postgres','-d','postgres','-X','-q','-t','-A','-v','ON_ERROR_STOP=1'],{input:script,encoding:'utf8',stdio:['pipe','pipe','pipe']});
   const rows=output.trim().split(/\r?\n/).filter(line=>line.startsWith('{')).map(line=>JSON.parse(line));
   const report=rows.at(-3),permissions=rows.at(-1);

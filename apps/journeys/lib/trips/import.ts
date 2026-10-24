@@ -1,3 +1,4 @@
+import {tripScheduleIssue} from './input-validation.ts';
 type RecordValue=Record<string,unknown>;
 const record=(value:unknown):RecordValue=>{if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('INVALID');return value as RecordValue};
 const text=(value:unknown,max:number,required=false)=>{if(typeof value!=='string'||value.length>max||(required&&!value.trim()))throw new Error('INVALID');return value};
@@ -20,8 +21,8 @@ export function previewLocalImport(input:unknown,selectedLocalOwner:string):Impo
   const photos=r.pendingPhotos??(Array.isArray(r.media)?r.media.map((value,index)=>{const m=record(value);return{name:m.name??`local-photo-${index+1}`,mime:null,size:null}}):[]);
   if(!Array.isArray(photos)||photos.length>20)throw new Error('media');
   const pendingPhotos=photos.map(value=>{const p=record(value);if(p.mime===null&&p.size===null)return{name:text(p.name,255,true),mime:null,size:null};const mime=text(p.mime,40),size=Number(p.size);if(!['image/jpeg','image/png','image/webp'].includes(mime)||!Number.isInteger(size)||size<1||size>10485760)throw new Error('media');return{name:text(p.name,255,true),mime,size}});
-  const startDate=r.startDate??r.date??null;if(startDate&&!/^\d{4}-\d{2}-\d{2}$/.test(String(startDate)))throw new Error('date');
+  const startDate=r.startDate??r.date??null,timezone=r.timezone??'UTC',scheduleIssue=tripScheduleIssue(timezone,startDate);if(scheduleIssue)throw new Error(scheduleIssue);
   const id=typeof r.id==='string'&&/^[\w-]{1,100}$/.test(r.id)?r.id:'manual';
-  return{ok:true,localOwnerId:selectedLocalOwner,sourceId:`local:${selectedLocalOwner}:${id}`,unverifiedSources,payload:{title:text(r.title,200,true),timezone:text(r.timezone??'UTC',80,true),startDate:startDate?String(startDate):null,days,pendingPhotos}};
+  return{ok:true,localOwnerId:selectedLocalOwner,sourceId:`local:${selectedLocalOwner}:${id}`,unverifiedSources,payload:{title:text(r.title,200,true),timezone:text(timezone,80,true),startDate:startDate?String(startDate):null,days,pendingPhotos}};
  }catch(error){return{ok:false,reason:error instanceof Error?error.message:'INVALID'}}
 }

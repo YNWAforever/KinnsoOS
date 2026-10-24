@@ -8,5 +8,5 @@ export async function fixture(){const ids=[],guides=[],destinations=[];
  async function destination(name,aliases){const result=await admin.from('destinations').insert({slug:'synthetic-'+randomUUID(),name,match_terms:aliases,status:'published',published_at:new Date().toISOString(),sort_order:-100}).select('id').single();if(result.error)throw result.error;destinations.push(result.data.id);return result.data.id}
  async function cleanup(){if(guides.length)await admin.from('guides').delete().in('id',guides);if(destinations.length)await admin.from('destinations').delete().in('id',destinations);for(const id of ids){const result=await admin.auth.admin.deleteUser(id);if(result.error)throw result.error}}
  async function deleteActor(id){const index=ids.indexOf(id);if(index<0)throw new Error('Only this fixture actor may be deleted');const r=await admin.auth.admin.deleteUser(id);if(r.error)throw r.error;ids.splice(index,1);}
- return{actor,guide,destination,deleteActor,cleanup};
+ return{actor,guide,destination,deleteActor,cleanup,actorIds:()=>ids.slice()};
 }
