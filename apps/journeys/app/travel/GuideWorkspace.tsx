@@ -115,7 +115,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  }
  async function confirmAdoption(){
   if((!preview&&!adoption.current)||!actorId||!accountValid||!adoptionReady||!flowId||lock.current)return;
-  const generation=epoch.current;lock.current=true;setBusy(true);
+  const generation=epoch.current,wasPending=adoption.current!==null;lock.current=true;setBusy(true);
   const command=adoption.current??{guideId:id,version:preview!.guideVersion,tripId:preview!.tripId,revision:preview!.revision,requestId:crypto.randomUUID(),flowId};
   try{await savePendingAdoption(actorId,command)}catch{
    if(generation!==epoch.current)return;
@@ -132,16 +132,16 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
    if(generation!==epoch.current)return;
    setMessage(t('Itinerary applied to your private trip.','行程已套用至你的私人行程。'));requestNavigation(href('trips/'+result.data.id));
   }
-  else if(['CONFLICT','INVALID','NOT_FOUND','FORBIDDEN'].includes(result.code)){
+  else if(!wasPending&&!result.retryable&&['CONFLICT','INVALID','NOT_FOUND','FORBIDDEN'].includes(result.code)){
    try{await clearPendingAdoption(actorId,id,command.requestId);if(generation!==epoch.current)return;adoption.current=null;setRecovered(null);setPreview(null)}
    catch{if(generation!==epoch.current)return;setMessage(t('The action ended, but its recovery record could not be cleared. Reload to retry the original action.','操作已終止，但未能清除恢復紀錄；請重新載入並重試原操作。'));setBusy(false);lock.current=false;return}
    setMessage(result.code==='CONFLICT'?t('Trip changed. Review the current version before applying.','行程已有變更，請核對目前版本後再套用。'):t('This application was refused. Your existing private trip is kept.','此套用已被拒絕，你現有的私人行程保留。'));
   }
-  else{setMessage(t('Application was not confirmed. Retry the same action or check your trip.','未確認套用結果；請重試同一操作或檢查行程。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
+  else{setRecovered(command);setMessage(t('Application was not confirmed. Retry the same action or check your trip.','未確認套用結果；請重試同一操作或檢查行程。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   if(generation!==epoch.current)return;
   setBusy(false);lock.current=false;
  }
-  const creationNotice=createdTrip?.tripId&&actorId&&accountValid?<p role="status">{t('Your empty trip was created. No guide content is applied until you confirm.','你的空白行程已建立，確認前不會套用攻略內容。')} <Link href={href('trips/'+createdTrip.tripId)}>{t('Open your created trip','開啟已建立的行程')}</Link></p>:null;
+  const creationNotice=createdTrip?.tripId&&actorId&&accountValid?<p role="status">{adoption.current?t('Your trip was created. The guide application is not confirmed; check the original action.','你的行程已建立，攻略套用結果尚未確認，請核對原操作。'):t('Your empty trip was created. No guide content is applied until you confirm.','你的空白行程已建立，確認前不會套用攻略內容。')} <Link href={href('trips/'+createdTrip.tripId)}>{t('Open your created trip','開啟已建立的行程')}</Link></p>:null;
   if(!guide)return <div className="k-page"><h1>{t('Published guide','已發布攻略')}</h1><p role={guideFailed?'alert':'status'}>{message||t('Loading…','載入中…')}</p>{creationNotice}{guideFailed&&<button className="k-btn" onClick={()=>setGuideAttempt(value=>value+1)}>{t('Retry guide','重試載入攻略')}</button>}</div>;
  return <div className="k-page"><Link href={href('explore')}>{t('Explore','探索')}</Link>{guideFailed&&<p role="alert">{t('Showing the last loaded version. Retry to refresh.','顯示上次載入的版本，請重試以重新載入。')} <button className="k-btn" onClick={()=>setGuideAttempt(value=>value+1)}>{t('Retry guide','重試載入攻略')}</button></p>}<PublicGuideContent guide={guide} locale={locale}/>
  <p className="k-muted">{t('Guide text is shown as published by its author.','攻略原文依作者發布內容顯示。')}</p>
@@ -168,7 +168,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
    <p>{t('This appends a separate authored copy. Existing days, source copies and your private notes stay in the trip.','此操作會加入獨立的作者行程副本，現有日程、來源副本及私人筆記會保留。')}</p>
    <ol>{previewDays.map(day=><li key={day.id}>{day.title}<ul>{day.stops.map(stop=><li key={stop.id}>{stop.title}<p>{stop.description}</p></li>)}</ul></li>)}</ol>
    <button className="k-btn primary" disabled={busy} onClick={()=>void confirmAdoption()}>{t('Confirm apply to this trip','確認套用至此行程')}</button>
-    <button className="k-btn" disabled={busy} onClick={()=>{setPreview(null);setMessage(t('Preview cancelled. No guide content was applied.','已取消預覽，未有套用攻略內容。'))}}>{t('Cancel preview','取消預覽')}</button>
+    <button className="k-btn" disabled={busy} onClick={()=>{setPreview(null);if(adoption.current){setRecovered(adoption.current);setMessage(t('Application is not confirmed. Retry the original action or check your private trip.','尚未確認套用結果，請重試原操作或檢查私人行程。'))}else setMessage(t('Preview cancelled. No guide content was applied.','已取消預覽，未有套用攻略內容。'))}}>{t('Cancel preview','取消預覽')}</button>
   </section>}
   </>:<Link className="k-btn primary" onClick={startAdoption} href={href('sign-in')+'?next='+encodeURIComponent(adoptionPath(locale,id,undefined,flowId||undefined,guide.version))}>{t('Sign in to apply this itinerary','登入以套用此行程')}</Link>}{(!actorId||accountValid)&&<GuestPlanner key={guide.id+':'+(actorId??'guest')} guide={guide} actorId={actorId}/>}</>}
  </div>

@@ -17,6 +17,7 @@ for (const [name, path] of [
   ['server', '../lib/api/server.ts'],
   ['creation', '../app/api/trips/creation/route.ts'],
   ['trips', '../app/api/trips/route.ts'],
+  ['adopt', '../app/api/trips/[id]/adopt/route.ts'],
 ]) {
   const source = await readFile(new URL(path, import.meta.url), 'utf8').catch(error => {
     if (name === 'creation' && error.code === 'ENOENT') return null;
@@ -48,6 +49,7 @@ function harness(options = {}) {
       if (state.rpcThrows) throw Error('PRIVATE connection detail');
       if (name === 'get_trip_creation_receipt') return {data:state.receipt, error:state.rpcError};
       if (name === 'create_trip_v2') return {data:{id:tripId, revision:1}, error:state.rpcError};
+       if (name === 'adopt_guide_to_trip') return {data:{id:tripId, revision:3}, error:state.rpcError};
       throw Error('Unexpected RPC '+name);
     },
     from:() => { throw Error('Receipt lookup must never query tables or snapshots'); },
@@ -74,13 +76,14 @@ function harness(options = {}) {
         if (specifier.endsWith('/contracts/capabilities')) return capabilityContract;
         if (specifier.endsWith('/api/validation') || specifier === './validation') return validation;
         if (specifier.endsWith('/telemetry/server')) return telemetry;
+         if (specifier.endsWith('/telemetry/pilot-server')) return {pilotEvent:async(actor,event)=>{if(state.pilotThrows===event.phase)throw Error('PRIVATE optional pilot measurement');}};
         if (specifier.endsWith('/api/server')) return load('server');
         throw Error('Unapproved dependency '+specifier);
       },
     }));
     return cache[name] = module.exports;
   }
-  return {...state, state, env, context:load('server').apiContext, creation:load('creation'), trips:load('trips')};
+  return {...state, state, env, context:load('server').apiContext, creation:load('creation'), trips:load('trips'), adopt:load('adopt')};
 }
 const get = (query = 'requestId='+requestId, actor = actorId) => new Request(
   'https://journeys.test/api/trips/creation'+(query ? '?'+query : ''),
@@ -291,4 +294,28 @@ test('create POST invalid-looking gateway errors without PostgreSQL proof remain
   const h=harness({rpcError:{message:'invalid_gateway_response',...(code?{code}:{})}});
   await denied(await h.trips.POST(post(actorId)),'UNAVAILABLE',503);
  }
+});
+
+
+const adoptPost=()=>new Request('https://journeys.test/api/trips/'+tripId+'/adopt',{
+ method:'POST',headers:{host:'journeys.test',origin:'https://journeys.test','content-type':'application/json','X-Kinnso-Intent-Actor':actorId},
+ body:JSON.stringify({guideId:otherActor,version:1,expectedRevision:2,requestId,flowId:requestId})
+});
+const adoptParams={params:Promise.resolve({id:tripId})};
+test('adoption POST transport failure is unknown rather than terminal INVALID',async()=>{
+ const h=harness({rpcThrows:true});await denied(await h.adopt.POST(adoptPost(),adoptParams),'UNAVAILABLE',503);
+ assert.equal(eventNames(h).filter(name=>name==='adopt_guide_to_trip').length,1);
+});
+for(const phase of ['confirmed','adopted'])test('adoption POST optional '+phase+' measurement cannot lose the durable result',async()=>{
+ const h=harness({pilotThrows:phase});const response=await h.adopt.POST(adoptPost(),adoptParams);
+ assert.equal(response.status,200);const body=await response.json();assert.equal(body.ok,true);assert.equal(body.data.id,tripId);
+ assert.equal(eventNames(h).filter(name=>name==='adopt_guide_to_trip').length,1);
+});
+test('adoption POST invalid-looking gateway responses cannot supply no-write proof',async()=>{
+ const h=harness({rpcError:{message:'invalid_gateway_response',code:'PGRST000'}});
+ await denied(await h.adopt.POST(adoptPost(),adoptParams),'UNAVAILABLE',503);
+});
+test('adoption POST PostgreSQL validation rejection remains explicit',async()=>{
+ const h=harness({rpcError:{message:'invalid_guide_version',code:'P0001'}});
+ await denied(await h.adopt.POST(adoptPost(),adoptParams),'INVALID',400);
 });

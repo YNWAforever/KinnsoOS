@@ -85,19 +85,59 @@ for(const [result,failClear] of [[{ok:true,data:trip},false],[{ok:true,data:trip
  const nextTrip='44444444-4444-4444-8444-444444444444',nextRequest='55555555-5555-4555-8555-555555555555';
  const original={guideId:id,tripId,version:1,revision:2,requestId:flow,flowId:flow};
  const replacement={...original,tripId:nextTrip,requestId:nextRequest};
- let release,rejectClear;const held=new Promise((resolve,reject)=>{release=resolve;rejectClear=reject}),calls=[],navigations=[];
+ let release,rejectClear,clearStarted=false;const held=new Promise((resolve,reject)=>{release=resolve;rejectClear=reject}),calls=[],navigations=[];
  const props={id,actorId:'actor-A',initialGuide:guide};
  const view=await mount('GuideWorkspace',props,{...ports,readPending:async owner=>owner==='actor-A'?original:replacement,
-  clearPending:async owner=>{if(owner==='actor-A')await held},
+  clearPending:async owner=>{if(owner==='actor-A'){clearStarted=true;await held}},
   tripsAdopt:async(...args)=>{calls.push(args);return args[2]===tripId?result:new Promise(()=>{})},
   navigate:path=>navigations.push(path)});
  view.button('Retry original application').props.onClick();await view.settle();
  props.actorId='actor-B';view.render();await view.settle();
  view.button('Retry original application').props.onClick();await view.settle();
  assert.equal(calls.length,2);assert.equal(view.button('Retry original application').props.disabled,true);
- if(failClear)rejectClear(Error('delayed device failure'));else release();
+ if(result.ok){assert.equal(clearStarted,true);if(failClear)rejectClear(Error('delayed device failure'));else release()}else assert.equal(clearStarted,false,'an uncertain restored request cannot be cleared by a later conflict');
  await view.settle();
  assert.equal(view.button('Retry original application').props.disabled,true,'A cleanup cannot repaint or unlock the active B request');
  assert.deepEqual(navigations,[]);
  assert.doesNotMatch(view.text(),/The action ended, but its recovery record could not be cleared/);
+});
+
+
+for(const code of ['INVALID','CONFLICT','NOT_FOUND','FORBIDDEN'])test('an unknown adoption retains its exact journal after later '+code,async()=>{
+ const calls=[],clears=[];
+ const view=await mount('GuideWorkspace',{id,actorId:'actor-A',initialGuide:guide},{...ports,
+  tripsAdopt:async(...args)=>{calls.push(args);return{ok:false,code:calls.length===1?'UNAVAILABLE':code,retryable:calls.length===1};},
+  clearPending:async(...args)=>clears.push(args)
+ },`?adopt=1&trip=${tripId}&flow=${flow}&version=1`);
+ view.button('Confirm apply').props.onClick();await view.settle();
+ const retry=view.button('Retry original application');assert.ok(retry,'uncertain application must expose its original recovery action');
+ retry.props.onClick();await view.settle();
+ assert.equal(calls.length,2);assert.deepEqual(calls[1],calls[0]);assert.equal(clears.length,0);
+ assert.ok(view.button('Retry original application'));assert.doesNotMatch(view.text(),/application was refused|No guide content was applied/i);
+});
+for(const locale of ['en','zh-HK'])test('cancel an unknown adoption preserves visible original recovery '+locale,async()=>{
+ const calls=[];
+ const view=await mount('GuideWorkspace',{id,actorId:'actor-A',initialGuide:guide,locale},{...ports,
+  tripsAdopt:async(...args)=>{calls.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}
+ },`?adopt=1&trip=${tripId}&flow=${flow}&version=1`);
+ view.button(locale==='en'?'Confirm apply':'確認套用').props.onClick();await view.settle();
+ view.button(locale==='en'?'Cancel preview':'取消預覽').props.onClick();await view.settle();
+ assert.ok(view.button(locale==='en'?'Retry original application':'重試原套用操作'));
+ assert.doesNotMatch(view.text(),/No guide content was applied|未有套用攻略內容/);
+ assert.match(view.text(),locale==='en'?/not confirmed|unconfirmed/:/未確認|未獲確認/);
+ assert.equal(view.elements().some(node=>node.type==='a'&&node.props.href?.startsWith('/'+locale+'/trips?next=')),false);
+ const retry=view.button(locale==='en'?'Retry original application':'重試原套用操作');retry.props.onClick();await view.settle();
+ assert.equal(calls.length,2);assert.deepEqual(calls[1],calls[0]);
+});
+
+
+test('a first retryable INVALID still retains its original adoption request',async()=>{
+ const calls=[],clears=[];
+ const view=await mount('GuideWorkspace',{id,actorId:'actor-A',initialGuide:guide},{...ports,tripsAdopt:async(...args)=>{calls.push(args);return{ok:false,code:'INVALID',retryable:true};},clearPending:async()=>clears.push('clear')},`?adopt=1&trip=${tripId}&flow=${flow}&version=1`);
+ view.button('Confirm apply').props.onClick();await view.settle();
+ assert.equal(clears.length,0);view.button('Retry original application').props.onClick();await view.settle();assert.deepEqual(calls[1],calls[0]);
+});
+test('an unknown application never describes its created target as an unapplied empty trip',async()=>{
+ const view=await mount('GuideWorkspace',{id,actorId:'actor-A',initialGuide:guide},{...ports,readCreation:async()=>({intent:{guideId:id,version:1,flowId:flow,requestId:flow,tripId},input:null}),tripsAdopt:async()=>({ok:false,code:'UNAVAILABLE',retryable:true})},`?adopt=1&trip=${tripId}&flow=${flow}&version=1&creation=${flow}`);
+ view.button('Confirm apply').props.onClick();await view.settle();assert.match(view.text(),/guide application is not confirmed/i);assert.doesNotMatch(view.text(),/empty trip was created|No guide content is applied/i);
 });
