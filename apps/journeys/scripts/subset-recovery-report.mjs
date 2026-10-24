@@ -4,6 +4,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {pathToFileURL} from 'node:url';
 import {resolveCandidateRevision} from './pilot-preparation.mjs';
+import {readContainedFile} from './read-contained-file.mjs';
 
 const object = x => x !== null && typeof x === 'object' && !Array.isArray(x);
 const shape = (x, names) => object(x) && Object.keys(x).length === names.length && names.every(k => Object.hasOwn(x, k));
@@ -20,46 +21,7 @@ function artifactFile(root, relative, maxBytes) {
   if (typeof relative !== 'string' || !relative || relative.length > 240 || /[\\:\x00]/.test(relative)) throw Error();
   const parts = relative.split('/');
   if (parts.some(p => !p || p.startsWith('.') || !/^[A-Za-z0-9_-][A-Za-z0-9_.-]*$/.test(p))) throw Error();
-  const absoluteRoot = path.resolve(root), canonicalRoot = fs.realpathSync(absoluteRoot);
-  const ancestors = [{file: absoluteRoot, stat: fs.lstatSync(absoluteRoot)}];
-  if (ancestors[0].stat.isSymbolicLink() || !ancestors[0].stat.isDirectory()) throw Error();
-  let file = absoluteRoot;
-  for (const part of parts) {
-    file = path.join(file, part); const stat = fs.lstatSync(file);
-    if (stat.isSymbolicLink()) throw Error();
-    ancestors.push({file, stat});
-  }
-  const canonicalFile = fs.realpathSync(file), relativeReal = path.relative(canonicalRoot, canonicalFile);
-  if (!relativeReal || relativeReal.startsWith('..') || path.isAbsolute(relativeReal)) throw Error();
-  const before = ancestors.at(-1).stat;
-  if (!before.isFile() || before.nlink !== 1 || before.size > maxBytes) throw Error();
-  const verifyPath = opened => {
-    if (fs.realpathSync(absoluteRoot) !== canonicalRoot || fs.realpathSync(file) !== canonicalFile) throw Error();
-    for (const item of ancestors) {
-      const current = fs.lstatSync(item.file);
-      if (current.isSymbolicLink() || current.ino !== item.stat.ino || current.dev !== item.stat.dev) throw Error();
-    }
-    const current = fs.lstatSync(file);
-    if (!current.isFile() || current.nlink !== 1 || current.ino !== opened.ino || current.dev !== opened.dev) throw Error();
-  };
-  const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0));
-  try {
-    const opened = fs.fstatSync(fd);
-    if (!opened.isFile() || before.ino !== opened.ino || before.dev !== opened.dev || opened.nlink !== 1 || opened.size > maxBytes) throw Error();
-    verifyPath(opened);
-    // One overflow byte detects growth without ever loading the enlarged file.
-    const buffer = Buffer.allocUnsafe(opened.size + 1); let count = 0;
-    while (count < buffer.length) {
-      const n = fs.readSync(fd, buffer, count, buffer.length - count, null);
-      if (n === 0) break;
-      count += n;
-    }
-    if (count !== opened.size || count > maxBytes) throw Error();
-    const bytes = buffer.subarray(0, count), after = fs.fstatSync(fd);
-    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs || after.nlink !== 1) throw Error();
-    verifyPath(opened);
-    return bytes;
-  } finally { fs.closeSync(fd); }
+  return readContainedFile(root, relative, maxBytes);
 }
 
 function utc(x) {

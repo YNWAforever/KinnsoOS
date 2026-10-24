@@ -1,0 +1,49 @@
+// Connection-free descriptor binding shared by source and subset preparation.
+import fs from 'node:fs';
+import path from 'node:path';
+
+export function readContainedFile(root, relative, maxBytes) {
+  if (typeof root !== 'string' || typeof relative !== 'string' || !relative || /[\\:\x00]/.test(relative) || path.posix.isAbsolute(relative) || !Number.isSafeInteger(maxBytes) || maxBytes < 1) throw Error();
+  const parts = relative.split('/');
+  if (parts.some(part => !part || part === '.' || part === '..')) throw Error();
+  const absoluteRoot = path.resolve(root), canonicalRoot = fs.realpathSync(absoluteRoot);
+  const ancestors = [{file: absoluteRoot, stat: fs.lstatSync(absoluteRoot)}];
+  if (ancestors[0].stat.isSymbolicLink() || !ancestors[0].stat.isDirectory()) throw Error();
+  let file = absoluteRoot;
+  for (const part of parts) {
+    file = path.join(file, part); const stat = fs.lstatSync(file);
+    if (stat.isSymbolicLink()) throw Error();
+    ancestors.push({file, stat});
+  }
+  const canonicalFile = fs.realpathSync(file), relativeReal = path.relative(canonicalRoot, canonicalFile);
+  if (!relativeReal || relativeReal.startsWith('..') || path.isAbsolute(relativeReal)) throw Error();
+  const before = ancestors.at(-1).stat;
+  if (!before.isFile() || before.nlink !== 1 || before.size > maxBytes) throw Error();
+  const verifyPath = opened => {
+    if (fs.realpathSync(absoluteRoot) !== canonicalRoot || fs.realpathSync(file) !== canonicalFile) throw Error();
+    for (const item of ancestors) {
+      const current = fs.lstatSync(item.file);
+      if (current.isSymbolicLink() || current.ino !== item.stat.ino || current.dev !== item.stat.dev) throw Error();
+    }
+    const current = fs.lstatSync(file);
+    if (!current.isFile() || current.nlink !== 1 || current.ino !== opened.ino || current.dev !== opened.dev) throw Error();
+  };
+  const fd = fs.openSync(file, fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0) | (fs.constants.O_NONBLOCK ?? 0));
+  try {
+    const opened = fs.fstatSync(fd);
+    if (!opened.isFile() || before.ino !== opened.ino || before.dev !== opened.dev || opened.nlink !== 1 || opened.size > maxBytes) throw Error();
+    verifyPath(opened);
+    // One overflow byte detects growth without ever loading the enlarged file.
+    const buffer = Buffer.allocUnsafe(opened.size + 1); let count = 0;
+    while (count < buffer.length) {
+      const n = fs.readSync(fd, buffer, count, buffer.length - count, null);
+      if (n === 0) break;
+      count += n;
+    }
+    if (count !== opened.size || count > maxBytes) throw Error();
+    const bytes = buffer.subarray(0, count), after = fs.fstatSync(fd);
+    if (after.size !== opened.size || after.mtimeMs !== opened.mtimeMs || after.nlink !== 1) throw Error();
+    verifyPath(opened);
+    return bytes;
+  } finally { fs.closeSync(fd); }
+}
