@@ -538,6 +538,7 @@
     "tests/share-receipt-crypto.test.mjs",
     "tests/share-receipt-recovery.test.mjs",
     "tests/sitemap-discovery.test.mjs",
+    "tests/source-input-boundaries.test.mjs",
     "tests/source-inputs.test.mjs",
     "tests/source_package_test.py",
     "tests/subset-recovery-report.test.mjs",

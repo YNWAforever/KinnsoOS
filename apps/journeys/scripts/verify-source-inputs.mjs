@@ -3,11 +3,17 @@ import {existsSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import path from 'node:path';
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
+const sourceName=name=>typeof name==='string'&&name.length>0&&!/[\\:\x00]/.test(name)&&
+ !path.posix.isAbsolute(name)&&name.split('/').every(part=>part!==''&&part!=='.'&&part!=='..');
 export async function verifySourceInputs(app,metadata){
  const root=await realpath(app),manifestBytes=await readFile(path.join(root,'scripts/source-manifest.json'));
  if(hash(manifestBytes)!==metadata.sha256?.['scripts/source-manifest.json'])throw Error('Build source differs from packaged source');
  const manifest=JSON.parse(manifestBytes),mapped=manifest.repositoryFiles??{};
- const expected=[...manifest.files,...Object.keys(mapped)].sort(),actual=Object.keys(metadata.sha256).sort();
+ if(!Array.isArray(manifest.files)||mapped===null||typeof mapped!=='object'||Array.isArray(mapped))throw Error('Build source differs from packaged source');
+ const expected=[...manifest.files,...Object.keys(mapped)],actual=Object.keys(metadata.sha256).sort();
+ // Reject manifest aliases before resolving or reading any declared source input.
+ if(!expected.every(sourceName))throw Error('Build source differs from packaged source');
+ expected.sort();
  if(JSON.stringify(expected)!==JSON.stringify(actual))throw Error('Build source differs from packaged source');
  const extracted=existsSync(path.join(root,'SOURCE_METADATA.json'));
  for(const [name,digest] of Object.entries(metadata.sha256)){
