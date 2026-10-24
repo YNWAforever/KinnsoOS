@@ -1,3 +1,4 @@
+import {pilotProxyIdentity} from '../../../../lib/telemetry/pilot-proxy';
 import {sameOrigin} from '../../../../lib/api/validation';
 import {boundedBody,failure,reply} from '../../../../lib/api/server';
 import {parsePublicPilotEvent} from '../../../../lib/telemetry/pilot';
@@ -12,8 +13,10 @@ export async function POST(request:Request){
   if(!event)return failure('INVALID',400);
   if(process.env.KINNSO_ENVIRONMENT==='local'||process.env.KINNSO_SYNTHETIC_RUN==='true'||capabilities(process.env).telemetry.mode!=='connected')return reply({ok:true,data:{queued:false}},202);
   if((await telemetryContext(null)).consent!=='accepted')return reply({ok:true,data:{queued:false}},202);
+  const identity=pilotProxyIdentity(request,JSON.stringify(event));
+  if(identity.kind==='invalid')return failure('FORBIDDEN',403);
   const client=await serverClient();if(!client)return failure('UNAVAILABLE',503);
-  const ip=(request.headers.get('x-vercel-forwarded-for')??request.headers.get('x-forwarded-for')??'unknown').split(',')[0].trim();
+  const ip=identity.kind==='verified'?identity.ip:(request.headers.get('x-vercel-forwarded-for')??request.headers.get('x-forwarded-for')??'unknown').split(',')[0].trim();
   const throttle=await client.rpc('check_and_increment_traveller_analytics_ip_rate_limit',{p_ip:ip,p_max_requests:600,p_window_seconds:600});
   if(throttle.error||!throttle.data)return reply({ok:true,data:{queued:false}},429);
   const result=await pilotEvent(null,event);

@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "purpose": "PR83 pilot proxy visitor quota correction; source only",
+  "baseHead": "8e5edd58c8198aaba64308668d41137c5e65df31",
+  "selfExcluded": true,
+  "canonicalFiles": {
+    "apps/web/app/api/pilot/route.ts": "81a9a87be1d7ac62e7edb1b13fca09172230107e9807ee1c2758cdc1f075480e",
+    "apps/web/tests/api.pilot.test.ts": "d2b2a13dffe41b598e69b8467cabf42aa06f075595c3d0e5520dd3f8fe144710",
+    "apps/journeys/app/api/telemetry/pilot/route.ts": "3b207e36eebac6d10dda2076fd656f80154f4ef6c2d62233557fc04d4bd68e17",
+    "apps/journeys/lib/telemetry/pilot-proxy.ts": "b1f2e8292f479f9803a7c01db4777bf892aa00f30ea3f26ab82c0b312dff37f3",
+    "apps/journeys/tests/pilot-proxy-identity.test.mjs": "2ec344c79d1fb3d6b9c24cb09786303c8affa4eaa3190472e8beb982c6fafbb7",
+    "apps/journeys/tests/pilot-public-route.test.mjs": "872560d303aedda3627cf3cf847593ca962400ab8d183e20351eca01ac32279e",
+    "apps/journeys/scripts/source-manifest.json": "c4c950cc176ccf441bd6e703e41c3fbba5a0a5c47f1d6476be40924069100ff3",
+    "docs/implementation/PILOT_PROXY_IDENTITY_2026-10-24.md": "a505a230f07f7ad6e374a66f31ecc6a854046125cc675ae7a9f32e4ffa6e0dfe"
+  },
+  "configurationStatus": "BLOCKED_NOT_EXECUTED",
+  "A1_A5": "NOT_EXECUTED",
+  "hostedAcceptance": "NOT_RUN",
+  "originalLedgers": "UNCHANGED"
+}

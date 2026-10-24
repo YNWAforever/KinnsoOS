@@ -155,6 +155,8 @@
     "docs/IMPLEMENTATION_PLAN.md",
     "docs/PHOTO-PROVENANCE.json",
     "docs/media-operations.md",
+    "docs/pilot-proxy-identity.md",
+    "docs/pilot-proxy-source-manifest.json",
     "lib/agent/policy.ts",
     "lib/agent/repository.ts",
     "lib/agent/result-contract.ts",
@@ -244,6 +246,7 @@
     "lib/telemetry/outcomes.ts",
     "lib/telemetry/performance.ts",
     "lib/telemetry/pilot-client.ts",
+    "lib/telemetry/pilot-proxy.ts",
     "lib/telemetry/pilot-server.ts",
     "lib/telemetry/pilot.ts",
     "lib/telemetry/repository.ts",
@@ -508,6 +511,7 @@
     "tests/photo-upload-lifetime.test.mjs",
     "tests/pilot-metrics.test.mjs",
     "tests/pilot-preparation.test.mjs",
+    "tests/pilot-proxy-identity.test.mjs",
     "tests/pilot-public-route.test.mjs",
     "tests/postgres-measurement.test.mjs",
     "tests/preparation-source-binding.test.mjs",
@@ -573,6 +577,8 @@
     "tests/contracts/20261016054409_kinnso_trip_creation_receipt.sql": "supabase/migrations/20261016054409_kinnso_trip_creation_receipt.sql",
     "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql",
     "tests/contracts/20261023114944_kinnso_unknown_tracked_profit.sql": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql",
-    "tests/contracts/20261024120000_kinnso_private_trip_progress.sql": "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql"
+    "tests/contracts/20261024120000_kinnso_private_trip_progress.sql": "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql",
+    "docs/pilot-proxy-identity.md": "docs/implementation/PILOT_PROXY_IDENTITY_2026-10-24.md",
+    "docs/pilot-proxy-source-manifest.json": "docs/implementation/PILOT_PROXY_SOURCE_MANIFEST_2026-10-24.json"
   }
 }
