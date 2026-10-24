@@ -273,6 +273,7 @@
     "playwright.pilot-presentation.config.ts",
     "playwright.public-entry.config.ts",
     "playwright.service-state.config.ts",
+    "playwright.stale-tab.config.ts",
     "playwright.today-slice.config.ts",
     "proxy.ts",
     "public/favicon.svg",
@@ -310,6 +311,8 @@
     "scripts/pilot-staging.env.example",
     "scripts/prefetch-ci-images.mjs",
     "scripts/prepare-connected-ci.mjs",
+    "scripts/real-integration-runner.mjs",
+    "scripts/real-suite-source.mjs",
     "scripts/source-manifest.json",
     "scripts/start-connected-local.mjs",
     "scripts/subset-recovery-report.mjs",
@@ -464,6 +467,7 @@
     "tests/integration/pilot-metrics.test.mjs",
     "tests/integration/reports-agent-quota.test.mjs",
     "tests/integration/share-receipts.test.mjs",
+    "tests/integration/trip-progress.test.mjs",
     "tests/integration/trips.test.mjs",
     "tests/latency-lab.test.mjs",
     "tests/local-auth-mailbox.test.mjs",
@@ -518,8 +522,11 @@
     "tests/real-integration-safety.test.mjs",
     "tests/real-integration/fixture.mjs",
     "tests/real-integration/result-summary.mjs",
+    "tests/real-integration/stale-tab.spec.ts",
+    "tests/real-integration/target-catalog.sql",
     "tests/real-integration/target.mjs",
     "tests/real-integration/today-slice.spec.ts",
+    "tests/real-suite-source.test.mjs",
     "tests/reminder-cleanup.test.mjs",
     "tests/reminder-context.test.mjs",
     "tests/save-flow-recovery.test.mjs",
@@ -543,6 +550,7 @@
     "tests/trip-fact-provenance.test.mjs",
     "tests/trip-heading.test.mjs",
     "tests/trip-progress-api.test.mjs",
+    "tests/trip-progress-schema.test.mjs",
     "tests/trip-progress.test.mjs",
     "tests/trip-workflow-recovery.test.mjs",
     "tests/unified-media-route.test.mjs",
@@ -564,6 +572,7 @@
     "tests/contracts/20261016000953_kinnso_private_trip_pilot_metrics.sql": "supabase/migrations/20261016000953_kinnso_private_trip_pilot_metrics.sql",
     "tests/contracts/20261016054409_kinnso_trip_creation_receipt.sql": "supabase/migrations/20261016054409_kinnso_trip_creation_receipt.sql",
     "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql",
-    "tests/contracts/20261023114944_kinnso_unknown_tracked_profit.sql": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql"
+    "tests/contracts/20261023114944_kinnso_unknown_tracked_profit.sql": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql",
+    "tests/contracts/20261024120000_kinnso_private_trip_progress.sql": "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql"
   }
 }

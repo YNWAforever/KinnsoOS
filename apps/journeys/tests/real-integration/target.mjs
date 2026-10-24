@@ -7,6 +7,7 @@ import {fileURLToPath,URL} from 'node:url';
 import process from 'node:process';
 import {Buffer} from 'node:buffer';
 import path from 'node:path';
+import {assertRealSuiteSource,readRealSuiteApproval,SourceInputBlocked} from '../../scripts/real-suite-source.mjs';
 const {fetch,AbortSignal}=globalThis;
 
 const reviewedBodies={
@@ -189,8 +190,21 @@ export function bootstrapFile(approval,approvalFile,name){
 }
 export async function verifyTarget(env=process.env,{empty=true}={}){
  requireGate(!!env.KINNSO_REAL_IT_APPROVAL_FILE&&!!env.KINNSO_REAL_IT_ATTESTATION_FILE,'APPROVAL_REQUIRED');
- let approval,attestation;try{approval=JSON.parse(readFileSync(env.KINNSO_REAL_IT_APPROVAL_FILE,'utf8'));attestation=JSON.parse(readFileSync(env.KINNSO_REAL_IT_ATTESTATION_FILE,'utf8'))}catch{throw new Blocked('APPROVAL_RECORD_UNREADABLE')}
+ let approval;
+ try{
+  approval=readRealSuiteApproval(env);
+  // Re-read selection at this entry point; the runner's earlier approval read
+  // cannot authorize metadata access for a subsequently changed selection.
+  assertRealSuiteSource({testSelection:approval.testSelection});
+ }catch(error){
+  if(!(error instanceof SourceInputBlocked))throw error;
+  const blocked=new Blocked(error.code);
+  for(const key of ['testSelection','expectedCaseCount','missingInputs'])
+   if(Object.hasOwn(error,key))blocked[key]=error[key];
+  throw blocked;
+ }
  const head=execute(['git','rev-parse','HEAD']).trim();validateApproval(approval,head);
+ let attestation;try{attestation=JSON.parse(readFileSync(env.KINNSO_REAL_IT_ATTESTATION_FILE,'utf8'))}catch{throw new Blocked('APPROVAL_RECORD_UNREADABLE')}
  const docker=(args,options)=>execute(['docker','--host','npipe:////./pipe/dockerDesktopLinuxEngine',...args],options);
  const names=['db','kong','rest','auth'].map(kind=>'supabase_'+kind+'_'+project);
  let containers,network,volume;try{containers=JSON.parse(docker(['inspect',...names]));[network]=JSON.parse(docker(['network','inspect',expected.network]));[volume]=JSON.parse(docker(['volume','inspect',expected.volume]))}catch{throw new Blocked('DOCKER_IDENTITY_UNAVAILABLE')}

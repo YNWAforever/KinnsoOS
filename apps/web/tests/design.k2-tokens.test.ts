@@ -8,6 +8,9 @@ import { describe, expect, it } from 'vitest'
 // legacy k-* ticket utilities stay DEFINED for studio/admin only.
 const css = readFileSync(join(__dirname, '../app/globals.css'), 'utf8')
 const layout = readFileSync(join(__dirname, '../app/layout.tsx'), 'utf8')
+const localeLayout = readFileSync(join(__dirname, '../app/[locale]/layout.tsx'), 'utf8')
+const fonts = readFileSync(join(__dirname, '../app/fonts.ts'), 'utf8')
+const fontComposition = [layout, localeLayout, fonts].join('\n')
 
 describe('R1C canonical design tokens', () => {
   it('keeps the original kinnso-* palette as the only color system', () => {
@@ -33,10 +36,19 @@ describe('R1C canonical design tokens', () => {
     expect(css).toMatch(/--font-display:\s*var\(--font-fraunces\)/)
     expect(css).toMatch(/--font-sans:\s*var\(--font-inter\)/)
     expect(css).toMatch(/--font-mono:\s*var\(--font-jetbrains-mono\)/)
-    expect(layout).not.toContain('Bricolage_Grotesque')
-    expect(layout).not.toContain('DM_Sans')
-    expect(layout).toContain('Fraunces')
-    expect(layout).toContain('Inter')
+    expect(fontComposition).not.toContain('Bricolage_Grotesque')
+    expect(fontComposition).not.toContain('DM_Sans')
+    expect(fonts).toContain('Fraunces')
+    expect(fonts).toContain('Inter')
+  })
+
+  it('applies all three canonical local font variables to the locale HTML root', () => {
+    expect(localeLayout).toMatch(/import\s*\{\s*fontVariables\s*\}\s*from\s*['"]\.\.\/fonts['"]/)
+    expect(localeLayout).toMatch(/<html[^>]*className=\{`[^`]*\$\{fontVariables\}/)
+    for (const [name, variable] of [['fraunces', '--font-fraunces'], ['inter', '--font-inter'], ['jetBrainsMono', '--font-jetbrains-mono']]) {
+      expect(fonts).toContain(`${name}.variable`)
+      expect(fonts).toContain(`variable: '${variable}'`)
+    }
   })
 
   it('recolors the k2-* editorial utilities to the original palette', () => {
