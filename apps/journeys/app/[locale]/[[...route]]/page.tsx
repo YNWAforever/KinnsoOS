@@ -16,6 +16,7 @@ import {connectedCatalogRedirect} from '../../../lib/catalog-results';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
 import{readPrivateCreatorMissionEntry}from '../../../lib/creators/private-mission-entry';
+import {parseAuthIntent,authPath} from '../../../lib/auth/auth-intent';
 type Props = { params: Promise<{ locale: string; route?: string[] }>;searchParams?:Promise<Record<string,string|string[]|undefined>> };
 const publishedGuide=cache((id:string)=>readPublicGuidePage(id,process.env));
 const publishedCreator=cache((handle:string)=>readPublicCreator(handle,process.env));
@@ -66,6 +67,17 @@ export default async function Page({ params,searchParams }: Props) {
   const catalogTarget = connectedCatalogRedirect(locale, path, demo, entryQuery);
   if (catalogTarget) redirect(catalogTarget);
   const actor=demo?null:await currentActor();
+  // The invitation landing page scrubs its fragment and asks the recipient to
+  // sign in locally, then reopen the private link. It exposes no account data.
+  if (!demo && !actor && path !== 'merchant/invitation' && /^(?:(?:studio|merchant|ops)(?:\/|$)|merchants\/dashboard(?:\/|$)|admin$)/.test(path)) {
+    const query = new URLSearchParams();
+    for (const [key,value] of Object.entries(entryQuery??{})) {
+      if (Array.isArray(value)) for (const item of value) query.append(key,item);
+      else if (value!==undefined) query.append(key,value);
+    }
+    const next = `/${locale}/${path}${query.size?'?'+query:''}`;
+    redirect(authPath(parseAuthIntent(new URLSearchParams({next}),locale),'sign-in'));
+  }
   const requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
   const merchantEntry=!demo&&actor&&path==='merchant'&&capabilities(process.env).merchant.mode==='connected'
     ?await readPrivateMerchantEntry(await serverClient(),actor.id,requestedCompany):null;

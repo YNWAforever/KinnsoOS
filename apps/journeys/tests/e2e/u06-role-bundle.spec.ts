@@ -108,27 +108,71 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
   }
 });
 
-test('U06 deferred role panels retain server headings, language, private cache and signed-out boundaries', async ({page}) => {
+test('U06 signed-out role entries retain local sign-in headings, language and private cache', async ({page,baseURL}) => {
   const scripts = downloadedScripts(page);
-  const routes = [
-    {path: '/en/merchant', heading: 'Merchant workspace'},
-    {path: '/zh-HK/ops', heading: '營運待辦'},
-    {path: '/en/merchant/invitation', heading: 'Company invitation'},
-    {path: '/zh-HK/ops/reconciliation', heading: '財務對帳'},
-    {path: '/en/agent', heading: 'Task preview'},
-    {path: '/zh-HK/studio/guides/new', heading: '你的創作工作室'},
-  ];
-  for (const route of routes) {
-    const response = await page.goto(route.path);
+  for (const path of ['/en/merchant','/zh-HK/ops','/zh-HK/ops/reconciliation','/zh-HK/studio/guides/new']) {
+    const response = await page.goto(path);
+    const destination = new URL(page.url());
+    expect(destination.origin).toBe(new URL(baseURL!).origin);
+    expect(destination.pathname).toBe(path.startsWith('/en/')?'/en/sign-in':'/zh-HK/sign-in');
+    expect(destination.searchParams.get('next')).toBe(path);
     expect(response?.status()).toBe(200);
     expect(response?.headers()['cache-control']).toContain('private');
     expect(response?.headers()['cache-control']).toContain('no-store');
-    expect(await response!.text()).toContain(route.heading);
-    await expect(page.getByRole('heading', {level: 1, name: route.heading, exact: true})).toBeVisible();
-    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+    const heading=path.startsWith('/en/')?'Sign in to Kinnso':'登入 Kinnso';
+    expect(await response!.text()).toContain(heading);
+    await expect(page.getByRole('heading',{level:1,name:heading,exact:true})).toBeVisible();
+    await expect(page.locator('html')).toHaveAttribute('lang',path.startsWith('/en/')?'en':'zh-HK');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
   }
-  await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
-  const javascript = await scripts();
+  const javascript=await scripts();
   for (const marker of roleMarkers)
-    expect(javascript.includes(marker), `Selected role route must load ${marker}`).toBe(true);
+    expect(javascript.includes(marker),`Signed-out entry must defer ${marker}`).toBe(false);
+});
+
+test('U06 deferred role panels retain server headings, language and private cache after local sign-in', async ({page}) => {
+  const admin=createClient(target.apiOrigin,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
+  const email=`synthetic-role-bundle-${randomUUID()}@example.test`,password=`Synthetic!${randomUUID()}`;
+  const created=await admin.auth.admin.createUser({email,password,email_confirm:true});
+  expect(created.error).toBeNull();
+  const actorId=created.data.user!.id;
+  const scripts = downloadedScripts(page);
+  try {
+    await page.goto('/en/sign-in?next=/en/merchant');
+    await page.getByLabel('Email',{exact:true}).fill(email);
+    await page.getByLabel('Password',{exact:true}).fill(password);
+    await page.getByRole('button',{name:'Sign in',exact:true}).click();
+    await page.waitForURL(url=>url.pathname==='/en/merchant');
+    // The next document must not replace Chromium's response-body resources
+    // while the script collector is still reading the sign-in transition.
+    await page.waitForLoadState('networkidle');
+    await scripts();
+    const routes = [
+      {path: '/en/merchant', heading: 'Merchant workspace'},
+      {path: '/zh-HK/ops', heading: '營運待辦'},
+      {path: '/en/merchant/invitation', heading: 'Company invitation'},
+      {path: '/zh-HK/ops/reconciliation', heading: '財務對帳'},
+      {path: '/en/agent', heading: 'Task preview'},
+      {path: '/zh-HK/studio/guides/new', heading: '向旅人介紹你的創作。', serverText: '正在載入工作室…'},
+    ];
+    for (const route of routes) {
+      const response = await page.goto(route.path);
+      expect(response?.status()).toBe(200);
+      expect(response?.headers()['cache-control']).toContain('private');
+      expect(response?.headers()['cache-control']).toContain('no-store');
+      expect(new URL(page.url()).pathname).toBe(route.path);
+      expect(await response!.text()).toContain(route.serverText??route.heading);
+      await expect(page.getByRole('heading', {level: 1, name: route.heading, exact: true})).toBeVisible();
+      await expect(page.locator('html')).toHaveAttribute('lang',route.path.startsWith('/en/')?'en':'zh-HK');
+      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+      await page.waitForLoadState('networkidle');
+      await scripts();
+    }
+    await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
+    const javascript = await scripts();
+    for (const marker of roleMarkers)
+      expect(javascript.includes(marker), `Selected role route must load ${marker}`).toBe(true);
+  } finally {
+    expect((await admin.auth.admin.deleteUser(actorId)).error).toBeNull();
+  }
 });

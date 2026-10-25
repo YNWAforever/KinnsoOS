@@ -1,5 +1,5 @@
 import type {PublicArticle} from './public-article';
-import {articleCanonical,articleStructuredData} from './article-presentation';
+import {articleStructuredData} from './article-presentation';
 /** HTML is sanitized in the anonymous server reader before crossing the SSR/hydration boundary. */
 export function PublicArticleContent({article,locale}:{article:PublicArticle;locale:'en'|'zh-HK'}) {
  let number=0;
@@ -17,6 +17,5 @@ export function PublicArticleContent({article,locale}:{article:PublicArticle;loc
     {block.images.map((image,index)=><figure key={index}><img src={image.url} alt={image.description} loading="lazy" style={{maxWidth:'100%',height:'auto'}}/>{image.description&&<figcaption>{image.description}</figcaption>}</figure>)}
    </section>)}
    {article.faqs.length>0&&<section><h2>{locale==='en'?'Questions and answers':'常見問題'}</h2><dl>{article.faqs.map((faq,index)=><div key={index}><dt>{faq.question}</dt><dd>{faq.answer}</dd></div>)}</dl></section>}
-   <a href={articleCanonical(article)}>{locale==='en'?'View original article':'查看原文'}</a>
   </article></>;
 }

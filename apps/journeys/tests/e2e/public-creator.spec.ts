@@ -33,7 +33,8 @@ test('real public creator SSR and hydration show bounded published guides; withd
      await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content','profile');
      await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content',bio);
      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
-     await expect(page.locator('link[hreflang]')).toHaveCount(0);await expect(page.locator('article > a')).toHaveAttribute('href',original);
+     await expect(page.locator('link[hreflang]')).toHaveCount(0);await expect(page.locator('article > a')).toHaveAttribute('href',`/${locale}/explore`);
+     await expect(page.locator('a[href*="remix-kinnso-web.vercel.app"]')).toHaveCount(0);
      await expect(page.locator('article script')).toHaveCount(0);expect(await page.content()).not.toContain(privateMarker);expect(await page.content()).not.toContain('Authored published guide 6');
     }
     await page.locator('article li a').first().click();await expect(page.getByRole('heading',{name:guides[0].title,exact:true})).toBeVisible();

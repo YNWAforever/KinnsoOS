@@ -2349,46 +2349,25 @@ function BusinessTool({ section }: { section: string }) {
     bookings: ["Merchant bookings", "商戶預訂"],
     budget: ["Campaign budget", "活動預算"],
   };
-  const target: Record<string, string> = {
-    profile: "profile",
-    experiences: "experiences",
-    bookings: "bookings",
-    budget: "budget",
-  };
   return (
     <>
       <MerchantHeading title={t(...names[section])} action={false} />
       <section className="k-panel">
         <h2>
           {t(
-            "Continue in the existing Kinnso application",
-            "在現有 Kinnso 應用程式繼續",
+            "This business tool is not available in the trial",
+            "試用期間暫未提供此業務工具",
           )}
         </h2>
         <p>
           {t(
-            "This operational tool uses the existing account and permissions. Sign in there if requested; seamless cross-site return is not connected.",
-            "此業務工具使用現有帳戶及權限，如有需要請於原站登入，尚未接通跨站無縫返回。",
+            "Open your KinnsoOS workspace to see the services available to your account.",
+            "開啟你的 KinnsoOS 工作區，查看帳戶可用的服務。",
           )}
         </p>
-        <a
-          className="k-btn primary"
-          href={
-            "https://remix-kinnso-web.vercel.app/en/merchants/dashboard/" +
-            target[section]
-          }
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t("Open existing business tool", "開啟現有業務工具")}
-          <Icon name="external" />
-        </a>
-        <p className="k-meta">
-          {t(
-            "Source-verified route; live account access is not tested. No private data is passed in the URL.",
-            "路線已核對原始碼，正式帳戶存取尚未測試。網址不會傳送私人資料。",
-          )}
-        </p>
+        <Link className="k-btn primary" href={href("workspace")}>
+          {t("Open KinnsoOS workspaces", "開啟 KinnsoOS 工作區")}
+        </Link>
         {section === "bookings" && (
           <Link className="k-btn" href={href("bookings")}>
             {t(
@@ -2466,7 +2445,7 @@ export function CreatorShell({
   );
 }
 export function CanonicalContent({ path }: { path: string }) {
-  const { t } = useApp(),
+  const { t, href } = useApp(),
     label = path.startsWith("articles")
       ? t("Travel reads", "旅行閱讀")
       : path.startsWith("sessions")
@@ -2479,26 +2458,17 @@ export function CanonicalContent({ path }: { path: string }) {
       </div>
       <section className="k-panel">
         <h2>
-          {t("Explore the existing Kinnso collection", "探索現有 Kinnso 內容")}
+          {t("This collection is not available in the trial", "試用期間暫未提供此內容集")}
         </h2>
         <p>
           {t(
-            "Continue to the original English application for this retained collection. Content and session availability are not connected to the demo.",
-            "前往原有英文應用程式查看此保留內容，示範尚未接通內容及活動名額。",
+            "Explore the guides available on KinnsoOS.",
+            "探索 KinnsoOS 上可用的攻略。",
           )}
         </p>
-        <a
-          className="k-btn primary"
-          href={
-            "https://remix-kinnso-web.vercel.app/en/" +
-            path.split("/").map(encodeURIComponent).join("/")
-          }
-          target="_blank"
-          rel="noreferrer"
-        >
-          {t("Open existing collection", "開啟現有內容")}
-          <Icon name="external" />
-        </a>
+        <Link className="k-btn primary" href={href("explore")}>
+          {t("Explore guides", "探索攻略")}
+        </Link>
       </section>
     </div>
   );

@@ -6,7 +6,6 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "../travel/ui";
 import type { CatalogResult } from "../../lib/catalog";
 import { catalogResultsPath } from "../../lib/catalog-results";
-import { canonicalRoot } from "../../lib/canonical";
 
 export function CatalogPanel() {
   const { t, locale, href } = useApp();
@@ -48,7 +47,6 @@ export function CatalogPanel() {
     if (page > 1) next.set("page", String(page));
     router.push(href(catalogResultsPath(pathname)) + (next.size ? "?" + next : ""));
   }
-  const sourceRoot = canonicalRoot(locale);
   return (
     <div className="k-page os-library">
       <div className="os-eyebrow">KINNSO LIBRARY</div>
@@ -108,18 +106,10 @@ export function CatalogPanel() {
           </h2>
           <p>
             {t(
-              "Your sample itineraries still work. You can browse the existing library while this connection is prepared.",
-              "你仍可使用示範行程，亦可先到現有網站瀏覽已發布攻略。",
+              "Explore sample itineraries while the published library connection is prepared.",
+              "已發布攻略尚在接通中，你可先探索示範行程。",
             )}
           </p>
-          <a
-            className="k-btn primary"
-            href={
-              sourceRoot + "/explore"
-            }
-          >
-            {t("Open existing Kinnso ↗", "前往現有 Kinnso ↗")}
-          </a>
           <Link className="k-btn" href={`/${locale}/demo/explore`}>
             {t("Explore sample routes", "探索示範路線")}
           </Link>

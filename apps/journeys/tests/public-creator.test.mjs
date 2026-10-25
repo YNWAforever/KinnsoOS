@@ -20,11 +20,12 @@ for(const locale of ['en','zh-HK'])test('public creator SSR separates unknown au
  assert.match(html,new RegExp('<a[^>]*lang=""[^>]*href="/'+locale+'/g/'+id+'"[^>]*>Original guide title</a>|<a[^>]*href="/'+locale+'/g/'+id+'"[^>]*lang=""[^>]*>Original guide title</a>'));
  assert.ok(html.includes('<h2>'+(locale==='en'?'Published guides':'已發布攻略')+'</h2>'));
  assert.ok(html.includes('aria-label="'+(locale==='en'?'Public creator profile':'創作者公開檔案')+'"'));
- assert.ok(html.includes('>'+(locale==='en'?'View more on original profile':'在原站檔案查看更多')+'</a>'));
+ assert.ok(html.includes(`href="/${locale}/explore"`));
+ assert.ok(!html.includes('remix-kinnso-web'));
  assert.ok(!html.includes('<script>'));
  const empty=renderToStaticMarkup(component.exports.PublicCreatorContent({creator:{...creator,bio:'',guides:[],hasMore:false},locale}));
  assert.ok(empty.includes('<p>'+(locale==='en'?'No published guides yet.':'尚未有已發布攻略。')+'</p>'));
- assert.ok(empty.includes('>'+(locale==='en'?'View original profile':'查看原站檔案')+'</a>'));
+ assert.ok(!empty.includes('remix-kinnso-web'));
 });
 test('creator reads bind handle, public projection and bounded published guides without actor credentials',async()=>{
  assert.equal(typeof subject.readPublicCreator,'function');let calls=0;

@@ -3,6 +3,12 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { backendTarget } from './lib/contracts/capabilities';
 
 export async function proxy(request: NextRequest) {
+  // Legacy links use lower-case zh-hk; keep them on this site's supported locale.
+  if (/^\/zh-hk(?:\/|$)/.test(request.nextUrl.pathname)) {
+    const url = request.nextUrl.clone();
+    url.pathname = url.pathname.replace(/^\/zh-hk/, '/zh-HK');
+    return NextResponse.redirect(url, {headers:{'Cache-Control':'private, no-store'}});
+  }
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-kinnso-locale', request.nextUrl.pathname.split('/')[1] === 'en' ? 'en' : 'zh-HK');
   let response = NextResponse.next({ request: { headers: requestHeaders } });

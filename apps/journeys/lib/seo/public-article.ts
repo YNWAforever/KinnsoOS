@@ -1,5 +1,6 @@
 import sanitizeHtml from 'sanitize-html';
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
+import {trialNavigationHref} from '../canonical.ts';
 export type ArticleBlock={id:string;type:string;title:string;subtitle:string;html:string;image:string|null;fields:{label:string;href:string|null}[];images:{url:string;description:string}[]};
 export type PublicArticle={id:string;slug:string;category:string;locale:string;title:string;summary:string;metadataTitle:string;description:string;author:string|null;publishedAt:string;updatedAt:string|null;coverImage:string|null;shareImage:string|null;blocks:ArticleBlock[];faqs:{question:string;answer:string}[]};
 const categories:Record<string,string>={destinations:'destination',dining:'dining',shopping:'shopping'};
@@ -10,14 +11,18 @@ function text(value:unknown):string{if(value==null)return '';if(typeof value!=='
 function date(value:unknown):string|null{if(value===null)return null;if(typeof value!=='string'||!Number.isFinite(Date.parse(value)))throw new Error('article_schema');return value;}
 function link(value:unknown,image=false):string|null {
  const source=text(value);if(!source)return null;
- try{const url=new URL(source);if(url.username||url.password||!(image?url.origin==='https://cdn.kinnso.ai'&&!url.search&&!url.hash:['https:','http:','mailto:','tel:'].includes(url.protocol)))return null;return url.href;}catch{return null;}
+ try{const url=new URL(source);if(url.username||url.password||!(image?url.origin==='https://cdn.kinnso.ai'&&!url.search&&!url.hash:['https:','http:','mailto:','tel:'].includes(url.protocol)))return null;return image?url.href:trialNavigationHref(url.href);}catch{return null;}
 }
 // Reuse the mature apps/web/lib/articles/sanitize.ts allowlist, with CDN-only images.
 function cleanHtml(value:unknown):string {
  return sanitizeHtml(text(value),{
   allowedTags:['p','br','span','div','strong','b','em','i','u','s','ul','ol','li','blockquote','hr','h2','h3','h4','h5','h6','a','img','figure','figcaption','table','thead','tbody','tr','th','td'],
   allowedAttributes:{a:['href','target','rel'],img:['src','alt','title','width','height','loading']},allowedSchemes:['http','https','mailto','tel'],allowProtocolRelative:false,
-  transformTags:{a:sanitizeHtml.simpleTransform('a',{rel:'noopener noreferrer nofollow'},true),img:(_tag,attributes)=>({tagName:'img',attribs:{...attributes,src:link(attributes.src,true)??'',loading:'lazy'}})},
+  transformTags:{a:(_tag,attributes)=>{
+   const attribs:Record<string,string>={...attributes,rel:'noopener noreferrer nofollow'};
+   if(attributes.href&&!trialNavigationHref(attributes.href))delete attribs.href;
+   return{tagName:'a',attribs};
+  },img:(_tag,attributes)=>({tagName:'img',attribs:{...attributes,src:link(attributes.src,true)??'',loading:'lazy'}})},
   exclusiveFilter:frame=>frame.tag==='img'&&!frame.attribs.src,
  });
 }
