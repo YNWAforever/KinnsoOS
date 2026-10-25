@@ -1391,6 +1391,22 @@ export interface Messages {
     saveFailed: string
     statusUnavailable: string
   }
+  guideSource: {
+    label: string
+    summaryKind: string
+    itineraryKind: string
+    author: string
+    version: string
+    publishedAt: string
+    daysStops: string
+    originalLanguage: string
+    verificationDate: string
+    unknown: string
+    disclaimer: string
+    summaryNoAdopt: string
+    summaryInspiration: string
+    unavailable: string
+  }
   experienceSave: {
     save: string
     saved: string
@@ -3075,6 +3091,22 @@ const messages: Messages = {
     signInToSave: 'Sign in to save',
     saveFailed: 'That did not save. Please try again.',
     statusUnavailable: 'Saved status could not be checked. Retry',
+  },
+  guideSource: {
+    label: 'Guide source',
+    summaryKind: 'Reading summary — no structured itinerary',
+    itineraryKind: 'Structured itinerary',
+    author: 'Author',
+    version: 'Published version',
+    publishedAt: 'Published at',
+    daysStops: 'Days / stops',
+    originalLanguage: 'Original content language',
+    verificationDate: 'Place verification date',
+    unknown: 'Not recorded',
+    disclaimer: 'Publication time is not a verification date. Check current place facts and their sources before travel. Author content is not automatically translated.',
+    summaryNoAdopt: 'This is a summary guide. It has no structured itinerary to apply.',
+    summaryInspiration: 'Use this as inspiration, then add your own days and stops. Nothing is copied automatically.',
+    unavailable: 'Guide source could not be confirmed. This page does not list stops or offer an adopt action.',
   },
   experienceSave: {
     save: 'Save',
