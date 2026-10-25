@@ -159,8 +159,8 @@ export default async function GuidePage({
         </div>
       </section>
 
-      <section className="mt-6 grid gap-5 md:grid-cols-[1fr_320px]">
-        <div className="rounded-lg bg-white p-6">
+      <section className="mt-6 grid min-w-0 gap-5 md:grid-cols-[minmax(0,1fr)_minmax(0,320px)]">
+        <div className="min-w-0 rounded-lg bg-white p-6">
           <GuideSourceBoundary
             locale={locale as Locale}
             view={reading}
@@ -187,7 +187,7 @@ export default async function GuidePage({
           <GuideExperienceLinks locale={locale as Locale} city={guide.city} guideSlug={guide.slug} guideId={guide.id} t={messages.article} />
         </div>
 
-        <aside className="k2-card bg-kinnso-cream2 p-6">
+        <aside className="k2-card min-w-0 bg-kinnso-cream2 p-6">
           <p className="text-xs font-bold uppercase tracking-wider text-kinnso-muted">{messages.article.by}</p>
           <div className="mt-3">
             <div className="text-lg font-black text-kinnso-ink">{authorName}</div>

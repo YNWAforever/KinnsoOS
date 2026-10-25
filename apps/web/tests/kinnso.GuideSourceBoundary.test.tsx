@@ -54,6 +54,11 @@ describe('GuideSourceBoundary', () => {
     expect(screen.queryByRole('link', { name: 'Plan from this guide' })).toBeNull()
     expect(document.body.innerHTML).not.toContain('adopt=1')
     expect(source).not.toHaveTextContent('Days / stops')
+    const list = source.querySelector('dl')
+    expect(list?.className).not.toContain('max-content')
+    expect(list?.querySelector('dd')?.className).toContain('m-0')
+    expect(list?.querySelector('dd')?.className).toContain('overflow-wrap:anywhere')
+    expect(source.querySelector('time')?.parentElement?.className).toContain('overflow-wrap:anywhere')
   })
 
   it('shows the same summary boundary in zh-HK', () => {

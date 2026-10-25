@@ -5,9 +5,20 @@ import type { PublishedGuideSource } from '@/lib/guides/public-source'
 
 type Copy = Messages['guideSource']
 
+function SourceFact({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <dt className="m-0 font-semibold text-kinnso-ink [overflow-wrap:anywhere]">{label}</dt>
+      <dd className="m-0 min-w-0 text-kinnso-muted [overflow-wrap:anywhere]">{children}</dd>
+    </div>
+  )
+}
+
 /**
  * Same summary / itinerary boundary as Journeys' public guide source card.
  * A reading summary never receives an adopt control and never lists stops.
+ * Facts stack, and values may break, so a long label or timestamp cannot
+ * widen the page. The browser's default dd margin is reset for the same reason.
  */
 export function GuideSourceBoundary({
   locale,
@@ -28,50 +39,40 @@ export function GuideSourceBoundary({
   const showCounts = view.kind === 'itinerary' && source.dayCount !== null && source.stopCount !== null
 
   return (
-    <div>
-      <aside lang={htmlLang(locale)} aria-label={t.label} className="border-b border-kinnso-edge pb-5">
-        <h2 className="text-base font-bold text-kinnso-ink">{t.label}</h2>
-        <p className="mt-2 text-sm text-kinnso-ink">
+    <div className="min-w-0">
+      <aside lang={htmlLang(locale)} aria-label={t.label} className="min-w-0 border-b border-kinnso-edge pb-5">
+        <h2 className="text-base font-bold text-kinnso-ink [overflow-wrap:anywhere]">{t.label}</h2>
+        <p className="mt-2 text-sm text-kinnso-ink [overflow-wrap:anywhere]">
           {view.kind === 'itinerary' ? t.itineraryKind : t.summaryKind}
         </p>
-        <dl className="mt-3 grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-sm">
-          <dt className="font-semibold text-kinnso-ink">{t.author}</dt>
-          <dd className="text-kinnso-muted">{source.authorName ?? t.unknown}</dd>
-          <dt className="font-semibold text-kinnso-ink">{t.version}</dt>
-          <dd className="text-kinnso-muted">{source.version === null ? t.unknown : `v${source.version}`}</dd>
-          <dt className="font-semibold text-kinnso-ink">{t.publishedAt}</dt>
-          <dd className="text-kinnso-muted">
+        <dl className="mt-3 min-w-0 space-y-2 text-sm">
+          <SourceFact label={t.author}>{source.authorName ?? t.unknown}</SourceFact>
+          <SourceFact label={t.version}>{source.version === null ? t.unknown : `v${source.version}`}</SourceFact>
+          <SourceFact label={t.publishedAt}>
             {source.publishedAt ? <time dateTime={source.publishedAt}>{source.publishedAt}</time> : t.unknown}
-          </dd>
-          {showCounts ? (
-            <>
-              <dt className="font-semibold text-kinnso-ink">{t.daysStops}</dt>
-              <dd className="text-kinnso-muted">{source.dayCount} / {source.stopCount}</dd>
-            </>
-          ) : null}
-          <dt className="font-semibold text-kinnso-ink">{t.originalLanguage}</dt>
-          <dd className="text-kinnso-muted">{t.unknown}</dd>
-          <dt className="font-semibold text-kinnso-ink">{t.verificationDate}</dt>
-          <dd className="text-kinnso-muted">{t.unknown}</dd>
+          </SourceFact>
+          {showCounts ? <SourceFact label={t.daysStops}>{source.dayCount} / {source.stopCount}</SourceFact> : null}
+          <SourceFact label={t.originalLanguage}>{t.unknown}</SourceFact>
+          <SourceFact label={t.verificationDate}>{t.unknown}</SourceFact>
         </dl>
-        <p className="mt-3 text-sm text-kinnso-muted">{t.disclaimer}</p>
+        <p className="mt-3 text-sm text-kinnso-muted [overflow-wrap:anywhere]">{t.disclaimer}</p>
       </aside>
       {view.kind === 'summary' ? (
-        <div className="mt-4">
-          {view.summary ? <p className="text-sm leading-relaxed text-kinnso-ink" lang="">{view.summary}</p> : null}
-          <p className="mt-3 text-sm text-kinnso-muted">{t.summaryNoAdopt}</p>
-          <p className="mt-2 text-sm text-kinnso-muted">{t.summaryInspiration}</p>
+        <div className="mt-4 min-w-0">
+          {view.summary ? <p className="text-sm leading-relaxed text-kinnso-ink [overflow-wrap:anywhere]" lang="">{view.summary}</p> : null}
+          <p className="mt-3 text-sm text-kinnso-muted [overflow-wrap:anywhere]">{t.summaryNoAdopt}</p>
+          <p className="mt-2 text-sm text-kinnso-muted [overflow-wrap:anywhere]">{t.summaryInspiration}</p>
         </div>
       ) : (
         <>
-          <div className="mt-4" lang="">
+          <div className="mt-4 min-w-0" lang="">
             {view.days.map((day) => (
-              <section key={day.id} className="mt-4">
-                {day.title ? <h3 className="text-base font-bold text-kinnso-ink">{day.title}</h3> : null}
+              <section key={day.id} className="mt-4 min-w-0">
+                {day.title ? <h3 className="text-base font-bold text-kinnso-ink [overflow-wrap:anywhere]">{day.title}</h3> : null}
                 {day.stops.map((stop) => (
-                  <section key={stop.id} className="mt-3">
-                    {stop.title ? <h4 className="text-sm font-semibold text-kinnso-ink">{stop.title}</h4> : null}
-                    {stop.description ? <p className="mt-1 text-sm text-kinnso-muted">{stop.description}</p> : null}
+                  <section key={stop.id} className="mt-3 min-w-0">
+                    {stop.title ? <h4 className="text-sm font-semibold text-kinnso-ink [overflow-wrap:anywhere]">{stop.title}</h4> : null}
+                    {stop.description ? <p className="mt-1 text-sm text-kinnso-muted [overflow-wrap:anywhere]">{stop.description}</p> : null}
                   </section>
                 ))}
               </section>

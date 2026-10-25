@@ -174,6 +174,9 @@ describe('/[locale]/g/[slug] host', () => {
 
     expect(screen.getByRole('heading', { level: 1, name: 'Kyoto Tea Houses' })).toBeTruthy()
     expect(screen.getByText('Reading summary — no structured itinerary')).toBeTruthy()
+    const sourceCard = screen.getByRole('complementary', { name: 'Guide source' })
+    expect(sourceCard.closest('section')?.className).toContain('minmax(0,1fr)')
+    expect(sourceCard.querySelector('dl')?.className ?? '').not.toContain('max-content')
     expect(screen.getByText('Lovely tea houses.')).toBeTruthy()
     expect(screen.queryByRole('link', { name: 'Plan from this guide' })).toBeNull()
     expect(screen.queryByRole('heading', { name: 'Invented stop' })).toBeNull()
