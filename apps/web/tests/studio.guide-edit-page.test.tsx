@@ -2,12 +2,13 @@ import type { ReactElement } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { GuideInput } from '@/lib/guides/types'
 
-const { creatorPageGateMock, maybeSingleMock, rpcMock, notFoundMock, redirectMock } = vi.hoisted(() => ({
+const { creatorPageGateMock, maybeSingleMock, rpcMock, notFoundMock, redirectMock, eqMock } = vi.hoisted(() => ({
   creatorPageGateMock: vi.fn(),
   maybeSingleMock: vi.fn(),
   rpcMock: vi.fn(),
   notFoundMock: vi.fn(),
   redirectMock: vi.fn(),
+  eqMock: vi.fn(),
 }))
 
 vi.mock('next/navigation', () => ({
@@ -25,7 +26,7 @@ vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: async () => {
     const query = {
       select: vi.fn(),
-      eq: vi.fn(),
+      eq: eqMock,
       maybeSingle: maybeSingleMock,
     }
     query.select.mockReturnValue(query)
@@ -89,5 +90,18 @@ describe('StudioEditGuidePage', () => {
     await StudioEditGuidePage({ params: Promise.resolve({ locale: 'en', id: 'guide-1' }) })
 
     expect(creatorPageGateMock).toHaveBeenCalledWith(expect.anything(), 'en', 'creator')
+  })
+
+  it('loads only the signed-in creator’s row, so another creator’s published guide 404s', async () => {
+    maybeSingleMock.mockResolvedValue({ data: null })
+
+    await expect(StudioEditGuidePage({
+      params: Promise.resolve({ locale: 'en', id: 'guide-1' }),
+    })).rejects.toBeTruthy()
+
+    expect(eqMock).toHaveBeenCalledWith('id', 'guide-1')
+    expect(eqMock).toHaveBeenCalledWith('creator_id', 'creator-1')
+    expect(notFoundMock).toHaveBeenCalled()
+    expect(rpcMock).not.toHaveBeenCalled()
   })
 })

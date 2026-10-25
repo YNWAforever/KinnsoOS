@@ -18,13 +18,16 @@ export default async function StudioEditGuidePage({
   const messages = await getDictionary(locale as Locale)
 
   const supabase = await createSupabaseServerClient()
-  await requireCreatorPage(supabase, locale as Locale, 'creator')
+  const { user } = await requireCreatorPage(supabase, locale as Locale, 'creator')
 
-  // RLS scopes to owner; a non-owner / missing id yields null -> notFound.
+  // Published guides are publicly readable, so an id match alone is not ownership.
+  // Restrict the editor to the signed-in creator; anyone else gets the same 404
+  // as a missing id.
   const { data: guide } = await supabase
     .from('guides')
     .select('id, title, city, cover_url, summary')
     .eq('id', id)
+    .eq('creator_id', user.id)
     .maybeSingle()
   if (!guide) notFound()
 
