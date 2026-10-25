@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "reviewParent": "f18a3a630a5d13f9198b1877c588bad069db2752",
+  "selfExcluded": true,
+  "hashMeaning": "Canonical candidate bytes; final head/tree/new CI in independent delivery receipt",
+  "files": {
+    "apps/journeys/scripts/read-contained-file.mjs": "e93136855f3f0f8e956b725af89ae75e937de68b6b32452a43557ba478d9e94f",
+    "apps/journeys/scripts/pilot-preparation.mjs": "2b21401230adb6b2edfb6f845401019e0d6598c32be12f16c1813a9b137a0ad2",
+    "apps/journeys/scripts/verify-source-inputs.mjs": "ee83a5c70602aada16532ecfc0888af52aadff2df22ddc9aeb97271c5c20e5c4",
+    "apps/journeys/scripts/subset-recovery-report.mjs": "c3e60bc6c14ba58619e79edd33d1aed4a5e71918f1cf90794d7438e457384048",
+    "apps/journeys/scripts/source-manifest.json": "7f67318d880dd1f9d0a39432a70ab84387fd89f0906a2011348302c71072cc91",
+    "apps/journeys/tests/source-file-binding-race.test.mjs": "abc0d45c4d2052fb0d5042ce648b9e69766b0232632d8bf5850459ea08de4d0c",
+    "apps/journeys/tests/source-input-boundaries.test.mjs": "59c8c5138cb7acbf880367ea95e527f2fa96f3b34802337c739cb5023e8b4764",
+    "apps/journeys/tests/preparation-source-binding.test.mjs": "b3e7509183929e374b9c988c60fd027fd3162df755be63cb6204008e3343b298",
+    "apps/journeys/tests/subset-fifo-race.test.mjs": "d4b01080964d3ce5650dd9d9d314d23f38d535256350281133040f8811157845",
+    "apps/journeys/tests/fixtures/subset-reader-f18a3a63.txt": "954a957e6d09b0aced3a9a642f2c9229814905351b5341c3e9a9f1d29304bf5c",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "f2d9f35478e04b8c1d5aaaf9885b42e7a085b9505e1a262e0202bb02347db761",
+    "docs/implementation/PD16_PD17_PR91_REVIEW_2026-10-25.md": "b5193fd471952e00994ed7016d1ca0e3926b639b81e3f188fd50ebb2afd58908",
+    "docs/implementation/PD16_PD17_PR91_REQUIREMENTS_2026-10-25.json": "75cc74896061e066e8aee23305c77026c8e0d482090975bc4e17a787d6503c39"
+  },
+  "original18N53Hashes": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "priorDeliverySha256": "7c6f46e54ba77aa95043aa350a8715cafabc02f6a1b4bbb176febbc0943d96c6",
+  "A1_A5": "NOT_EXECUTED",
+  "deployment": "NOT_DEPLOYED",
+  "runtime": "ORIGINAL_HOSTED_AND_SHARED_REHEARSAL_BLOCKED"
+}

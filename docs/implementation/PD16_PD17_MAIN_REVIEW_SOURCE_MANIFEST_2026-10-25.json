@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "reviewedMain": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "purpose": "PD16/PD17 A0 main review and canonical source name boundary repair",
+  "hashMeaning": "Canonical source bytes at candidate; final exact head/tree in independent receipt",
+  "selfExcluded": true,
+  "files": {
+    "apps/journeys/scripts/source-manifest.json": "5d66f46b02658a6ea416f6eb60ed55bca51d8f867126d6210b0795e988ce6d16",
+    "apps/journeys/scripts/verify-source-inputs.mjs": "edd9c1c2f7165312ce2b29c47cd5208b7bb4c9029b1301315bc4a8e7732af6d6",
+    "apps/journeys/tests/source-input-boundaries.test.mjs": "0d8f56c8449a269838f7f8a52b6fcb0471b1d3c48a746419e55133ef81e8d78e",
+    "docs/implementation/KINNSO_PRODUCT_TASKS_2026-10-22.csv": "7f009ff6dcf6825e2abd2e504b91b40b083e46bfd50abe91055561e2d5b9c445",
+    "docs/implementation/PD16_PD17_MAIN_REVIEW_2026-10-25.md": "19824ac8ddec376dd565f28c303e7a4a4bf6cb5ab983c54b0d9566ddb4ae354f",
+    "docs/implementation/PD16_PD17_MAIN_REVIEW_REQUIREMENTS_2026-10-25.json": "31c4f77ff38ef873db2de0bfba271b7a8a74cd9b5d23594c13a239af069efa0d"
+  },
+  "original18N53Hashes": {
+    "docs/implementation/NEXT_PHASE_LEDGER.json": "3fd87d004fb1083780eb79dbd1654907161f4dd46c7728531856dd214aef3485",
+    "docs/implementation/NEXT_PHASE_TRACEABILITY.csv": "c2352f99246cf2b9de39e87e5863e2457f0bf249dc4c42c3953a27c36938e2b9"
+  },
+  "A1_A5": "NOT_EXECUTED",
+  "deployment": "HELD_NOT_DEPLOYED",
+  "runtime": "ORIGINAL_HOSTED_AND_SHARED_REHEARSAL_BLOCKED"
+}

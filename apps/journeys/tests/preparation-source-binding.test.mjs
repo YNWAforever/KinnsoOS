@@ -36,7 +36,7 @@ function checkout(t) {
   return {root, app, head: git(root, 'rev-parse', 'HEAD')};
 }
 function extracted(t, root = owned(t)) {
-  const files = ['scripts/pilot-preparation.mjs', 'scripts/subset-recovery-report.mjs', 'scripts/verify-source-inputs.mjs', 'scripts/source-manifest.json'];
+  const files = ['scripts/pilot-preparation.mjs', 'scripts/subset-recovery-report.mjs', 'scripts/verify-source-inputs.mjs', 'scripts/read-contained-file.mjs', 'scripts/source-manifest.json'];
   for (const name of files.slice(0, -1)) put(root, name, fs.readFileSync(path.join(appSource, name)));
   const destination = 'tests/contracts/20261024000000_source_test.sql';
   const manifest = {version: 1, files, repositoryFiles: {[destination]: 'supabase/migrations/20261024000000_source_test.sql'}};
@@ -108,10 +108,11 @@ for (const change of ['dirty', 'head']) test('late canonical Git '+change+' chan
  const head=git(x.root,'rev-parse','HEAD'),meta=path.join(x.app,'SOURCE_METADATA.json');
  packaged.metadata.sourceRevision=head;put(x.app,'SOURCE_METADATA.json',JSON.stringify(packaged.metadata));
  assert.equal(await resolveCandidateRevision(x.app),head);
- const original=fs.readFileSync;let changed=false;
- t.mock.method(fs,'readFileSync',(...args)=>{
-  const value=original(...args);
-  if(!changed&&String(args[0])===meta){changed=true;queueMicrotask(()=>{
+ const originalOpen=fs.openSync,originalRead=fs.readSync,metadataFds=new Set();let changed=false;
+ t.mock.method(fs,'openSync',(...args)=>{const fd=originalOpen(...args);if(String(args[0])===meta)metadataFds.add(fd);return fd;});
+ t.mock.method(fs,'readSync',(...args)=>{
+  const value=originalRead(...args);
+  if(!changed&&metadataFds.has(args[0])&&value>0){changed=true;queueMicrotask(()=>{
    if(change==='dirty')put(x.root,'late-note.md','Changed during awaited verification');
    else git(x.root,'commit','--allow-empty','--quiet','-m','Advance source identity during verification');
   });}
