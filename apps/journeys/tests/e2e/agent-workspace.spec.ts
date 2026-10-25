@@ -61,7 +61,14 @@ test('owned source-only trip preview requires explicit confirmation, saves once,
    expect(data.capabilityMode).toBe('sources_only');expect(data.providerStatus).toBe('unconfigured');expect(data.evidenceState).toBe('unverified');
    expect(data.sources.some((s:any)=>s.title===token&&s.verifiedAt===null&&new URL(s.url).protocol==='https:')).toBe(true);
    expect(data.proposedActions).toHaveLength(1);expect(data.proposedActions[0].requiresConfirmation).toBe(true);expect(data.proposedActions[0].payload.tripId).toBe(tripId);
-   await expect(page.getByRole('link',{name:token,exact:true})).toHaveAttribute('href',/^https:\/\//);
+   // CI sources retain legacy canonical provenance, while trial navigation
+   // deliberately renders those citations as text instead of legacy links.
+   const source=data.sources.find((s:any)=>s.title===token);
+   expect(new URL(source.url).origin).toBe('https://remix-kinnso-web.vercel.app');
+   const citation=page.getByRole('listitem').filter({hasText:token});
+   await expect(citation).toHaveCount(1);
+   await expect(citation).toContainText('Verification date unknown');
+   await expect(citation.getByRole('link')).toHaveCount(0);
    await expect(page.getByRole('button',{name:'Confirm and apply this change',exact:true})).toBeVisible();return data;
   }
   const firstPreview=await preview();expect(firstPreview.proposedActions[0].payload.expectedRevision).toBe(originalRevision);

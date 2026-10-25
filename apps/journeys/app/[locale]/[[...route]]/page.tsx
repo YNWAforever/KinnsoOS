@@ -67,7 +67,9 @@ export default async function Page({ params,searchParams }: Props) {
   const catalogTarget = connectedCatalogRedirect(locale, path, demo, entryQuery);
   if (catalogTarget) redirect(catalogTarget);
   const actor=demo?null:await currentActor();
-  if (!demo && !actor && /^(?:(?:studio|merchant|ops)(?:\/|$)|merchants\/dashboard(?:\/|$)|admin$)/.test(path)) {
+  // The invitation landing page scrubs its fragment and asks the recipient to
+  // sign in locally, then reopen the private link. It exposes no account data.
+  if (!demo && !actor && path !== 'merchant/invitation' && /^(?:(?:studio|merchant|ops)(?:\/|$)|merchants\/dashboard(?:\/|$)|admin$)/.test(path)) {
     const query = new URLSearchParams();
     for (const [key,value] of Object.entries(entryQuery??{})) {
       if (Array.isArray(value)) for (const item of value) query.append(key,item);

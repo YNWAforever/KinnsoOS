@@ -44,7 +44,7 @@ for(const locale of ['en','zh-HK']){
   assert.equal(page.props.children.props.actor.id,actor.id);
  });
  test(`public and demo ${locale} entries remain accessible anonymously`,async()=>{
-  for(const route of [['workspace'],['for-creators'],['demo','studio'],['demo','merchants','dashboard']]){
+  for(const route of [['workspace'],['for-creators'],['merchant','invitation'],['demo','studio'],['demo','merchants','dashboard']]){
    assert.ok(await anonymous.default({params:Promise.resolve({locale,route})}));
   }
  });

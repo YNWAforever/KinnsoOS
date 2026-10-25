@@ -33,6 +33,24 @@ for(const locale of ['en','zh-HK','zh-hk']){
   await page.goto(`/${locale}/sign-in?${new URLSearchParams({next:'https://remix-kinnso-web.vercel.app/en/studio'})}`);
   await expect(page.getByRole('link',{name:language==='en'?'Cancel and return':'取消及返回',exact:true})).toHaveAttribute('href',`/${language}/trips`);
  });
+ test(`${locale}: invitation landing scrubs its private fragment before local sign-in`,async({page,baseURL})=>{
+  const token='12'.repeat(32),requests:string[]=[];
+  page.on('request',request=>requests.push(request.url()));
+  const response=await page.goto(`/${locale}/merchant/invitation#invite=${token}`);
+  expect(response?.status()).toBe(200);
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
+  await expect(page.getByRole('heading',{name:language==='en'?'Company invitation':'公司邀請',exact:true})).toBeVisible();
+  await expect.poll(()=>new URL(page.url()).hash).toBe('');
+  await expect(page.getByRole('button',{name:language==='en'?'Review invitation':'查看邀請',exact:true})).toHaveCount(0);
+  await page.getByRole('main').getByRole('link',{name:language==='en'?'Sign in to continue':'登入後繼續',exact:true}).click();
+  await expect(page).toHaveURL(new RegExp(`/${language}/sign-in\\?`));
+  const signIn=new URL(page.url());
+  expect(signIn.origin).toBe(new URL(baseURL!).origin);
+  expect(signIn.pathname).toBe(`/${language}/sign-in`);
+  expect(signIn.searchParams.get('next')).toBe(`/${language}/merchant/invitation`);
+  expect(signIn.hash).toBe('');
+  expect(requests.some(url=>url.includes(token))).toBe(false);
+ });
 }
 
 for(const locale of ['en','zh-HK'])test(`${locale}: unavailable library, collections and demo business tools offer local next steps`,async({page})=>{
