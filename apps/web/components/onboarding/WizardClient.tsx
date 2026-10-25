@@ -39,9 +39,10 @@ export function WizardClient(props: WizardClientProps) {
   const { creatorId, locale, handles, latestJobId, draft, final, thin, messages } = props
   const router = useRouter()
   const [step, setStep] = useState<Step>(props.initialStep)
-  // A profile confirmed in this session is published even before the server
-  // snapshot refreshes. A later visit still trusts `final`, not this flag.
-  const [publishedThisSession, setPublishedThisSession] = useState(false)
+  // The DNA just written to creator_dna.final. The server draft prop is still
+  // the pre-edit AI suggestion, and router.refresh() may not have returned
+  // final yet. A later visit drops this and trusts the server final again.
+  const [publishedDna, setPublishedDna] = useState<Dna | null>(null)
   // Client-fetched fallback for the AI draft. The server snapshot is the primary
   // source, but `router.refresh()` can lag or serve a cached snapshot under the
   // App Router — so `effectiveDraft` lets the review step recover on its own.
@@ -175,9 +176,9 @@ export function WizardClient(props: WizardClientProps) {
         draft={effectiveDraft}
         thin={thin}
         t={messages.dna}
-        onPublished={() => {
+        onPublished={(published) => {
           router.refresh()
-          setPublishedThisSession(true)
+          setPublishedDna(published)
           setStep('done')
         }}
       />
@@ -185,23 +186,10 @@ export function WizardClient(props: WizardClientProps) {
   }
 
   // step === 'done'
-  if (!publishedThisSession) {
-    const profile = classifyActivatedProfile(final, effectiveDraft)
-    if (profile.kind === 'unpublished') {
-      return (
-        <ActivatedCreatorSession
-          locale={locale}
-          t={messages.dna}
-          signOutLabel={onb.signOut}
-          draft={profile.draft}
-          onReviewDraft={() => setStep('review')}
-          onContinueSetup={() => setStep('handles')}
-        />
-      )
-    }
+  if (publishedDna) {
     return (
       <ReadBack
-        dna={profile.dna}
+        dna={publishedDna}
         t={messages.dna}
         dashboardHref={`/${locale}/studio`}
         signOutHref={`/${locale}/auth/sign-out`}
@@ -209,18 +197,26 @@ export function WizardClient(props: WizardClientProps) {
       />
     )
   }
-
+  const profile = classifyActivatedProfile(final, effectiveDraft)
+  if (profile.kind === 'unpublished') {
+    return (
+      <ActivatedCreatorSession
+        locale={locale}
+        t={messages.dna}
+        signOutLabel={onb.signOut}
+        draft={profile.draft}
+        onReviewDraft={() => setStep('review')}
+        onContinueSetup={() => setStep('handles')}
+      />
+    )
+  }
   return (
     <ReadBack
-      dna={effectiveDraft ?? final ?? emptyDna()}
+      dna={profile.dna}
       t={messages.dna}
       dashboardHref={`/${locale}/studio`}
       signOutHref={`/${locale}/auth/sign-out`}
       signOutLabel={onb.signOut}
     />
   )
-}
-
-function emptyDna(): Dna {
-  return { bio: '', niches: [], content_pillars: [], tone: [], audience: {}, platforms: [], languages: [] }
 }

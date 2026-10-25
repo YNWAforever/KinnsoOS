@@ -25,7 +25,7 @@ export function DnaReviewForm({
   draft: Dna
   thin: boolean
   t: DnaDict
-  onPublished: () => void
+  onPublished: (published: Dna) => void
 }) {
   const [bio, setBio] = useState(draft.bio)
   const [niches, setNiches] = useState(joinList(draft.niches))
@@ -89,7 +89,7 @@ export function DnaReviewForm({
     }
 
     setSaving(false)
-    onPublished()
+    onPublished(parsed.data)
   }
 
   return (

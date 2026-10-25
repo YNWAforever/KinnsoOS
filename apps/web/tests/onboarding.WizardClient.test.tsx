@@ -25,10 +25,18 @@ vi.mock('@/components/onboarding/LiveProgress', () => ({
   LiveProgress: () => <div data-testid="step-progress" />,
 }))
 vi.mock('@/components/onboarding/DnaReviewForm', () => ({
-  DnaReviewForm: () => <div data-testid="step-review" />,
+  DnaReviewForm: ({ draft, onPublished }: { draft: Dna; onPublished: (published: Dna) => void }) => (
+    <button
+      type="button"
+      data-testid="step-review"
+      onClick={() => onPublished({ ...draft, bio: 'E2E travel creator' })}
+    >
+      publish profile
+    </button>
+  ),
 }))
 vi.mock('@/components/onboarding/ReadBack', () => ({
-  ReadBack: () => <div data-testid="step-readback" />,
+  ReadBack: ({ dna }: { dna: Dna }) => <div data-testid="step-readback">{dna.bio}</div>,
 }))
 
 import { WizardClient } from '@/components/onboarding/WizardClient'
@@ -88,9 +96,19 @@ describe('WizardClient initial step', () => {
     expect(maybeSingleMock).toHaveBeenCalled()
   })
   it("renders readback for initialStep='done' only when final DNA is published", () => {
-    render(<WizardClient {...base()} initialStep="done" final={dna} />)
-    expect(screen.getByTestId('step-readback')).toBeTruthy()
+    const published = { ...dna, bio: 'E2E travel creator' }
+    render(<WizardClient {...base()} initialStep="done" final={published} draft={{ ...dna, bio: 'stale AI draft' }} />)
+    expect(screen.getByTestId('step-readback').textContent).toBe('E2E travel creator')
+    expect(screen.queryByText('stale AI draft')).toBeNull()
     expect(screen.queryByRole('status')).toBeNull()
+  })
+
+  it('shows the DNA just published, not the stale AI draft, before the server snapshot refreshes', () => {
+    render(<WizardClient {...base()} initialStep="review" draft={{ ...dna, bio: 'stale AI draft' }} final={null} />)
+    fireEvent.click(screen.getByTestId('step-review'))
+    expect(screen.getByTestId('step-readback').textContent).toBe('E2E travel creator')
+    expect(screen.queryByText('stale AI draft')).toBeNull()
+    expect(screen.queryByRole('link', { name: en.dna.activatedGuideCta })).toBeNull()
   })
 
   it('does not claim a live profile or link back to studio home when activation has no published DNA', () => {
