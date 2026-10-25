@@ -23,6 +23,8 @@ import { articleJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
 import { JsonLd } from '@/components/JsonLd'
 import { AnalyticsEntityView } from '@/components/kinnso/analytics/AnalyticsEntityView'
 import { guideAdoptionHref } from '@/lib/guides/adoption'
+import { readPublishedGuideSource } from '@/lib/guides/public-source'
+import { GuideSourceBoundary } from '@/components/kinnso/GuideSourceBoundary'
 import { GuidePlanningActions } from '@/components/kinnso/pilot/GuidePlanningActions'
 
 export const dynamic = 'force-dynamic'
@@ -71,10 +73,20 @@ export default async function GuidePage({
     return { user, isSaved }
   }, { user: null, isSaved: false })
 
-  const [rating, reviews, offers] = await Promise.all([
+  const [rating, reviews, offers, reading] = await Promise.all([
     optionalQuery('guide-rating', () => getGuideRatingAggregate(createSupabasePublicClient(), guide.id), null),
     optionalQuery('guide-reviews', () => listPublishedReviewsForGuide(createSupabasePublicClient(), guide.id), []),
     optionalQuery('guide-offers', () => (guide.creatorId ? listOffersForCreator(createSupabasePublicClient(), guide.creatorId) : Promise.resolve([])), []),
+    readPublishedGuideSource(
+      () => createSupabasePublicClient().rpc('kinnso_guide', { p_guide_id: guide.id }),
+      {
+        id: guide.id,
+        title: guide.title,
+        creatorName: guide.creatorName,
+        publishedAt: guide.publishedAt,
+        cover: guide.cover,
+      },
+    ),
   ])
 
   const canonical = `${SITE_URL}/${locale}/g/${slug}`
@@ -149,9 +161,26 @@ export default async function GuidePage({
 
       <section className="mt-6 grid gap-5 md:grid-cols-[1fr_320px]">
         <div className="rounded-lg bg-white p-6">
-          <h2 className="text-base font-bold text-kinnso-ink">{messages.creatorProfile.destinationsCovered}</h2>
-          <p className="mt-2 text-sm text-kinnso-muted">{guide.summary ?? guide.city}</p>
-          <GuidePlanningActions locale={locale as Locale} guideId={guide.id} href={planningHref} label={messages.guideSave.planFromGuide} unavailable={messages.guideSave.planningUnavailable}/>
+          <GuideSourceBoundary
+            locale={locale as Locale}
+            view={reading}
+            t={messages.guideSource}
+            planning={reading.kind === 'itinerary' ? (
+              <GuidePlanningActions
+                locale={locale as Locale}
+                guideId={guide.id}
+                href={planningHref}
+                label={messages.guideSave.planFromGuide}
+                unavailable={messages.guideSave.planningUnavailable}
+              />
+            ) : null}
+          />
+          {reading.kind === 'summary' ? null : (
+            <>
+              <h2 className="mt-6 text-base font-bold text-kinnso-ink">{messages.creatorProfile.destinationsCovered}</h2>
+              <p className="mt-2 text-sm text-kinnso-muted" lang="">{guide.summary ?? guide.city}</p>
+            </>
+          )}
           <Link href={`/${locale}/feed`} className="k2-btn-ghost mt-5 inline-flex text-sm">
             {messages.creatorProfile.viewAllGuides}
           </Link>

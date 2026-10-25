@@ -32,7 +32,50 @@ const { getUserMock, createSupabaseServerClientMock } = vi.hoisted(() => ({
   createSupabaseServerClientMock: vi.fn(),
 }))
 vi.mock('@/lib/supabase/server', () => ({ createSupabaseServerClient: createSupabaseServerClientMock }))
-vi.mock('@/lib/supabase/public', () => ({ createSupabasePublicClient: vi.fn(() => ({})) }))
+const { rpcMock, guideRpc } = vi.hoisted(() => {
+  const guideRpc: { current: { data: unknown; error: unknown } } = {
+    current: { data: null, error: { message: 'unset' } },
+  }
+  const rpcMock = vi.fn(async (fn: string) => {
+    if (fn === 'list_offers_for_creator') return { data: [], error: null }
+    if (fn === 'kinnso_guide') return guideRpc.current
+    return { data: null, error: { message: 'unexpected rpc' } }
+  })
+  return { rpcMock, guideRpc }
+})
+vi.mock('@/lib/supabase/public', () => ({
+  createSupabasePublicClient: vi.fn(() => ({ rpc: rpcMock })),
+}))
+
+function itineraryPayload(id: string) {
+  return {
+    kind: 'itinerary',
+    id,
+    title: 'Kyoto Tea Houses',
+    destinationId: null,
+    version: 2,
+    publishedAt: '2026-10-20T10:00:00.000Z',
+    creator: { id: 'c1', name: 'Tea Fan', handle: 'teafan' },
+    days: [{
+      id: '22222222-2222-4222-8222-222222222222',
+      offset: 0,
+      title: 'Tea day',
+      stops: [{
+        id: '33333333-3333-4333-8333-333333333333',
+        title: 'Matcha stop',
+        description: 'Public description',
+        placeId: null,
+        position: 0,
+        startMinuteOfDay: null,
+        durationMinutes: null,
+        source: null,
+        travellerNote: 'PRIVATE note',
+      }],
+    }],
+    verifiedAt: '2020-01-01',
+    authorLocale: 'zh-HK',
+  }
+}
 
 const { isGuideSavedMock } = vi.hoisted(() => ({ isGuideSavedMock: vi.fn(async () => false) }))
 vi.mock('@/lib/saves/guide-queries', () => ({ isGuideSaved: isGuideSavedMock }))
@@ -54,13 +97,19 @@ vi.mock('@/components/kinnso/GuideExperienceLinks', () => ({
 }))
 
 describe('/[locale]/g/[slug] host', () => {
-  it('connects a published guide to its approved private planning preview',async()=>{
+  it('connects a structured itinerary to its approved private planning preview',async()=>{
     const id='11111111-1111-4111-8111-111111111111'
     getGuideBySlugMock.mockResolvedValueOnce({...defaultGuide,id})
+    guideRpc.current={data:itineraryPayload(id),error:null}
     vi.stubEnv('KINNSO_JOURNEYS_ORIGIN','https://planner.example')
     vi.stubEnv('KINNSO_APPROVED_JOURNEYS_ORIGIN','https://planner.example')
     const route=await import('@/app/[locale]/g/[slug]/page')
     render(await route.default({params:Promise.resolve({locale:'en',slug:defaultGuide.slug})}))
+    expect(screen.getByText('Structured itinerary')).toBeTruthy()
+    expect(screen.getByRole('heading',{level:3,name:'Tea day'})).toBeTruthy()
+    expect(screen.getByRole('heading',{level:4,name:'Matcha stop'})).toBeTruthy()
+    expect(screen.queryByRole('heading',{name:'Invented stop'})).toBeNull()
+    expect(document.body.innerHTML).not.toContain('PRIVATE note')
     const href=new URL(screen.getByRole('link',{name:'Plan from this guide'}).getAttribute('href')!)
     expect(href.origin+href.pathname).toBe(`https://planner.example/en/g/${id}`)
     expect(href.searchParams.get('adopt')).toBe('1')
@@ -69,6 +118,19 @@ describe('/[locale]/g/[slug] host', () => {
   beforeEach(() => {
     getGuideBySlugMock.mockReset()
     getGuideBySlugMock.mockResolvedValue(defaultGuide)
+    guideRpc.current = {
+      data: {
+        kind: 'summary',
+        id: defaultGuide.id,
+        title: defaultGuide.title,
+        summary: defaultGuide.summary,
+        destinationId: null,
+        days: [{ title: 'Invented day', stops: [{ title: 'Invented stop' }] }],
+        verifiedAt: '2020-01-01',
+        authorLocale: 'zh-HK',
+      },
+      error: null,
+    }
     getUserMock.mockReset()
     getUserMock.mockResolvedValue({ data: { user: null } })
     createSupabaseServerClientMock.mockReset()
@@ -111,6 +173,12 @@ describe('/[locale]/g/[slug] host', () => {
     const { container } = render(ui)
 
     expect(screen.getByRole('heading', { level: 1, name: 'Kyoto Tea Houses' })).toBeTruthy()
+    expect(screen.getByText('Reading summary — no structured itinerary')).toBeTruthy()
+    expect(screen.getByText('Lovely tea houses.')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: 'Plan from this guide' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Invented stop' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Invented day' })).toBeNull()
+    expect(document.body.innerHTML).not.toContain('adopt=1')
     expect(screen.getByRole('link', { name: '@teafan' }).getAttribute('href')).toBe('/en/c/teafan')
     expect(document.querySelector('.k2-eyebrow')?.textContent).toBe('Kyoto')
     const ld = document.querySelector('script[type="application/ld+json"]')?.innerHTML ?? ''
@@ -170,5 +238,31 @@ describe('/[locale]/g/[slug] host', () => {
     render(ui)
     expect(screen.getByRole('button', { name: 'Saved status could not be checked. Retry' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Save' })).toBeNull()
+  })
+
+  it('shows the zh-HK summary boundary without an adopt control', async () => {
+    const route = await import('@/app/[locale]/g/[slug]/page')
+    render(await route.default({ params: Promise.resolve({ locale: 'zh-hk', slug: 'kyoto-tea' }) }))
+    const source = screen.getByRole('complementary', { name: '攻略來源' })
+    expect(source).toHaveTextContent('閱讀摘要 — 未提供結構化行程')
+    expect(source).toHaveTextContent('內容原文語言')
+    expect(source).toHaveTextContent('地點查核日期')
+    expect(source).toHaveTextContent('未記錄')
+    expect(screen.getByText('這是摘要攻略，未提供可套用的結構化行程。')).toBeTruthy()
+    expect(screen.queryByRole('link', { name: '用這篇攻略規劃行程' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Invented stop' })).toBeNull()
+    expect(document.body.innerHTML).not.toContain('adopt=1')
+    expect(document.body.innerHTML).not.toContain('PRIVATE note')
+  })
+
+  it('does not adopt or invent stops when the published guide contract cannot be read', async () => {
+    guideRpc.current = { data: null, error: { message: 'guide_not_found' } }
+    const route = await import('@/app/[locale]/g/[slug]/page')
+    render(await route.default({ params: Promise.resolve({ locale: 'en', slug: 'kyoto-tea' }) }))
+    expect(screen.getByRole('status')).toHaveTextContent('Guide source could not be confirmed. This page does not list stops or offer an adopt action.')
+    expect(screen.queryByText('Reading summary — no structured itinerary')).toBeNull()
+    expect(screen.queryByText('Structured itinerary')).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Plan from this guide' })).toBeNull()
+    expect(screen.queryByRole('heading', { name: 'Invented stop' })).toBeNull()
   })
 })
