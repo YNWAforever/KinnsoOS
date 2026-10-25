@@ -765,7 +765,7 @@ export function Workbench({
           </Link>
         </div>
         <div className="os-handoff">
-          <Link href={href("library")}>
+          <Link href={mode === "demo" ? href("library") : href("explore")}>
             {t("Published guides", "已發布攻略")}
           </Link>
           <Link href={href("workspace")}>

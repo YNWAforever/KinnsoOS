@@ -6,13 +6,20 @@ import type { Messages } from "@/lib/i18n/messages/en";
 const Footer = ({
   locale,
   bookingLive,
+  signedIn = false,
   t,
 }: {
   locale: Locale
   bookingLive: boolean
+  /** Trial saves stay reachable for a signed-in traveller while booking is off. */
+  signedIn?: boolean
   t: Messages["footer"]
 }) => {
   const p = (path: string) => `/${locale}${path}`
+  const travellerLinks = [
+    ...(bookingLive ? [[t.lTrips, "/trips"] as const] : []),
+    ...(bookingLive || signedIn ? [[t.lSaved, "/trips#saved"] as const] : []),
+  ]
   const cols = [
     {
       title: t.colExplore,
@@ -23,12 +30,9 @@ const Footer = ({
         [t.lSessions, "/sessions"],
       ] as const,
     },
-    ...(bookingLive ? [{
+    ...(travellerLinks.length ? [{
       title: t.colTravellers,
-      links: [
-        [t.lTrips, "/trips"],
-        [t.lSaved, "/trips#saved"],
-      ] as const,
+      links: travellerLinks,
     }] : []),
     {
       title: t.colCreators,
@@ -63,7 +67,7 @@ const Footer = ({
     <footer className="bg-kinnso-ink font-sans text-kinnso-cream">
       <div
         className={`k2-container grid gap-10 py-14 md:grid-cols-3 ${
-          bookingLive ? 'xl:grid-cols-6' : 'xl:grid-cols-5'
+          travellerLinks.length ? 'xl:grid-cols-6' : 'xl:grid-cols-5'
         }`}
       >
         <div>

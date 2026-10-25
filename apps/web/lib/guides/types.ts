@@ -6,6 +6,8 @@ export interface Guide {
   city: string
   saves: number
   creatorHandle: string
+  /** Published summary. Explore search uses it the same way search_guides does. */
+  summary?: string | null
 }
 
 /** Raw form input from the GuideForm. */

@@ -174,6 +174,7 @@
     "lib/budgets/repository.ts",
     "lib/budgets/service.ts",
     "lib/canonical.ts",
+    "lib/catalog-results.ts",
     "lib/catalog.ts",
     "lib/catalog/destinations.ts",
     "lib/collaboration/evidence-timeline.ts",

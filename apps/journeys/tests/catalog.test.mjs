@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { queryCatalog, parseCatalogQuery, safeCover } from "../lib/catalog.ts";
+import { catalogResultsPath, connectedCatalogRedirect } from "../lib/catalog-results.ts";
 const env = {
   KINNSO_SUPABASE_URL: "https://example.supabase.co",
   KINNSO_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
@@ -178,6 +179,15 @@ test("a city filter and a single-word query stay separate PostgREST clauses", as
     );
     return Response.json([]);
   });
+});
+test("connected catalog search stays on explore and a library URL keeps its query", () => {
+  assert.equal(catalogResultsPath("/en/explore"), "explore");
+  assert.equal(catalogResultsPath("/zh-HK/destinations/kyoto"), "explore");
+  assert.equal(catalogResultsPath("/en/demo/library"), "library");
+  assert.equal(connectedCatalogRedirect("en", "library", false, { q: "Quiet Kyoto", page: "2" }), "/en/explore?q=Quiet+Kyoto&page=2");
+  assert.equal(connectedCatalogRedirect("zh-HK", "library", false, undefined), "/zh-HK/explore");
+  assert.equal(connectedCatalogRedirect("en", "library", true, { q: "Kyoto" }), null);
+  assert.equal(connectedCatalogRedirect("en", "explore", false, { q: "Kyoto" }), null);
 });
 test("search filter cannot alter published status or include PostgREST syntax", async () => {
   const result=await queryCatalog(

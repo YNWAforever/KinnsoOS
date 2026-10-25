@@ -73,6 +73,12 @@ describe('Footer (R1A editorial IA)', () => {
     expect(screen.queryByRole('link', { name: en.footer.lSaved })).toBeNull()
   })
 
+  it('shows Saved for a signed-in traveller while booking is not live', () => {
+    render(<Footer locale="en" bookingLive={false} signedIn t={en.footer} />)
+    expect(screen.getByRole('link', { name: en.footer.lSaved }).getAttribute('href')).toBe('/en/trips#saved')
+    expect(screen.queryByRole('link', { name: en.footer.lTrips })).toBeNull()
+  })
+
   it('renders localized Trips and Saved links only while booking is live', () => {
     render(<Footer locale="ja" bookingLive t={ja.footer} />)
     expect(screen.getByText(ja.footer.colTravellers)).toBeTruthy()

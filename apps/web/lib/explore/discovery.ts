@@ -35,6 +35,7 @@ export function indexExploreGuides(guides: Guide[], destinations: ExploreDestina
     ) ?? null
     const searchText = normalize([
       guide.title,
+      guide.summary ?? '',
       guide.creatorHandle,
       guide.city,
       destination?.name ?? '',
@@ -69,13 +70,54 @@ export function serializeExploreState(state: ExploreState): URLSearchParams {
   return params
 }
 
+/**
+ * Same rules as search_guides: a title phrase matches on its own, otherwise
+ * websearch_to_tsquery('simple') applies to title, summary and city (plus the
+ * card fields explore already searches). Words are AND, `or` is OR, quotes are
+ * a phrase, and a leading minus excludes a word.
+ */
+export function matchesPublishedGuideSearch(searchText: string, title: string, rawQuery: string): boolean {
+  const query = normalize(rawQuery)
+  if (!query) return true
+  if (normalize(title).includes(query)) return true
+  return orClauses(query).some((clause) => websearchClause(searchText, clause))
+}
+
+function orClauses(query: string): string[] {
+  const clauses: string[] = []
+  let current = ''
+  let quoted = false
+  for (const token of query.split(' ')) {
+    if (!token) continue
+    if (token.startsWith('"')) quoted = true
+    if (!quoted && token === 'or') {
+      clauses.push(current.trim())
+      current = ''
+      continue
+    }
+    current += (current ? ' ' : '') + token
+    if (token.endsWith('"') && token.length > 1) quoted = false
+  }
+  if (current.trim()) clauses.push(current.trim())
+  return clauses
+}
+
+function websearchClause(haystack: string, clause: string): boolean {
+  const parts = clause.match(/"[^"]+"|-\S+|\S+/g) ?? []
+  return parts.length > 0 && parts.every((part) => {
+    if (part.startsWith('"') && part.endsWith('"')) {
+      const phrase = normalize(part.slice(1, -1))
+      return phrase.length > 0 && haystack.includes(phrase)
+    }
+    if (part.startsWith('-') && part.length > 1) return !haystack.includes(part.slice(1))
+    return haystack.includes(part)
+  })
+}
+
 export function selectExploreResults(indexed: IndexedGuide[], state: ExploreState): ExploreResults {
-  // Every word has to match somewhere on the card. A contiguous phrase still
-  // matches, and "tea kyoto" matches a tea guide whose city is Kyoto.
-  const tokens = normalize(state.q).split(' ').filter(Boolean)
-  const filtered = indexed.filter(({ destination, searchText }) =>
+  const filtered = indexed.filter(({ destination, guide, searchText }) =>
     (!state.destination || destination?.slug === state.destination) &&
-    tokens.every((token) => searchText.includes(token)),
+    matchesPublishedGuideSearch(searchText, guide.title, state.q),
   )
   const sorted = state.sort === 'most-saved'
     ? [...filtered].sort((a, b) => (b.guide.saves - a.guide.saves) || (a.sourceIndex - b.sourceIndex))
