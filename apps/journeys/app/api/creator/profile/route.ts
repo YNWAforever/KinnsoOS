@@ -19,7 +19,8 @@ export async function GET(request: Request) {
  const profile = emptyProfile();
  profile.bio = typeof source.bio === 'string' ? source.bio.slice(0, 4000) : '';
  for (const key of ['niches', 'content_pillars', 'tone', 'languages'] as const) profile[key] = Array.isArray(source[key]) ? source[key].filter((s: unknown) => typeof s === 'string').slice(0, 20).map((s: string) => s.slice(0, 120)) : [];
- return reply({ ok: true, data: { step: resumeStep(status, job, handles.length), jobId: job?.id ?? null, jobStatus: job?.status ?? null, retryable: job?.status === 'failed', handles, profile, profileReady: Boolean(results[3].data?.final ?? results[3].data?.ai_draft), scanAvailable: false } });
+ const publishedProfile = results[3].data?.final ?? null;
+ return reply({ ok: true, data: { step: resumeStep(status, job, handles.length), jobId: job?.id ?? null, jobStatus: job?.status ?? null, retryable: job?.status === 'failed', handles, profile, profileReady: Boolean(publishedProfile ?? results[3].data?.ai_draft), profilePublished: publishedProfile !== null, scanAvailable: false } });
 }
 export async function POST(request: Request) {
  const ctx = await apiContext(request, 'creator', true); if (ctx.response) return ctx.response;

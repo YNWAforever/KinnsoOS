@@ -15,6 +15,7 @@ describe('GuideForm', () => {
     expect(screen.getByLabelText(en.studioGuides.summaryLabel, { exact: false })).toBeTruthy()
     expect(screen.getByRole('button', { name: en.studioGuides.saveDraft })).toBeTruthy()
     expect(screen.getByRole('button', { name: en.studioGuides.publish })).toBeTruthy()
+    expect(screen.getByText(en.studioGuides.summaryBoundary)).toBeTruthy()
     expect(document.querySelector('.k-ticket')).toBeTruthy()
   })
 

@@ -45,3 +45,20 @@ for(const locale of ['en','zh-HK'])for(const name of ['CreatorWorkspace','Mercha
   }
  });
 }
+test('active creator without a published profile can author and is not told the profile is live', async () => {
+ const profile = { step: 'done', profileReady: false, profilePublished: false, profile: { bio: '', niches: [], content_pillars: [], tone: [], languages: [] }, handles: [], jobStatus: null };
+ const h = await workspaceHarness('CreatorWorkspace', {
+  request: async (url) => url === '/api/creator/profile' ? { ok: true, data: profile } : { ok: true, data: { items: [], nextCursor: null } },
+  creatorMissions: { list: async () => ({ ok: true, data: { items: [], nextCursor: null } }) },
+ }, { path: 'studio', locale: 'en' });
+ assert.match(h.text(), /No published creator profile is on file/);
+ assert.doesNotMatch(h.text(), /profile is live|Your profile is live/i);
+ assert.match(h.text(), /Start with your first authored route/);
+ assert.equal(h.find('a', 'Create guide')?.props.href, '/en/studio/guides/new');
+ const zh = await workspaceHarness('CreatorWorkspace', {
+  request: async (url) => url === '/api/creator/profile' ? { ok: true, data: profile } : { ok: true, data: { items: [], nextCursor: null } },
+  creatorMissions: { list: async () => ({ ok: true, data: { items: [], nextCursor: null } }) },
+ }, { path: 'studio', locale: 'zh-HK' });
+ assert.match(zh.text(), /尚未有已發布的創作者檔案/);
+ assert.equal(zh.find('a', '建立攻略')?.props.href, '/zh-HK/studio/guides/new');
+});

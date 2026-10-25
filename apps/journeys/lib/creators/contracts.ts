@@ -2,7 +2,7 @@ import type { Step, JobStatus } from './progress';
 import type { GuideSnapshot } from '../contracts/trips';
 import { request } from '../trips/repository';
 export type Profile = { bio: string; niches: string[]; content_pillars: string[]; tone: string[]; languages: string[] };
-export type CreatorProgress = { step: Step; jobId: string | null; jobStatus: JobStatus | null; retryable: boolean; profile: Profile; profileReady: boolean; handles: { platform: string; handle: string }[]; scanAvailable: boolean };
+export type CreatorProgress = { step: Step; jobId: string | null; jobStatus: JobStatus | null; retryable: boolean; profile: Profile; profileReady: boolean; profilePublished: boolean; handles: { platform: string; handle: string }[]; scanAvailable: boolean };
 export type DraftContent = { days: { offset: number; title: string; stops: { title: string; description: string; placeId: string | null; startMinuteOfDay: number | null; durationMinutes: number | null }[] }[] };
 export type DraftPayload = { title: string; city: string; summary: string; content: DraftContent };
 export type GuideDraft = { id: string; revision: number; publishedVersion: number; sourceChanged: boolean; status: 'draft' | 'published'; payload: DraftPayload; title: string; city: string; summary: string };
