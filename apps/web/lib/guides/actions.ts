@@ -136,12 +136,14 @@ export async function updateGuideAction(
   const supabase = await getSupabase()
   const auth = await getAuthedCreator(supabase)
   if (!auth.ok) return auth
+  const creator = auth.creator
 
-  // Read current row (RLS scopes to owner) to decide publish_at transition.
+  // Published rows are publicly readable, so ownership has to be in the filter.
   const { data: current } = await supabase
     .from('guides')
     .select('status, published_at')
     .eq('id', id)
+    .eq('creator_id', creator.id)
     .maybeSingle()
   if (!current) return formError('Guide not found')
 
@@ -159,6 +161,7 @@ export async function updateGuideAction(
     .from('guides')
     .update(update)
     .eq('id', id)
+    .eq('creator_id', creator.id)
     .select('id')
     .single()
   if (error || !data) return formError('Guide could not be saved')
