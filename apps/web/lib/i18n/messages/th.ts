@@ -1284,6 +1284,8 @@ const messages: Messages = {
     reviewedLabel: 'รีวิวแล้ว',
     unsaveFailed: 'ลบรายการไม่สำเร็จ กรุณาลองอีกครั้ง',
     unsaveSignIn: 'เข้าสู่ระบบเพื่อลบให้เสร็จ',
+    unsaveLabel: 'เอาออกจากรายการที่บันทึก',
+    savedSourceUnavailable: 'แหล่งที่มาของรายการที่บันทึกไว้ไม่พร้อมใช้งาน',
   },
   merchantsOps: {
     title: 'ร้านค้า', subtitle: 'ทำความเข้าใจ ดูแล และวิเคราะห์ร้านค้าของคุณ',

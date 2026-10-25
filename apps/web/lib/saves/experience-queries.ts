@@ -1,16 +1,19 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@kinnso/db'
 
-export interface SavedExperienceEntry {
-  experienceId: string
-  slug: string
-  title: string
-  city: string
-  priceAmount: number
-  currency: string
-  coverUrl: string | null
-  savesCount: number
-}
+export type SavedExperienceEntry =
+  | {
+      experienceId: string
+      unavailable?: false
+      slug: string
+      title: string
+      city: string
+      priceAmount: number
+      currency: string
+      coverUrl: string | null
+      savesCount: number
+    }
+  | { experienceId: string; unavailable: true }
 
 interface SavedExperienceQueryRow {
   experience_id: string
@@ -39,10 +42,10 @@ export async function listSavedExperiences(
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  return ((data ?? []) as unknown as SavedExperienceQueryRow[]).flatMap((row) => {
+  return ((data ?? []) as unknown as SavedExperienceQueryRow[]).map((row) => {
     const e = one(row.experiences)
-    if (!e) return []
-    return [{
+    if (!e) return { experienceId: row.experience_id, unavailable: true as const }
+    return {
       experienceId: row.experience_id,
       slug: e.slug,
       title: e.title,
@@ -51,7 +54,7 @@ export async function listSavedExperiences(
       currency: e.currency,
       coverUrl: e.cover_url,
       savesCount: e.saves_count,
-    }]
+    }
   })
 }
 

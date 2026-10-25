@@ -14,12 +14,14 @@ export interface ExperienceCardData {
   savesCount: number
 }
 
-export function ExperienceCard({ experience, locale, savesLabel = 'Saves', isSaved, onSaveToggle }: {
+export function ExperienceCard({ experience, locale, savesLabel = 'Saves', isSaved, onSaveToggle, actionLabel }: {
   experience: ExperienceCardData
   locale: Locale
   savesLabel?: string
   isSaved?: boolean
   onSaveToggle?: () => void
+  /** Accessible name when this control removes a saved experience. */
+  actionLabel?: string
 }) {
   return (
     <div className="group relative rounded-lg border border-kinnso-cream2 bg-white hover:border-kinnso-orangeDark">
@@ -57,7 +59,7 @@ export function ExperienceCard({ experience, locale, savesLabel = 'Saves', isSav
           className="absolute right-3 top-1/2 flex -translate-y-1/2 items-center gap-1 rounded-[3px] p-2 text-xs text-kinnso-muted hover:text-kinnso-orangeDark"
         >
           <Bookmark className={cn('h-4 w-4', isSaved && 'fill-current text-kinnso-orangeDark')} aria-hidden="true" />
-          <span className="sr-only">{savesLabel} </span>
+          <span className="sr-only">{actionLabel ?? `${savesLabel} `}</span>
           {experience.savesCount.toLocaleString()}
         </button>
       ) : null}

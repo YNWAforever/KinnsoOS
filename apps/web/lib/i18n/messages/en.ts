@@ -262,6 +262,8 @@ export interface TravelerTripsMessages {
   reviewedLabel: string
   unsaveFailed: string
   unsaveSignIn: string
+  unsaveLabel: string
+  savedSourceUnavailable: string
 }
 
 export interface MerchantsDirectoryMessages {
@@ -2781,6 +2783,8 @@ const messages: Messages = {
     reviewedLabel: 'Reviewed',
     unsaveFailed: 'That did not remove it. Please try again.',
     unsaveSignIn: 'Sign in to finish removing',
+    unsaveLabel: 'Remove from saved',
+    savedSourceUnavailable: 'This saved item is no longer available.',
   },
   merchantsOps: {
     title: 'Merchants',

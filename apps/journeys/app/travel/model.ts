@@ -105,6 +105,43 @@ export type Store = {
 };
 export const count = (a: { days: Day[] }) =>
   a.days.reduce((n, d) => n + d.stops.length, 0);
+const routeStyles: Record<string, I18n> = {
+  slow: w("Slow travel", "慢旅行"),
+  night: w("After dark", "夜遊"),
+  culture: w("Culture & walks", "文化散步"),
+  family: w("Family time", "親子時光"),
+};
+const partyLabels: Record<string, I18n> = {
+  solo: w("Solo", "獨遊"),
+  couple: w("Two people", "二人同行"),
+  family: w("Family", "家庭"),
+};
+export function styleLabel(style: string, locale: Locale) {
+  return (routeStyles[style] ?? w("Discover", "探索"))[locale];
+}
+/** Both languages are searchable together. Each word must appear somewhere. */
+export function matchesRouteSearch(a: Adventure, term: string) {
+  const tokens = term.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+  if (!tokens.length) return true;
+  const style = routeStyles[a.style] ?? w("Discover", "探索");
+  const parties = a.party.flatMap((party) => {
+    const label = partyLabels[party];
+    return label ? [party, label.en, label["zh-HK"]] : [party];
+  });
+  const haystack = [
+    a.title.en,
+    a.title["zh-HK"],
+    a.city.en,
+    a.city["zh-HK"],
+    a.destination,
+    style.en,
+    style["zh-HK"],
+    ...parties,
+  ]
+    .join(" ")
+    .toLocaleLowerCase();
+  return tokens.every((token) => haystack.includes(token));
+}
 export const id = (prefix: string) => {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   bytes[6] = (bytes[6] & 15) | 64;
@@ -927,9 +964,12 @@ export function save(input: Trip, expected: number, key: string) {
 }
 export function bookmark(slug: string, key: string) {
   return command("bookmark:" + key, { slug }, (s) => {
-    if (!findPublic(s, slug)) fail("SOURCE_UNAVAILABLE");
     const b = s.bookmarks[s.session!.id] || [];
-    return (s.bookmarks[s.session!.id] = b.includes(slug)
+    const saved = b.includes(slug);
+    // A withdrawn route stays in the saved list until the traveller removes it.
+    // Saving a route that is not public still fails.
+    if (!saved && !findPublic(s, slug)) fail("SOURCE_UNAVAILABLE");
+    return (s.bookmarks[s.session!.id] = saved
       ? b.filter((x) => x !== slug)
       : [...b, slug]);
   });

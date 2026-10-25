@@ -1284,6 +1284,8 @@ const messages: Messages = {
     reviewedLabel: '리뷰 완료',
     unsaveFailed: '삭제하지 못했습니다. 다시 시도해 주세요.',
     unsaveSignIn: '로그인하여 삭제 완료',
+    unsaveLabel: '저장 해제',
+    savedSourceUnavailable: '이 저장 항목의 출처를 더 이상 볼 수 없습니다.',
   },
   merchantsOps: {
     title: '머천트', subtitle: '머천트를 파악, 관리, 분석하세요.',

@@ -70,10 +70,12 @@ export function serializeExploreState(state: ExploreState): URLSearchParams {
 }
 
 export function selectExploreResults(indexed: IndexedGuide[], state: ExploreState): ExploreResults {
-  const query = normalize(state.q)
+  // Every word has to match somewhere on the card. A contiguous phrase still
+  // matches, and "tea kyoto" matches a tea guide whose city is Kyoto.
+  const tokens = normalize(state.q).split(' ').filter(Boolean)
   const filtered = indexed.filter(({ destination, searchText }) =>
     (!state.destination || destination?.slug === state.destination) &&
-    (!query || searchText.includes(query)),
+    tokens.every((token) => searchText.includes(token)),
   )
   const sorted = state.sort === 'most-saved'
     ? [...filtered].sort((a, b) => (b.guide.saves - a.guide.saves) || (a.sourceIndex - b.sourceIndex))

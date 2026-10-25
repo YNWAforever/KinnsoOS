@@ -54,6 +54,16 @@ describe('Explore discovery model', () => {
     expect(selectExploreResults(indexed, { destination: null, q: 'body-only-copy', sort: 'newest', page: 1 }).total).toBe(0)
   })
 
+  it('matches every search word even when the words are not next to each other', () => {
+    const indexed = indexExploreGuides(
+      [{ ...guide('tea', 'Kyoto'), title: 'Tea houses', creatorHandle: 'mika' }],
+      destinations,
+    )
+    expect(selectExploreResults(indexed, { destination: null, q: 'tea kyoto', sort: 'newest', page: 1 }).visible.map(({ slug }) => slug))
+      .toEqual(['tea'])
+    expect(selectExploreResults(indexed, { destination: null, q: 'tea osaka', sort: 'newest', page: 1 }).total).toBe(0)
+  })
+
   it('filters one destination and keeps unmatched guides in All only', () => {
     const indexed = indexExploreGuides(
       [guide('tokyo-guide', 'Tokyo'), guide('seoul-guide', 'Seoul'), guide('unknown', 'Osaka')],

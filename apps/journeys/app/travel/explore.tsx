@@ -6,13 +6,7 @@ import * as m from "./model";
 import { Chip, Empty, Icon, useApp, PublicStopBody } from "./ui";
 import TripMap from "./TripMap";
 export function styleLabel(s: string, l: m.Locale) {
-  const a: Record<string, [string, string]> = {
-    slow: ["Slow travel", "慢旅行"],
-    night: ["After dark", "夜遊"],
-    culture: ["Culture & walks", "文化散步"],
-    family: ["Family time", "親子時光"],
-  };
-  return (a[s] || ["Discover", "探索"])[l === "en" ? 0 : 1];
+  return m.styleLabel(s, l);
 }
 function SearchForm() {
   const { t, href } = useApp(),
@@ -284,23 +278,12 @@ export function ExplorePage({ destination }: { destination?: string }) {
     if (!("page" in values)) p.set("page", "1");
     router.push(href("explore") + "?" + p.toString());
   }
-  const term = (query.get("q") || "").trim().toLowerCase(),
+  const term = query.get("q") || "",
     results = m
       .publications(store)
       .filter(
         (a) =>
-          (!term ||
-            [
-              a.title.en,
-              a.title["zh-HK"],
-              a.city.en,
-              a.city["zh-HK"],
-              a.destination,
-              styleLabel(a.style, locale),
-            ]
-              .join(" ")
-              .toLowerCase()
-              .includes(term)) &&
+          m.matchesRouteSearch(a, term) &&
           (!dest || a.destination === dest) &&
           (!duration || a.days.length === Number(duration)) &&
           (!style || a.style === style) &&
@@ -987,7 +970,7 @@ export function TripsPage({
   saved?: boolean;
   planner?: boolean;
 }) {
-  const { t, href, store, auth, open, ready } = useApp(),
+  const { t, href, store, auth, open, ready, run } = useApp(),
     [tab, setTab] = useState(saved ? "saved" : "planning"),
     trips = m.tripsFor(store).filter((t) => t.purpose === "personal"),
     bookmarks = store.session ? store.bookmarks[store.session.id] || [] : [],
@@ -1069,12 +1052,39 @@ export function TripsPage({
         <>
           {bookmarks.length ? (
             <div className="k-card-grid">
-              {m
-                .publications(store)
-                .filter((a) => bookmarks.includes(a.slug))
-                .map((a) => (
-                  <AdventureCard key={a.id} a={a} />
-                ))}
+              {bookmarks.map((slug) => {
+                const adventure = m
+                  .publications(store)
+                  .find((a) => a.slug === slug);
+                return adventure ? (
+                  <AdventureCard key={adventure.id} a={adventure} />
+                ) : (
+                  <article className="k-adventure-card" key={slug}>
+                    <div className="k-card-body">
+                      <h3>{t("Source unavailable", "來源未能提供")}</h3>
+                      <p>
+                        {t(
+                          "This saved route is no longer public. You can still remove it.",
+                          "此收藏路線已不再公開，你仍可取消收藏。",
+                        )}
+                      </p>
+                      <button
+                        className="k-btn"
+                        onClick={() =>
+                          auth(() =>
+                            run(
+                              () => m.bookmark(slug, m.id("bookmark")),
+                              t("Saved routes updated", "已更新收藏"),
+                            ),
+                          )
+                        }
+                      >
+                        {t("Unsave", "取消收藏")}
+                      </button>
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <Empty
