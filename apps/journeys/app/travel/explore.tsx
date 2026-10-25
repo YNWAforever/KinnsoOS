@@ -970,7 +970,7 @@ export function TripsPage({
   saved?: boolean;
   planner?: boolean;
 }) {
-  const { t, href, store, auth, open, ready } = useApp(),
+  const { t, href, store, auth, open, ready, run } = useApp(),
     [tab, setTab] = useState(saved ? "saved" : "planning"),
     trips = m.tripsFor(store).filter((t) => t.purpose === "personal"),
     bookmarks = store.session ? store.bookmarks[store.session.id] || [] : [],
