@@ -12,10 +12,15 @@ import {publicationReadiness,formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,rem
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
  const { t, href, locale } = useApp();
- const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true);
+ const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true), [confirmOpen, setConfirmOpen] = useState(false);
  const [readVersion,setReadVersion]=useState(0);
+ function markProfileConfirmed() {
+  setConfirmOpen(false);
+  // The confirm command writes creator_dna.final. creators.status active (step done) does not.
+  setProgress(current => current ? { ...current, step: 'done', profilePublished: true } : current);
+ }
  useEffect(() => {
-  setProgress(null); setError(''); setValidAccount(true);
+  setProgress(null); setError(''); setValidAccount(true); setConfirmOpen(false);
   if (!actorId || !enabled) return;
   let active = true; let timer: ReturnType<typeof setTimeout>;
   const unsubscribe = subscribeAccountInvalidation(next => { if (next !== actorId) { active = false; setProgress(null); setValidAccount(false); } });
@@ -31,15 +36,17 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
  if (!actorId || !validAccount) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><Link className="k-btn primary" href={`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`}>{t('Sign in to continue', '登入後繼續')}</Link></section>;
  if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><WorkspaceServiceState locale={locale} code={error} retryState="read" returnPath={href(path)} onRetry={()=>setReadVersion(value=>value+1)}/></section>;
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
- if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
+ if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={markProfileConfirmed}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
- return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}{progress.profilePublished===false&&<p role="status">{t('This account can author guides. No published creator profile is on file. Drafts stay private until you publish a version.','此帳戶可以創作攻略。尚未有已發布的創作者檔案。草稿在你發布版本前保持私人。')}</p>}<CreatorGuides/></>;
+ const unpublished = progress.profilePublished === false;
+ const showConfirm = unpublished && confirmOpen;
+ return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}{unpublished&&<p role="status">{t('This account can author guides. No published creator profile is on file. Drafts stay private until you publish a version.','此帳戶可以創作攻略。尚未有已發布的創作者檔案。草稿在你發布版本前保持私人。')}</p>}{unpublished&&(showConfirm?<button type="button" className="k-btn" onClick={()=>setConfirmOpen(false)}>{t('Back to guides','返回攻略')}</button>:<button type="button" className="k-btn" onClick={()=>setConfirmOpen(true)}>{t('Review and confirm creator profile','核對並確認創作者檔案')}</button>)}<CreatorOnboarding progress={progress} onDone={markProfileConfirmed} open={showConfirm}/><CreatorGuides hidden={showConfirm}/></>;
 }
 
-function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; onDone: () => void }) {
+function CreatorOnboarding({ progress, onDone, open = true }: { progress: CreatorProgress; onDone: () => void; open?: boolean }) {
  const { t } = useApp(), router = useRouter();
  const [profile, setProfile] = useState<Profile>(progress.profile ?? emptyProfile()), [confirmed, setConfirmed] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
- const [handles, setHandles] = useState(Object.fromEntries(progress.handles.map(h => [h.platform, h.handle])));
+ const [handles, setHandles] = useState(Object.fromEntries((progress.handles ?? []).map(h => [h.platform, h.handle])));
  const intent = useRef<{ key: string; requestId: string } | null>(null), [pending, setPending] = useState(false);
  const edited = useRef(false), suggestionKey = useRef(JSON.stringify(progress.profile));
  useEffect(() => { const key = JSON.stringify(progress.profile); if (!edited.current && !pending && !busy && key !== suggestionKey.current) { setProfile(progress.profile); setConfirmed(false); suggestionKey.current = key; } }, [progress.profile, pending, busy]);
@@ -54,6 +61,7 @@ function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; on
   setBusy(true); const r = await creators.handles(PLATFORMS.filter(p => handles[p]?.trim()).map(platform => ({ platform, handle: handles[platform] })));
   setBusy(false); setMessage(r.ok ? t('Social handles saved.', '社交帳號已保存。') : t('Could not save handles. Check their format and retry.', '未能保存帳號，請檢查格式並重試。'));
  }
+ if (!open) return null;
  return <section className="k-page os-editor"><p className="k-eyebrow">{t('CREATOR ONBOARDING', '創作者設定')}</p><h1>{t('Tell travellers about your work.', '向旅人介紹你的創作。')}</h1>
   <p role="status">{progress.jobStatus ? t(`Analysis status: ${progress.jobStatus}.`, `分析狀態：${progress.jobStatus}。`) : t('You can complete your profile manually.', '你可以自行填寫並確認檔案。')}</p>
   <p>{t('Review all suggestions before publishing. You can continue manually while analysis is unavailable.', '發布前請核對所有建議。分析服務未能使用時，你仍可自行完成。')}</p>
@@ -66,10 +74,11 @@ function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; on
  </section>;
 }
 
-function CreatorGuides() {
+function CreatorGuides({ hidden = false }: { hidden?: boolean }) {
  const { t, href } = useApp(), [items, setItems] = useState<GuideDraft[]>([]), [cursor, setCursor] = useState<string | null>(null), [message, setMessage] = useState(''), [loaded, setLoaded] = useState(false);
  async function load(after?: string) { const r = await creators.list(after); if (r.ok) { setItems(previous => after ? [...previous, ...r.data.items] : r.data.items); setCursor(r.data.nextCursor); setLoaded(true); setMessage(''); } else setMessage(t('Your guides could not be loaded. Retry.', '未能載入你的攻略，請重試。')); }
  useEffect(() => { let active = true; creators.list().then(r => { if (!active) return; if (r.ok) { setItems(r.data.items); setCursor(r.data.nextCursor); setLoaded(true); } else setMessage('Could not load guides.'); }); return () => { active = false; }; }, []);
+ if (hidden) return null;
  return <section className="k-page"><div className="k-section-title"><h1>{t('Your authored guides', '你的創作攻略')}</h1><Link className="k-btn primary" href={href('studio/guides/new')}>{t('Create guide', '建立攻略')}</Link></div><p>{t('Drafts are private. Published versions can be adopted into traveller trips.', '草稿屬私人內容，已發布版本可供旅人套用到行程。')}</p>
   {!loaded && !message && <p role="status">{t('Loading guides…', '正在載入攻略…')}</p>}{loaded && !items.length && <p>{t('Start with your first authored route.', '由你的第一份創作路線開始。')}</p>}
   <div className="k-card-grid">{items.map(d => <article className="os-guide" key={d.id}><div className="os-guide-body"><h2>{d.payload.title || t('Untitled guide', '未命名攻略')}</h2><p>{d.payload.summary}</p><span>{d.status === 'published' ? t(`Published version ${d.publishedVersion}`, `已發布第 ${d.publishedVersion} 版`) : t('Private draft', '私人草稿')}</span><Link className="k-btn" href={href('studio/guides/' + d.id + '/edit')}>{t('Edit guide', '編輯攻略')}</Link></div></article>)}</div>

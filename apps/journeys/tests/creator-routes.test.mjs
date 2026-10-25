@@ -43,3 +43,10 @@ test('creator identity injection and oversized chunked payloads never reach a wr
 test('manual profile submission requires an explicit confirmation and never auto-publishes an AI draft', async t => {
  const calls = setup(t); assert.equal((await profile.POST(request({ requestId: id, profile: {}, confirmed: false }, undefined, 'POST'))).status, 400); assert.equal(calls.filter(c => c.name !== 'kinnso_actor').length, 0);
 });
+test('manual profile submission requires a request id before the confirm command', async t => {
+ const calls = setup(t);
+ assert.equal((await profile.POST(request({ profile: {}, confirmed: true }, undefined, 'POST'))).status, 400);
+ assert.equal((await profile.POST(request({ requestId: 'active', profile: {}, confirmed: true }, undefined, 'POST'))).status, 400);
+ assert.equal((await profile.POST(request({ requestId: null, profile: {}, confirmed: true }, undefined, 'POST'))).status, 400);
+ assert.equal(calls.filter(c => c.name !== 'kinnso_actor').length, 0);
+});
