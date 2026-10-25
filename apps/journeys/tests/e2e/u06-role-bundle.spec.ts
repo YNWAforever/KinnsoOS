@@ -143,6 +143,10 @@ test('U06 deferred role panels retain server headings, language and private cach
     await page.getByLabel('Password',{exact:true}).fill(password);
     await page.getByRole('button',{name:'Sign in',exact:true}).click();
     await page.waitForURL(url=>url.pathname==='/en/merchant');
+    // The next document must not replace Chromium's response-body resources
+    // while the script collector is still reading the sign-in transition.
+    await page.waitForLoadState('networkidle');
+    await scripts();
     const routes = [
       {path: '/en/merchant', heading: 'Merchant workspace'},
       {path: '/zh-HK/ops', heading: '營運待辦'},
@@ -161,6 +165,8 @@ test('U06 deferred role panels retain server headings, language and private cach
       await expect(page.getByRole('heading', {level: 1, name: route.heading, exact: true})).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang',route.path.startsWith('/en/')?'en':'zh-HK');
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
+      await page.waitForLoadState('networkidle');
+      await scripts();
     }
     await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
     const javascript = await scripts();
