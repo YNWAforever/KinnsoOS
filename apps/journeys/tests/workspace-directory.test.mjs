@@ -20,7 +20,7 @@ for(const locale of ['en','zh-HK']){
   const html=directory(locale,{creator:true,merchant:true,ops:true,catalog:true,trips:true});
   for(const path of ['studio','merchant','ops'])assert.match(html,new RegExp(`href="/${locale}/${path}"`));
   for(const path of ['studio','merchants/dashboard','demo-lab'])assert.match(html,new RegExp(`href="/${locale}/demo/${path}"`));
-  assert.match(html,/https:\/\/remix-kinnso-web.vercel.app\//);
+  assert.doesNotMatch(html,/remix-kinnso-web|Open original application|開啟原有系統/);
   assert.doesNotMatch(html,/Preview new demo layout|預覽新版示範版面/);
  });
  test(`directory ${locale}: catalog connectivity does not imply trip or role readiness`,()=>{
@@ -29,10 +29,12 @@ for(const locale of ['en','zh-HK']){
   assert.match(html,locale==='en'?/Account trip sync: not connected yet/:/帳戶行程同步：尚未接通/);
   assert.equal((html.match(locale==='en'?/Service not connected yet/g:/服務尚未接通/g)||[]).length,3);
   assert.match(html,new RegExp(`href="/${locale}/explore"`));
+  assert.doesNotMatch(html,/remix-kinnso-web/);
  });
  test(`directory ${locale}: demo context never claims enabled account services`,()=>{
   const html=directory(locale,{catalog:true,trips:true,creator:true,merchant:true,ops:true},'demo');
   assert.match(html,locale==='en'?/Demo workspace directory/:/示範工作區導覽/);
   assert.doesNotMatch(html,/Published guides: connected|已發布攻略：已接通/);
+  assert.doesNotMatch(html,/remix-kinnso-web/);
  });
 }

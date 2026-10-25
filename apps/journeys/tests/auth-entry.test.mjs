@@ -39,3 +39,18 @@ test('email links reuse the existing approved callback alias and preserve intent
  assert.equal(url.pathname,'/callback');assert.equal(url.searchParams.get('next'),state.next);
  assert.equal(url.searchParams.get('flow'),'recovery');assert.equal(url.searchParams.get('locale'),'zh-HK');
 });
+
+test('creator sign-in intent normalizes legacy locale casing and rejects unsafe returns',()=>{
+ for(const locale of ['en','zh-HK','zh-hk']){
+  const language=locale==='en'?'en':'zh-HK';
+  const state=intent.parseAuthIntent(new URLSearchParams({next:`/${locale}/studio?tab=drafts#latest`}),locale);
+  assert.equal(state.locale,language);
+  assert.equal(state.next,`/${language}/studio?tab=drafts#latest`);
+  const url=new URL(intent.authPath(state,'sign-in'),'https://kinnso-os.vercel.app');
+  assert.equal(url.pathname,`/${language}/sign-in`);
+  assert.equal(url.searchParams.get('next'),state.next);
+  for(const next of ['https://remix-kinnso-web.vercel.app/en/studio','//evil.test/en/studio','/en/../sign-in','/en/%2f%2fevil.test','/zh-hk/sign-in','/zh-hk/%73ign-in']){
+   assert.equal(auth.safeReturnPath(next,locale),`/${language}/trips`,next);
+  }
+ }
+});

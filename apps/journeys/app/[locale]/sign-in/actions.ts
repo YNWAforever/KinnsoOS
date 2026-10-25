@@ -1,12 +1,11 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { serverClient } from '../../../lib/supabase/server';
-import { safeReturnPath } from '../../../lib/auth/return-path';
+import {parseAuthIntent} from '../../../lib/auth/auth-intent';
 import {cookies} from 'next/headers';
 import {RECOVERY_COOKIE} from '../../../lib/auth/recovery';
 export async function signIn(form: FormData) {
-  const locale = form.get('locale') === 'zh-HK' ? 'zh-HK' : 'en';
-  const next = safeReturnPath(form.get('next'), locale);
+  const {locale,next} = parseAuthIntent(new URLSearchParams({next:String(form.get('next')??'')}),String(form.get('locale')??'en'));
   const client = await serverClient();
   if (!client) redirect(`/${locale}/sign-in?error=unavailable&next=${encodeURIComponent(next)}`);
   const email = String(form.get('email') ?? '').trim();

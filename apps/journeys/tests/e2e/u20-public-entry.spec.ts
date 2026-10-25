@@ -22,7 +22,7 @@ for(const locale of ['en','zh-HK']){
   }
   await expect(page.getByRole('link',{name:label('Download corresponding source','下載對應原始碼'),exact:true})).toHaveAttribute('href','/source/kinnsoos-source.zip');
  });
- test(`U20 ${locale}: small-screen directory preserves native, legacy and demo destinations`,async({page})=>{
+ test(`U20 ${locale}: small-screen directory keeps native and demo destinations on KinnsoOS`,async({page})=>{
   await page.setViewportSize({width:320,height:844});
   await page.goto(`/${locale}/workspace`);
   await page.addStyleTag({content:'html{font-size:200%} .k-app{font-size:1rem}'});
@@ -30,8 +30,7 @@ for(const locale of ['en','zh-HK']){
   const main=page.locator('main');
   for(const path of ['studio','merchant','ops'])await expect(main.locator(`a[href="/${locale}/${path}"]`).first()).toBeVisible();
   for(const path of ['studio','merchants/dashboard','demo-lab'])await expect(main.locator(`a[href="/${locale}/demo/${path}"]`)).toBeVisible();
-  const originalLocale=locale==='en'?'en':'zh-hk';
-  for(const path of ['studio','merchants/dashboard','admin'])await expect(main.locator(`a[href="https://remix-kinnso-web.vercel.app/${originalLocale}/${path}"]`)).toBeVisible();
+  await expect(main.locator('a[href*="remix-kinnso-web.vercel.app"]')).toHaveCount(0);
   const demo=main.locator(`a[href="/${locale}/demo/studio"]`);
   await demo.focus();await page.keyboard.press('Enter');
   await expect(page).toHaveURL(`/${locale}/demo/studio`);
@@ -43,8 +42,9 @@ for(const locale of ['en','zh-HK']){
  });
 }
 
-// Each retained route exercises real Next routing and the actual public CTA.
-for(const locale of ['en','zh-HK'] as const)for(const path of PUBLIC_ENTRY_PATHS.filter(path=>!['help','legal/privacy','for-business','credits'].includes(path))){
+// Private studio aliases are covered by trial-navigation's sign-in guard tests.
+// Each public retained route exercises real Next routing and the actual public CTA.
+for(const locale of ['en','zh-HK'] as const)for(const path of PUBLIC_ENTRY_PATHS.filter(path=>!path.startsWith('studio/')&&!['help','legal/privacy','for-business','credits'].includes(path))){
  test(`U20 ${locale} ${path}: direct, keyboard navigation, Back, reload and reflow without commands`,async({page})=>{
   const writes:string[]=[],privateReads:string[]=[];
   page.on('request',request=>{

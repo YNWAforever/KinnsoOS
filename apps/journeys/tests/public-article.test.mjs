@@ -45,3 +45,11 @@ test('article cover and share images are bounded approved CDN URLs with safe aut
  }
  await assert.rejects(subject.readPublicArticle('destinations',row.url,'zh-HK',env,async()=>Response.json([{...row,thumbnails:Array(101).fill(row.thumbnails[0])}])),/article_schema/);
 });
+
+test('authored article links cannot send trial readers to the legacy app',()=>{
+ const [block]=subject.articleBlocks([{id:'links',type:'detail-box',content:'<p><a href="https://remix-kinnso-web.vercel.app/en/studio">Creator studio</a><a href="https://example.com/info">Visit information</a></p>',website:{label:'Legacy tool',link:'https://remix-kinnso-web.vercel.app/zh-hk/merchants/dashboard'}}]);
+ assert.ok(!block.html.includes('remix-kinnso-web'));
+ assert.ok(block.html.includes('Creator studio</a>'));
+ assert.ok(block.html.includes('href="https://example.com/info"'));
+ assert.equal(block.fields[0].href,null);
+});

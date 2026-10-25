@@ -2,7 +2,7 @@ import {safeReturnPath} from './return-path.ts';
 export type AuthIntent={locale:'en'|'zh-HK';flow:'sign-in'|'sign-up'|'recovery';next:string};
 export type AuthEntry='sign-in'|'sign-up'|'forgot-password'|'reset-password';
 export function parseAuthIntent(params:URLSearchParams,locale:string):AuthIntent{
- const language=locale==='zh-HK'?'zh-HK':'en';
+ const language=locale==='zh-HK'||locale==='zh-hk'?'zh-HK':'en';
  const flow=params.get('flow');
  return{locale:language,flow:flow==='sign-up'||flow==='recovery'?flow:'sign-in',next:safeReturnPath(params.get('next'),language)};
 }
