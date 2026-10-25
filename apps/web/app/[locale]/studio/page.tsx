@@ -45,8 +45,10 @@ export default async function StudioPage({ params }: { params: Promise<{ locale:
     .single()
   if (!creatorRow || creatorRow.status !== 'active') redirect(`/${loc}/creator`)
 
-  // `final` is untrusted jsonb — an active creator should always have valid DNA,
-  // but validate defensively and bounce to the wizard if not.
+  // Studio home renders published DNA. Operator activation can set status to
+  // active before any final exists. Invalid or missing final returns to
+  // /creator, which must explain that the profile is not published. It must
+  // not send the creator straight back here.
   const { data: dnaRow } = await supabase
     .from('creator_dna')
     .select('final, updated_at')

@@ -14,6 +14,8 @@ import { WelcomeStep } from './WelcomeStep'
 import { LiveProgress } from './LiveProgress'
 import { DnaReviewForm } from './DnaReviewForm'
 import { ReadBack } from './ReadBack'
+import { ActivatedCreatorSession } from './ActivatedCreatorSession'
+import { classifyActivatedProfile } from '@/lib/onboarding/activated-profile'
 
 export interface WizardClientProps {
   creatorId: string
@@ -37,6 +39,9 @@ export function WizardClient(props: WizardClientProps) {
   const { creatorId, locale, handles, latestJobId, draft, final, thin, messages } = props
   const router = useRouter()
   const [step, setStep] = useState<Step>(props.initialStep)
+  // A profile confirmed in this session is published even before the server
+  // snapshot refreshes. A later visit still trusts `final`, not this flag.
+  const [publishedThisSession, setPublishedThisSession] = useState(false)
   // Client-fetched fallback for the AI draft. The server snapshot is the primary
   // source, but `router.refresh()` can lag or serve a cached snapshot under the
   // App Router — so `effectiveDraft` lets the review step recover on its own.
@@ -172,6 +177,7 @@ export function WizardClient(props: WizardClientProps) {
         t={messages.dna}
         onPublished={() => {
           router.refresh()
+          setPublishedThisSession(true)
           setStep('done')
         }}
       />
@@ -179,9 +185,34 @@ export function WizardClient(props: WizardClientProps) {
   }
 
   // step === 'done'
+  if (!publishedThisSession) {
+    const profile = classifyActivatedProfile(final, effectiveDraft)
+    if (profile.kind === 'unpublished') {
+      return (
+        <ActivatedCreatorSession
+          locale={locale}
+          t={messages.dna}
+          signOutLabel={onb.signOut}
+          draft={profile.draft}
+          onReviewDraft={() => setStep('review')}
+          onContinueSetup={() => setStep('handles')}
+        />
+      )
+    }
+    return (
+      <ReadBack
+        dna={profile.dna}
+        t={messages.dna}
+        dashboardHref={`/${locale}/studio`}
+        signOutHref={`/${locale}/auth/sign-out`}
+        signOutLabel={onb.signOut}
+      />
+    )
+  }
+
   return (
     <ReadBack
-      dna={final ?? effectiveDraft ?? emptyDna()}
+      dna={effectiveDraft ?? final ?? emptyDna()}
       t={messages.dna}
       dashboardHref={`/${locale}/studio`}
       signOutHref={`/${locale}/auth/sign-out`}

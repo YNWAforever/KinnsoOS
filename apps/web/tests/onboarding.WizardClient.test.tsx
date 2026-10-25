@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, fireEvent } from '@testing-library/react'
 
 afterEach(cleanup)
 import type { Dna } from '@kinnso/scan'
@@ -87,9 +87,32 @@ describe('WizardClient initial step', () => {
     expect(await screen.findByTestId('step-review')).toBeTruthy()
     expect(maybeSingleMock).toHaveBeenCalled()
   })
-  it("renders readback for initialStep='done'", () => {
+  it("renders readback for initialStep='done' only when final DNA is published", () => {
     render(<WizardClient {...base()} initialStep="done" final={dna} />)
     expect(screen.getByTestId('step-readback')).toBeTruthy()
+    expect(screen.queryByRole('status')).toBeNull()
+  })
+
+  it('does not claim a live profile or link back to studio home when activation has no published DNA', () => {
+    render(<WizardClient {...base()} initialStep="done" final={null} draft={null} />)
+    expect(screen.queryByTestId('step-readback')).toBeNull()
+    expect(screen.getByRole('status').textContent).toContain(en.dna.activatedBody)
+    const guide = screen.getByRole('link', { name: en.dna.activatedGuideCta })
+    expect(guide.getAttribute('href')).toBe('/en/studio/guides/new')
+    expect(screen.queryByRole('link', { name: en.dna.enterStudio })).toBeNull()
+    expect(screen.queryByRole('link', { name: en.dna.activatedGuideCta })?.getAttribute('href')).not.toBe('/en/studio')
+  })
+
+  it('offers the unpublished draft for review and keeps setup when there is no draft', () => {
+    const { unmount } = render(<WizardClient {...base()} initialStep="done" final={{} as Dna} draft={dna} />)
+    expect(screen.queryByTestId('step-readback')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: en.dna.activatedReviewDraft }))
+    expect(screen.getByTestId('step-review')).toBeTruthy()
+    unmount()
+    window.localStorage.removeItem('kinnso_welcome_seen')
+    render(<WizardClient {...base()} initialStep="done" />)
+    fireEvent.click(screen.getByRole('button', { name: en.dna.activatedContinueSetup }))
+    expect(screen.getByTestId('step-welcome')).toBeTruthy()
   })
   it("renders a wait message for initialStep='wait'", () => {
     render(<WizardClient {...base()} initialStep="wait" />)

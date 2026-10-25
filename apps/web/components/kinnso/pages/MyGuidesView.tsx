@@ -34,6 +34,9 @@ export function MyGuidesView({
           <div className="mt-10 rounded-lg bg-kinnso-cream2 p-8 text-center">
             <h2 className="text-xl font-bold text-kinnso-ink">{t.emptyTitle}</h2>
             <p className="mt-2 text-kinnso-muted">{t.emptyBody}</p>
+            <Link href={p('/studio/guides/new')} className="k-btn-primary mt-4 inline-flex items-center gap-1">
+              <Plus className="h-4 w-4" /> {t.newButton}
+            </Link>
           </div>
         ) : (
           <ul className="mt-10 grid gap-4">

@@ -33,7 +33,7 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
  if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
- return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}<CreatorGuides/></>;
+ return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}{progress.profilePublished===false&&<p role="status">{t('This account can author guides. No published creator profile is on file. Drafts stay private until you publish a version.','此帳戶可以創作攻略。尚未有已發布的創作者檔案。草稿在你發布版本前保持私人。')}</p>}<CreatorGuides/></>;
 }
 
 function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; onDone: () => void }) {
