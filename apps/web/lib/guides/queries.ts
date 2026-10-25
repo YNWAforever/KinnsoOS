@@ -42,13 +42,16 @@ export async function getPublishedGuides(limit?: number): Promise<Guide[]> {
   const supabase = createSupabasePublicClient()
   let query = supabase
     .from('guides')
-    .select('slug, title, cover_url, city, saves_count, creator_handle')
+    .select('slug, title, summary, cover_url, city, saves_count, creator_handle')
     .eq('status', 'published')
     .order('published_at', { ascending: false })
   if (limit !== undefined) query = query.limit(limit)
   const { data, error } = await query
   if (error) throw error
-  return (data ?? []).map(mapRowToGuide)
+  return (data ?? []).map((row) => ({
+    ...mapRowToGuide(row),
+    summary: typeof row.summary === 'string' ? row.summary : null,
+  }))
 }
 
 export async function getAttributedGuidesForMerchant(merchantId: string, limit?: number): Promise<Guide[]> {

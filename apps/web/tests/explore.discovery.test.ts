@@ -6,6 +6,7 @@ import {
   canSortByMostSaved,
   eligibleExploreDestinations,
   indexExploreGuides,
+  matchesPublishedGuideSearch,
   parseExploreState,
   selectExploreResults,
   serializeExploreState,
@@ -52,6 +53,22 @@ describe('Explore discovery model', () => {
       expect(selectExploreResults(indexed, { destination: null, q, sort: 'newest', page: 1 }).total).toBe(1)
     }
     expect(selectExploreResults(indexed, { destination: null, q: 'body-only-copy', sort: 'newest', page: 1 }).total).toBe(0)
+  })
+
+  it('matches a summary the same way search_guides matches title, summary and city', () => {
+    const indexed = indexExploreGuides(
+      [{ ...guide('lanes', 'Kyoto', 0, 'Weekend walk'), summary: 'Stone lanterns at dusk' }],
+      destinations,
+    )
+    const state = { destination: null, sort: 'newest' as const, page: 1 }
+    expect(selectExploreResults(indexed, { ...state, q: 'lanterns' }).visible.map(({ slug }) => slug)).toEqual(['lanes'])
+    expect(selectExploreResults(indexed, { ...state, q: 'weekend lanterns' }).total).toBe(1)
+    expect(selectExploreResults(indexed, { ...state, q: 'lanterns or osaka' }).total).toBe(1)
+    expect(selectExploreResults(indexed, { ...state, q: '"stone lanterns"' }).total).toBe(1)
+    expect(selectExploreResults(indexed, { ...state, q: 'lanterns -kyoto' }).total).toBe(0)
+    expect(selectExploreResults(indexed, { ...state, q: '"tea or coffee"' }).total).toBe(0)
+    expect(matchesPublishedGuideSearch('weekend walk stone lanterns', 'Weekend walk', '"tea or coffee"')).toBe(false)
+    expect(selectExploreResults(indexed, { ...state, q: 'unrelated body copy' }).total).toBe(0)
   })
 
   it('matches every search word even when the words are not next to each other', () => {

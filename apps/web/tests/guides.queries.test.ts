@@ -82,7 +82,14 @@ describe('getPublishedGuides', () => {
     const result = await getPublishedGuides()
     expect(result).toHaveLength(1)
     expect(result[0].slug).toBe('kyoto-tea')
+    expect(result[0].summary).toBeNull()
     expect(result.some((g) => g.slug === mockGuides[0].slug)).toBe(false)
+  })
+
+  it('keeps the published summary available for explore search', async () => {
+    state.list = [{ ...row, summary: 'Stone lanterns at dusk' }]
+    const result = await getPublishedGuides()
+    expect(result[0].summary).toBe('Stone lanterns at dusk')
   })
 
   it('returns an empty array when the DB has no published guides', async () => {

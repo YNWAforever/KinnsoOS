@@ -1,5 +1,5 @@
 import { cache, Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Workbench } from "../../travel/Workbench";
 import { isKnownRoute } from "../../travel/routes";
 import { fixtures } from "../../travel/model";
@@ -12,6 +12,7 @@ import {readPublicCreator,creatorPageMetadata} from '../../../lib/seo/public-cre
 import {readPublicArticle} from '../../../lib/seo/public-article';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
 import {serverClient} from '../../../lib/supabase/server';
+import {connectedCatalogRedirect} from '../../../lib/catalog-results';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
 import{readPrivateCreatorMissionEntry}from '../../../lib/creators/private-mission-entry';
@@ -61,8 +62,11 @@ export default async function Page({ params,searchParams }: Props) {
     path.startsWith("legacy/")
   )
     notFound();
+  const entryQuery = await searchParams;
+  const catalogTarget = connectedCatalogRedirect(locale, path, demo, entryQuery);
+  if (catalogTarget) redirect(catalogTarget);
   const actor=demo?null:await currentActor();
-  const entryQuery=await searchParams,requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
+  const requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
   const merchantEntry=!demo&&actor&&path==='merchant'&&capabilities(process.env).merchant.mode==='connected'
     ?await readPrivateMerchantEntry(await serverClient(),actor.id,requestedCompany):null;
   const creatorMissionEntry=!demo&&actor&&route[0]==='studio'&&route[1]==='missions'&&route.length===3&&capabilities(process.env).creator.mode==='connected'
