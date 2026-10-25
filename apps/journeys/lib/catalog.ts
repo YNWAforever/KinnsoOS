@@ -41,6 +41,16 @@ const clean = (value: unknown, max: number) =>
         .trim()
         .slice(0, max)
     : "";
+/**
+ * PostgREST treats space, comma, period, colon and parentheses as filter
+ * syntax. Quote those values (and doubled quotes) so a guide title such as
+ * "Quiet Kyoto" stays one ilike pattern instead of a rejected filter.
+ * `*` stays outside the quote rules: PostgREST maps it to `%` after unquoting.
+ */
+export function postgrestValue(value: string): string {
+  if (!/[\s,.:()"]/.test(value)) return value;
+  return `"${value.replaceAll('"', '""')}"`;
+}
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
   const raw = params.get("page") ?? "1";
   const page = /^[1-9]\d*$/.test(raw) ? Math.min(Number(raw), 100) : 1;
@@ -120,13 +130,15 @@ export async function queryCatalog(
   url.searchParams.set("limit", String(query.pageSize + 1));
   url.searchParams.set("offset", String((query.page - 1) * query.pageSize));
   const destination=query.city ? null : destinationAlias(query.q);
-  if (query.city) url.searchParams.set("city", "eq." + query.city);
+  if (query.city) url.searchParams.set("city", "eq." + postgrestValue(query.city));
   else if (destination) url.searchParams.set('city', destination==='Kyoto' ? 'in.(Kyoto,京都)' : 'in.("Hong Kong",香港)');
-  if (query.q && !destination)
+  if (query.q && !destination) {
+    const pattern = postgrestValue(`*${query.q}*`);
     url.searchParams.set(
       "or",
-      `(title.ilike.*${query.q}*,city.ilike.*${query.q}*,summary.ilike.*${query.q}*)`,
+      `(title.ilike.${pattern},city.ilike.${pattern},summary.ilike.${pattern})`,
     );
+  }
   try {
     const response = await transport(url, {
       headers: { apikey: key, Accept: "application/json" },

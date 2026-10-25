@@ -171,13 +171,27 @@ export function TravelerTripsView({
           <div className="mt-4 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {savedGuides.map((entry) => (
               <div key={entry.guideId}>
+                {entry.guide ? (
                 <GuideCard
                   g={entry.guide}
                   locale={locale}
                   savesLabel={savesLabel}
+                  actionLabel={t.unsaveLabel}
                   isSaved={true}
                   onSaveToggle={() => removeSaved('guide', entry.guideId)}
                 />
+                ) : (
+                  <div className="rounded-lg border border-kinnso-cream2 bg-white p-4">
+                    <p className="font-semibold text-kinnso-ink">{t.savedSourceUnavailable}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeSaved('guide', entry.guideId)}
+                      className="mt-3 text-sm font-semibold text-kinnso-orangeDark hover:underline"
+                    >
+                      {t.unsaveLabel}
+                    </button>
+                  </div>
+                )}
                 {unsaveError(entry.guideId) && (
                   <p role="alert" className="mt-2 text-sm text-kinnso-ink/80">
                     {t.unsaveFailed}{' '}
@@ -202,12 +216,26 @@ export function TravelerTripsView({
           <div className="mt-4 space-y-3">
             {savedExperiences.map((entry) => (
               <div key={entry.experienceId}>
+                {entry.unavailable ? (
+                  <div className="rounded-lg border border-kinnso-cream2 bg-white p-4">
+                    <p className="font-semibold text-kinnso-ink">{t.savedSourceUnavailable}</p>
+                    <button
+                      type="button"
+                      onClick={() => removeSaved('experience', entry.experienceId)}
+                      className="mt-3 text-sm font-semibold text-kinnso-orangeDark hover:underline"
+                    >
+                      {t.unsaveLabel}
+                    </button>
+                  </div>
+                ) : (
                 <ExperienceCard
                   experience={entry}
                   locale={locale}
+                  actionLabel={t.unsaveLabel}
                   isSaved={true}
                   onSaveToggle={() => removeSaved('experience', entry.experienceId)}
                 />
+                )}
                 {unsaveError(entry.experienceId) && (
                   <p role="alert" className="mt-2 text-sm text-kinnso-ink/80">
                     {t.unsaveFailed}{' '}

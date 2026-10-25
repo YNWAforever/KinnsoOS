@@ -62,6 +62,8 @@ const t = {
   reviewedLabel: 'Reviewed',
   unsaveFailed: 'That did not remove it. Please try again.',
   unsaveSignIn: 'Sign in to finish removing',
+  unsaveLabel: 'Remove from saved',
+  savedSourceUnavailable: 'This saved item is no longer available.',
 }
 
 const reviewsT = {
@@ -183,6 +185,25 @@ describe('TravelerTripsView', () => {
     fireEvent.click(screen.getByRole('button'))
     await waitFor(() => expect(unsaveExperienceActionMock).toHaveBeenCalledWith('en', 'e1'))
     await waitFor(() => expect(screen.queryByRole('link', { name: /Sunset junk boat tour/ })).toBeNull())
+  })
+
+  it('keeps a withdrawn source on the saved list so the traveler can still remove it', async () => {
+    render(
+      <TravelerTripsView
+        locale="en" t={t} reviewsT={reviewsT} savesLabel="saves" bookings={[]}
+        savedGuides={[{ guideId: 'g2', guide: null }]}
+        savedExperiences={[{ experienceId: 'e2', unavailable: true }]}
+      />,
+    )
+    const notes = screen.getAllByText(t.savedSourceUnavailable)
+    expect(notes).toHaveLength(2)
+    const [removeGuide, removeExperience] = screen.getAllByRole('button', { name: t.unsaveLabel })
+    fireEvent.click(removeGuide)
+    await waitFor(() => expect(unsaveGuideActionMock).toHaveBeenCalledWith('en', 'g2'))
+    await waitFor(() => expect(screen.getAllByText(t.savedSourceUnavailable)).toHaveLength(1))
+    fireEvent.click(removeExperience)
+    await waitFor(() => expect(unsaveExperienceActionMock).toHaveBeenCalledWith('en', 'e2'))
+    await waitFor(() => expect(screen.queryByText(t.savedSourceUnavailable)).toBeNull())
   })
 
   it('keeps the saved guide and reports the failure when the unsave is rejected', async () => {

@@ -1284,6 +1284,8 @@ const messages: Messages = {
     reviewedLabel: '已評價',
     unsaveFailed: '未能取消，請再試一次。',
     unsaveSignIn: '登入以完成取消',
+    unsaveLabel: '取消收藏',
+    savedSourceUnavailable: '此收藏的來源已無法提供。',
   },
   merchantsOps: {
     title: '商家', subtitle: '了解、管理及分析您的商家。',

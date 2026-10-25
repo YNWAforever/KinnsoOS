@@ -6,7 +6,8 @@ import type { Guide } from '@/lib/guides/types'
 
 export interface SavedGuideEntry {
   guideId: string
-  guide: Guide
+  /** Null when the save remains but the guide is no longer readable. */
+  guide: Guide | null
 }
 
 interface SavedGuideQueryRow {
@@ -32,10 +33,9 @@ export async function listSavedGuides(
     .order('created_at', { ascending: false })
   if (error) throw error
 
-  return ((data ?? []) as unknown as SavedGuideQueryRow[]).flatMap((row) => {
+  return ((data ?? []) as unknown as SavedGuideQueryRow[]).map((row) => {
     const g = one(row.guides)
-    if (!g) return []
-    return [{ guideId: row.guide_id, guide: mapRowToGuide(g) }]
+    return { guideId: row.guide_id, guide: g ? mapRowToGuide(g) : null }
   })
 }
 

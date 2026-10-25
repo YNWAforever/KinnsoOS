@@ -98,7 +98,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();requestNavigation(href('sign-in')+'?next='+encodeURIComponent(next));return}
   const generation=epoch.current;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;lock.current=true;setBusy(true);if(intent.current?.desired!==desired)intent.current={desired,id:requestId??crypto.randomUUID()};
   const result=await bookmarks.toggle(id,desired,intent.current.id);if(generation!==epoch.current)return;
-  if(result.ok){setSaved(result.data.saved);setBookmarkStatus('ready');intent.current=null;setMessage(t('Bookmark saved to your account','收藏已保存至你的帳戶'));router.replace(returnIntent?adoptionPath(locale,id,returnIntent.tripId??undefined,flowId||undefined,returnIntent.version,returnIntent.creationId):href('g/'+id))}
+  if(result.ok){setSaved(result.data.saved);setBookmarkStatus('ready');intent.current=null;setMessage(result.data.saved?t('Bookmark saved to your account','收藏已保存至你的帳戶'):t('Bookmark removed from your account','已從你的帳戶取消收藏'));router.replace(returnIntent?adoptionPath(locale,id,returnIntent.tripId??undefined,flowId||undefined,returnIntent.version,returnIntent.creationId):href('g/'+id))}
   else{setMessage(t('Bookmark was not confirmed. Retry.','未確認收藏結果，請重試。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   setBusy(false);lock.current=false;
  }

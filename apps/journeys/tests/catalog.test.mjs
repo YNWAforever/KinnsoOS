@@ -148,6 +148,37 @@ test("only approved HTTPS image host passes cover validation", () => {
   ])
     assert.equal(safeCover(value), null);
 });
+test("a multi-word guide title stays one quoted search pattern", async () => {
+  await queryCatalog({ q: "Quiet Kyoto" }, env, async (input) => {
+    const pattern = new URL(input).searchParams.get("or");
+    assert.equal(
+      pattern,
+      '(title.ilike."*Quiet Kyoto*",city.ilike."*Quiet Kyoto*",summary.ilike."*Quiet Kyoto*")',
+    );
+    return Response.json([]);
+  });
+});
+test("a single-word search keeps the unquoted ilike wildcard", async () => {
+  await queryCatalog({ q: "coffee" }, env, async (input) => {
+    const url = new URL(input);
+    assert.equal(
+      url.searchParams.get("or"),
+      "(title.ilike.*coffee*,city.ilike.*coffee*,summary.ilike.*coffee*)",
+    );
+    return Response.json([]);
+  });
+});
+test("a city filter and a single-word query stay separate PostgREST clauses", async () => {
+  await queryCatalog({ q: "Kyoto", city: "Kyoto" }, env, async (input) => {
+    const url = new URL(input);
+    assert.equal(url.searchParams.get("city"), "eq.Kyoto");
+    assert.equal(
+      url.searchParams.get("or"),
+      "(title.ilike.*Kyoto*,city.ilike.*Kyoto*,summary.ilike.*Kyoto*)",
+    );
+    return Response.json([]);
+  });
+});
 test("search filter cannot alter published status or include PostgREST syntax", async () => {
   const result=await queryCatalog(
     { q: "東京,(status.eq.draft)", city: "Hong Kong", page: 1 },
@@ -155,10 +186,10 @@ test("search filter cannot alter published status or include PostgREST syntax", 
     async (input) => {
       const url = new URL(input);
       assert.equal(url.searchParams.get("status"), "eq.published");
-      assert.equal(url.searchParams.get("city"), "eq.Hong Kong");
+      assert.equal(url.searchParams.get("city"), 'eq."Hong Kong"');
       assert.equal(
         url.searchParams.get("or"),
-        "(title.ilike.*東京 status eq draft*,city.ilike.*東京 status eq draft*,summary.ilike.*東京 status eq draft*)",
+        '(title.ilike."*東京 status eq draft*",city.ilike."*東京 status eq draft*",summary.ilike."*東京 status eq draft*")',
       );
       return Response.json([]);
     },

@@ -1284,6 +1284,8 @@ const messages: Messages = {
     reviewedLabel: 'レビュー済み',
     unsaveFailed: '削除できませんでした。もう一度お試しください。',
     unsaveSignIn: 'サインインして削除を完了',
+    unsaveLabel: '保存を解除',
+    savedSourceUnavailable: 'この保存項目の出典は利用できません。',
   },
   merchantsOps: {
     title: 'マーチャント', subtitle: 'マーチャントを把握・管理・分析します。',
