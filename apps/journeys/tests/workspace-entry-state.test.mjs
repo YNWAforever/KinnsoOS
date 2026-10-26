@@ -55,10 +55,114 @@ test('active creator without a published profile can author and is not told the 
  assert.doesNotMatch(h.text(), /profile is live|Your profile is live/i);
  assert.match(h.text(), /Start with your first authored route/);
  assert.equal(h.find('a', 'Create guide')?.props.href, '/en/studio/guides/new');
+ assert.ok(h.find('button', 'Review and confirm creator profile'));
+ assert.equal(h.find('button', 'Confirm creator profile'), undefined);
  const zh = await workspaceHarness('CreatorWorkspace', {
   request: async (url) => url === '/api/creator/profile' ? { ok: true, data: profile } : { ok: true, data: { items: [], nextCursor: null } },
   creatorMissions: { list: async () => ({ ok: true, data: { items: [], nextCursor: null } }) },
  }, { path: 'studio', locale: 'zh-HK' });
  assert.match(zh.text(), /尚未有已發布的創作者檔案/);
  assert.equal(zh.find('a', '建立攻略')?.props.href, '/zh-HK/studio/guides/new');
+ assert.ok(zh.find('button', '核對並確認創作者檔案'));
+ assert.equal(zh.find('button', '確認創作者檔案'), undefined);
+});
+
+const unpublishedProfile = { step: 'done', profileReady: false, profilePublished: false, profile: { bio: 'Draft bio', niches: ['Walking'], content_pillars: [], tone: [], languages: ['en'] }, handles: [], jobStatus: null };
+function studioPorts(calls, profile = unpublishedProfile) {
+ return {
+  request: async (url, method, body) => {
+   calls.push({ url, method: method ?? 'GET', body });
+   if (url === '/api/creator/profile' && method === 'POST') return { ok: true, data: { status: 'active' } };
+   if (url === '/api/creator/profile') return { ok: true, data: profile };
+   return { ok: true, data: { items: [], nextCursor: null } };
+  },
+  creatorMissions: { list: async () => ({ ok: true, data: { items: [], nextCursor: null } }) },
+ };
+}
+test('unpublished banner opens confirm; checkbox and request id still gate it; active status alone does not mark done', async () => {
+ const calls = [];
+ const h = await workspaceHarness('CreatorWorkspace', studioPorts(calls), { path: 'studio/guides', locale: 'en' });
+ assert.match(h.text(), /No published creator profile is on file/);
+ assert.equal(calls.filter(call => call.method === 'POST').length, 0, 'step done from an active row must not confirm');
+ assert.equal(h.find('button', 'Confirm creator profile'), undefined);
+ h.find('button', 'Review and confirm creator profile').props.onClick();
+ h.render();
+ assert.ok(h.find('button', 'Confirm creator profile'));
+ assert.equal(h.find('a', 'Create guide'), undefined);
+ const confirm = h.find('button', 'Confirm creator profile');
+ assert.equal(confirm.props.disabled, true);
+ await confirm.props.onClick();
+ h.render();
+ assert.equal(calls.filter(call => call.method === 'POST').length, 0);
+ assert.match(h.text(), /No published creator profile is on file/);
+ h.field('I have reviewed this profile and confirm publication.').props.onChange({ target: { checked: true } });
+ h.render();
+ const ready = h.find('button', 'Confirm creator profile');
+ assert.equal(ready.props.disabled, false);
+ await ready.props.onClick();
+ h.render();
+ const posts = calls.filter(call => call.method === 'POST');
+ assert.equal(posts.length, 1);
+ assert.equal(posts[0].url, '/api/creator/profile');
+ assert.equal(posts[0].body.confirmed, true);
+ assert.match(posts[0].body.requestId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+ assert.equal(posts[0].body.profile.bio, 'Draft bio');
+ assert.doesNotMatch(h.text(), /No published creator profile is on file/);
+ assert.equal(h.find('button', 'Review and confirm creator profile'), undefined);
+ assert.ok(h.find('a', 'Create guide'));
+});
+test('leaving the confirm form does not treat an active account as a published profile', async () => {
+ const calls = [];
+ const h = await workspaceHarness('CreatorWorkspace', studioPorts(calls), { path: 'studio/guides', locale: 'en' });
+ h.find('button', 'Review and confirm creator profile').props.onClick();
+ h.render();
+ h.field('I have reviewed this profile and confirm publication.').props.onChange({ target: { checked: true } });
+ h.render();
+ h.find('button', 'Back to guides').props.onClick();
+ h.render();
+ assert.equal(calls.filter(call => call.method === 'POST').length, 0);
+ assert.match(h.text(), /No published creator profile is on file/);
+ assert.equal(h.find('button', 'Confirm creator profile'), undefined);
+ assert.ok(h.find('button', 'Review and confirm creator profile'));
+ assert.ok(h.find('a', 'Create guide'));
+});
+test('zh-HK unpublished banner opens the same confirm form', async () => {
+ const calls = [];
+ const h = await workspaceHarness('CreatorWorkspace', studioPorts(calls), { path: 'studio/guides', locale: 'zh-HK' });
+ assert.match(h.text(), /尚未有已發布的創作者檔案/);
+ h.find('button', '核對並確認創作者檔案').props.onClick();
+ h.render();
+ assert.equal(h.find('button', '確認創作者檔案').props.disabled, true);
+ h.field('我已核對此檔案並確認發布。').props.onChange({ target: { checked: true } });
+ h.render();
+ await h.find('button', '確認創作者檔案').props.onClick();
+ h.render();
+ const post = calls.find(call => call.method === 'POST');
+ assert.equal(post.url, '/api/creator/profile');
+ assert.equal(post.body.confirmed, true);
+ assert.match(post.body.requestId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+ assert.doesNotMatch(h.text(), /尚未有已發布的創作者檔案/);
+});
+test('a profile that is already on file does not open confirm, and an in-progress confirm still needs the checkbox', async () => {
+ const publishedCalls = [];
+ const published = await workspaceHarness('CreatorWorkspace', studioPorts(publishedCalls, { ...unpublishedProfile, profilePublished: true }), { path: 'studio/guides', locale: 'en' });
+ assert.equal(published.find('button', 'Review and confirm creator profile'), undefined);
+ assert.doesNotMatch(published.text(), /No published creator profile is on file/);
+ assert.equal(publishedCalls.filter(call => call.method === 'POST').length, 0);
+ const calls = [];
+ const reviewing = await workspaceHarness('CreatorWorkspace', studioPorts(calls, { ...unpublishedProfile, step: 'review', profileReady: true }), { path: 'studio/guides', locale: 'en' });
+ assert.equal(reviewing.find('button', 'Review and confirm creator profile'), undefined);
+ assert.equal(reviewing.find('button', 'Confirm creator profile').props.disabled, true);
+ await reviewing.find('button', 'Confirm creator profile').props.onClick();
+ reviewing.render();
+ assert.equal(calls.filter(call => call.method === 'POST').length, 0);
+ reviewing.field('I have reviewed this profile and confirm publication.').props.onChange({ target: { checked: true } });
+ reviewing.render();
+ await reviewing.find('button', 'Confirm creator profile').props.onClick();
+ reviewing.render();
+ assert.equal(calls.filter(call => call.method === 'POST').length, 1);
+ assert.equal(calls.find(call => call.method === 'POST').body.confirmed, true);
+ assert.match(calls.find(call => call.method === 'POST').body.requestId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
+ assert.doesNotMatch(reviewing.text(), /No published creator profile is on file/);
+ assert.ok(reviewing.find('a', 'Create guide'));
 });
