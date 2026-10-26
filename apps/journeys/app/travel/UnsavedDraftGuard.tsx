@@ -8,7 +8,7 @@ type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;isNaviga
 const NavigationContext=createContext<API|null>(null);
 export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  const router=useRouter(),pathname=usePathname(),zh=pathname?.startsWith('/zh-HK');const t=(en:string,cn:string)=>zh?cn:en;
- const registered=useRef<Registered|null>(null),pending=useRef<Pending|null>(null),sequence=useRef(0);
+ const registered=useRef<Registered|null>(null),pending=useRef<Pending|null>(null),restoringOwner=useRef<symbol|null>(null),sequence=useRef(0);
  const [shown,setShown]=useState(false),[saving,setSaving]=useState(false),[message,setMessage]=useState(''),[,refresh]=useState(0);
  const cancel=useCallback(()=>{sequence.current++;pending.current=null;setShown(false);setSaving(false);setMessage('');},[]);
  const register=useCallback((id:symbol,get:()=>Guard)=>{registered.current={id,get};return()=>{if(registered.current?.id===id){registered.current=null;if(pending.current?.owner===id)cancel();}};},[cancel]);
@@ -20,7 +20,7 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   sequence.current++;pending.current={owner:current.id,scopeKey:state.scopeKey,run};setMessage('');setSaving(false);setShown(true);
  },[]);
  const requestNavigation=useCallback((destination:string)=>{const safe=safeAppDestination(destination);if(safe)request(safe,()=>router.push(safe));},[request,router]);
- const isNavigationPending=useCallback((id:symbol)=>pending.current?.owner===id,[]);
+ const isNavigationPending=useCallback((id:symbol)=>pending.current?.owner===id||restoringOwner.current===id,[]);
  const api=useMemo(()=>({register,changed,isNavigationPending,requestNavigation}),[register,changed,isNavigationPending,requestNavigation]);
  useEffect(()=>{
   const click=(event:MouseEvent)=>{
@@ -58,6 +58,7 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
    if(trackHash())return;
    const entry=event.state?.[key]??history.state?.[key];
    if(entry?.session!==session||!Number.isInteger(entry.index)){
+    restoringOwner.current=null;
     const state=registered.current?.get();
     if(!sameRoute()&&(state?.dirty||state?.busy)){
      event.stopImmediatePropagation();
@@ -70,27 +71,30 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
      requestNavigation(destination);return;
     }
     // Restart tracking after a clean traversal outside our known history chain.
-    session=crypto.randomUUID();position=0;
+    session=crypto.randomUUID();position=0;restored=null;
     replace.call(history,stamp(history.state,position),'');sourceURL=location.href;sourceState=history.state;return;
    }
    const target=entry.index,delta=target-position;
    if(restored){
     event.stopImmediatePropagation();
     if(delta){history.go(-delta);return;}
-    const resume=restored;restored=null;resume();return;
+    const resume=restored;restored=null;restoringOwner.current=null;resume();return;
    }
    if(approved!==null){const allowed=approved===target;approved=null;if(allowed){position=target;sourceURL=location.href;sourceState=history.state;return;}}
    const state=registered.current?.get();
    if(!delta||sameRoute()||(!state?.dirty&&!state?.busy)){position=target;sourceURL=location.href;sourceState=history.state;return;}
    event.stopImmediatePropagation();
    const destination=location.pathname+location.search+location.hash;
+   // Block save canonicalization during the asynchronous source restoration,
+   // before request() can open the leave dialog.
+   restoringOwner.current=registered.current?.id??null;
    restored=()=>request(destination,()=>{approved=target;history.go(delta);});
    history.go(-delta);
   };
   window.addEventListener('popstate',pop,true);window.addEventListener('hashchange',trackHash);
   // Next can retain a bound wrapper during StrictMode cleanup. Retired
   // wrappers must become transparent so they cannot overwrite the new stamp.
-  return()=>{active=false;restored=null;window.removeEventListener('popstate',pop,true);window.removeEventListener('hashchange',trackHash);if(history.pushState===wrappedPush)history.pushState=push;if(history.replaceState===wrappedReplace)history.replaceState=replace;};
+  return()=>{active=false;restored=null;restoringOwner.current=null;window.removeEventListener('popstate',pop,true);window.removeEventListener('hashchange',trackHash);if(history.pushState===wrappedPush)history.pushState=push;if(history.replaceState===wrappedReplace)history.replaceState=replace;};
  },[request,requestNavigation]);
  async function saveAndLeave(){
   const intent=pending.current,current=registered.current;if(!intent||!current||saving)return;

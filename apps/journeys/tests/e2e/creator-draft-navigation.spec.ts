@@ -17,7 +17,7 @@ test.beforeAll(async()=>{
   import{usePathname}from'next/navigation';
   function Device(){useUnsavedDraftGuard({dirty:true,busy:false,scopeKey:'device',saveLatest:async()=>true});return <a href="/en/explore">Leave device editor</a>}
   function LeaveAction(){const leave=useDraftNavigation();return <button onClick={()=>leave('/en/explore')}>Leave through action</button>}
-  function App(){const path=usePathname(),locale=path.startsWith('/zh-HK')?'zh-HK':'en';return <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:p=>'/'+locale+'/'+p}}><UnsavedDraftNavigationProvider>{location.search==='?guest'?<GuestPlanner guide={{id:'guest-guide',version:1,title:'Owned device route',days:[{offset:0,title:'Day',stops:[{title:'Owned stop',description:'Owned source',startMinuteOfDay:null,durationMinutes:null}]}]}}/>:location.search==='?device'?<Device/>:(path.endsWith('/edit')||path.endsWith('/new'))?<><CreatorEditor key={path} path={path.split('/').slice(2).join('/')}/><LeaveAction/></>:<><h1>Guide list</h1><Link href={'/'+locale+'/studio/guides/${id}/edit'}>Open editor</Link></>}</UnsavedDraftNavigationProvider></AppContext.Provider>}
+  function App(){const path=usePathname(),locale=path.startsWith('/zh-HK')?'zh-HK':'en';return <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:p=>'/'+locale+'/'+p}}><UnsavedDraftNavigationProvider>{location.search==='?guest'?<GuestPlanner guide={{id:'guest-guide',version:1,title:'Owned device route',days:[{offset:0,title:'Day',stops:[{title:'Owned stop',description:'Owned source',startMinuteOfDay:null,durationMinutes:null}]}]}}/>:location.search==='?device'?<Device/>:(path.endsWith('/edit')||path.endsWith('/new'))?<><CreatorEditor key={path} path={path.split('/').slice(2).join('/')}/><LeaveAction/></>:<><h1>Guide list</h1><Link href={'/'+locale+'/studio/guides/${id}/edit'}>Open editor</Link><Link href={'/'+locale+'/studio/guides/new'}>Open new editor</Link></>}</UnsavedDraftNavigationProvider></AppContext.Provider>}
   // Next installs parent history wrappers in a passive effect and restores bound
   // methods on cleanup. StrictMode must not leave an obsolete guard in that chain.
   function EarlyHistoryWrite(){useEffect(()=>{history.replaceState(null,'',location.href);window.earlyHistoryWritten=true;},[]);return null;}
@@ -71,7 +71,7 @@ for(const locale of ['en','zh-HK']){
   const editorURL='http://127.0.0.1:3491/'+locale+'/studio/guides/'+(isNew?'new':id+'/edit');
   if(historyFixture){
    await page.goto('http://127.0.0.1:3491/'+locale+'/studio/guides');
-   await page.getByRole('link',{name:'Open editor',exact:true}).click();
+   await page.getByRole('link',{name:isNew?'Open new editor':'Open editor',exact:true}).click();
    await expect(page.getByTestId('creator-editor')).toBeVisible();
    await page.evaluate(()=>{history.pushState({fixture:'forward'},'','/en/explore');dispatchEvent(new PopStateEvent('popstate'));});
    await expect(page.getByTestId('creator-editor')).toHaveCount(0);
@@ -145,16 +145,49 @@ for(const locale of ['en','zh-HK']){
   }finally{release();}
  });
 
+ for(const direction of ['back','forward'] as const)for(const newerEdits of [false,true])test(`autosave cannot canonicalize during ${direction} restoration (${locale}, newerEdits=${newerEdits})`,async({page})=>{
+  let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
+  const h=await fixture(page,async()=>{received();await held;},true,true);
+  try{
+   await h.title.fill('Saved during restoration');await page.clock.runFor(900);await started;
+   if(newerEdits)await h.title.fill('Newer edits during restoration');
+   // Hold the guard's asynchronous source restoration while the real pop has
+   // already happened. A save acknowledgement must not rewrite that entry.
+   await page.evaluate(direction=>{
+    const go=history.go.bind(history),fixture=window as any;fixture.correction=null;
+    history.go=delta=>{fixture.correction=delta;};
+    fixture.restoreGo=()=>{history.go=go;};fixture.releaseCorrection=()=>{fixture.restoreGo();go(fixture.correction);};
+    if(direction==='back')history.back();else history.forward();
+   },direction);
+   await expect.poll(()=>page.evaluate(()=>(window as any).correction!==null)).toBe(true);
+   const interceptedURL=page.url();expect(interceptedURL).toBe('http://127.0.0.1:3491/'+(direction==='back'?locale+'/studio/guides':'en/explore'));
+   release();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(newerEdits?label('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。'):label('Draft saved.','草稿已保存。'));
+   await expect(page).toHaveURL(interceptedURL);
+   await page.evaluate(()=>(window as any).releaseCorrection());
+   if(newerEdits){
+    await expect(h.dialog).toBeVisible();await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/new$'));
+    await h.dialog.getByRole('button',{name:label('Continue editing','繼續編輯'),exact:true}).click();
+    await expect(h.title).toHaveValue('Newer edits during restoration');
+    await page.clock.runFor(900);await expect(page).toHaveURL('http://127.0.0.1:3491/'+locale+'/studio/guides/'+h.draft().id+'/edit');
+    await expect(h.title).toHaveValue('Newer edits during restoration');expect(h.commands).toHaveLength(2);
+   }else{
+    await expect(page.getByRole('heading',{name:'Guide list',exact:true})).toBeVisible();
+    await expect(h.dialog).not.toBeVisible();await expect(page).toHaveURL(interceptedURL);expect(h.commands).toHaveLength(1);
+   }
+  }finally{release();await page.evaluate(()=>(window as any).restoreGo?.()).catch(()=>{});}
+ });
+
  test(`null history writes retain router and caller state (${locale})`,async({page})=>{
   await page.addInitScript(()=>{(window as any).skipFrameworkHistory=true;history.replaceState({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'router-tree'}},'');});
   const h=await fixture(page,undefined,true);
   await page.evaluate(()=>{
-   history.replaceState({...history.state,opaque:{retained:true}},'');
+   history.replaceState({...history.state,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'latest-router-tree'},opaque:{retained:true}},'');
+   history.replaceState({caller:'retained'},'');
    // Framework wrapping is disabled: the guard must preserve router and
    // caller state even when null is passed straight to its wrappers.
    history.replaceState(null,'');history.pushState(null,'',location.href+'#state-check');
   });
-  expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque}))).toEqual({marker:true,tree:{fixture:'router-tree'},opaque:{retained:true}});
+  expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque,caller:history.state.caller}))).toEqual({marker:true,tree:{fixture:'latest-router-tree'},opaque:{retained:true},caller:'retained'});
   await expect(h.title).toHaveValue('Saved authored title');
  });
 
