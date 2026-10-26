@@ -32,7 +32,7 @@ function editor(){
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
  function title(){return elements().find(e=>e.type==='label'&&e.props.children?.[0]==='Guide title').props.children[1];}
  render();render();
- return {render,writes,historyWrites,setLeaving(value){leaving=value;},autosave(){const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();},get guard(){return guard;},get title(){return title().props.value;},edit(value){title().props.onChange({target:{value}});render();},click(label){return elements().find(e=>e.type==='button'&&e.props.children===label).props.onClick();},
+ return {render,writes,historyWrites,setLeaving(value){leaving=value;},continueEditing(){leaving=false;guard.onContinueEditing?.();render();},autosave(){const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();},get guard(){return guard;},get title(){return title().props.value;},edit(value){title().props.onChange({target:{value}});render();},click(label){return elements().find(e=>e.type==='button'&&e.props.children===label).props.onClick();},
   ack(index=0,result){const write=writes[index];write.resolve(result??{ok:true,data:{id:write.args[0],revision:index+1,publishedVersion:0,sourceChanged:false,status:'draft',payload:structuredClone(write.args[3])}});},
   unload(){const event={prevented:false,preventDefault(){this.prevented=true;}};listeners.get('beforeunload')?.(event);return event.prevented;},
   unmount(){for(const effect of effects)effect?.cleanup?.();}
@@ -84,7 +84,9 @@ for(const action of ['publish','withdraw'])test(`save-and-leave cannot replay an
  const leaving=view.guard.saveLatest();
  // A broken implementation starts another network request here and never settles.
  assert.equal(view.writes.length,count,'leaving must not publish or withdraw content');
- assert.equal(await leaving,false);assert.equal(view.guard.dirty,true);view.unmount();
+ assert.equal(await leaving,false);assert.equal(view.guard.dirty,true);
+ const urlWrites=view.historyWrites.length;view.continueEditing();
+ assert.equal(view.historyWrites.length,urlWrites,'an unresolved public action cannot remount the editor');view.unmount();
 });
 
 
@@ -101,4 +103,33 @@ for(const startsBeforeLeave of [false,true])test(`autosave keeps the new-guide U
  assert.equal(view.writes.length,1);view.ack();await new Promise(resolve=>setImmediate(resolve));view.render();
  assert.equal(view.guard.dirty,false);assert.equal(view.title,'Autosaved guide');
  assert.equal(view.historyWrites.length,0,'autosave cannot change routes while the dialog is open');view.unmount();
+});
+
+
+test('continuing after an acknowledged autosave restores the saved new-guide URL',async()=>{
+ const view=editor();view.edit('Saved while deciding');view.setLeaving(true);view.autosave();
+ view.ack();await new Promise(resolve=>setImmediate(resolve));view.render();
+ assert.equal(view.guard.dirty,false);assert.equal(view.historyWrites.length,0);
+ view.continueEditing();
+ assert.equal(view.historyWrites.length,1,'continuing must restore the acknowledged draft URL');
+ assert.equal(view.historyWrites[0][2],'/en/studio/guides/'+view.writes[0].args[0]+'/edit');
+ assert.deepEqual(view.historyWrites[0][0],{__NA:true,router:{tree:'retained'}});view.unmount();
+});
+
+test('continuing after an older autosave keeps newer edits until their own acknowledgement',async()=>{
+ const view=editor();view.edit('Earlier saved title');view.setLeaving(true);view.autosave();
+ view.edit('Newer unsaved title');view.ack();await new Promise(resolve=>setImmediate(resolve));view.render();
+ view.continueEditing();
+ assert.equal(view.historyWrites.length,0,'an older save cannot remount an editor with newer input');
+ assert.equal(view.guard.dirty,true);assert.equal(view.title,'Newer unsaved title');assert.equal(view.unload(),true);
+ view.autosave();assert.equal(view.writes.length,2);view.ack(1);await new Promise(resolve=>setImmediate(resolve));view.render();
+ assert.equal(view.guard.dirty,false);assert.equal(view.historyWrites.length,1);
+ assert.equal(view.historyWrites[0][2],'/en/studio/guides/'+view.writes[1].args[0]+'/edit');view.unmount();
+});
+
+for(const retryable of [false,true])test(`continuing after a failed autosave keeps its new-guide input (retryable=${retryable})`,async()=>{
+ const view=editor();view.edit('Unsaved after failure');view.setLeaving(true);view.autosave();
+ view.ack(0,{ok:false,code:retryable?'UNAVAILABLE':'INVALID',retryable});await new Promise(resolve=>setImmediate(resolve));view.render();
+ view.continueEditing();assert.equal(view.historyWrites.length,0);assert.equal(view.guard.dirty,true);
+ assert.equal(view.title,'Unsaved after failure');assert.equal(view.unload(),true);view.unmount();
 });

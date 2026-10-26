@@ -104,7 +104,7 @@ for(const locale of ['en','zh-HK']){
   }finally{release();}
  });
 
- for(const startsBeforeLeave of [false,true])test(`autosave acknowledgement keeps the leave dialog open (${locale}, startsBeforeLeave=${startsBeforeLeave})`,async({page})=>{
+ for(const startsBeforeLeave of [false,true])for(const choice of ['discard','continue','escape'] as const)test(`autosave acknowledgement keeps the leave dialog open (${locale}, startsBeforeLeave=${startsBeforeLeave}, choice=${choice})`,async({page})=>{
   let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
   const h=await fixture(page,async()=>{received();await held;},false,true);
   try{
@@ -115,8 +115,33 @@ for(const locale of ['en','zh-HK']){
    release();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(label('Draft saved.','草稿已保存。'));
    await expect(h.dialog).toBeVisible();await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/new$'));
    await expect(h.title).toHaveValue('Autosaved while deciding');
-   await h.dialog.getByRole('button',{name:label('Discard unsaved edits','放棄未保存修改'),exact:true}).click();
-   await expect(page.getByRole('heading',{name:'Guide list',exact:true})).toBeVisible();expect(h.commands).toHaveLength(1);
+   if(choice==='discard'){
+    await h.dialog.getByRole('button',{name:label('Discard unsaved edits','放棄未保存修改'),exact:true}).click();
+    await expect(page.getByRole('heading',{name:'Guide list',exact:true})).toBeVisible();
+   }else{
+    if(choice==='escape')await page.keyboard.press('Escape');else await h.dialog.getByRole('button',{name:label('Continue editing','繼續編輯'),exact:true}).click();
+    await expect(h.dialog).not.toBeVisible();
+    await expect(page).toHaveURL('http://127.0.0.1:3491/'+locale+'/studio/guides/'+h.draft().id+'/edit');
+    await expect(h.title).toHaveValue('Autosaved while deciding');
+    expect(await page.evaluate(()=>history.state.__NA)).toBe(true);
+    await page.reload();await expect(h.title).toHaveValue('Autosaved while deciding');
+   }
+   expect(h.commands).toHaveLength(1);
+  }finally{release();}
+ });
+
+ test(`continuing after an older autosave retains the newer creator edits (${locale})`,async({page})=>{
+  let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
+  const h=await fixture(page,async()=>{received();await held;},false,true);
+  try{
+   await h.title.fill('Earlier autosaved title');await page.clock.runFor(900);await started;
+   await h.title.fill('Newer unsaved title');await h.back();await expect(h.dialog).toBeVisible();
+   release();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(label('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。'));
+   await h.dialog.getByRole('button',{name:label('Continue editing','繼續編輯'),exact:true}).click();
+   await expect(h.title).toHaveValue('Newer unsaved title');await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/new$'));
+   await page.clock.runFor(900);await expect(page).toHaveURL('http://127.0.0.1:3491/'+locale+'/studio/guides/'+h.draft().id+'/edit');
+   await expect(h.title).toHaveValue('Newer unsaved title');expect(h.commands).toHaveLength(2);
+   await page.reload();await expect(h.title).toHaveValue('Newer unsaved title');
   }finally{release();}
  });
 
