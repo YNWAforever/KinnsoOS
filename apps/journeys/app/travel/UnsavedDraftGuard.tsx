@@ -4,7 +4,7 @@ import {usePathname,useRouter} from 'next/navigation';import {Modal} from './ui'
 import {safeAppDestination} from '../../lib/trips/draft-navigation';
 type Guard={dirty:boolean;busy:boolean;saveLatest:(isLeaving?:()=>boolean)=>Promise<boolean>;scopeKey:string;kind?:'creator'};
 type Registered={id:symbol;get:()=>Guard};type Pending={owner:symbol;scopeKey:string;run:()=>void};
-type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;requestNavigation:(destination:string)=>void};
+type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;isNavigationPending:(id:symbol)=>boolean;requestNavigation:(destination:string)=>void};
 const NavigationContext=createContext<API|null>(null);
 export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  const router=useRouter(),pathname=usePathname(),zh=pathname?.startsWith('/zh-HK');const t=(en:string,cn:string)=>zh?cn:en;
@@ -20,7 +20,8 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   sequence.current++;pending.current={owner:current.id,scopeKey:state.scopeKey,run};setMessage('');setSaving(false);setShown(true);
  },[]);
  const requestNavigation=useCallback((destination:string)=>{const safe=safeAppDestination(destination);if(safe)request(safe,()=>router.push(safe));},[request,router]);
- const api=useMemo(()=>({register,changed,requestNavigation}),[register,changed,requestNavigation]);
+ const isNavigationPending=useCallback((id:symbol)=>pending.current?.owner===id,[]);
+ const api=useMemo(()=>({register,changed,isNavigationPending,requestNavigation}),[register,changed,isNavigationPending,requestNavigation]);
  useEffect(()=>{
   const click=(event:MouseEvent)=>{
    if(event.defaultPrevented||event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
@@ -37,11 +38,11 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  // need to restore the source entry before Next's popstate listener can unmount
  // the editor. Stamp only our own position; preserve all router/user state.
  useLayoutEffect(()=>{
-  const key='__kinnsoDraftPosition',session=crypto.randomUUID();
+  const key='__kinnsoDraftPosition';let session=crypto.randomUUID();
   let sourceState=history.state;
   let active=true,position=0,sourceURL=location.href,approved:number|null=null,restored:(()=>void)|null=null;
   const push=history.pushState,replace=history.replaceState;
-  const stamp=(data:Record<string,unknown>|null,index:number)=>({...data,[key]:{session,index}});
+  const stamp=(data:Record<string,unknown>|null,index:number)=>({...history.state,...data,[key]:{session,index}});
   const wrappedPush:History['pushState']=function(this:History,data,unused,url){if(!active){push.call(this,data,unused,url);return;}push.call(this,stamp(data,position+1),unused,url);position++;sourceURL=location.href;sourceState=history.state;approved=null;};
   const wrappedReplace:History['replaceState']=function(this:History,data,unused,url){replace.call(this,active?stamp(data,position):data,unused,url);if(active){sourceURL=location.href;sourceState=history.state;}};
   replace.call(history,stamp(history.state,position),'');sourceState=history.state;
@@ -55,7 +56,23 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   };
   const pop=(event:PopStateEvent)=>{
    if(trackHash())return;
-   const entry=event.state?.[key];if(entry?.session!==session||!Number.isInteger(entry.index))return;
+   const entry=event.state?.[key]??history.state?.[key];
+   if(entry?.session!==session||!Number.isInteger(entry.index)){
+    const state=registered.current?.get();
+    if(!sameRoute()&&(state?.dirty||state?.busy)){
+     event.stopImmediatePropagation();
+     const destination=location.pathname+location.search+location.hash;
+     // An unstamped entry has no trustworthy traversal offset. Re-establish
+     // the editor entry before Next sees the pop, then navigate only on consent.
+     // This discards the unknown forward chain; old positions are now foreign.
+     session=crypto.randomUUID();position=0;approved=null;restored=null;
+     push.call(history,stamp(sourceState,position),'',sourceURL);sourceState=history.state;
+     requestNavigation(destination);return;
+    }
+    // Restart tracking after a clean traversal outside our known history chain.
+    session=crypto.randomUUID();position=0;
+    replace.call(history,stamp(history.state,position),'');sourceURL=location.href;sourceState=history.state;return;
+   }
    const target=entry.index,delta=target-position;
    if(restored){
     event.stopImmediatePropagation();
@@ -74,7 +91,7 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   // Next can retain a bound wrapper during StrictMode cleanup. Retired
   // wrappers must become transparent so they cannot overwrite the new stamp.
   return()=>{active=false;restored=null;window.removeEventListener('popstate',pop,true);window.removeEventListener('hashchange',trackHash);if(history.pushState===wrappedPush)history.pushState=push;if(history.replaceState===wrappedReplace)history.replaceState=replace;};
- },[request]);
+ },[request,requestNavigation]);
  async function saveAndLeave(){
   const intent=pending.current,current=registered.current;if(!intent||!current||saving)return;
   if(current.get().busy){setMessage(t('Saving is still in progress. Keep this editor open.','仍在保存中，請保持編輯器開啟。'));return;}
@@ -104,4 +121,5 @@ export function useUnsavedDraftGuard(state:Guard){
   const warn=(event:BeforeUnloadEvent)=>{const current=latest.current;if(current.dirty||current.busy){event.preventDefault();event.returnValue='';}};
   window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);
  },[state.dirty,state.busy]);
+ return useCallback(()=>api?.isNavigationPending(id.current)??false,[api]);
 }

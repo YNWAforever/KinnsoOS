@@ -34,7 +34,7 @@ for(const item of ['day','stop'])for(const focusState of ['control','chosen-fiel
   const blank=()=>({title:'',city:'',summary:'',content:{days:[0,2].map(offset=>({offset,title:`Day ${offset}`,stops:['First','Second'].map(description=>({title:'Same',description,placeId:null,startMinuteOfDay:null,durationMinutes:null}))}))}});
   const jsx=(type,props)=>({type,props}),module={exports:{}};
   runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},document,CSS:{escape:key=>key},requestAnimationFrame:callback=>frames.push(callback),setTimeout:()=>0,clearTimeout(){},require:name=>{
-   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
@@ -63,7 +63,7 @@ test('a non-retryable save cannot restart autosave until correction or an explic
  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},
   setTimeout:fn=>{const timer={fn,active:true};timers.push(timer);return timer;},clearTimeout:timer=>timer.active=false,
   require:name=>{
-   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{save:(...args)=>new Promise(resolve=>writes.push({args,resolve}))}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};

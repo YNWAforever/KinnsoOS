@@ -6,7 +6,7 @@ let script='',css='';
 test.beforeAll(async()=>{
  css=await readFile('app/globals.css','utf8')+'\n'+await readFile('app/travel/workbench.css','utf8')+'\n'+await readFile('app/integration/integration.css','utf8');
  const ports:Record<string,string>={
-  guard:`export const useUnsavedDraftGuard=()=>{};`,
+  guard:`export const useUnsavedDraftGuard=()=>()=>false;`,
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='en'?en:zh,href:path=>'/'+window.fixture.locale+'/'+path});`,
   session:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
   repository:`export const request=async()=>{window.fixtureReads++;return {ok:false,code:window.fixture.code,retryable:true}};`,

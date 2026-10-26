@@ -133,7 +133,7 @@ function CreatorEditor({ path }: { path: string }) {
   }
   intent.current = null; setPending(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
-  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (isNew&&latest&&!isLeaving()) window.history.replaceState(null,'',href('studio/guides/' + id + '/edit')); return latest&&!draft.sourceChanged; }
+  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (isNew&&latest&&!isLeaving()&&!isLeavePending()) window.history.replaceState(window.history.state,'',href('studio/guides/' + id + '/edit')); return latest&&!draft.sourceChanged; }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
   return false;
@@ -151,7 +151,7 @@ function CreatorEditor({ path }: { path: string }) {
  const dirty = JSON.stringify(payload) !== saved.current;
  // The delayed autosave can be cancelled by unmount. Leave only after the
  // latest edit revision is acknowledged; retrying another command is not a save.
- useUnsavedDraftGuard({kind:'creator',scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async isLeaving=>{
+ const isLeavePending=useUnsavedDraftGuard({kind:'creator',scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async isLeaving=>{
   if(intent.current&&intent.current.action!=='save')return false;
   // Changing /new to /edit here can remount the guard before it authorizes
   // the requested destination. A canceled leave keeps normal saved-URL handling.

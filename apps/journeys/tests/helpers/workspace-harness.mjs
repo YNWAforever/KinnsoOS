@@ -55,7 +55,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
     repository:'export const request=(...args)=>globalThis.__ports.request(...args);export const trips=globalThis.__ports.trips;',
     guides:'export const guides=globalThis.__ports.guides;',
     bookmarks:'export const bookmarks=globalThis.__ports.bookmarks;',
-    guideNavigation:'export const useDraftNavigation=()=>()=>{};export const useUnsavedDraftGuard=()=>{};',
+    guideNavigation:'export const useDraftNavigation=()=>()=>{};export const useUnsavedDraftGuard=()=>()=>false;',
     guideGuest:'export const GuestPlanner=()=>null;',
     missing:'export const WorkspaceServiceState=()=>null;'};
   const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation','next/image'],plugins:[{name:'boundary-ports',setup(b){

@@ -21,12 +21,15 @@ test.beforeAll(async()=>{
   // Next installs parent history wrappers in a passive effect and restores bound
   // methods on cleanup. StrictMode must not leave an obsolete guard in that chain.
   function FrameworkHistory({children}){useEffect(()=>{
+   if(window.skipFrameworkHistory)return;
    const push=history.pushState.bind(history),replace=history.replaceState.bind(history);
-   const state=data=>({...history.state,...data,__NA:true});
+   // Mirror Next's internal-write bypass: an existing __NA marker must
+   // reach the guard unchanged, rather than being repaired by this fixture.
+   const state=data=>data?.__NA||data?._N?data:{...data,__NA:history.state?.__NA,__PRIVATE_NEXTJS_INTERNALS_TREE:history.state?.__PRIVATE_NEXTJS_INTERNALS_TREE};
    history.pushState=(data,...args)=>push(state(data),...args);
    history.replaceState=(data,unused,url)=>{const before=location.pathname;replace(state(data),unused,url);if(before!==location.pathname)dispatchEvent(new PopStateEvent('popstate',{state:history.state}));};
    const pop=event=>{if(event.state&&!event.state.__NA)location.reload();};window.addEventListener('popstate',pop);
-   history.replaceState(history.state,'');
+   history.replaceState({...history.state,__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'router-tree'}},'');
    return()=>{history.pushState=push;history.replaceState=replace;window.removeEventListener('popstate',pop);};
   },[]);return children;}
   createRoot(document.getElementById('root')).render(<React.StrictMode><FrameworkHistory><App/></FrameworkHistory></React.StrictMode>);
@@ -46,11 +49,11 @@ test.beforeAll(async()=>{
 
 for(const locale of ['en','zh-HK']){
  const label=(en:string,zh:string)=>locale==='en'?en:zh;
- async function fixture(page:import('@playwright/test').Page,save?:(body:any)=>Promise<any>,historyFixture=false,isNew=false){
+ async function fixture(page:import('@playwright/test').Page,save?:(body:any)=>Promise<any>,historyFixture=false,isNew=false,prehydration=false){
   let draft={id,revision:1,publishedVersion:0,sourceChanged:false,status:'draft',payload:{title:'Saved authored title',city:'Kyoto',summary:'Authored summary',content:{days:[]}}};
   const commands:any[]=[];
   await page.route('**/*',async route=>{
-   if(route.request().isNavigationRequest())return route.fulfill({contentType:'text/html',body:'<div id="root"></div><script src="/fixture.js"></script>'});
+   if(route.request().isNavigationRequest())return route.fulfill({contentType:'text/html',body:'<div id="root"></div><script>window.nativeHistory={push:history.pushState.bind(history),replace:history.replaceState.bind(history)};if(location.hash==="#prehydration"){history.replaceState(null,"","/'+locale+'/studio/guides");history.pushState(null,"","/'+locale+'/studio/guides/'+id+'/edit");}</script><script src="/fixture.js"></script>'});
    if(new URL(route.request().url()).pathname==='/fixture.js')return route.fulfill({contentType:'text/javascript',body:bundle});
    if(new URL(route.request().url()).pathname.startsWith('/api/creator/guides/')){
     if(route.request().method()==='PUT'){
@@ -71,7 +74,7 @@ for(const locale of ['en','zh-HK']){
    await page.evaluate(()=>{history.pushState({fixture:'forward'},'','/en/explore');dispatchEvent(new PopStateEvent('popstate'));});
    await expect(page.getByTestId('creator-editor')).toHaveCount(0);
    await page.goBack();
-  }else await page.goto(editorURL);
+  }else await page.goto(editorURL+(prehydration?'#prehydration':''));
   const title=page.getByLabel(label('Guide title','攻略名稱'),{exact:true});
   await expect(title).toHaveValue(isNew?'':'Saved authored title');
   // Keep the existing 900ms debounce deterministic while testing the navigation
@@ -98,6 +101,66 @@ for(const locale of ['en','zh-HK']){
    await expect(h.title).toHaveValue('Saved new guide after cancel');expect(h.commands).toHaveLength(1);
   }finally{release();}
  });
+
+ for(const startsBeforeLeave of [false,true])test(`autosave acknowledgement keeps the leave dialog open (${locale}, startsBeforeLeave=${startsBeforeLeave})`,async({page})=>{
+  let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
+  const h=await fixture(page,async()=>{received();await held;},false,true);
+  try{
+   await h.title.fill('Autosaved while deciding');
+   if(startsBeforeLeave){await page.clock.runFor(900);await started;}
+   await h.back();await expect(h.dialog).toBeVisible();
+   if(!startsBeforeLeave){await page.clock.runFor(900);await started;}
+   release();await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(label('Draft saved.','草稿已保存。'));
+   await expect(h.dialog).toBeVisible();await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/new$'));
+   await expect(h.title).toHaveValue('Autosaved while deciding');
+   await h.dialog.getByRole('button',{name:label('Discard unsaved edits','放棄未保存修改'),exact:true}).click();
+   await expect(page.getByRole('heading',{name:'Guide list',exact:true})).toBeVisible();expect(h.commands).toHaveLength(1);
+  }finally{release();}
+ });
+
+ test(`null history writes retain router and caller state (${locale})`,async({page})=>{
+  await page.addInitScript(()=>{(window as any).skipFrameworkHistory=true;history.replaceState({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'router-tree'}},'');});
+  const h=await fixture(page,undefined,true);
+  await page.evaluate(()=>{
+   history.replaceState({...history.state,opaque:{retained:true}},'');
+   // Framework wrapping is disabled: the guard must preserve router and
+   // caller state even when null is passed straight to its wrappers.
+   history.replaceState(null,'');history.pushState(null,'',location.href+'#state-check');
+  });
+  expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque}))).toEqual({marker:true,tree:{fixture:'router-tree'},opaque:{retained:true}});
+  await expect(h.title).toHaveValue('Saved authored title');
+ });
+
+ for(const target of ['unstamped','foreign','null','prehydration'] as const)for(const direction of ['back','forward'] as const){
+  if(target==='prehydration'&&direction==='forward')continue;
+  test(`dirty creator guards ${target} ${direction} entries (${locale})`,async({page})=>{
+   await page.addInitScript(()=>Object.defineProperty(window,'navigation',{value:undefined,configurable:true}));
+   const h=await fixture(page,undefined,false,false,target==='prehydration');
+   const destination='/'+locale+'/studio/guides';
+   if(target!=='prehydration'){
+    await page.evaluate(({target,direction,destination})=>{
+     const native=(window as any).nativeHistory,source=location.href;
+     const data=target==='null'?null:{__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'target-tree'},...(target==='foreign'?{__kinnsoDraftPosition:{session:'previous-mount',index:10}}:{})};
+     if(direction==='back'){
+      native.replace(data,'',destination);history.pushState({...history.state},'',source);
+     }else{
+      native.push(data,'',destination);history.back();
+     }
+    },{target,direction,destination});
+    await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/'+id+'/edit$'));
+   }
+   await h.title.fill('Keep unstamped edits');const source=page.url();
+   const traverse=()=>page.evaluate(direction=>direction==='back'?history.back():history.forward(),direction);
+   await traverse();await expect(h.dialog).toBeVisible();await expect(page).toHaveURL(source);
+   await h.dialog.getByRole('button',{name:label('Continue editing','繼續編輯'),exact:true}).click();
+   await expect(h.title).toHaveValue('Keep unstamped edits');expect(h.commands).toHaveLength(0);
+   // The recovered source has the intercepted destination immediately behind it.
+   await page.evaluate(()=>history.back());await expect(h.dialog).toBeVisible();
+   await h.dialog.getByRole('button',{name:label('Save and leave','保存後離開'),exact:true}).click();
+   await expect(page).toHaveURL(new RegExp(destination+'$'));await expect(page.getByTestId('creator-editor')).toHaveCount(0);
+   expect(h.commands).toHaveLength(1);expect(h.draft().payload.title).toBe('Keep unstamped edits');
+  });
+ }
 
  test(`creator navigation keeps edits on cancel and explicitly discards only unsaved changes (${locale})`,async({page})=>{
   const h=await fixture(page);await h.title.fill('Unsaved authored title');await h.back();await expect(h.dialog).toBeVisible();

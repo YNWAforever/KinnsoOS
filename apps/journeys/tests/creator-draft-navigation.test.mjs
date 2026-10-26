@@ -11,18 +11,18 @@ const compiled=await transform(source+'\nexport {CreatorEditor};',{loader:'tsx',
 // Match the existing editor tests: run the actual component and command handler,
 // holding only transport acknowledgements and React's rendering scheduler.
 function editor(){
- const states=[],refs=[],effects=[],writes=[],listeners=new Map();let cursor=0,tree,guard;
+ const states=[],refs=[],effects=[],writes=[],historyWrites=[],timers=new Map(),listeners=new Map();let cursor=0,tree,guard,leaving=false;
  const blank=()=>({title:'',city:'',summary:'',content:{days:[{offset:0,title:'',stops:[{title:'',description:'',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}]}});
  const hooks={useId:()=>':editor:',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],v=>states[i]=typeof v==='function'?v(states[i]):v];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((v,j)=>!Object.is(v,old.deps[j])))effects[i]={work,deps,cleanup:old?.cleanup,pending:true};}};
  const jsx=(type,props)=>({type,props}),module={exports:{}};
  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,
-  window:{history:{replaceState(){}},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:(name,fn)=>{if(listeners.get(name)===fn)listeners.delete(name);}},
-  setTimeout:()=>0,clearTimeout(){},require:name=>{
+  window:{history:{state:{__NA:true,router:{tree:'retained'}},replaceState(...args){historyWrites.push(args);}},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:(name,fn)=>{if(listeners.get(name)===fn)listeners.delete(name);}},
+  setTimeout:fn=>{const id=Symbol();timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id),require:name=>{
    if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='next/navigation')return{useRouter:()=>({replace(){}})};
    if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:Object.fromEntries(['save','publish','withdraw'].map(action=>[action,(...args)=>new Promise(resolve=>writes.push({action,args,resolve}))]))};
-   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard:state=>{guard=state;}};
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard:state=>{guard=state;return()=>leaving;}};
    if(name==='../../lib/creators/editor-operations')return operations;
    if(name==='../../lib/creators/handles')return{PLATFORMS:[]};
    if(name==='../../lib/trips/local-drafts'||name==='./WorkspaceServiceState'||name==='./CreatorCollaborationTasks')return{};
@@ -32,7 +32,7 @@ function editor(){
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}
  function title(){return elements().find(e=>e.type==='label'&&e.props.children?.[0]==='Guide title').props.children[1];}
  render();render();
- return {render,writes,get guard(){return guard;},get title(){return title().props.value;},edit(value){title().props.onChange({target:{value}});render();},click(label){return elements().find(e=>e.type==='button'&&e.props.children===label).props.onClick();},
+ return {render,writes,historyWrites,setLeaving(value){leaving=value;},autosave(){const pending=[...timers.values()];timers.clear();for(const fn of pending)fn();},get guard(){return guard;},get title(){return title().props.value;},edit(value){title().props.onChange({target:{value}});render();},click(label){return elements().find(e=>e.type==='button'&&e.props.children===label).props.onClick();},
   ack(index=0,result){const write=writes[index];write.resolve(result??{ok:true,data:{id:write.args[0],revision:index+1,publishedVersion:0,sourceChanged:false,status:'draft',payload:structuredClone(write.args[3])}});},
   unload(){const event={prevented:false,preventDefault(){this.prevented=true;}};listeners.get('beforeunload')?.(event);return event.prevented;},
   unmount(){for(const effect of effects)effect?.cleanup?.();}
@@ -85,4 +85,20 @@ for(const action of ['publish','withdraw'])test(`save-and-leave cannot replay an
  // A broken implementation starts another network request here and never settles.
  assert.equal(view.writes.length,count,'leaving must not publish or withdraw content');
  assert.equal(await leaving,false);assert.equal(view.guard.dirty,true);view.unmount();
+});
+
+
+test('first creator save preserves the router state during canonicalization',async()=>{
+ const view=editor();view.edit('Saved guide');const saving=view.guard.saveLatest();view.ack();await saving;
+ assert.equal(view.historyWrites.length,1);
+ assert.deepEqual(view.historyWrites[0][0],{__NA:true,router:{tree:'retained'}});view.unmount();
+});
+
+for(const startsBeforeLeave of [false,true])test(`autosave keeps the new-guide URL while leave is pending (startsBeforeLeave=${startsBeforeLeave})`,async()=>{
+ const view=editor();view.edit('Autosaved guide');
+ if(startsBeforeLeave)view.autosave();
+ view.setLeaving(true);if(!startsBeforeLeave)view.autosave();
+ assert.equal(view.writes.length,1);view.ack();await new Promise(resolve=>setImmediate(resolve));view.render();
+ assert.equal(view.guard.dirty,false);assert.equal(view.title,'Autosaved guide');
+ assert.equal(view.historyWrites.length,0,'autosave cannot change routes while the dialog is open');view.unmount();
 });
