@@ -4,9 +4,57 @@ import {readFile} from 'node:fs/promises';
 import {createContext,runInContext} from 'node:vm';
 import {transform} from 'esbuild';
 import * as operations from '../lib/creators/editor-operations.ts';
+import {safeAppDestination} from '../lib/trips/draft-navigation.ts';
 
 const source=await readFile(new URL('../app/travel/CreatorWorkspace.tsx',import.meta.url),'utf8');
 const compiled=await transform(source+'\nexport {CreatorEditor};',{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
+const guardSource=await readFile(new URL('../app/travel/UnsavedDraftGuard.tsx',import.meta.url),'utf8');
+const compiledGuard=await transform(guardSource,{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
+
+// Execute the real provider with native replacement semantics. There is no Next
+// history wrapper here to copy __NA or repair state before the guard sees it.
+function providerHistory(initial){
+ const effects=[],cleanups=[],location=new URL('https://journeys.invalid/en/studio/guides/new');
+ const history={state:structuredClone(initial),pushState:write,replaceState:write};
+ function write(data,_unused,url){this.state=structuredClone(data);if(url!=null)location.href=new URL(url,location).href;}
+ const react={createContext:()=>({Provider:'provider'}),useRef:current=>({current}),useState:initial=>[initial,()=>{}],useCallback:fn=>fn,useMemo:fn=>fn(),useInsertionEffect:fn=>effects.push(fn),useEffect:()=>{}};
+ const jsx=(type,props)=>({type,props}),module={exports:{}};
+ runInContext(compiledGuard.code,createContext({module,exports:module.exports,crypto,URL,location,history,
+  window:{history,addEventListener(){},removeEventListener(){}},require:name=>{
+   if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
+   if(name==='next/navigation')return{usePathname:()=>location.pathname,useRouter:()=>({push(){}})};
+   if(name==='./ui')return{Modal:'modal'};
+   if(name==='../../lib/trips/draft-navigation')return{safeAppDestination};
+   throw Error('Unexpected guard dependency '+name);
+  }}));
+ module.exports.UnsavedDraftNavigationProvider({children:null});
+ for(const effect of effects)cleanups.push(effect());
+ return{history,location,unmount(){for(const cleanup of cleanups)cleanup?.();}};
+}
+
+const routerState=()=>({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['en',{children:['studio',{}]}],renderedSearch:''},opaque:{retained:true}});
+function withoutDraftPosition(state){const{__kinnsoDraftPosition,...rest}=state;return structuredClone(rest);}
+
+test('provider initialization preserves the complete existing native history state',t=>{
+ const initial=routerState(),view=providerHistory(initial);t.after(()=>view.unmount());
+ assert.deepEqual(withoutDraftPosition(view.history.state),initial);
+ assert.equal(typeof view.history.state.__kinnsoDraftPosition.session,'string');
+ assert.equal(view.history.state.__kinnsoDraftPosition.index,0);
+ assert.equal(view.location.pathname,'/en/studio/guides/new');
+});
+
+for(const method of ['pushState','replaceState'])for(const [caller,data] of [['null',null],['undefined',undefined],['partial',{caller:{retained:true}}]])test(`provider ${method} preserves live router state with ${caller} caller data`,t=>{
+ const view=providerHistory(routerState());t.after(()=>view.unmount());
+ // A later router commit must win over any state captured when the provider
+ // mounted. Subsequent app writes must retain its entire opaque router tree.
+ const latest={...routerState(),__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['zh-HK',{children:['explore',{}]}],renderedSearch:'?latest'},extra:'latest'};
+ view.history.replaceState(latest,'');
+ view.history[method](data,'','/en/studio/guides/saved/edit');
+ assert.deepEqual(withoutDraftPosition(view.history.state),{...latest,...data});
+ assert.equal(view.history.state.__kinnsoDraftPosition.index,method==='pushState'?1:0);
+ assert.equal(view.location.pathname,'/en/studio/guides/saved/edit');
+ assert.deepEqual(latest,{...routerState(),__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['zh-HK',{children:['explore',{}]}],renderedSearch:'?latest'},extra:'latest'},'caller data must not be mutated');
+});
 
 // Match the existing editor tests: run the actual component and command handler,
 // holding only transport acknowledgements and React's rendering scheduler.
