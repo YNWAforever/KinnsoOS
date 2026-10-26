@@ -2,7 +2,7 @@
 import {createContext,useCallback,useContext,useLayoutEffect,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
 import {usePathname,useRouter} from 'next/navigation';import {Modal} from './ui';
 import {safeAppDestination} from '../../lib/trips/draft-navigation';
-type Guard={dirty:boolean;busy:boolean;saveLatest:()=>Promise<boolean>;scopeKey:string};
+type Guard={dirty:boolean;busy:boolean;saveLatest:()=>Promise<boolean>;scopeKey:string;kind?:'creator'};
 type Registered={id:symbol;get:()=>Guard};type Pending={owner:symbol;scopeKey:string;run:()=>void};
 type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;requestNavigation:(destination:string)=>void};
 const NavigationContext=createContext<API|null>(null);
@@ -57,11 +57,11 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   if(!ok||latest?.id!==intent.owner||latest.get().scopeKey!==intent.scopeKey){setSaving(false);setMessage(t('Latest edits were not saved. Keep editing or retry.','最新修改尚未保存，請繼續編輯或重試。'));return;}
   cancel();intent.run();
  }
- const active=registered.current?.get();
- return <NavigationContext.Provider value={api}>{children}{shown&&<div className="k-app"><Modal title={t('Unsaved device draft','未保存的裝置草稿')} onClose={cancel}><div className="k-modal-body">
-  <p>{t('Save before leaving, or discard only unsaved edits. The last saved device copy is kept.','離開前請保存，或只放棄尚未保存的修改。上次已保存的裝置副本會保留。')}</p>
+ const active=registered.current?.get(),creator=active?.kind==='creator';
+ return <NavigationContext.Provider value={api}>{children}{shown&&<div className="k-app"><Modal title={creator?t('Unsaved guide draft','未保存的攻略草稿'):t('Unsaved device draft','未保存的裝置草稿')} onClose={cancel}><div className="k-modal-body">
+  <p>{creator?t('Save your latest guide edits before leaving, or discard unsaved changes. The last confirmed server draft is kept.','離開前請保存最新攻略修改，或放棄未保存的修改。上次伺服器已確認的草稿會保留。'):t('Save before leaving, or discard only unsaved edits. The last saved device copy is kept.','離開前請保存，或只放棄尚未保存的修改。上次已保存的裝置副本會保留。')}</p>
   <div className="k-actions"><button className="k-btn primary" disabled={saving||active?.busy} onClick={()=>void saveAndLeave()}>{t('Save and leave','保存後離開')}</button><button className="k-btn" disabled={saving||active?.busy} onClick={()=>{const intent=pending.current;cancel();intent?.run();}}>{t('Discard unsaved edits','放棄未保存修改')}</button><button className="k-btn" onClick={cancel}>{t('Continue editing','繼續編輯')}</button></div>
-  <p role="status">{saving?t('Saving latest device edits…','正在保存最新裝置修改…'):message}</p>
+  <p role="status">{saving?creator?t('Saving latest guide edits…','正在保存最新攻略修改…'):t('Saving latest device edits…','正在保存最新裝置修改…'):message}</p>
  </div></Modal></div>}</NavigationContext.Provider>;
 }
 export function useDraftNavigation(){const api=useContext(NavigationContext);if(!api)throw new Error('Draft navigation provider required');return api.requestNavigation;}

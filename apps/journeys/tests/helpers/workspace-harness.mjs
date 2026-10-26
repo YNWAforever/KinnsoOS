@@ -63,7 +63,7 @@ export async function workspaceHarness(name,ports={},initial={}) {
       let path;
       if(args.path==='./ui')path='ui';
       else if(name==='GuideWorkspace'&&args.path==='./GuestPlanner')path='guideGuest';
-      else if(name==='GuideWorkspace'&&args.path==='./UnsavedDraftGuard')path='guideNavigation';
+      else if(args.path==='./UnsavedDraftGuard')path='guideNavigation';
       else if(name==='GuideWorkspace'&&args.path.endsWith('/guides/repository'))path='guides';
       else if(name==='GuideWorkspace'&&args.path.endsWith('/bookmarks/repository'))path='bookmarks';
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';
