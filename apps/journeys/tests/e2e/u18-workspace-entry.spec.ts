@@ -6,6 +6,7 @@ let script='',css='';
 test.beforeAll(async()=>{
  css=await readFile('app/globals.css','utf8')+'\n'+await readFile('app/travel/workbench.css','utf8')+'\n'+await readFile('app/integration/integration.css','utf8');
  const ports:Record<string,string>={
+  guard:`export const useUnsavedDraftGuard=()=>{};`,
   ui:`export const useApp=()=>({locale:window.fixture.locale,t:(en,zh)=>window.fixture.locale==='en'?en:zh,href:path=>'/'+window.fixture.locale+'/'+path});`,
   session:`export const subscribeAccountInvalidation=()=>()=>{};export const synchronizeAccountCache=async()=>{};export const readLocalWorkspaceRecovery=async()=>null;export const saveLocalWorkspaceRecovery=async()=>{};export const clearLocalWorkspaceRecovery=async()=>{};export const releaseLocalWorkspaceRecovery=async()=>{};export const completeLocalWorkspaceRecovery=async()=>{};`,
   repository:`export const request=async()=>{window.fixtureReads++;return {ok:false,code:window.fixture.code,retryable:true}};`,
@@ -18,7 +19,7 @@ test.beforeAll(async()=>{
  const f=window.fixture;window.fixtureReads=0;
  createRoot(document.getElementById('fixture')).render(f.kind==='creator'?<CreatorWorkspace path="studio/guides" actorId={f.actorId} enabled={f.enabled}/>:f.kind==='collaborations'?<CreatorMissionsWorkspace path="studio/outcomes" actorId={f.actorId} enabled={f.enabled}/>:f.kind==='earnings'?<CreatorEarningsWorkspace actorId={f.actorId} enabled={f.enabled}/>:<MerchantWorkspace actorId={f.actorId} enabled={f.enabled}/>);
  `,loader:'tsx',resolveDir:resolve('.')},bundle:true,write:false,platform:'browser',format:'iife',jsx:'automatic',plugins:[{name:'entry-boundaries',setup(b){
-  b.onResolve({filter:/.*/},args=>{const key=args.path==='./ui'?'ui':args.path.endsWith('/trips/local-drafts')?'session':args.path.endsWith('/trips/repository')?'repository':args.path==='next/link'?'link':args.path==='next/navigation'?'router':null;return key?{path:key,namespace:'port'}:null;});
+  b.onResolve({filter:/.*/},args=>{const key=args.path==='./UnsavedDraftGuard'?'guard':args.path==='./ui'?'ui':args.path.endsWith('/trips/local-drafts')?'session':args.path.endsWith('/trips/repository')?'repository':args.path==='next/link'?'link':args.path==='next/navigation'?'router':null;return key?{path:key,namespace:'port'}:null;});
   b.onLoad({filter:/.*/,namespace:'port'},args=>({contents:ports[args.path],loader:'js'}));
  }}]});script=result.outputFiles[0].text;
 });

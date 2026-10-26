@@ -2,16 +2,13 @@
 import {createContext,useCallback,useContext,useLayoutEffect,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
 import {usePathname,useRouter} from 'next/navigation';import {Modal} from './ui';
 import {safeAppDestination} from '../../lib/trips/draft-navigation';
-type Guard={dirty:boolean;busy:boolean;saveLatest:()=>Promise<boolean>;scopeKey:string;kind?:'creator'};
+type Guard={dirty:boolean;busy:boolean;saveLatest:(isLeaving?:()=>boolean)=>Promise<boolean>;scopeKey:string;kind?:'creator'};
 type Registered={id:symbol;get:()=>Guard};type Pending={owner:symbol;scopeKey:string;run:()=>void};
 type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;requestNavigation:(destination:string)=>void};
 const NavigationContext=createContext<API|null>(null);
-// Public browser Navigation API; no Next router/history implementation state.
-type TraverseEvent=Event&{navigationType:string;destination:{url:string;key:string};canIntercept:boolean};
-type NavigationAPI={addEventListener:(name:string,fn:(event:TraverseEvent)=>void)=>void;removeEventListener:(name:string,fn:(event:TraverseEvent)=>void)=>void;traverseTo:(key:string)=>{finished:Promise<unknown>}};
 export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  const router=useRouter(),pathname=usePathname(),zh=pathname?.startsWith('/zh-HK');const t=(en:string,cn:string)=>zh?cn:en;
- const registered=useRef<Registered|null>(null),pending=useRef<Pending|null>(null),sequence=useRef(0),bypass=useRef<string|null>(null);
+ const registered=useRef<Registered|null>(null),pending=useRef<Pending|null>(null),sequence=useRef(0);
  const [shown,setShown]=useState(false),[saving,setSaving]=useState(false),[message,setMessage]=useState(''),[,refresh]=useState(0);
  const cancel=useCallback(()=>{sequence.current++;pending.current=null;setShown(false);setSaving(false);setMessage('');},[]);
  const register=useCallback((id:symbol,get:()=>Guard)=>{registered.current={id,get};return()=>{if(registered.current?.id===id){registered.current=null;if(pending.current?.owner===id)cancel();}};},[cancel]);
@@ -34,24 +31,54 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
    event.preventDefault();event.stopPropagation();requestNavigation(safe);
   };
   document.addEventListener('click',click,true);
-  const navigation=(window as Window&{navigation?:NavigationAPI}).navigation;
-  const traverse=(event:TraverseEvent)=>{
-   if(event.navigationType!=='traverse')return;
-   if(bypass.current===event.destination.key){bypass.current=null;return;}
-   const state=registered.current?.get();if(!state?.dirty&&!state?.busy)return;
-   // Non-cancelable/older browsers retain the existing native unload warning.
-   if(!event.cancelable)return;
-   const url=new URL(event.destination.url);if(url.origin!==location.origin)return;
-   const safe=safeAppDestination(url.pathname+url.search+url.hash);if(!safe)return;
-   event.preventDefault();request(safe,()=>{bypass.current=event.destination.key;navigation!.traverseTo(event.destination.key).finished.catch(()=>{bypass.current=null;});});
-  };
-  navigation?.addEventListener('navigate',traverse);
-  return()=>{document.removeEventListener('click',click,true);navigation?.removeEventListener('navigate',traverse);};
+  return()=>document.removeEventListener('click',click,true);
  },[request,requestNavigation]);
+ // beforeunload does not run for same-document Back/Forward. We
+ // need to restore the source entry before Next's popstate listener can unmount
+ // the editor. Stamp only our own position; preserve all router/user state.
+ useLayoutEffect(()=>{
+  const key='__kinnsoDraftPosition',session=crypto.randomUUID();
+  let sourceState=history.state;
+  let active=true,position=0,sourceURL=location.href,approved:number|null=null,restored:(()=>void)|null=null;
+  const push=history.pushState,replace=history.replaceState;
+  const stamp=(data:Record<string,unknown>|null,index:number)=>({...data,[key]:{session,index}});
+  const wrappedPush:History['pushState']=function(this:History,data,unused,url){if(!active){push.call(this,data,unused,url);return;}push.call(this,stamp(data,position+1),unused,url);position++;sourceURL=location.href;sourceState=history.state;approved=null;};
+  const wrappedReplace:History['replaceState']=function(this:History,data,unused,url){replace.call(this,active?stamp(data,position):data,unused,url);if(active){sourceURL=location.href;sourceState=history.state;}};
+  replace.call(history,stamp(history.state,position),'');sourceState=history.state;
+  history.pushState=wrappedPush;history.replaceState=wrappedReplace;
+  const sameRoute=()=>{const source=new URL(sourceURL);return source.pathname+source.search===location.pathname+location.search;};
+  const trackHash=()=>{
+   const entry=history.state?.[key];
+   if(location.href===sourceURL||!sameRoute()||(entry?.session===session&&entry.index!==position))return false;
+   // Native fragment links create entries without calling pushState.
+   replace.call(history,stamp(history.state??sourceState,++position),'');sourceURL=location.href;sourceState=history.state;return true;
+  };
+  const pop=(event:PopStateEvent)=>{
+   if(trackHash())return;
+   const entry=event.state?.[key];if(entry?.session!==session||!Number.isInteger(entry.index))return;
+   const target=entry.index,delta=target-position;
+   if(restored){
+    event.stopImmediatePropagation();
+    if(delta){history.go(-delta);return;}
+    const resume=restored;restored=null;resume();return;
+   }
+   if(approved!==null){const allowed=approved===target;approved=null;if(allowed){position=target;sourceURL=location.href;sourceState=history.state;return;}}
+   const state=registered.current?.get();
+   if(!delta||sameRoute()||(!state?.dirty&&!state?.busy)){position=target;sourceURL=location.href;sourceState=history.state;return;}
+   event.stopImmediatePropagation();
+   const destination=location.pathname+location.search+location.hash;
+   restored=()=>request(destination,()=>{approved=target;history.go(delta);});
+   history.go(-delta);
+  };
+  window.addEventListener('popstate',pop,true);window.addEventListener('hashchange',trackHash);
+  // Next can retain a bound wrapper during StrictMode cleanup. Retired
+  // wrappers must become transparent so they cannot overwrite the new stamp.
+  return()=>{active=false;restored=null;window.removeEventListener('popstate',pop,true);window.removeEventListener('hashchange',trackHash);if(history.pushState===wrappedPush)history.pushState=push;if(history.replaceState===wrappedReplace)history.replaceState=replace;};
+ },[request]);
  async function saveAndLeave(){
   const intent=pending.current,current=registered.current;if(!intent||!current||saving)return;
   if(current.get().busy){setMessage(t('Saving is still in progress. Keep this editor open.','仍在保存中，請保持編輯器開啟。'));return;}
-  const ticket=++sequence.current;setSaving(true);setMessage('');let ok=false;try{ok=await current.get().saveLatest();}catch{}
+  const ticket=++sequence.current;setSaving(true);setMessage('');let ok=false;try{ok=await current.get().saveLatest(()=>ticket===sequence.current&&pending.current===intent);}catch{}
   if(ticket!==sequence.current||pending.current!==intent)return;
   const latest=registered.current;
   if(!ok||latest?.id!==intent.owner||latest.get().scopeKey!==intent.scopeKey){setSaving(false);setMessage(t('Latest edits were not saved. Keep editing or retry.','最新修改尚未保存，請繼續編輯或重試。'));return;}
