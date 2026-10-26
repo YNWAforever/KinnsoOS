@@ -9,7 +9,7 @@ let bundle:string;
 const id='11111111-1111-4111-8111-111111111111';
 test.beforeAll(async()=>{
  const result=await build({stdin:{contents:`
-  import React,{useEffect,useInsertionEffect} from 'react';import{createRoot}from'react-dom/client';import Link from 'next/link';
+  import React,{useEffect,useInsertionEffect,useLayoutEffect} from 'react';import{createRoot}from'react-dom/client';import Link from 'next/link';
   import{CreatorEditor}from'./app/travel/CreatorWorkspace';
   import{GuestPlanner}from'./app/travel/GuestPlanner';
   import{AppContext}from'./app/travel/ui';
@@ -21,6 +21,7 @@ test.beforeAll(async()=>{
   // Next installs parent history wrappers in a passive effect and restores bound
   // methods on cleanup. StrictMode must not leave an obsolete guard in that chain.
   function EarlyHistoryWrite(){useEffect(()=>{history.replaceState(null,'',location.href);window.earlyHistoryWritten=true;},[]);return null;}
+  function EarlyLayoutHistoryWrite(){useLayoutEffect(()=>{history.replaceState(null,'',location.href);window.earlyLayoutHistoryWritten=true;},[]);return null;}
   function FrameworkHistory({children}){
    useInsertionEffect(()=>{history.replaceState({...history.state,__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:history.state?.__PRIVATE_NEXTJS_INTERNALS_TREE??{fixture:'router-state'}},'');},[]);
    useEffect(()=>{
@@ -33,7 +34,7 @@ test.beforeAll(async()=>{
    history.replaceState=(data,unused,url)=>{const before=location.pathname;replace(state(data),unused,url);if(before!==location.pathname)dispatchEvent(new PopStateEvent('popstate',{state:history.state}));};
    const pop=event=>{if(event.state&&!event.state.__NA)location.reload();};window.addEventListener('popstate',pop);
    return()=>{history.pushState=push;history.replaceState=replace;window.removeEventListener('popstate',pop);};
-  },[]);return <>{location.search==='?early-history'&&<EarlyHistoryWrite/>}{children}</>;}
+  },[]);return <>{location.search==='?early-history'&&<EarlyHistoryWrite/>}{location.search==='?layout-history'&&<EarlyLayoutHistoryWrite/>}{children}</>;}
   createRoot(document.getElementById('root')).render(<React.StrictMode><FrameworkHistory><App/></FrameworkHistory></React.StrictMode>);
  `,resolveDir:fileURLToPath(new URL('../../',import.meta.url)),loader:'tsx'},bundle:true,write:false,format:'iife',jsx:'automatic',plugins:[{name:'framework-boundaries',setup(b){
   b.onResolve({filter:/^next\/(navigation|link)$/},args=>({path:args.path,namespace:'framework'}));
@@ -371,4 +372,21 @@ test('early null history replacement preserves opaque router state',async({page}
  await page.goto('http://127.0.0.1:3491/en/merchant?early-history');
  await expect.poll(()=>page.evaluate(()=>(window as any).earlyHistoryWritten)).toBe(true);
  expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE}))).toEqual({marker:true,tree:{fixture:'router-state'}});
+});
+
+
+for(const locale of ['en','zh-HK'])test(`layout-phase null history replacement preserves the pre-existing router state (${locale})`,async({page})=>{
+ await page.addInitScript(()=>history.replaceState({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'existing-router-tree'},opaque:{retained:true}},''));
+ await page.route('**/*',route=>route.fulfill({contentType:route.request().isNavigationRequest()?'text/html':'text/javascript',body:route.request().isNavigationRequest()?'<div id="root"></div><script src="/fixture.js"></script>':bundle}));
+ await page.goto('http://127.0.0.1:3491/'+locale+'/merchant?layout-history');
+ await expect.poll(()=>page.evaluate(()=>(window as any).earlyLayoutHistoryWritten)).toBe(true);
+ expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque}))).toEqual({marker:true,tree:{fixture:'existing-router-tree'},opaque:{retained:true}});
+ expect(await page.evaluate(()=>Number.isInteger(history.state.__kinnsoDraftPosition?.index))).toBe(true);
+ const source=page.url(),documentId=await page.evaluate(()=>{
+  const fixture=window as any;fixture.layoutHistoryDocument=crypto.randomUUID();
+  history.pushState(null,'','/en/explore');dispatchEvent(new PopStateEvent('popstate',{state:history.state}));
+  return fixture.layoutHistoryDocument;
+ });
+ await page.goBack();await expect(page).toHaveURL(source);
+ expect(await page.evaluate(()=>(window as any).layoutHistoryDocument)).toBe(documentId);
 });

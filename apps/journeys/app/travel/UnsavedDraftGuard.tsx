@@ -1,5 +1,5 @@
 'use client';
-import {createContext,useCallback,useContext,useLayoutEffect,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
+import {createContext,useCallback,useContext,useInsertionEffect,useLayoutEffect,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
 import {usePathname,useRouter} from 'next/navigation';import {Modal} from './ui';
 import {safeAppDestination} from '../../lib/trips/draft-navigation';
 type Guard={dirty:boolean;busy:boolean;saveLatest:()=>Promise<boolean>;scopeKey:string;kind?:'creator';onContinueEditing?:()=>void};
@@ -37,7 +37,8 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  // beforeunload does not run for same-document Back/Forward. We
  // need to restore the source entry before Next's popstate listener can unmount
  // the editor. Stamp only our own position; preserve all router/user state.
- useLayoutEffect(()=>{
+ // Install before layout effects can write null and erase Next's insertion-phase state.
+ useInsertionEffect(()=>{
   const key='__kinnsoDraftPosition';let session=crypto.randomUUID();
   let sourceState=history.state;
   let active=true,position=0,sourceURL=location.href,approved:number|null=null,restored:(()=>void)|null=null;
