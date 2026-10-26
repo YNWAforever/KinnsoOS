@@ -11,12 +11,13 @@ test.beforeAll(async()=>{
  const result=await build({stdin:{contents:`
   import React,{useEffect} from 'react';import{createRoot}from'react-dom/client';import Link from 'next/link';
   import{CreatorEditor}from'./app/travel/CreatorWorkspace';
+  import{GuestPlanner}from'./app/travel/GuestPlanner';
   import{AppContext}from'./app/travel/ui';
   import{UnsavedDraftNavigationProvider,useUnsavedDraftGuard,useDraftNavigation}from'./app/travel/UnsavedDraftGuard';
   import{usePathname}from'next/navigation';
   function Device(){useUnsavedDraftGuard({dirty:true,busy:false,scopeKey:'device',saveLatest:async()=>true});return <a href="/en/explore">Leave device editor</a>}
   function LeaveAction(){const leave=useDraftNavigation();return <button onClick={()=>leave('/en/explore')}>Leave through action</button>}
-  function App(){const path=usePathname(),locale=path.startsWith('/zh-HK')?'zh-HK':'en';return <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:p=>'/'+locale+'/'+p}}><UnsavedDraftNavigationProvider>{location.search==='?device'?<Device/>:(path.endsWith('/edit')||path.endsWith('/new'))?<><CreatorEditor key={path} path={path.split('/').slice(2).join('/')}/><LeaveAction/></>:<><h1>Guide list</h1><Link href={'/'+locale+'/studio/guides/${id}/edit'}>Open editor</Link></>}</UnsavedDraftNavigationProvider></AppContext.Provider>}
+  function App(){const path=usePathname(),locale=path.startsWith('/zh-HK')?'zh-HK':'en';return <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:p=>'/'+locale+'/'+p}}><UnsavedDraftNavigationProvider>{location.search==='?guest'?<GuestPlanner guide={{id:'guest-guide',version:1,title:'Owned device route',days:[{offset:0,title:'Day',stops:[{title:'Owned stop',description:'Owned source',startMinuteOfDay:null,durationMinutes:null}]}]}}/>:location.search==='?device'?<Device/>:(path.endsWith('/edit')||path.endsWith('/new'))?<><CreatorEditor key={path} path={path.split('/').slice(2).join('/')}/><LeaveAction/></>:<><h1>Guide list</h1><Link href={'/'+locale+'/studio/guides/${id}/edit'}>Open editor</Link></>}</UnsavedDraftNavigationProvider></AppContext.Provider>}
   // Next installs parent history wrappers in a passive effect and restores bound
   // methods on cleanup. StrictMode must not leave an obsolete guard in that chain.
   function FrameworkHistory({children}){useEffect(()=>{
@@ -195,4 +196,32 @@ test('device draft dialog retains its existing copy when no creator kind is regi
  await page.route('**/*',route=>route.fulfill({contentType:route.request().isNavigationRequest()?'text/html':'text/javascript',body:route.request().isNavigationRequest()?'<div id="root"></div><script src="/fixture.js"></script>':bundle}));
  await page.goto('http://127.0.0.1:3491/en/g/device?device');await page.getByRole('link',{name:'Leave device editor'}).click();
  await expect(page.getByRole('dialog',{name:'Unsaved device draft',exact:true})).toBeVisible();await expect(page.getByText('Save before leaving, or discard only unsaved edits. The last saved device copy is kept.',{exact:true})).toBeVisible();
+});
+
+test('real device editor retains native cross-document Back protection',async({page})=>{
+ await page.route('**/*',route=>route.fulfill({contentType:route.request().isNavigationRequest()?'text/html':'text/javascript',body:route.request().isNavigationRequest()?'<div id="root"></div><script src="/fixture.js"></script>':bundle}));
+ await page.route('**/en/device-back-fixture',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Owned prior document</h1>'}));
+ await page.goto('http://127.0.0.1:3491/en/device-back-fixture');
+ await page.goto('http://127.0.0.1:3491/en/g/device?guest');
+ await page.getByRole('button',{name:'Plan as a device-only draft',exact:true}).click();
+ await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
+ await page.getByRole('textbox',{name:'Draft private note',exact:true}).fill('Keep cross-document device note');
+ let kind='';page.once('dialog',async dialog=>{kind=dialog.type();await dialog.dismiss();});
+ await page.goBack({timeout:1500}).catch(()=>{});expect(kind).toBe('beforeunload');
+ await expect(page.getByRole('textbox',{name:'Draft private note',exact:true})).toHaveValue('Keep cross-document device note');
+ await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');
+ await page.goBack();await expect(page.getByRole('heading',{name:'Owned prior document',exact:true})).toBeVisible();
+ const notes=await page.evaluate(()=>new Promise<string[]>((resolve,reject)=>{const open=indexedDB.open('kinnso_guest_drafts_v1',1);open.onsuccess=()=>{const db=open.result,read=db.transaction('trips').objectStore('trips').getAll();read.onsuccess=()=>{resolve(read.result.map(row=>row.days[0].stops[0].travellerNote));db.close();};read.onerror=()=>reject(read.error);};open.onerror=()=>reject(open.error);}));
+ expect(notes).toEqual(['Keep cross-document device note']);
+});
+
+test('registered device guards warn on reload without editor-specific listeners',async({page})=>{
+ await page.route('**/*',route=>route.fulfill({contentType:route.request().isNavigationRequest()?'text/html':'text/javascript',body:route.request().isNavigationRequest()?'<div id="root"></div><script src="/fixture.js"></script>':bundle}));
+ await page.goto('http://127.0.0.1:3491/en/g/device?device');
+ // This guard registers in layout and has no editor-specific passive listener.
+ await page.getByRole('link',{name:'Leave device editor'}).click();
+ await page.getByRole('dialog').getByRole('button',{name:'Continue editing',exact:true}).click();
+ let kind='';page.once('dialog',async dialog=>{kind=dialog.type();await dialog.dismiss();});
+ await page.reload({timeout:1500}).catch(()=>{});expect(kind).toBe('beforeunload');
+ await expect(page.getByRole('link',{name:'Leave device editor'})).toBeVisible();
 });

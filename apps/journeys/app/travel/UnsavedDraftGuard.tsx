@@ -97,4 +97,11 @@ export function useUnsavedDraftGuard(state:Guard){
  const register=api?.register,changed=api?.changed;
  useLayoutEffect(()=>register?.(id.current,()=>latest.current),[register]);
  useLayoutEffect(()=>changed?.(),[changed,state.dirty,state.busy,state.scopeKey]);
+ // Protect native unload in layout, before any editor-specific passive effect.
+ // Clean pages keep their browser back-forward cache eligibility.
+ useLayoutEffect(()=>{
+  if(!state.dirty&&!state.busy)return;
+  const warn=(event:BeforeUnloadEvent)=>{const current=latest.current;if(current.dirty||current.busy){event.preventDefault();event.returnValue='';}};
+  window.addEventListener('beforeunload',warn);return()=>window.removeEventListener('beforeunload',warn);
+ },[state.dirty,state.busy]);
 }

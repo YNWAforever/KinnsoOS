@@ -67,9 +67,13 @@ test('programmatic bookmark sign-in protects the dirty device copy and preserves
  await page.getByRole('button',{name:'Bookmark guide',exact:true}).click();await dialog.getByRole('button',{name:'Save and leave',exact:true}).click();await page.waitForURL('**/en/sign-in?*');const next=new URL(page.url()).searchParams.get('next')!;expect(next).toContain('/en/g/'+guideId+'?bookmark=1');expect((await copies(page))[0].days[0].stops[0].travellerNote).toBe('Keep this note while bookmarking');
 });
 test('uncancelable cross-document Back has the native warning; save then Back preserves the copy',async({page})=>{
- await page.goto('/en/explore');await saved(page);await page.getByRole('textbox',{name:'Draft private note',exact:true}).fill('Keep this cross-document note');let type='';
+ // A plain owned HTML document cannot be satisfied by Next's client history.
+ const previous='/en/device-back-fixture';
+ await page.route('**'+previous,route=>route.fulfill({contentType:'text/html',body:'<!doctype html><h1>Owned prior document</h1>'}));
+ await page.goto(previous);await saved(page);await page.getByRole('textbox',{name:'Draft private note',exact:true}).fill('Keep this cross-document note');
+ await expect(page.getByTestId('guest-save-state')).toContainText('Device edits are not saved yet');let type='';
  page.once('dialog',async dialog=>{type=dialog.type();await dialog.dismiss()});await page.goBack({timeout:1500}).catch(()=>{});expect(type).toBe('beforeunload');await expect(page).toHaveURL('http://127.0.0.1:3495/en/g/'+guideId);await expect(page.getByRole('textbox',{name:'Draft private note',exact:true})).toHaveValue('Keep this cross-document note');
- await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');await page.goBack();await page.waitForURL('**/en/explore');expect((await copies(page))[0].days[0].stops[0].travellerNote).toBe('Keep this cross-document note');
+ await page.getByRole('button',{name:'Save device draft',exact:true}).click();await expect(page.getByTestId('guest-save-state')).toContainText('Device draft saved.');await page.goBack();await page.waitForURL('**'+previous);expect((await copies(page))[0].days[0].stops[0].travellerNote).toBe('Keep this cross-document note');
 });
 
 for(const labels of [
