@@ -30,6 +30,8 @@ export async function POST(request:Request) {
     // The write may have committed before its acknowledgement was lost.
     return failure('UNAVAILABLE',503);
   }
-  if(!result.error&&command.desiredState===true)await successEvent(ctx.actor,'bookmark_saved',command.requestId);
+  if(!result.error&&command.desiredState===true){
+    try{await successEvent(ctx.actor,'bookmark_saved',command.requestId)}catch{/* Optional measurement cannot change an acknowledged bookmark result. */}
+  }
   return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data});
 }
