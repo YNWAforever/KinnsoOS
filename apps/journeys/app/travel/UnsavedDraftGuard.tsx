@@ -2,7 +2,7 @@
 import {createContext,useCallback,useContext,useLayoutEffect,useEffect,useMemo,useRef,useState,type ReactNode} from 'react';
 import {usePathname,useRouter} from 'next/navigation';import {Modal} from './ui';
 import {safeAppDestination} from '../../lib/trips/draft-navigation';
-type Guard={dirty:boolean;busy:boolean;saveLatest:(isLeaving?:()=>boolean)=>Promise<boolean>;scopeKey:string;kind?:'creator';onContinueEditing?:()=>void};
+type Guard={dirty:boolean;busy:boolean;saveLatest:()=>Promise<boolean>;scopeKey:string;kind?:'creator';onContinueEditing?:()=>void};
 type Registered={id:symbol;get:()=>Guard};type Pending={owner:symbol;scopeKey:string;run:()=>void};
 type API={register:(id:symbol,get:()=>Guard)=>()=>void;changed:()=>void;isNavigationPending:(id:symbol)=>boolean;requestNavigation:(destination:string)=>void};
 const NavigationContext=createContext<API|null>(null);
@@ -42,7 +42,10 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   let sourceState=history.state;
   let active=true,position=0,sourceURL=location.href,approved:number|null=null,restored:(()=>void)|null=null;
   const push=history.pushState,replace=history.replaceState;
-  const stamp=(data:Record<string,unknown>|null,index:number)=>({...history.state,...data,[key]:{session,index}});
+  const stamp=(data:Record<string,unknown>|null|undefined,index:number)=>({
+   // Native app writes may pass null; router metadata must come from the live entry.
+   ...window.history.state,...(data??{}),[key]:{session,index},
+  });
   const wrappedPush:History['pushState']=function(this:History,data,unused,url){if(!active){push.call(this,data,unused,url);return;}push.call(this,stamp(data,position+1),unused,url);position++;sourceURL=location.href;sourceState=history.state;approved=null;};
   const wrappedReplace:History['replaceState']=function(this:History,data,unused,url){replace.call(this,active?stamp(data,position):data,unused,url);if(active){sourceURL=location.href;sourceState=history.state;}};
   replace.call(history,stamp(history.state,position),'');sourceState=history.state;
@@ -99,7 +102,7 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
  async function saveAndLeave(){
   const intent=pending.current,current=registered.current;if(!intent||!current||saving)return;
   if(current.get().busy){setMessage(t('Saving is still in progress. Keep this editor open.','仍在保存中，請保持編輯器開啟。'));return;}
-  const ticket=++sequence.current;setSaving(true);setMessage('');let ok=false;try{ok=await current.get().saveLatest(()=>ticket===sequence.current&&pending.current===intent);}catch{}
+  const ticket=++sequence.current;setSaving(true);setMessage('');let ok=false;try{ok=await current.get().saveLatest();}catch{}
   if(ticket!==sequence.current||pending.current!==intent)return;
   const latest=registered.current;
   if(!ok||latest?.id!==intent.owner||latest.get().scopeKey!==intent.scopeKey){setSaving(false);setMessage(t('Latest edits were not saved. Keep editing or retry.','最新修改尚未保存，請繼續編輯或重試。'));return;}

@@ -130,6 +130,22 @@ for(const locale of ['en','zh-HK']){
   }finally{release();}
  });
 
+ test(`a manual save acknowledged during leave keeps the dialog and editor mounted (${locale})`,async({page})=>{
+  let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
+  const h=await fixture(page,async()=>{received();await held;},false,true);
+  try{
+   await h.title.fill('Manual save during leave');
+   await page.getByRole('button',{name:label('Save draft','保存草稿'),exact:true}).click();await started;
+   await h.back();await expect(h.dialog).toBeVisible();release();
+   await expect(page.getByTestId('creator-editor').getByRole('status')).toHaveText(label('Draft saved.','草稿已保存。'));
+   await expect(h.dialog).toBeVisible();await expect(page).toHaveURL(new RegExp('/'+locale+'/studio/guides/new$'));
+   await expect(h.title).toHaveValue('Manual save during leave');
+   await h.dialog.getByRole('button',{name:label('Continue editing','繼續編輯'),exact:true}).click();
+   await expect(page).toHaveURL('http://127.0.0.1:3491/'+locale+'/studio/guides/'+h.draft().id+'/edit');
+   await page.reload();await expect(h.title).toHaveValue('Manual save during leave');expect(h.commands).toHaveLength(1);
+  }finally{release();}
+ });
+
  test(`continuing after an older autosave retains the newer creator edits (${locale})`,async({page})=>{
   let release!:()=>void,received!:()=>void;const held=new Promise<void>(r=>release=r),started=new Promise<void>(r=>received=r);
   const h=await fixture(page,async()=>{received();await held;},false,true);
@@ -177,16 +193,17 @@ for(const locale of ['en','zh-HK']){
   }finally{release();await page.evaluate(()=>(window as any).restoreGo?.()).catch(()=>{});}
  });
 
- test(`null history writes retain router and caller state (${locale})`,async({page})=>{
+ for(const caller of ['null','undefined'] as const)test(`${caller} history writes retain router and caller state (${locale})`,async({page})=>{
   await page.addInitScript(()=>{(window as any).skipFrameworkHistory=true;history.replaceState({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'router-tree'}},'');});
   const h=await fixture(page,undefined,true);
-  await page.evaluate(()=>{
+  await page.evaluate(caller=>{
    history.replaceState({...history.state,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'latest-router-tree'},opaque:{retained:true}},'');
    history.replaceState({caller:'retained'},'');
    // Framework wrapping is disabled: the guard must preserve router and
-   // caller state even when null is passed straight to its wrappers.
-   history.replaceState(null,'');history.pushState(null,'',location.href+'#state-check');
-  });
+   // caller state even when nullish data reaches its wrappers directly.
+   const data=caller==='null'?null:undefined;
+   history.replaceState(data,'');history.pushState(data,'',location.href+'#state-check');
+  },caller);
   expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque,caller:history.state.caller}))).toEqual({marker:true,tree:{fixture:'latest-router-tree'},opaque:{retained:true},caller:'retained'});
   await expect(h.title).toHaveValue('Saved authored title');
  });

@@ -133,3 +133,20 @@ for(const retryable of [false,true])test(`continuing after a failed autosave kee
  view.continueEditing();assert.equal(view.historyWrites.length,0);assert.equal(view.guard.dirty,true);
  assert.equal(view.title,'Unsaved after failure');assert.equal(view.unload(),true);view.unmount();
 });
+
+
+for(const source of ['manual','autosave','save-and-leave'])for(const cancelBeforeAck of [false,true])test(`${source} uses the live leave guard at acknowledgement (cancelBeforeAck=${cancelBeforeAck})`,async()=>{
+ const view=editor();view.edit('Saved through '+source);
+ let saving;
+ if(source==='manual')saving=view.click('Save draft');
+ else if(source==='autosave')view.autosave();
+ else {view.setLeaving(true);saving=view.guard.saveLatest();}
+ view.setLeaving(true);view.render();assert.equal(view.writes.length,1);
+ if(cancelBeforeAck){view.continueEditing();assert.equal(view.historyWrites.length,0);}
+ view.ack();if(saving)await saving;else await new Promise(resolve=>setImmediate(resolve));view.render();
+ assert.equal(view.guard.dirty,false);assert.equal(view.title,'Saved through '+source);
+ assert.equal(view.historyWrites.length,cancelBeforeAck?1:0,'a save cannot canonicalize while any leave is pending');
+ if(!cancelBeforeAck)view.continueEditing();
+ assert.equal(view.historyWrites.length,1);assert.deepEqual(view.historyWrites[0][0],{__NA:true,router:{tree:'retained'}});
+ assert.equal(view.historyWrites[0][2],'/en/studio/guides/'+view.writes[0].args[0]+'/edit');view.unmount();
+});

@@ -116,7 +116,7 @@ function CreatorEditor({ path }: { path: string }) {
   let active = true; creators.get(path.split('/')[2]).then(r => { if (!active) return; if (r.ok) accept(r.data); else setMessage(r.code === 'NOT_FOUND' ? t('Guide not found.', '找不到攻略。') : t('Could not load the draft. Refresh to retry.', '未能載入草稿，請重新整理。')); });
   return () => { active = false; };
  }, [path, isNew]);
- async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false, isLeaving:()=>boolean = ()=>false): Promise<boolean> {
+ async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false): Promise<boolean> {
   if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return false;
   const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload:currentEditor.current.payload,editRevision:editRevision.current };
   const startedLifetime = lifetime.current;
@@ -133,14 +133,15 @@ function CreatorEditor({ path }: { path: string }) {
   }
   intent.current = null; setPending(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
-  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (latest&&!isLeaving()) canonicalizeSavedGuide(); return latest&&!draft.sourceChanged; }
+  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (latest) canonicalizeSavedGuide(); return latest&&!draft.sourceChanged; }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
   return false;
  }
  function canonicalizeSavedGuide(){
-  // A canceled leave may resume after autosave was already acknowledged. Only
-  // a fully saved editor can change its URL without losing newer/uncertain input.
+  // Every save entry point uses this live guard, including the 900ms autosave.
+  // Continue editing can retry this after clearing the pending leave.
+  // Only fully acknowledged input may change the URL and remount the editor.
   if(isNew&&id&&head.current>0&&!busyRef.current&&!intent.current&&!isLeavePending()&&JSON.stringify(currentEditor.current.payload)===saved.current)
    window.history.replaceState(window.history.state,'',href('studio/guides/'+id+'/edit'));
  }
@@ -157,11 +158,9 @@ function CreatorEditor({ path }: { path: string }) {
  const dirty = JSON.stringify(payload) !== saved.current;
  // The delayed autosave can be cancelled by unmount. Leave only after the
  // latest edit revision is acknowledged; retrying another command is not a save.
- const isLeavePending=useUnsavedDraftGuard({kind:'creator',onContinueEditing:canonicalizeSavedGuide,scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async isLeaving=>{
+ const isLeavePending=useUnsavedDraftGuard({kind:'creator',onContinueEditing:canonicalizeSavedGuide,scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async()=>{
   if(intent.current&&intent.current.action!=='save')return false;
-  // Changing /new to /edit here can remount the guard before it authorizes
-  // the requested destination. A canceled leave keeps normal saved-URL handling.
-  return run('save',false,isLeaving);
+  return run('save');
  }});
  useEffect(()=>{
   const prevent=(event:BeforeUnloadEvent)=>{if(dirty||busy||pending){event.preventDefault();event.returnValue='';}};
