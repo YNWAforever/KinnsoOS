@@ -43,10 +43,18 @@ export function UnsavedDraftNavigationProvider({children}:{children:ReactNode}){
   let sourceState=history.state;
   let active=true,position=0,sourceURL=location.href,approved:number|null=null,restored:(()=>void)|null=null;
   const push=history.pushState,replace=history.replaceState;
-  const stamp=(data:Record<string,unknown>|null|undefined,index:number)=>({
-   // Native app writes may pass null; router metadata must come from the live entry.
-   ...window.history.state,...(data??{}),[key]:{session,index},
-  });
+  const stamp=(data:Record<string,unknown>|null|undefined,index:number)=>{
+   const current=window.history.state;
+   const state={...current,...(data??{}),[key]:{session,index}};
+   // Match Next's history helpers: application data must retain the live router
+   // metadata, even when it contains empty or stale reserved fields. Next's
+   // own marked writes remain authoritative when committing a new router tree.
+   if(!data?.__NA&&!data?._N){
+    if(current?.__NA)state.__NA=current.__NA;
+    if(current?.__PRIVATE_NEXTJS_INTERNALS_TREE)state.__PRIVATE_NEXTJS_INTERNALS_TREE=current.__PRIVATE_NEXTJS_INTERNALS_TREE;
+   }
+   return state;
+  };
   const wrappedPush:History['pushState']=function(this:History,data,unused,url){if(!active){push.call(this,data,unused,url);return;}push.call(this,stamp(data,position+1),unused,url);position++;sourceURL=location.href;sourceState=history.state;approved=null;};
   const wrappedReplace:History['replaceState']=function(this:History,data,unused,url){replace.call(this,active?stamp(data,position):data,unused,url);if(active){sourceURL=location.href;sourceState=history.state;}};
   replace.call(history,stamp(history.state,position),'');sourceState=history.state;

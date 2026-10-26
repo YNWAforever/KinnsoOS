@@ -56,6 +56,25 @@ for(const method of ['pushState','replaceState'])for(const [caller,data] of [['n
  assert.deepEqual(latest,{...routerState(),__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['zh-HK',{children:['explore',{}]}],renderedSearch:'?latest'},extra:'latest'},'caller data must not be mutated');
 });
 
+for(const method of ['pushState','replaceState'])for(const [caller,metadata] of [
+ ['null',{__NA:null,__PRIVATE_NEXTJS_INTERNALS_TREE:null}],
+ ['undefined',{__NA:undefined,__PRIVATE_NEXTJS_INTERNALS_TREE:undefined}],
+ ['stale',{__NA:false,__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['old-route',{}]}}],
+])test(`provider ${method} keeps router metadata when application data contains ${caller} reserved fields`,t=>{
+ const initial=routerState(),view=providerHistory(initial);t.after(()=>view.unmount());
+ const data={...metadata,caller:{retained:true}},before=structuredClone(data);
+ view.history[method](data,'','?filter=changed');
+ assert.deepEqual(withoutDraftPosition(view.history.state),{...initial,caller:{retained:true}});
+ assert.deepEqual(data,before,'history stamping must not mutate the caller');
+});
+
+for(const method of ['pushState','replaceState'])test(`provider ${method} accepts an authoritative Next router update`,t=>{
+ const view=providerHistory(routerState());t.after(()=>view.unmount());
+ const next={__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{tree:['new-route',{}],renderedSearch:'?next'}};
+ view.history[method](next,'','?next');
+ assert.deepEqual(withoutDraftPosition(view.history.state),{...routerState(),...next});
+});
+
 // Match the existing editor tests: run the actual component and command handler,
 // holding only transport acknowledgements and React's rendering scheduler.
 function editor(){

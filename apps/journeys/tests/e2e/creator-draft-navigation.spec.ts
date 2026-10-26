@@ -209,6 +209,21 @@ for(const locale of ['en','zh-HK']){
   await expect(h.title).toHaveValue('Saved authored title');
  });
 
+ for(const method of ['pushState','replaceState'] as const)test(`application ${method} cannot clear reserved router metadata (${locale})`,async({page})=>{
+  await page.addInitScript(()=>{(window as any).skipFrameworkHistory=true;history.replaceState({__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'current-router-tree'},opaque:{retained:true}},'');});
+  const h=await fixture(page,undefined,true);
+  const entries=await page.evaluate(method=>{
+   const entries=[];
+   for(const value of [null,undefined,false]){
+    history[method]({__NA:value,__PRIVATE_NEXTJS_INTERNALS_TREE:value===false?{fixture:'stale-router-tree'}:value,caller:'retained'},'',location.href);
+    entries.push({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE,opaque:history.state.opaque,caller:history.state.caller});
+   }
+   return entries;
+  },method);
+  expect(entries).toEqual(Array.from({length:3},()=>({marker:true,tree:{fixture:'current-router-tree'},opaque:{retained:true},caller:'retained'})));
+  await expect(h.title).toHaveValue('Saved authored title');
+ });
+
  for(const target of ['unstamped','foreign','null','prehydration'] as const)for(const direction of ['back','forward'] as const){
   if(target==='prehydration'&&direction==='forward')continue;
   test(`dirty creator guards ${target} ${direction} entries (${locale})`,async({page})=>{
