@@ -9,7 +9,7 @@ let bundle:string;
 const id='11111111-1111-4111-8111-111111111111';
 test.beforeAll(async()=>{
  const result=await build({stdin:{contents:`
-  import React,{useEffect} from 'react';import{createRoot}from'react-dom/client';import Link from 'next/link';
+  import React,{useEffect,useInsertionEffect} from 'react';import{createRoot}from'react-dom/client';import Link from 'next/link';
   import{CreatorEditor}from'./app/travel/CreatorWorkspace';
   import{GuestPlanner}from'./app/travel/GuestPlanner';
   import{AppContext}from'./app/travel/ui';
@@ -20,18 +20,20 @@ test.beforeAll(async()=>{
   function App(){const path=usePathname(),locale=path.startsWith('/zh-HK')?'zh-HK':'en';return <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:p=>'/'+locale+'/'+p}}><UnsavedDraftNavigationProvider>{location.search==='?guest'?<GuestPlanner guide={{id:'guest-guide',version:1,title:'Owned device route',days:[{offset:0,title:'Day',stops:[{title:'Owned stop',description:'Owned source',startMinuteOfDay:null,durationMinutes:null}]}]}}/>:location.search==='?device'?<Device/>:(path.endsWith('/edit')||path.endsWith('/new'))?<><CreatorEditor key={path} path={path.split('/').slice(2).join('/')}/><LeaveAction/></>:<><h1>Guide list</h1><Link href={'/'+locale+'/studio/guides/${id}/edit'}>Open editor</Link></>}</UnsavedDraftNavigationProvider></AppContext.Provider>}
   // Next installs parent history wrappers in a passive effect and restores bound
   // methods on cleanup. StrictMode must not leave an obsolete guard in that chain.
-  function FrameworkHistory({children}){useEffect(()=>{
+  function EarlyHistoryWrite(){useEffect(()=>{history.replaceState(null,'',location.href);window.earlyHistoryWritten=true;},[]);return null;}
+  function FrameworkHistory({children}){
+   useInsertionEffect(()=>{history.replaceState({...history.state,__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:history.state?.__PRIVATE_NEXTJS_INTERNALS_TREE??{fixture:'router-state'}},'');},[]);
+   useEffect(()=>{
    if(window.skipFrameworkHistory)return;
    const push=history.pushState.bind(history),replace=history.replaceState.bind(history);
-   // Mirror Next's internal-write bypass: an existing __NA marker must
-   // reach the guard unchanged, rather than being repaired by this fixture.
+   // Mirror Next's internal-write bypass. Insertion seeds metadata; the
+   // passive wrapper must not repair metadata erased by an earlier child.
    const state=data=>data?.__NA||data?._N?data:{...data,__NA:history.state?.__NA,__PRIVATE_NEXTJS_INTERNALS_TREE:history.state?.__PRIVATE_NEXTJS_INTERNALS_TREE};
    history.pushState=(data,...args)=>push(state(data),...args);
    history.replaceState=(data,unused,url)=>{const before=location.pathname;replace(state(data),unused,url);if(before!==location.pathname)dispatchEvent(new PopStateEvent('popstate',{state:history.state}));};
    const pop=event=>{if(event.state&&!event.state.__NA)location.reload();};window.addEventListener('popstate',pop);
-   history.replaceState({...history.state,__NA:true,__PRIVATE_NEXTJS_INTERNALS_TREE:{fixture:'router-tree'}},'');
    return()=>{history.pushState=push;history.replaceState=replace;window.removeEventListener('popstate',pop);};
-  },[]);return children;}
+  },[]);return <>{location.search==='?early-history'&&<EarlyHistoryWrite/>}{children}</>;}
   createRoot(document.getElementById('root')).render(<React.StrictMode><FrameworkHistory><App/></FrameworkHistory></React.StrictMode>);
  `,resolveDir:fileURLToPath(new URL('../../',import.meta.url)),loader:'tsx'},bundle:true,write:false,format:'iife',jsx:'automatic',plugins:[{name:'framework-boundaries',setup(b){
   b.onResolve({filter:/^next\/(navigation|link)$/},args=>({path:args.path,namespace:'framework'}));
@@ -287,4 +289,11 @@ test('registered device guards warn on reload without editor-specific listeners'
  let kind='';page.once('dialog',async dialog=>{kind=dialog.type();await dialog.dismiss();});
  await page.reload({timeout:1500}).catch(()=>{});expect(kind).toBe('beforeunload');
  await expect(page.getByRole('link',{name:'Leave device editor'})).toBeVisible();
+});
+
+test('early null history replacement preserves opaque router state',async({page})=>{
+ await page.route('**/*',route=>route.fulfill({contentType:route.request().isNavigationRequest()?'text/html':'text/javascript',body:route.request().isNavigationRequest()?'<div id="root"></div><script src="/fixture.js"></script>':bundle}));
+ await page.goto('http://127.0.0.1:3491/en/merchant?early-history');
+ await expect.poll(()=>page.evaluate(()=>(window as any).earlyHistoryWritten)).toBe(true);
+ expect(await page.evaluate(()=>({marker:history.state.__NA,tree:history.state.__PRIVATE_NEXTJS_INTERNALS_TREE}))).toEqual({marker:true,tree:{fixture:'router-state'}});
 });
