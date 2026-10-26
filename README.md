@@ -2,6 +2,8 @@
 
 One pnpm/Turborepo workspace contains the Journeys traveller frontend, the mature Kinnso site, shared services, workers, database migrations and their tests.
 
+Start with the [architecture and risk map](ARCHITECTURE.md) and the [run, test and deploy guide](docs/DEVELOPMENT.md). The guide separates credential-free checks from guarded connected acceptance.
+
 | Workspace | Purpose |
 | --- | --- |
 | `apps/journeys` | Journeys layout, traveller auth, catalog, bookmarks, trips, guide adoption, media and shares |
