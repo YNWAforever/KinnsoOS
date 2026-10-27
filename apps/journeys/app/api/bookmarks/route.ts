@@ -17,11 +17,19 @@ export async function GET(request:Request) {
 }
 export async function POST(request:Request) {
   const ctx = await apiContext(request,'bookmarks',true); if (ctx.response) return ctx.response;
+  let command:{guideId:string;desiredState:boolean;requestId:string};
   try {
     const body = object(await boundedBody(request),['guideId','desiredState','requestId']);
     if (!uuid(body.guideId) || !uuid(body.requestId) || typeof body.desiredState !== 'boolean') return failure('INVALID',400);
-    const result = await timedRpc(ctx.client,'kinnso_bookmark',{p_guide_id:body.guideId,p_desired_state:body.desiredState,p_request_id:body.requestId},ctx.actor);
-    if(!result.error&&body.desiredState===true)await successEvent(ctx.actor,'bookmark_saved',body.requestId);
-    return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data});
+    command={guideId:body.guideId,desiredState:body.desiredState,requestId:body.requestId};
   } catch { return failure('INVALID',400); }
+  let result:Awaited<ReturnType<typeof timedRpc>>;
+  try {
+    result=await timedRpc(ctx.client,'kinnso_bookmark',{p_guide_id:command.guideId,p_desired_state:command.desiredState,p_request_id:command.requestId},ctx.actor);
+  } catch {
+    // The write may have committed before its acknowledgement was lost.
+    return failure('UNAVAILABLE',503);
+  }
+  if(!result.error&&command.desiredState===true)await successEvent(ctx.actor,'bookmark_saved',command.requestId);
+  return result.error ? backendFailure(result.error) : reply({ok:true,data:result.data});
 }

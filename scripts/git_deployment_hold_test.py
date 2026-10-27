@@ -4,7 +4,7 @@ import json
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-BRANCHES = ['main', 'dependabot/github_actions/actions/setup-node-7.1.0', 'codex/audit-entry-recovery-20261022', 'codex/mobile-saved-entry-20261020', 'codex/pd-public-entry-20261022', 'codex/pd-pilot-workflows-20261022', 'codex/pd-policy-staging-preparation-20261023', 'codex/pd05-pd13-workflow-completion-20261023', 'codex/pd06-durable-share-recovery-20261023', 'codex/pd05-pd13-a0-followup-20261023', 'codex/pd16-pd17-a0-rehearsal-20261024']
+BRANCHES = ['main', 'dependabot/github_actions/actions/setup-node-7.1.0', 'codex/audit-entry-recovery-20261022', 'codex/mobile-saved-entry-20261020', 'codex/pd-public-entry-20261022', 'codex/pd-pilot-workflows-20261022', 'codex/pd-policy-staging-preparation-20261023', 'codex/pd05-pd13-workflow-completion-20261023', 'codex/pd06-durable-share-recovery-20261023', 'codex/pd05-pd13-a0-followup-20261023', 'codex/pd16-pd17-a0-rehearsal-20261024', 'codex/docs-core-flow-tests-20261025']
 CONFIGS = ['vercel.json', 'apps/journeys/vercel.json', 'apps/web/vercel.json']
 
 

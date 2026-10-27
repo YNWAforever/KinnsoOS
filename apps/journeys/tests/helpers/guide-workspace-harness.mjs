@@ -18,6 +18,7 @@ const STUBS = {
   drafts: `export const subscribeAccountInvalidation=(...a)=>globalThis.__ports.subscribeInvalidation?.(...a)??(()=>{});export const invalidateAccountViews=(...a)=>globalThis.__ports.invalidateAccount?.(...a);
    export const synchronizeAccountCache=async()=>{};
    export const readPendingAdoption=async(...a)=>globalThis.__ports.readPending?.(...a)??null;
+   export const readPendingAdoptions=async(...a)=>globalThis.__ports.readPendingAdoptions?.(...a)??[];
    export const savePendingAdoption=async(...a)=>globalThis.__ports.savePending?.(...a);
    export const clearPendingAdoption=async(...a)=>globalThis.__ports.clearPending?.(...a);
    export const readPendingCreation=async(...a)=>globalThis.__ports.readCreation?.(...a)??null;
@@ -32,10 +33,12 @@ const STUBS = {
   content: `export const PublicGuideContent=({guide})=>guide?guide.title:'';`,
   guard: `export const useDraftNavigation=()=>path=>globalThis.__ports.navigate?.(path);`,
   metrics: `export const trackPilotEvent=(...args)=>globalThis.__ports.trackPilotEvent?.(...args);`,
-  children: `export const ImportPreview=()=>null;export const RecordCapture=()=>null;export const SharePreview=()=>null;export const TripWarnings=()=>null;export const PendingAdoptionRecovery=()=>null;export const exportPrivateTrip=()=>{};`,
+  children: `export const ImportPreview=()=>null;export const RecordCapture=()=>null;export const SharePreview=()=>null;export const TripWarnings=()=>null;export const TodayItinerary=()=>null;export const PendingAdoptionRecovery=()=>null;export const TripIndexShareHolds=()=>null;export const exportPrivateTrip=()=>{};`,
 };
 
-function stubFor(specifier) {
+function stubFor(specifier, importer='', live=new Set()) {
+  if (live.has(specifier)) return null;
+  if (specifier === './repository' && String(importer).includes('/lib/trips/')) return 'trips';
   if (specifier.endsWith('/guides/repository')) return 'guides';
   if (specifier.endsWith('/guides/adoption-preview')) return 'adoption';
   if (specifier.endsWith('/bookmarks/repository')) return 'bookmarks';
@@ -46,14 +49,15 @@ function stubFor(specifier) {
   if (specifier.endsWith('/seo/PublicGuideContent')) return 'content';
   if (specifier === './UnsavedDraftGuard') return 'guard';
   if (specifier.endsWith('/telemetry/pilot-client')) return 'metrics';
-  if (['./ImportPreview','./RecordCapture','./SharePreview','./TripWarnings','./PendingAdoptionRecovery'].includes(specifier)||specifier.endsWith('/trips/export')) return 'children';
+  if (['./ImportPreview','./RecordCapture','./SharePreview','./TripWarnings','./TodayItinerary','./PendingAdoptionRecovery','./TripIndexShareHolds'].includes(specifier)||specifier.endsWith('/trips/export')) return 'children';
   return null;
 }
 
 const bundles=new Map();
-function bundle(name) {
+function bundle(name, live) {
   const file=name==='TripWorkspace'?'TripWorkspace':'GuideWorkspace';
-  if(!bundles.has(file))bundles.set(file,build({
+  const cacheKey=file+'|'+[...live].sort().join(',');
+  if(!bundles.has(cacheKey))bundles.set(cacheKey,build({
     entryPoints: [new URL('../../app/travel/'+file+'.tsx', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')],
     bundle: true, write: false, platform: 'node', format: 'cjs',
     external: ['react', 'react/jsx-runtime', 'next/link', 'next/navigation'],
@@ -61,14 +65,14 @@ function bundle(name) {
       name: 'boundary-ports',
       setup(b) {
         b.onResolve({filter: /.*/}, args => {
-          const key = stubFor(args.path);
+          const key = stubFor(args.path, args.importer, live);
           return key ? {path: key, namespace: 'stub'} : null;
         });
         b.onLoad({filter: /.*/, namespace: 'stub'}, args => ({loader: 'js', contents: STUBS[args.path]}));
       },
     }],
   }));
-  return bundles.get(file);
+  return bundles.get(cacheKey);
 }
 
 const tick = () => new Promise(resolve => setImmediate(resolve));
@@ -77,7 +81,7 @@ const tick = () => new Promise(resolve => setImmediate(resolve));
  * Renders one exported component from the real GuideWorkspace module with a
  * minimal React double, returning helpers that read the produced element tree.
  */
-export async function mount(name, props, ports, search = '') {
+export async function mount(name, props, ports, search = '', options = {}) {
   const states = [], refs = [], effects = [], listeners = new Map();
   let cursor = 0, tree, changed = false, sequence = 0;
   const noop = () => {};
@@ -108,7 +112,7 @@ export async function mount(name, props, ports, search = '') {
     crypto: {randomUUID: () => `00000000-0000-4000-8000-${String(++sequence).padStart(12, '0')}`},
     document: {visibilityState: 'visible', addEventListener: noop, removeEventListener: noop},
     navigator: {onLine: true},
-    window: {location: {pathname: `/${'en'}/g/demo`, search, hash: ''}},
+    window: {location: {pathname: `/${'en'}/g/demo`, search, hash: ''}, ...options.storage?{sessionStorage:options.storage}:{}},
     __locale: props.locale ?? 'en',
     __search: search,
     __ports: ports,
@@ -126,7 +130,7 @@ export async function mount(name, props, ports, search = '') {
     },
   });
   context.globalThis = context;
-  const compiled = await bundle(name);
+  const compiled = await bundle(name, new Set(options.live??[]));
   const module = {exports: {}};
   context.module = module;
   context.exports = module.exports;
