@@ -1,5 +1,7 @@
 # 原有 backend、受控測試角色及恢復演練準備 — 2026-10-23
 
+**2026-10-27 current synthetic overlay:** [Phase B H/PS preparation](PHASE_B_HPS_PREPARATION_2026-10-27.md) and its [manifest](PHASE_B_SYNTHETIC_COHORT_2026-10-27.json) mirror owner-selected companies/creators/guides/existing Ops and Willy as cleanup owner. Current target classification is SHARED_PRODUCTION; Auth create-vs-SKIP for merchant×8/traveller-a/b/outsider remains undecided. Recovery is owner-reported SKIPPED; H/PS start NOT_YET; Phase C NO_GO. This supersedes the historical proposal for 13 new identities and mandatory real-content-only preparation, without granting Auth, role, policy or public publication authority. The original packet/assessor below remains historical and is not a new execution gate.
+
 狀態：**DIRECTIONS_SELECTED_OPERATIONAL_INPUTS_MISSING**。原來源 base 為 PR85 `6126ed900c9fa7f17688ac3261970add46d70cfa`；本次方向修訂起點為既有branch HEAD `ed47c6cf18d37d8f00ffbeb30d645ebea8221b97`；最終publication head／PR／CI及受測內容差異由publication receipt綁定，不由本文件推定。用戶已決定沿用原有 Remix-Kinnso，**不建立任何新 Supabase project**；兩個新 cloud projects 的原提案已撤回，不查價、不升級或騰 quota。
 
 本輪是可審查準備，沒有建立 Auth identity、派角色、SQL、provider／schedule、外部訊息、merge 或 production deploy。真攻略作者同意及圖片權利維持 **BLOCKED**。

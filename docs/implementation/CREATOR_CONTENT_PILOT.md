@@ -1,5 +1,7 @@
 # Creator content pilot — P13
 
+**2026-10-27 synthetic preparation overlay:** the owner selected `SYNTHETIC_ALLOWED` and three `SYNTHETIC_OWNER_WAIVER` pilot-only guide bindings. See [Phase B H/PS preparation](PHASE_B_HPS_PREPARATION_2026-10-27.md) and its [fixture manifest](PHASE_B_SYNTHETIC_COHORT_2026-10-27.json), tagged `filled_from_owner_synthetic_decision`. This supersedes the historical synthetic exclusion below only for this closed preparation cohort. Real rights remain unestablished; hosted H/PS remain NOT_RUN; no public synthetic publish without separate Approve. Historical real-content requirements and observations below are retained.
+
 Status: BLOCKED_CONTENT / hosted acceptance NOT_RUN. No three author-consented real structured guides or their cover/source rights evidence were supplied. Existing synthetic fixtures are not pilot content. No guide was published, withdrawn, seeded or changed on a hosted target.
 
 The delivered CreatorWorkspace/editor-operations, explicit publication/withdrawal API and public projection remain in use. Existing creator editor tests cover authored day/stop operations, HH:mm and conflict recovery. `tests/e2e/content-first-wave.spec.ts` follows manual onboarding, explicit publication, anonymous structured adoption, confirmation before private import, fresh-account readback and retention after withdrawal. `tests/e2e/creator-source.spec.ts` preserves native/legacy publication and acknowledgement recovery. Collaboration evidence does not publish a guide automatically.

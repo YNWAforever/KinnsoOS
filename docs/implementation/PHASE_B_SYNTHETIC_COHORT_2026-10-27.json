@@ -1,0 +1,236 @@
+{
+  "version": 1,
+  "classification": "SYNTHETIC",
+  "decision_provenance": "filled_from_owner_synthetic_decision",
+  "decision_source": "Owner session summary 2026-10-27; operator-box readiness section 6 not read from this repo",
+  "source_baseline": "66265c8d37088e56a1c6151c7c1e9fb34c1826c2",
+  "synthetic_decision": "SYNTHETIC_ALLOWED",
+  "real_author_consent": "NOT_PROVIDED",
+  "waiver_scope": "PILOT_ONLY_NOT_REAL_RIGHTS",
+  "target": {
+    "vercel_project": "kinnso-os",
+    "supabase_project_ref": "scryfkefedzuetfdtrvl",
+    "classification": "SHARED_PRODUCTION",
+    "is_isolated_staging": false
+  },
+  "owner_reported_prior_state": {
+    "live_apply": "DONE",
+    "proxy": "DONE",
+    "recovery": "SKIPPED",
+    "phase_c": "NO_GO"
+  },
+  "pr103": {
+    "status": "MERGED",
+    "merge_sha": "66265c8d37088e56a1c6151c7c1e9fb34c1826c2"
+  },
+  "companies": [
+    {
+      "alias": "company-a",
+      "name": "Sunrise Stays HK",
+      "label": "SYNTHETIC",
+      "company_id": "OWNER_REQUIRED",
+      "branch_status": "SYNTHETIC_BRANCH_PENDING",
+      "live_branch_count": 0,
+      "branch_ids": []
+    },
+    {
+      "alias": "company-b",
+      "name": "Wanderpack Gear",
+      "label": "SYNTHETIC",
+      "company_id": "OWNER_REQUIRED",
+      "branch_status": "SYNTHETIC_BRANCH_PENDING",
+      "live_branch_count": 0,
+      "branch_ids": []
+    }
+  ],
+  "creators": [
+    {
+      "alias": "creator-a",
+      "name": "Mika Tanaka",
+      "creator_id": "8671b8cf-cc59-6b79-48f8-51c463a7eafe",
+      "auth_user_id": "OWNER_REQUIRED"
+    },
+    {
+      "alias": "creator-b",
+      "name": "Jordan Lee",
+      "creator_id": "2e2dff32-09c2-444d-90f4-20dc4c38e781",
+      "auth_user_id": "OWNER_REQUIRED"
+    }
+  ],
+  "guides": [
+    {
+      "slot": "A",
+      "label": "SYNTHETIC",
+      "title": "Mika Tokyo ramen crawl",
+      "creator_name": "Mika Tanaka",
+      "creator_id": "8671b8cf-cc59-6b79-48f8-51c463a7eafe",
+      "creator_alias": "creator-a",
+      "guide_id": "OWNER_REQUIRED",
+      "publication_version": "OWNER_REQUIRED",
+      "consent": "SYNTHETIC_OWNER_WAIVER",
+      "real_rights_status": "NOT_ESTABLISHED",
+      "public_publish": "SEPARATE_APPROVE_REQUIRED",
+      "authored_stops_sources_and_image_rights": "OWNER_REQUIRED"
+    },
+    {
+      "slot": "B",
+      "label": "SYNTHETIC",
+      "title": "Jordan Singapore with kids",
+      "creator_name": "Jordan Lee",
+      "creator_id": "2e2dff32-09c2-444d-90f4-20dc4c38e781",
+      "creator_alias": "creator-b",
+      "guide_id": "OWNER_REQUIRED",
+      "publication_version": "OWNER_REQUIRED",
+      "consent": "SYNTHETIC_OWNER_WAIVER",
+      "real_rights_status": "NOT_ESTABLISHED",
+      "public_publish": "SEPARATE_APPROVE_REQUIRED",
+      "authored_stops_sources_and_image_rights": "OWNER_REQUIRED"
+    },
+    {
+      "slot": "C",
+      "label": "SYNTHETIC",
+      "title": "Chalisa Bangkok street food",
+      "creator_name": "Chalisa Wong",
+      "creator_id": "19094b01-0391-35ad-ff48-967a414d32c0",
+      "creator_alias": null,
+      "guide_id": "OWNER_REQUIRED",
+      "publication_version": "OWNER_REQUIRED",
+      "consent": "SYNTHETIC_OWNER_WAIVER",
+      "real_rights_status": "NOT_ESTABLISHED",
+      "public_publish": "SEPARATE_APPROVE_REQUIRED",
+      "authored_stops_sources_and_image_rights": "OWNER_REQUIRED"
+    }
+  ],
+  "ops": {
+    "alias": "ops",
+    "name": "Mod Chan",
+    "role": "existing moderator",
+    "auth_user_id": "OWNER_REQUIRED",
+    "new_grant": false
+  },
+  "cleanup_owner": "Willy Lai",
+  "pending_auth": [
+    {
+      "alias": "a-owner",
+      "persona": "merchant",
+      "company": "company-a",
+      "requested_membership_role": "owner",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "a-marketing",
+      "persona": "merchant",
+      "company": "company-a",
+      "requested_membership_role": "marketing",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "a-clerk",
+      "persona": "merchant",
+      "company": "company-a",
+      "requested_membership_role": "clerk",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "a-finance",
+      "persona": "merchant",
+      "company": "company-a",
+      "requested_membership_role": "finance",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "b-owner",
+      "persona": "merchant",
+      "company": "company-b",
+      "requested_membership_role": "owner",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "b-marketing",
+      "persona": "merchant",
+      "company": "company-b",
+      "requested_membership_role": "marketing",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "b-clerk",
+      "persona": "merchant",
+      "company": "company-b",
+      "requested_membership_role": "clerk",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "b-finance",
+      "persona": "merchant",
+      "company": "company-b",
+      "requested_membership_role": "finance",
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "traveller-a",
+      "persona": "traveller",
+      "company": null,
+      "requested_membership_role": null,
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "traveller-b",
+      "persona": "traveller",
+      "company": null,
+      "requested_membership_role": null,
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    },
+    {
+      "alias": "outsider",
+      "persona": "outsider",
+      "company": null,
+      "requested_membership_role": null,
+      "auth_decision": "OWNER_REQUIRED_CREATE_VS_SKIP",
+      "email": "OWNER_REQUIRED",
+      "auth_user_id": "OWNER_REQUIRED",
+      "role_assignment": "NOT_AUTHORIZED"
+    }
+  ],
+  "policy": {
+    "legal": "OWNER_REQUIRED",
+    "privacy": "OWNER_REQUIRED",
+    "support": "OWNER_REQUIRED",
+    "processors": "OWNER_REQUIRED",
+    "reviewers": "OWNER_REQUIRED",
+    "h13_mailbox": "OWNER_REQUIRED"
+  },
+  "hosted_start_gate": "NOT_YET",
+  "hosted_runtime_status": "NOT_RUN",
+  "public_synthetic_publish": "SEPARATE_APPROVE_REQUIRED",
+  "authorized_actions": []
+}
