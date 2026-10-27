@@ -177,7 +177,7 @@ test('draft status distinguishes edited, saving and server-confirmed content', a
  } finally { release(); }
 });
 
-test('late save acknowledgement cannot reopen an editor after client navigation', async ({ page }) => {
+test('navigation waits for a held save acknowledgement and never reopens the editor', async ({ page }) => {
  await openNewDraft(page);
  let release!: () => void, committed!: () => void, acknowledged!: () => void, id = '';
  const held = new Promise<void>(resolve => { release = resolve; });
@@ -198,12 +198,20 @@ test('late save acknowledgement cannot reopen an editor after client navigation'
   await page.getByRole('button', { name: 'Save draft', exact: true }).click();
   await persisted;
   await page.getByRole('link', { name: 'Back to guides', exact: true }).click();
-  await page.waitForURL('**/en/studio/guides');
-  await expect(page.getByTestId('creator-editor')).toHaveCount(0);
+  const dialog=page.getByRole('dialog',{name:'Unsaved guide draft',exact:true});
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole('button',{name:'Save and leave',exact:true})).toBeDisabled();
+  await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Saved while leaving editor');
+  await dialog.getByRole('button',{name:'Continue editing',exact:true}).click();
   const response = page.waitForResponse(r => r.url().endsWith('/api/creator/guides/' + id) && r.request().method() === 'PUT');
   release();
   await delivered;
   await response;
+  await page.waitForURL('**/en/studio/guides/'+id+'/edit');
+  await expect(page.getByLabel('Guide title',{exact:true})).toHaveValue('Saved while leaving editor');
+  await page.getByRole('link',{name:'Back to guides',exact:true}).click();
+  await page.waitForURL('**/en/studio/guides');
+  await expect(page.getByTestId('creator-editor')).toHaveCount(0);
   // Cross a completed client render, so a late router.replace cannot hide behind the assertion.
   await page.getByRole('link', { name: 'Create guide', exact: true }).focus();
   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));

@@ -8,6 +8,7 @@ import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
 import {CreatorCollaborationTasks} from './CreatorCollaborationTasks';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {useUnsavedDraftGuard} from './UnsavedDraftGuard';
 import {publicationReadiness,formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
@@ -115,26 +116,34 @@ function CreatorEditor({ path }: { path: string }) {
   let active = true; creators.get(path.split('/')[2]).then(r => { if (!active) return; if (r.ok) accept(r.data); else setMessage(r.code === 'NOT_FOUND' ? t('Guide not found.', '找不到攻略。') : t('Could not load the draft. Refresh to retry.', '未能載入草稿，請重新整理。')); });
   return () => { active = false; };
  }, [path, isNew]);
- async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false) {
-  if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return;
+ async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false): Promise<boolean> {
+  if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return false;
   const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload:currentEditor.current.payload,editRevision:editRevision.current };
   const startedLifetime = lifetime.current;
   intent.current = command; busyRef.current = true; setBusy(true);
   setSaveRejected(false);
   const r = command.action === 'save' ? await creators.save(id, command.revision, command.requestId, command.payload) : command.action === 'publish' ? await creators.publish(id, command.revision, command.requestId) : await creators.withdraw(id);
-  if (lifetime.current !== startedLifetime) return;
+  if (lifetime.current !== startedLifetime) return false;
   busyRef.current = false; setBusy(false);
   if (!r.ok) {
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
    if(command.action==='save'&&!r.retryable)setSaveRejected(true);
    setMessage('');
-   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
+   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return false;
   }
   intent.current = null; setPending(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
-  if (command.action === 'save') { const latest=acceptAck(r.data as GuideDraft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (isNew&&latest) window.history.replaceState(null,'',href('studio/guides/' + id + '/edit')); }
+  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (latest) canonicalizeSavedGuide(); return latest&&!draft.sourceChanged; }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
+  return false;
+ }
+ function canonicalizeSavedGuide(){
+  // Every save entry point uses this live guard, including the 900ms autosave.
+  // Continue editing can retry this after clearing the pending leave.
+  // Only fully acknowledged input may change the URL and remount the editor.
+  if(isNew&&id&&head.current>0&&!busyRef.current&&!intent.current&&!isLeavePending()&&JSON.stringify(currentEditor.current.payload)===saved.current)
+   window.history.replaceState(window.history.state,'',href('studio/guides/'+id+'/edit'));
  }
  const readiness=publicationReadiness(payload),fieldPrefix='guide-'+useId();
  function issueField(issue:typeof readiness.issues[number]){return fieldPrefix+'-'+(issue.code==='stopTitle'?`stop-${issue.day}-${issue.stop}`:issue.code==='stops'?`stops-${issue.day}`:issue.code);}
@@ -147,6 +156,17 @@ function CreatorEditor({ path }: { path: string }) {
   return issue.code==='stops'?t(`Day ${day}: add an authored stop`,`第 ${day} 日：加入創作站點`):t(`Day ${day}, stop ${issue.stop!+1}: add a name`,`第 ${day} 日，站點 ${issue.stop!+1}：填寫名稱`);
  }
  const dirty = JSON.stringify(payload) !== saved.current;
+ // The delayed autosave can be cancelled by unmount. Leave only after the
+ // latest edit revision is acknowledged; retrying another command is not a save.
+ const isLeavePending=useUnsavedDraftGuard({kind:'creator',onContinueEditing:canonicalizeSavedGuide,scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async()=>{
+  if(intent.current&&intent.current.action!=='save')return false;
+  return run('save');
+ }});
+ useEffect(()=>{
+  const prevent=(event:BeforeUnloadEvent)=>{if(dirty||busy||pending){event.preventDefault();event.returnValue='';}};
+  window.addEventListener('beforeunload',prevent);
+  return()=>window.removeEventListener('beforeunload',prevent);
+ },[dirty,busy,pending]);
  const status = busy ? intent.current?.action === 'publish' ? t('Publishing version…', '正在發布版本…') : intent.current?.action === 'withdraw' ? t('Withdrawing adoption…', '正在撤回套用…') : t('Saving draft…', '正在保存草稿…')
   : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
  function transform(update:(previous:EditorState)=>EditorState,removedKey?:string){if(pending||conflict)return;const previous=currentEditor.current;const next=update(previous);if(next===previous)return;setUndo(removedKey?{editor:previous,focusKey:removedKey}:null);setSaveRejected(false);editRevision.current++;currentEditor.current=next;setEditor(next);setMessage('');}
