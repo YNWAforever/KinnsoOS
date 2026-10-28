@@ -3,6 +3,7 @@ import { bodyLimit } from 'hono/body-limit'
 import { createHmac } from 'node:crypto'
 import { parseRedirectsPhp, type SeoRedirect } from '@kinnso/sync'
 import { safeEqual } from './safe-equal'
+import { readWebhookBody } from './webhook-body'
 
 /**
  * `redirect.php` is a source file, not user input, but the route still accepts a POST
@@ -38,7 +39,7 @@ export interface AppDeps {
 export function createApp(deps: AppDeps) {
   const app = new Hono()
 
-  function verifyHmac(raw: string, sig: string | undefined): boolean {
+  function verifyHmac(raw: Uint8Array, sig: string | undefined): boolean {
     if (!deps.webhookSecret || !sig) return false
     const expected = createHmac('sha256', deps.webhookSecret).update(raw).digest('hex')
     return safeEqual(expected, sig)
@@ -49,11 +50,12 @@ export function createApp(deps: AppDeps) {
   app.get('/health', (c) => c.json({ ok: true }))
 
   app.post('/webhook/foso', async (c) => {
-    const raw = await c.req.text()
+    const raw = await readWebhookBody(c.req.raw)
+    if (raw === null) return c.json({ error: 'request body too large' }, 413)
     if (!verifyHmac(raw, c.req.header('x-foso-signature'))) return c.json({ error: 'bad signature' }, 401)
     let body: { legacy_post_id?: unknown; event?: unknown }
     try {
-      body = JSON.parse(raw)
+      body = JSON.parse(new TextDecoder().decode(raw))
     } catch {
       return c.json({ error: 'invalid json' }, 400)
     }

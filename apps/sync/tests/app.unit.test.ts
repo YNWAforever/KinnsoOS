@@ -2,6 +2,7 @@ import { createHmac } from 'node:crypto'
 import { describe, expect, it, vi } from 'vitest'
 import { createApp, type AppDeps, type SyncService } from '../src/app'
 import type { SeoRedirect } from '@kinnso/sync'
+import { MAX_WEBHOOK_BODY_BYTES } from '../src/webhook-body'
 
 const SECRET = 'foso-webhook-secret'
 const ADMIN = 'admin-token'
@@ -54,6 +55,84 @@ const signed = (body: unknown, secret = SECRET) => {
     headers: { 'x-foso-signature': createHmac('sha256', secret).update(raw).digest('hex') },
   }
 }
+
+function streamedWebhook(chunks: Uint8Array[], headers: Record<string, string> = {}) {
+  let reads = 0
+  const cancel = vi.fn()
+  const body = new ReadableStream<Uint8Array>({
+    pull(controller) {
+      reads++
+      const chunk = chunks.shift()
+      if (chunk) controller.enqueue(chunk)
+      else controller.close()
+    },
+    cancel,
+  }, { highWaterMark: 0 })
+  const request = new Request('http://localhost/webhook/foso', {
+    method: 'POST', body, headers, duplex: 'half',
+  } as RequestInit & { duplex: 'half' })
+  return { request, cancel, reads: () => reads }
+}
+
+describe('webhook streaming byte bound', () => {
+  it('rejects an oversized declared length before pulling any body', async () => {
+    const { app, calls } = makeDeps()
+    const stream = streamedWebhook([new Uint8Array(1)], { 'content-length': String(MAX_WEBHOOK_BODY_BYTES + 1) })
+    const res = await app.fetch(stream.request)
+    expect(res.status).toBe(413)
+    expect(stream.reads()).toBe(0)
+    expect(stream.cancel).toHaveBeenCalledOnce()
+    expect(calls.syncOne).toHaveLength(0)
+  })
+
+  it.each([{}, { 'content-length': '1' }, { 'transfer-encoding': 'chunked' }] as Record<string, string>[])('stops at overflow despite headers %j', async (headers) => {
+    const { app, calls } = makeDeps()
+    const stream = streamedWebhook([
+      new Uint8Array(MAX_WEBHOOK_BODY_BYTES), new Uint8Array(1), new Uint8Array(MAX_WEBHOOK_BODY_BYTES),
+    ], headers)
+    const res = await app.fetch(stream.request)
+    expect(res.status).toBe(413)
+    expect(await res.json()).toEqual({ error: 'request body too large' })
+    expect(stream.reads()).toBe(2)
+    expect(stream.cancel).toHaveBeenCalledOnce()
+    expect(calls.syncOne).toHaveLength(0)
+  })
+
+  it('bounds a single oversized chunk and UTF-8 byte length', async () => {
+    const { app, calls } = makeDeps()
+    const raw = JSON.stringify({ legacy_post_id: 7, text: '旅'.repeat(MAX_WEBHOOK_BODY_BYTES / 2) })
+    expect(raw.length).toBeLessThan(MAX_WEBHOOK_BODY_BYTES)
+    const res = await app.request('/webhook/foso', {
+      method: 'POST', body: raw,
+      headers: { 'x-foso-signature': createHmac('sha256', SECRET).update(raw).digest('hex') },
+    })
+    expect(res.status).toBe(413)
+    expect(calls.syncOne).toHaveLength(0)
+  })
+
+  it('accepts exactly the byte limit and signs original whitespace and split UTF-8', async () => {
+    const { app, calls } = makeDeps()
+    const json = new TextEncoder().encode('{ "legacy_post_id": 7, "text": "旅" }')
+    const raw = new Uint8Array(MAX_WEBHOOK_BODY_BYTES).fill(32)
+    raw.set(json)
+    const split = json.indexOf(0xe6) + 1
+    const stream = streamedWebhook([raw.subarray(0, split), raw.subarray(split)], {
+      'x-foso-signature': createHmac('sha256', SECRET).update(raw).digest('hex'),
+    })
+    expect((await app.fetch(stream.request)).status).toBe(200)
+    expect(calls.syncOne).toEqual([[7, { deleteIntent: false }]])
+  })
+
+  it('verifies original bytes before decoding invalid UTF-8', async () => {
+    const { app, calls } = makeDeps()
+    const raw = Buffer.concat([Buffer.from('{"legacy_post_id":7,"text":"'), Buffer.from([0xff]), Buffer.from('"}')])
+    const signature = createHmac('sha256', SECRET).update(raw).digest('hex')
+    expect((await app.request('/webhook/foso', { method: 'POST', body: raw, headers: { 'x-foso-signature': signature } })).status).toBe(200)
+    const decodedSignature = createHmac('sha256', SECRET).update(new TextDecoder().decode(raw)).digest('hex')
+    expect((await app.request('/webhook/foso', { method: 'POST', body: raw, headers: { 'x-foso-signature': decodedSignature } })).status).toBe(401)
+    expect(calls.syncOne).toHaveLength(1)
+  })
+})
 
 describe('admin auth', () => {
   it.each([

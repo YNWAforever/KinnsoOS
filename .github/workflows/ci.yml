@@ -184,6 +184,15 @@ jobs:
 
       - run: pnpm test
 
+      - name: Attested synthetic worker database integration
+        # Default/root tests remain offline for scan/sync, even with .env.test.
+        # Only these explicit configs load credentials and attest before clients.
+        env:
+          KINNSO_WORKER_TEST_DATA: synthetic
+        run: |
+          pnpm --filter @kinnso/scan-app test:integration
+          pnpm --filter @kinnso/sync test:integration
+
       - name: Preserve registry-only download diagnostics
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
@@ -243,6 +252,7 @@ jobs:
           pnpm -s supabase status -o env \
             --override-name api.url=NEXT_PUBLIC_SUPABASE_URL \
             --override-name auth.anon_key=NEXT_PUBLIC_SUPABASE_ANON_KEY \
+            --override-name auth.service_role_key=SUPABASE_SERVICE_ROLE_KEY \
             | tee apps/web/.env.local > /dev/null
           echo "NEXT_PUBLIC_SCAN_URL=http://localhost:8788" >> apps/web/.env.local
           pnpm -s supabase status -o env \

@@ -1,8 +1,8 @@
 /**
  * Integration tests for the apps/scan worker pipeline.
  *
- * Self-skip when SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY are absent (CI seeds
- * them into .env.test; local dev requires a manual .env.test).
+ * Explicit integration entrypoint only. Attest the synthetic local target and
+ * credentials before clients or lifecycle hooks can be constructed.
  *
  * Uses FAKE fetch + LLM adapters — no real RapidAPI or OpenRouter calls.
  * Identifiers are disjoint from seed.sql to avoid conflicts with parallel test suites.
@@ -13,28 +13,18 @@ import type { Database } from '@kinnso/db'
 import { runScan, type ScanDeps } from '../src/pipeline'
 import { FakeFetcher } from '../src/fetchers'
 import { FakeLlm } from '../src/llm'
+import { requireWorkerSupabaseTarget } from '../../../scripts/worker-test-target.mjs'
 
 // ---------------------------------------------------------------------------
-// Self-skip guard
+// Fail closed before client construction, even if imported outside its config.
 // ---------------------------------------------------------------------------
 
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
-const ANON_KEY = process.env.SUPABASE_ANON_KEY
-
-const run = SUPABASE_URL && SERVICE_ROLE_KEY ? describe : describe.skip
-
-// Use placeholder values so createClient() doesn't throw at module load when
-// env vars are absent (the describe.skip guard prevents any actual execution).
+const target = requireWorkerSupabaseTarget()
 const svc = createClient<Database>(
-  SUPABASE_URL ?? 'http://localhost:54321',
-  SERVICE_ROLE_KEY ?? 'placeholder-service-role'
+  target.url,
+  target.serviceRoleKey,
+  { auth: { persistSession: false, autoRefreshToken: false } },
 )
-const anonClient = createClient(
-  SUPABASE_URL ?? 'http://localhost:54321',
-  ANON_KEY ?? 'placeholder-anon'
-)
-
 // ---------------------------------------------------------------------------
 // Disjoint test identifiers (must NOT match any slug/id in supabase/seed.sql)
 // ---------------------------------------------------------------------------
@@ -53,80 +43,80 @@ let USER_B_ID: string
 // Setup / teardown
 // ---------------------------------------------------------------------------
 
-beforeAll(async () => {
-  // Create two test auth users (the auth.users trigger auto-creates their creators rows)
-  const { data: a, error: aErr } = await svc.auth.admin.createUser({
-    email: USER_A_EMAIL,
-    password: TEST_PASSWORD,
-    email_confirm: true,
-  })
-  if (aErr || !a.user) throw new Error(`Failed to create user A: ${aErr?.message}`)
-  USER_A_ID = a.user.id
-
-  const { data: b, error: bErr } = await svc.auth.admin.createUser({
-    email: USER_B_EMAIL,
-    password: TEST_PASSWORD,
-    email_confirm: true,
-  })
-  if (bErr || !b.user) throw new Error(`Failed to create user B: ${bErr?.message}`)
-  USER_B_ID = b.user.id
-
-  // Give the trigger a moment to create the creators rows
-  await new Promise((r) => setTimeout(r, 200))
-
-  // Insert IG handle for user A
-  await svc
-    .from('creator_social_handles')
-    .insert({ creator_id: USER_A_ID, platform: 'instagram', handle: 'test_ig_handle' })
-})
-
-afterAll(async () => {
-  // Delete auth users — cascades to creators, creator_social_handles,
-  // creator_scan_jobs, creator_dna via ON DELETE CASCADE.
-  if (USER_A_ID) await svc.auth.admin.deleteUser(USER_A_ID)
-  if (USER_B_ID) await svc.auth.admin.deleteUser(USER_B_ID)
-})
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-async function insertJob(
-  creatorId: string,
-  status: string = 'queued',
-  extra: Record<string, unknown> = {}
-): Promise<string> {
-  const { data, error } = await svc
-    .from('creator_scan_jobs')
-    .insert({
-      creator_id: creatorId,
-      status: status as never,
-      progress: { platforms: { instagram: 'pending' } } as never,
-      ...extra,
+describe('apps/scan integration — job lifecycle (fake adapters)', () => {
+  beforeAll(async () => {
+    // Create two test auth users (the auth.users trigger auto-creates their creators rows)
+    const { data: a, error: aErr } = await svc.auth.admin.createUser({
+      email: USER_A_EMAIL,
+      password: TEST_PASSWORD,
+      email_confirm: true,
     })
-    .select('id')
-    .single()
-  if (error || !data) throw new Error(`insertJob failed: ${error?.message}`)
-  return data.id
-}
+    if (aErr || !a.user) throw new Error(`Failed to create user A: ${aErr?.message}`)
+    USER_A_ID = a.user.id
 
-function makeDeps(opts: {
-  failPlatforms?: ('instagram' | 'youtube' | 'threads')[]
-  failLlm?: boolean
-} = {}): ScanDeps {
-  return {
-    db: svc as never,
-    fetcher: new FakeFetcher({}, opts.failPlatforms ?? []),
-    llm: new FakeLlm(undefined, opts.failLlm ?? false),
-    model: 'fake-model-integration',
+    const { data: b, error: bErr } = await svc.auth.admin.createUser({
+      email: USER_B_EMAIL,
+      password: TEST_PASSWORD,
+      email_confirm: true,
+    })
+    if (bErr || !b.user) throw new Error(`Failed to create user B: ${bErr?.message}`)
+    USER_B_ID = b.user.id
+
+    // Give the trigger a moment to create the creators rows
+    await new Promise((r) => setTimeout(r, 200))
+
+    // Insert IG handle for user A
+    await svc
+      .from('creator_social_handles')
+      .insert({ creator_id: USER_A_ID, platform: 'instagram', handle: 'test_ig_handle' })
+  })
+
+  afterAll(async () => {
+    // Delete auth users — cascades to creators, creator_social_handles,
+    // creator_scan_jobs, creator_dna via ON DELETE CASCADE.
+    if (USER_A_ID) await svc.auth.admin.deleteUser(USER_A_ID)
+    if (USER_B_ID) await svc.auth.admin.deleteUser(USER_B_ID)
+  })
+
+  // ---------------------------------------------------------------------------
+  // Helpers
+  // ---------------------------------------------------------------------------
+
+  async function insertJob(
+    creatorId: string,
+    status: string = 'queued',
+    extra: Record<string, unknown> = {}
+  ): Promise<string> {
+    const { data, error } = await svc
+      .from('creator_scan_jobs')
+      .insert({
+        creator_id: creatorId,
+        status: status as never,
+        progress: { platforms: { instagram: 'pending' } } as never,
+        ...extra,
+      })
+      .select('id')
+      .single()
+    if (error || !data) throw new Error(`insertJob failed: ${error?.message}`)
+    return data.id
   }
-}
 
-// ---------------------------------------------------------------------------
-// Tests
-// ---------------------------------------------------------------------------
+  function makeDeps(opts: {
+    failPlatforms?: ('instagram' | 'youtube' | 'threads')[]
+    failLlm?: boolean
+  } = {}): ScanDeps {
+    return {
+      db: svc as never,
+      fetcher: new FakeFetcher({}, opts.failPlatforms ?? []),
+      llm: new FakeLlm(undefined, opts.failLlm ?? false),
+      model: 'fake-model-integration',
+    }
+  }
 
-run('apps/scan integration — job lifecycle (fake adapters)', () => {
+  // ---------------------------------------------------------------------------
+  // Tests
+  // ---------------------------------------------------------------------------
+
   it('happy path: job transitions queued→fetching→analyzing→ready and upserts creator_dna', async () => {
     const jobId = await insertJob(USER_A_ID)
     await runScan(makeDeps(), jobId)

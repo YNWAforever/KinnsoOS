@@ -4,7 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@kinnso/db'
 
 /**
- * Service-role Supabase client — bypasses RLS entirely. Five documented
+ * Service-role Supabase client — bypasses RLS entirely. Six documented
  * exceptions are permitted to use this: the Stripe webhook (design spec §4.5),
  * the Travelpayouts cron sync route (`app/api/cron/travelpayouts-sync`,
  * D-R3-9), the analytics retention cron route
@@ -15,7 +15,10 @@ import type { Database } from '@kinnso/db'
  * schema validation, the 15-minute timestamp bound, and journey throttle have
  * succeeded. Analytics writes are a flat, server-derived ledger upsert; this
  * client is never exposed to the browser. All are narrow, auditable server-side
- * writes. No other request path in this codebase may import this file.
+ * writes. The server-only `http/server-rate-limit.ts` helper is the sixth
+ * exception: agent/checkout ledger mutation with server-derived IP and fixed
+ * limits. Their identity, tools and product writes retain the session client.
+ * No other request path in this codebase may import this file.
  */
 export function createSupabaseServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL

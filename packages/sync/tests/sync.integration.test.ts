@@ -3,16 +3,15 @@ import { createClient } from '@supabase/supabase-js'
 import { transformPost } from '../src/transform'
 import { Upserter } from '../src/upserter'
 import { legacyPost } from './fixtures/legacyPost'
+import { requireWorkerSupabaseTarget } from '../../../scripts/worker-test-target.mjs'
 
-const url = process.env.SUPABASE_URL
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-const run = url && key ? describe : describe.skip
-// Use placeholder values when env vars absent so createClient doesn't throw at module load;
-// the describe.skip guard ensures no tests actually execute against the placeholder.
-const svc = createClient(url ?? 'http://localhost:54321', key ?? 'placeholder-key')
+const target = requireWorkerSupabaseTarget()
+const svc = createClient(target.url, target.serviceRoleKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+})
 const LEGACY_ID = 900001
 
-run('sync integration', () => {
+describe('sync integration (attested synthetic local target)', () => {
   // Cleanup deletes by the fixture's OWN identifiers, which must stay DISJOINT from
   // supabase/seed.sql (read by the web suite). turbo runs web#test and sync#test in
   // parallel against the same local DB, so deleting a slug the seed also uses would yank

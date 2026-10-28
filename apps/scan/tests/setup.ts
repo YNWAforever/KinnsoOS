@@ -1,2 +1,4 @@
 import { config } from 'dotenv'
-config({ path: '.env.test' }) // integration tests only; unit tests need no env
+// Only the explicit integration config loads this file. Credentials never opt in.
+if (process.env.KINNSO_RUN_WORKER_DB_TESTS !== '1') throw new Error('BLOCKED: explicit worker integration entrypoint required')
+config({ path: '.env.test', quiet: true })

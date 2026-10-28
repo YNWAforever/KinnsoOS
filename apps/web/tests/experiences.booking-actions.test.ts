@@ -21,6 +21,7 @@ vi.mock('@/lib/product-state', () => ({ resolveConfiguredProductState: resolveCo
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: createSupabaseServerClientMock,
 }))
+vi.mock('@/lib/supabase/service', () => ({ createSupabaseServiceClient: () => ({ rpc: rpcMock }) }))
 vi.mock('@/lib/experiences/booking-validation', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/lib/experiences/booking-validation')>()
   return {
@@ -55,7 +56,6 @@ beforeEach(() => {
   createSupabaseServerClientMock.mockResolvedValue({
     auth: { getUser: getUserMock },
     from: fromMock,
-    rpc: rpcMock,
   })
   validateCheckoutInputMock.mockReset()
   getStripeClientMock.mockReset()
@@ -336,6 +336,8 @@ describe('createCheckoutSessionAction (guest)', () => {
     )
 
     expect(res.ok).toBe(true)
+    expect(rpcMock).toHaveBeenCalledWith('check_and_increment_checkout_rate_limit', { p_ip: '1.2.3.4', p_max_requests: 5, p_window_seconds: 600 })
+    expect(getClientIpMock).toHaveBeenCalledWith({ trustedOnly: true })
     expect(insertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         traveler_user_id: null,
@@ -345,5 +347,12 @@ describe('createCheckoutSessionAction (guest)', () => {
         guide_id: null,
       }),
     )
+  })
+
+  it('fails closed before Stripe when trusted quota transport fails', async () => {
+    rpcMock.mockRejectedValueOnce(new Error('quota unavailable'))
+    const res = await createCheckoutSessionAction('exp1', { availabilityId: 'avail1', qty: '1', guestEmail: 'guest@example.com' }, { locale: 'en' })
+    expect(res.ok).toBe(false)
+    expect(sessionsCreateMock).not.toHaveBeenCalled()
   })
 })
