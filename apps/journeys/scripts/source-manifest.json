@@ -338,6 +338,7 @@
     "tests/auth-contract.test.mjs",
     "tests/auth-entry.test.mjs",
     "tests/blank-reset-dialog.test.mjs",
+    "tests/bookmark-account-boundary.test.mjs",
     "tests/bookmarks-api.test.mjs",
     "tests/callback-origin.test.mjs",
     "tests/campaign-publication-summary.test.mjs",

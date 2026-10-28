@@ -79,7 +79,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  async function loadBookmarkStatus(initial=false){
   if(!actorId||(!initial&&!accountValid)||intent.current||lock.current||bookmarkRead.current.loading)return;
   const generation=epoch.current,ticket=++bookmarkRead.current.ticket;bookmarkRead.current.loading=true;setBookmarkStatus('loading');
-  const result=await bookmarks.list(undefined,id);if(generation!==epoch.current||ticket!==bookmarkRead.current.ticket)return;
+  const result=await bookmarks.list(actorId,undefined,id);if(generation!==epoch.current||ticket!==bookmarkRead.current.ticket)return;
   bookmarkRead.current.loading=false;
   if(result.ok){setSaved(result.data.items.some(row=>row.guide_id===id));setBookmarkStatus('ready')}
   else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
@@ -97,7 +97,7 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
   if(lock.current)return;
   if(!actorId||!accountValid){const next=href('g/'+id)+'?bookmark=1&requestId='+crypto.randomUUID();requestNavigation(href('sign-in')+'?next='+encodeURIComponent(next));return}
   const generation=epoch.current;bookmarkRead.current.ticket++;bookmarkRead.current.loading=false;lock.current=true;setBusy(true);if(intent.current?.desired!==desired)intent.current={desired,id:requestId??crypto.randomUUID()};
-  const result=await bookmarks.toggle(id,desired,intent.current.id);if(generation!==epoch.current)return;
+  const result=await bookmarks.toggle(id,desired,intent.current.id,actorId);if(generation!==epoch.current)return;
   if(result.ok){setSaved(result.data.saved);setBookmarkStatus('ready');intent.current=null;setMessage(result.data.saved?t('Bookmark saved to your account','收藏已保存至你的帳戶'):t('Bookmark removed from your account','已從你的帳戶取消收藏'));router.replace(returnIntent?adoptionPath(locale,id,returnIntent.tripId??undefined,flowId||undefined,returnIntent.version,returnIntent.creationId):href('g/'+id))}
   else{setMessage(t('Bookmark was not confirmed. Retry.','未確認收藏結果，請重試。'));if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null)}
   setBusy(false);lock.current=false;
@@ -174,9 +174,9 @@ export function GuideWorkspace({id,actorId,initialGuide=null}:{id:string;actorId
  </div>
 }
 export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
- const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<BookmarkRow[]|null>(null),[next,setNext]=useState<BookmarkCursor|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0),lock=useRef(false),[removal,setRemoval]=useState<{guideId:string;requestId:string;busy:boolean}|null>(null),[removalError,setRemovalError]=useState('');
- useEffect(()=>{epoch.current++;setAccountValid(!!actorId);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;
-  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;setAccountValid(false);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;router.refresh()};
+ const {t,href}=useApp(),router=useRouter(),[rows,setRows]=useState<BookmarkRow[]|null>(null),[next,setNext]=useState<BookmarkCursor|null>(null),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[accountValid,setAccountValid]=useState(!!actorId),epoch=useRef(0),lock=useRef(false),[removal,setRemoval]=useState<{guideId:string;requestId:string;busy:boolean}|null>(null),[removalError,setRemovalError]=useState(''),removalLock=useRef(false),validActor=useRef(!!actorId);
+ useEffect(()=>{epoch.current++;validActor.current=!!actorId;removalLock.current=false;setRemoval(null);setRemovalError('');setAccountValid(!!actorId);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;
+  const invalidate=(nextOwner:string|null)=>{if(nextOwner===actorId)return;epoch.current++;validActor.current=false;removalLock.current=false;setRemoval(null);setRemovalError('');setAccountValid(false);setRows(null);setNext(null);setMessage('');setBusy(false);lock.current=false;router.refresh()};
   const unsubscribe=subscribeAccountInvalidation(invalidate);
   const check=async()=>{if(document.visibilityState!=='visible'||!navigator.onLine)return;const generation=epoch.current;try{const response=await fetch('/api/session',{cache:'no-store'});if(!response.ok)return;const body=await response.json();if(generation===epoch.current&&body.data?.id!==actorId)invalidate(body.data?.id??null)}catch{/* Foreground requests still verify the current account. */}};
   document.addEventListener('visibilitychange',check);return()=>{epoch.current++;unsubscribe();document.removeEventListener('visibilitychange',check)};
@@ -184,7 +184,7 @@ export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
  async function loadPage(cursor:BookmarkCursor|null,initial=false){
   if(!actorId||(!initial&&!accountValid)||lock.current)return;
   const generation=epoch.current;lock.current=true;setBusy(true);
-  const result=await bookmarks.list(cursor??undefined);if(generation!==epoch.current)return;
+  const result=await bookmarks.list(actorId,cursor??undefined);if(generation!==epoch.current)return;
   if(result.ok){setRows(previous=>cursor?[...(previous??[]),...result.data.items]:result.data.items);setNext(result.data.nextCursor);setMessage('')}
   else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
   else setMessage(t('Bookmarks could not be loaded. Retry to continue.','未能載入收藏，請重試以繼續。'));
@@ -195,10 +195,12 @@ export function BookmarkWorkspace({actorId}:{actorId:string|null}) {
  // A retry of the same row reuses the original request id rather than issuing a
  // fresh command for a write whose outcome was never confirmed.
  async function removeBookmark(guideId:string){
-  if(removal?.busy)return;
+  if(!actorId||!validActor.current||removalLock.current)return;
+  removalLock.current=true;
   const generation=epoch.current,requestId=removal?.guideId===guideId?removal.requestId:crypto.randomUUID();
   setRemoval({guideId,requestId,busy:true});setRemovalError('');
-  const result=await bookmarks.toggle(guideId,false,requestId);if(generation!==epoch.current)return;
+  const result=await bookmarks.toggle(guideId,false,requestId,actorId!);if(generation!==epoch.current)return;
+  removalLock.current=false;
   if(result.ok){setRows(previous=>(previous??[]).filter(row=>row.guide_id!==guideId));setRemoval(null)}
   else if(result.code==='AUTH_REQUIRED')invalidateAccountViews(null);
   else {setRemoval({guideId,requestId,busy:false});setRemovalError(t('Bookmark could not be removed. Retry.','未能取消收藏，請重試。'))}
