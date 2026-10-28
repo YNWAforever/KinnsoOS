@@ -5,6 +5,7 @@ import {createContext, runInContext} from 'node:vm';
 import {webcrypto} from 'node:crypto';
 import {transform} from 'esbuild';
 import * as consent from '../lib/telemetry/events.ts';
+import * as validation from '../lib/api/validation.ts';
 
 const sources = {};
 for (const [name, path] of [['trips','../lib/trips/repository.ts'], ['bookmarks','../lib/bookmarks/repository.ts']]) {
@@ -24,6 +25,7 @@ function harness({respond = () => Response.json({ok:true, data:{id}}), browser} 
       crypto:webcrypto, ...(browser ? {window:browser} : {}),
       fetch:async (...args) => {calls.push(args); return respond(...args);},
       require:specifier => {
+        if (specifier === '../api/validation') return validation;
         if (specifier === '../trips/repository') return load('trips');
         if (specifier === '../telemetry/events') return consent;
         if (specifier === '../telemetry/pilot-client') return {pilotSession:() => id};
@@ -67,21 +69,23 @@ test('trip reads encode path and cursor input and forward cancellation without a
 test('bookmark repository preserves the composite cursor and returns explicit terminal pagination', async () => {
   const items = [{guide_id:id, guides:null}], cursor = {createdAt:'2026-10-01T12:00:00+08:00', guideId:id};
   const h = harness({respond:() => Response.json({ok:true, data:items, nextCursor:cursor})});
-  assert.deepEqual(plain(await h.bookmarks.list(cursor)), {ok:true, data:{items, nextCursor:cursor}});
+  assert.deepEqual(plain(await h.bookmarks.list(owner, cursor)), {ok:true, data:{items, nextCursor:cursor}});
   const query = new URL(h.calls[0][0], 'https://offline.test').searchParams;
   assert.equal(query.get('before'), cursor.createdAt);
   assert.equal(query.get('beforeGuide'), id);
+  assert.equal(h.calls[0][1].headers['X-Kinnso-Intent-Actor'], owner);
   const end = harness({respond:() => Response.json({ok:true, data:[]})});
-  assert.deepEqual(plain(await end.bookmarks.list()), {ok:true, data:{items:[], nextCursor:null}});
-  await end.bookmarks.list(undefined, id);
+  assert.deepEqual(plain(await end.bookmarks.list(owner)), {ok:true, data:{items:[], nextCursor:null}});
+  await end.bookmarks.list(owner, undefined, id);
   assert.equal(end.calls[1][0], '/api/bookmarks?guideId='+id);
 });
 
 test('bookmark toggle transports false as an explicit desired state with the original request ID', async () => {
   const h = harness();
-  await h.bookmarks.toggle(id, false, requestId);
+  await h.bookmarks.toggle(id, false, requestId, owner);
   assert.equal(h.calls[0][0], '/api/bookmarks');
   assert.equal(h.calls[0][1].method, 'POST');
+  assert.equal(h.calls[0][1].headers['X-Kinnso-Intent-Actor'], owner);
   assert.deepEqual(JSON.parse(h.calls[0][1].body), {guideId:id, desiredState:false, requestId});
 });
 
@@ -89,7 +93,7 @@ test('API denials remain explicit and never turn into empty bookmark success or 
   for (const [status, code] of [[401,'AUTH_REQUIRED'],[403,'FORBIDDEN'],[409,'CONFLICT'],[503,'UNAVAILABLE']]) {
     const error = {ok:false, code, retryable:status === 503, requestId};
     const h = harness({respond:() => Response.json(error, {status})});
-    assert.deepEqual(plain(await h.bookmarks.list()), error);
+    assert.deepEqual(plain(await h.bookmarks.list(owner)), error);
     assert.equal(h.calls.length, 1);
   }
 });
