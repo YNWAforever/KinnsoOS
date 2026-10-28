@@ -13,6 +13,7 @@
     "build": "npm run source:pack && next build",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "source:pack": "python scripts/package-source.py",
     "check:url-parity": "node scripts/check-url-parity.mjs"
@@ -33,6 +34,9 @@
     "@types/react-dom": "19.2.3",
     "@types/sanitize-html": "2.16.1",
     "esbuild": "0.25.12",
+    "eslint": "9.39.4",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "typescript-eslint": "8.61.0",
     "typescript": "5.9.3"
   }
 }

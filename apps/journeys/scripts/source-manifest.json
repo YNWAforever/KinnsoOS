@@ -156,6 +156,8 @@
     "docs/IMPLEMENTATION_PLAN.md",
     "docs/PHOTO-PROVENANCE.json",
     "docs/media-operations.md",
+    "eslint-suppressions.json",
+    "eslint.config.mjs",
     "lib/agent/policy.ts",
     "lib/agent/repository.ts",
     "lib/agent/result-contract.ts",

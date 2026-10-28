@@ -8,6 +8,25 @@ Node >=22.13.0. `npm ci` then `npm run dev`. Open `http://localhost:3000/zh-HK` 
 
 `npm test` runs boundary, feasibility, import and retained demo model tests. `npm run typecheck` checks the application. `npm run build` creates the production Next.js build and corresponding source download. `npm start` serves that build. `npm run test:integration` and `npm run test:e2e` require the separately guarded synthetic local backend; they fail when its URL or project does not match. Browser evidence is local and ignored by Git.
 
+## Lint
+
+In the monorepo, run `pnpm lint` from the repository root. It runs repository ESLint
+and both app tasks through Turbo, including `pnpm --filter @kinnso/journeys lint`.
+For the standalone source archive, use `npm ci` then `npm run lint`.
+
+Journeys checks TypeScript/JavaScript application code, scripts and tests. Unused
+bindings are errors (intentionally unused `_` bindings and caught errors are allowed);
+React Hook dependency findings remain warnings. `eslint-suppressions.json` records
+the existing unused-binding counts per file so new violations fail without changing
+product code. When removing old violations, run `pnpm exec eslint . --prune-suppressions`
+inside this app and commit the reduced baseline. Do not regenerate or expand it to
+make new violations pass.
+
+To verify coverage locally, temporarily add `const aud09UnusedBinding = 1;` to a
+Journeys `.ts` or `.tsx` file and run root `pnpm lint`: it must fail with
+`@typescript-eslint/no-unused-vars`. Remove the binding and rerun to return to green.
+Keep that deliberate failure out of committed source.
+
 ## Feature states
 
 | Surface | Status |
