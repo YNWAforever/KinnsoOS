@@ -103,7 +103,9 @@ async function upsertDna(
 // ---------------------------------------------------------------------------
 
 /**
- * Runs the full scan pipeline for the given job.
+ * Runs the full scan pipeline for a job already reserved by reserve_worker_launch.
+ * Initial scans and retries both reserve before entering this function. The
+ * bounded LLM retry below belongs to that run; failures never refund its charge.
  * Always called in the background after the HTTP 202 has been returned.
  *
  * @param deps - Injected DB client, fetcher, and LLM (allows fake injection in tests).

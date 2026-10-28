@@ -256,26 +256,12 @@ describe('apps/scan integration — job lifecycle (fake adapters)', () => {
   })
 
   it('rate-limit (429): blocks when a non-terminal job already exists', async () => {
-    const { rateLimitDecision } = await import('../src/policy')
     const jobId = await insertJob(USER_A_ID, 'fetching')
-
-    const { data: jobs } = await svc
-      .from('creator_scan_jobs')
-      .select('id, creator_id, status, created_at, updated_at')
-      .eq('creator_id', USER_A_ID)
-      .in('status', ['queued', 'fetching', 'analyzing'])
-
-    const result = rateLimitDecision(
-      (jobs as Array<{
-        id: string
-        creator_id: string
-        status: 'queued' | 'fetching' | 'analyzing' | 'ready' | 'failed'
-        created_at: string
-        updated_at: string
-      }> | null) ?? []
-    )
-    expect(result.limited).toBe(true)
-    expect(result.reason).toBe('active_job_exists')
+    const { data, error } = await svc.rpc('reserve_worker_launch', {
+      p_kind: 'scan', p_creator_id: USER_A_ID,
+    }).single()
+    expect(error).toBeNull()
+    expect(data?.reason).toBe('active_job_exists')
 
     // Clean up: set it to failed so other tests are not affected
     await svc
