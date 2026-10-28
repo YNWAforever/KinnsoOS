@@ -46,6 +46,13 @@ declare
   v_platforms jsonb;
   v_proof_url text;
 begin
+  -- The owner lock serializes callers, but a transaction-wide snapshot would
+  -- still hide the preceding caller's jobs/charges after waiting. Enforce the
+  -- PostgREST isolation contract before any mutation; the worker fails closed.
+  if current_setting('transaction_isolation') <> 'read committed' then
+    raise exception 'worker launch reservations require READ COMMITTED' using errcode = '25001';
+  end if;
+
   if p_kind is null or p_kind not in ('scan', 'verification')
     or (p_kind = 'scan' and p_submission_id is not null)
     or (p_kind = 'verification' and (p_job_id is null) = (p_submission_id is null)) then

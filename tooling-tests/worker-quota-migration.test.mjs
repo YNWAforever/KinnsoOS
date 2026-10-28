@@ -229,7 +229,31 @@ commit;`);
       assert.equal(count(), 1);
     });
 
+    await t.test('unsupported isolation fails closed before initial or retry mutations for either kind', () => {
+      for (const isolation of ['repeatable read', 'serializable', 'read uncommitted']) {
+        for (const kind of ['scan', 'verification']) {
+          reset();
+          const table = kind === 'scan' ? 'creator_scan_jobs' : 'mission_verification_jobs';
+          const initial = kind === 'scan' ? {} : { sub: id(100) };
+          const attempt = options => sql(`begin isolation level ${isolation}; ${request(kind, options)} commit;`);
+          assert.throws(() => attempt(initial), /worker launch reservations require READ COMMITTED/);
+          assert.equal(count(), 0);
+          assert.equal(sql(`select count(*) from public.${table};`), '0');
+
+          const job = launch(kind, initial).job_id;
+          fail(kind, job);
+          assert.throws(() => attempt({ job }), /worker launch reservations require READ COMMITTED/);
+          assert.equal(count(), 1);
+          assert.equal(sql(`select status from public.${table} where id='${job}';`), 'failed');
+        }
+      }
+      reset();
+    });
+
     await t.test('rollback disables reservations and preserves jobs/history; function-only reapply restores enforcement', () => {
+      reset();
+      const job = launch('scan').job_id;
+      fail('scan', job);
       const before = count();
       const jobs = sql('select count(*) from public.creator_scan_jobs;');
       sql(`begin;
@@ -240,6 +264,8 @@ commit;`);
       assert.equal(sql('select count(*) from public.creator_scan_jobs;'), jobs);
       sql(forward.slice(forward.indexOf('create function public.reserve_worker_launch')));
       assert.ok(launch('scan').job_id);
+      assert.equal(count(), before + 1);
+      assert.throws(() => sql(`begin isolation level repeatable read; ${request('verification', { sub: id(100) })} commit;`), /worker launch reservations require READ COMMITTED/);
       assert.equal(count(), before + 1);
     });
   } finally {
