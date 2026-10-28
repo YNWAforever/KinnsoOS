@@ -24,6 +24,9 @@ vi.mock('@/lib/agent/tools', () => ({ makeAgentTools: () => ({}) }))
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: createSupabaseServerClientMock,
 }))
+vi.mock('@/lib/supabase/service', () => ({
+  createSupabaseServiceClient: () => ({ rpc: rpcMock }),
+}))
 
 import { POST } from '@/app/api/agent/route'
 
@@ -35,11 +38,13 @@ beforeEach(() => {
   streamTextMock.mockClear()
   configuredStateMock.mockClear()
   getUserMock.mockResolvedValue({ data: { user: null } })
+  rpcMock.mockReset()
   rpcMock.mockResolvedValue({ data: true, error: null })
   configuredMock.mockReturnValue(true)
   configuredStateMock.mockReturnValue({ agentLive: true, bookingLive: false })
   createSupabaseServerClientMock.mockClear()
-  createSupabaseServerClientMock.mockResolvedValue({ auth: { getUser: getUserMock }, rpc: rpcMock })
+  // Session clients deliberately have no RPC capability in this quota proof.
+  createSupabaseServerClientMock.mockResolvedValue({ auth: { getUser: getUserMock } })
 })
 
 describe('POST /api/agent', () => {
@@ -78,6 +83,7 @@ describe('POST /api/agent', () => {
     const res = await POST(req({ messages: [{ role: 'user', parts: [{ type: 'text', text: 'plan a Tokyo trip' }] }], locale: 'en', anonSessionId: '11111111-2222-4333-8444-555555555555' }))
     expect(res.status).toBe(200)
     expect(rpcMock).toHaveBeenCalledWith('check_and_increment_agent_rate_limit', { p_ip: '1.2.3.4', p_max_requests: 20, p_window_seconds: 3600 })
+    expect(getClientIpMock).toHaveBeenCalledWith({ trustedOnly: true })
     expect(streamTextMock).toHaveBeenCalledTimes(1)
     const arg = (streamTextMock.mock.calls[0] as unknown[])[0] as { model: string; system: string }
     expect(arg.model).toBe('anthropic/claude-haiku-4.5')
@@ -129,5 +135,14 @@ describe('POST /api/agent', () => {
     )
     expect(res.status).toBe(413)
     expect(streamTextMock).not.toHaveBeenCalled()
+  })
+
+  it.each(['rpc error', 'transport exception'])('fails closed before generation on %s', async (failure) => {
+    if (failure === 'rpc error') rpcMock.mockResolvedValueOnce({ data: null, error: { message: 'denied' } } as never)
+    else rpcMock.mockRejectedValueOnce(new Error('network failure'))
+    const res = await POST(req({ messages: [], anonSessionId: '11111111-2222-4333-8444-555555555555', p_ip: 'victim', p_max_requests: 999999, p_window_seconds: -1 }))
+    expect(res.status).toBe(500)
+    expect(streamTextMock).not.toHaveBeenCalled()
+    expect(rpcMock).toHaveBeenCalledWith('check_and_increment_agent_rate_limit', { p_ip: '1.2.3.4', p_max_requests: 20, p_window_seconds: 3600 })
   })
 })

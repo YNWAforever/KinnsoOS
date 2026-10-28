@@ -11,7 +11,7 @@ import {
 } from '@/lib/experiences/booking-types'
 import { getGuideBySlug } from '@/lib/guides/queries'
 import { getStripeClient, toStripeAmount } from '@/lib/stripe/client'
-import { getClientIp } from '@/lib/http/client-ip'
+import { checkServerRateLimit } from '@/lib/http/server-rate-limit'
 import type { Locale } from '@/lib/i18n/config'
 import { resolveConfiguredProductState } from '@/lib/product-state'
 
@@ -49,9 +49,6 @@ async function resolveAttribution(input: { sourceSurface?: string; guideSlug?: s
   }
 }
 
-const MAX_CHECKOUT_ATTEMPTS_PER_WINDOW = 5
-const CHECKOUT_RATE_LIMIT_WINDOW_SECONDS = 600
-
 export async function createCheckoutSessionAction(
   experienceId: string,
   rawInput: CreateCheckoutSessionInput,
@@ -70,13 +67,9 @@ export async function createCheckoutSessionAction(
   if (!validation.ok) return validation
   const p = validation.parsed
 
-  const ip = await getClientIp()
-  const { data: allowed, error: rateLimitError } = await supabase.rpc(
-    'check_and_increment_checkout_rate_limit',
-    { p_ip: ip, p_max_requests: MAX_CHECKOUT_ATTEMPTS_PER_WINDOW, p_window_seconds: CHECKOUT_RATE_LIMIT_WINDOW_SECONDS },
-  )
-  if (rateLimitError) {
-    console.error('[experiences:booking] rate limit check failed', rateLimitError)
+  const { allowed, failed } = await checkServerRateLimit('checkout')
+  if (failed) {
+    console.error('[experiences:booking] rate limit check failed')
     return formError('Something went wrong. Please try again.')
   }
   if (!allowed) return formError('Too many attempts. Please try again in a few minutes.')

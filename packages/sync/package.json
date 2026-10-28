@@ -8,6 +8,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:reader": "vitest run --config vitest.reader.config.ts",
     "preflight": "tsx src/preflight.ts"
   },
   "dependencies": {
