@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { crawlSitemap } from '../../../scripts/crawl-sitemap'
+import { crawlSitemap, DEFAULT_BASE_URL } from '../../../scripts/crawl-sitemap'
 
 const sitemapUrl = 'https://example.test/sitemap.xml'
 
@@ -15,6 +15,33 @@ function pageResponse(status = 200, body = '<html>ok</html>') {
 }
 
 describe('crawlSitemap', () => {
+  it('defaults the CLI to the KinnsoOS hosted pilot', () => {
+    expect(DEFAULT_BASE_URL).toBe('https://kinnso-os.vercel.app')
+  })
+
+  it.each(['<urlset/>', '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n</urlset>'])(
+    'accepts an empty pilot sitemap: %s', async (xml) => {
+      const seen: string[] = []
+      const result = await crawlSitemap({
+        baseUrl: DEFAULT_BASE_URL,
+        fetchImpl: async (input) => {
+          seen.push(String(input))
+          return xmlResponse(xml)
+        },
+      })
+      expect(result).toEqual({ checked: 0, failures: [] })
+      expect(seen).toEqual([`${DEFAULT_BASE_URL}/sitemap.xml`])
+    },
+  )
+
+  it('rejects a non-sitemap error document rather than treating it as empty content', async () => {
+    const result = await crawlSitemap({
+      baseUrl: 'https://example.test',
+      fetchImpl: async () => pageResponse(200, '<h1>Unavailable</h1>'),
+    })
+    expect(result).toEqual({ checked: 0, failures: [{ url: sitemapUrl, error: 'InvalidSitemap' }] })
+  })
+
   it('crawls every page listed by a flat urlset', async () => {
     const pageUrls = [
       'https://example.test/en/g/guide-one',
