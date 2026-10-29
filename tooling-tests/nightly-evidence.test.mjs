@@ -137,12 +137,84 @@ test('an empty funnel report and contradictory successful result cannot satisfy 
 });
 
 test('a pilot-empty funnel skip stays visible beside the checks that actually passed', () => {
-  const result = receipt('funnel', { stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 1 } });
+  const description = 'PILOT_EMPTY: no published /en/g/ guides are available; guide-to-experience funnel not exercised.';
+  const result = receipt('funnel', { stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 1 },
+    suites: [{ specs: [{ tests: [{ status: 'skipped', annotations: [{ type: 'skip', description }] }] }] }] });
   assert.equal(result.code, 0);
   assert.equal(result.value.reportStatus, 'VALID');
   assert.equal(result.value.targetOrigin, origin);
   assert.equal(result.value.scope, 'kinnso_os_anonymous_readonly_plus_labelled_funnel_fixture');
   assert.deepEqual(result.value.counts, { total: 9, passed: 8, failed: 0, flaky: 0, skipped: 1 });
+  assert.deepEqual(result.value.pilotContent, [{ reason: 'pilot-empty', description, testOutcome: 'skipped' }]);
+});
+
+const incompleteAnnotation = guide => ({ type: 'pilot-incomplete-creator-link',
+  description: `pilot-incomplete-creator-link: guide /en/g/${guide} has no creator link` });
+const annotatedSuites = (status, annotations) => [{ suites: [{ specs: [{ tests: [{ status, annotations }] }] }] }];
+
+test('all incomplete creator links produce classified skip evidence with every affected guide', () => {
+  const annotations = ['first', 'second'].map(incompleteAnnotation);
+  const result = receipt('funnel', { stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 1 },
+    suites: annotatedSuites('skipped', [...annotations, { type: 'skip', description: annotations.map(item => item.description).join('; ') }]) });
+  assert.equal(result.code, 0);
+  assert.equal(result.value.reportStatus, 'VALID');
+  assert.equal(result.value.executionOutcome, 'success');
+  assert.deepEqual(result.value.counts, { total: 9, passed: 8, failed: 0, flaky: 0, skipped: 1 });
+  assert.deepEqual(result.value.pilotContent, annotations.map(annotation => ({ reason: annotation.type,
+    description: annotation.description, testOutcome: 'skipped' })));
+});
+
+test('a complete selected funnel retains annotations for earlier incomplete guides without inventing a skip', () => {
+  const annotation = incompleteAnnotation('first');
+  const result = receipt('funnel', { stats: { expected: 9, unexpected: 0, flaky: 0, skipped: 0 },
+    suites: annotatedSuites('expected', [annotation]) });
+  assert.equal(result.code, 0);
+  assert.deepEqual(result.value.counts, { total: 9, passed: 9, failed: 0, flaky: 0, skipped: 0 });
+  assert.deepEqual(result.value.pilotContent, [{ reason: annotation.type, description: annotation.description, testOutcome: 'expected' }]);
+});
+
+test('pilot annotations cannot turn an actual selected-funnel failure into successful evidence', () => {
+  const annotation = incompleteAnnotation('first');
+  const report = { stats: { expected: 8, unexpected: 1, flaky: 0, skipped: 0 }, suites: annotatedSuites('unexpected', [annotation]) };
+  const contradictory = receipt('funnel', report);
+  assert.equal(contradictory.code, 1);
+  assert.equal(contradictory.value.counts.failed, 1);
+  assert.deepEqual(contradictory.value.pilotContent, [{ reason: annotation.type, description: annotation.description, testOutcome: 'unexpected' }]);
+  const failed = receipt('funnel', report, 'failure');
+  assert.equal(failed.code, 0);
+  assert.equal(failed.value.executionOutcome, 'failure');
+  assert.equal(failed.value.counts.failed, 1);
+});
+
+test('pilot evidence only retains known public reasons, without arbitrary report annotations or duplicates', () => {
+  const annotation = incompleteAnnotation('first');
+  const result = receipt('funnel', { stats: { expected: 1, unexpected: 0, flaky: 0, skipped: 0 },
+    suites: annotatedSuites('expected', [annotation, annotation,
+      { type: 'skip', description: 'private sentinel' },
+      { type: 'pilot-incomplete-creator-link', description: 'private sentinel' },
+      { type: 'pilot-incomplete-creator-link', description: 'pilot-incomplete-creator-link: guide /en/g/first?token=private sentinel has no creator link' },
+      { type: 'note', description: 'private sentinel' }]) });
+  assert.equal(result.code, 0);
+  assert.deepEqual(result.value.pilotContent, [{ reason: annotation.type, description: annotation.description, testOutcome: 'expected' }]);
+  assert.doesNotMatch(JSON.stringify(result.value) + result.stdout + result.stderr, /private sentinel/);
+});
+
+for (const binding of [{ sourceRevision: 'f'.repeat(40) }, { runId: '41' }, { runAttempt: '1' }]) {
+  test('pilot content annotations from another source, run or attempt are never accepted', () => {
+    const result = receipt('funnel', { config: { metadata: binding }, stats: { expected: 0, unexpected: 0, flaky: 0, skipped: 1 },
+      suites: annotatedSuites('skipped', [incompleteAnnotation('first')]) });
+    assert.equal(result.code, 1);
+    assert.equal(result.value.reportStatus, 'INVALID');
+    assert.deepEqual(result.value.pilotContent, []);
+  });
+}
+
+for (const outcome of ['skipped', 'cancelled']) test('an unrun check cannot reuse pilot-content annotations', () => {
+  const result = receipt('funnel', { stats: { expected: 0, unexpected: 0, flaky: 0, skipped: 1 },
+    suites: annotatedSuites('skipped', [incompleteAnnotation('first')]) }, outcome);
+  assert.equal(result.code, 0);
+  assert.equal(result.value.reportStatus, 'NOT_RUN');
+  assert.deepEqual(result.value.pilotContent, []);
 });
 
 test('actual crawler CLI defaults to KinnsoOS and records an empty sitemap without remote requests', () => {

@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test'
+import { test, expect, type Page } from '@playwright/test'
 
 export async function findPublishedGuideLinks(page: Page): Promise<string[]> {
   // KinnsoOS loads the catalog after hydration. Do not mistake loading or a
@@ -21,14 +21,32 @@ export async function findPublishedGuideLinks(page: Page): Promise<string[]> {
 }
 
 export async function findAttributedExperience(page: Page, guideLinks: string[]): Promise<string> {
+  const incompleteReasons: string[] = []
   for (const guideHref of guideLinks) {
     const response = await page.goto(guideHref)
     expect(response?.status(), `${guideHref} should return HTTP 200`).toBe(200)
     await expect(page.locator('h1')).toBeVisible()
-    await expect(page.locator('a[href^="/en/c/"]').first()).toBeVisible()
+    await expect(page.getByText('Loading…', { exact: true })).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Retry guide', exact: true })).toBeHidden()
+    const creatorLink = page.locator('a[href^="/en/c/"]').first()
+    if (await creatorLink.count() === 0) {
+      const reason = `pilot-incomplete-creator-link: guide ${guideHref} has no creator link`
+      incompleteReasons.push(reason)
+      test.info().annotations.push({ type: 'pilot-incomplete-creator-link', description: reason })
+      continue
+    }
+    await expect(creatorLink).toBeVisible()
     const href = await page.locator('a[href^="/en/experiences/"][href*="src=guide"]')
       .evaluateAll(links => links.map(link => link.getAttribute('href')).find(Boolean) ?? null)
-    if (href) return href
+    if (href) {
+      // Once a complete path is selected, a broken creator is a funnel regression.
+      const creatorHref = await creatorLink.getAttribute('href')
+      const creatorResponse = await page.goto(creatorHref as string)
+      expect(creatorResponse?.status(), `${creatorHref} should return HTTP 200`).toBe(200)
+      await expect(page.locator('h1')).toBeVisible()
+      return href
+    }
   }
+  test.skip(guideLinks.length > 0 && incompleteReasons.length === guideLinks.length, incompleteReasons.join('; '))
   throw new Error('CONTENT_MISSING: no featured guide has an attributed experience link')
 }
