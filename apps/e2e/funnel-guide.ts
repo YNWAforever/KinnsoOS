@@ -1,4 +1,33 @@
-import { test, expect, type Page } from '@playwright/test'
+import { test, expect, type Page, type Response } from '@playwright/test'
+
+async function visitPublishedGuide(page: Page, guideHref: string): Promise<void> {
+  const guideUrl = new URL(guideHref, test.info().project.use.baseURL)
+  const refreshPath = `/api/guides/${guideUrl.pathname.slice('/en/g/'.length)}`
+  const isGuideRefresh = (response: Response) => response.request().method() === 'GET'
+    && new URL(response.url()).origin === guideUrl.origin
+    && new URL(response.url()).pathname === refreshPath
+  let observedRefresh: Response | undefined
+  const observeRefresh = (response: Response) => {
+    if (isGuideRefresh(response)) observedRefresh = response
+  }
+  page.on('response', observeRefresh)
+  try {
+    const response = await page.goto(guideHref)
+    expect(response?.status(), `${guideHref} should return HTTP 200`).toBe(200)
+    await expect(page.locator('h1')).toBeVisible()
+    if (await page.locator('.k-app').count() > 0) {
+      // Workbench shows the SSR guide during its client refresh without a loading
+      // marker. That read must succeed before missing creator links can soft-skip.
+      const refresh = observedRefresh ?? await page.waitForResponse(isGuideRefresh)
+      expect(refresh.status(), `${guideHref} guide refresh should return HTTP 200`).toBe(200)
+      expect((await refresh.json()).ok, `${guideHref} guide refresh should succeed`).toBe(true)
+    }
+    await expect(page.getByText('Loading…', { exact: true })).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Retry guide', exact: true })).toBeHidden()
+  } finally {
+    page.off('response', observeRefresh)
+  }
+}
 
 export async function findPublishedGuideLinks(page: Page): Promise<string[]> {
   // KinnsoOS loads the catalog after hydration. Do not mistake loading or a
@@ -23,11 +52,7 @@ export async function findPublishedGuideLinks(page: Page): Promise<string[]> {
 export async function findAttributedExperience(page: Page, guideLinks: string[]): Promise<string> {
   const incompleteReasons: string[] = []
   for (const guideHref of guideLinks) {
-    const response = await page.goto(guideHref)
-    expect(response?.status(), `${guideHref} should return HTTP 200`).toBe(200)
-    await expect(page.locator('h1')).toBeVisible()
-    await expect(page.getByText('Loading…', { exact: true })).toBeHidden()
-    await expect(page.getByRole('button', { name: 'Retry guide', exact: true })).toBeHidden()
+    await visitPublishedGuide(page, guideHref)
     const creatorLink = page.locator('a[href^="/en/c/"]').first()
     if (await creatorLink.count() === 0) {
       const reason = `pilot-incomplete-creator-link: guide ${guideHref} has no creator link`

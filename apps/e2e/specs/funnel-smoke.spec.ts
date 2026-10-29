@@ -40,8 +40,8 @@ test('anonymous KinnsoOS navigation uses traveller-first entry points', async ({
   const homeResponse = await page.goto('/en')
   expect(homeResponse?.status(), 'home should return HTTP 200').toBe(200)
 
-  // Local R7.10 builds apps/web Navbar; Nightly/synthetic pilot chrome uses Workbench links.
-  const links = process.env.R7_10_LOCAL === '1'
+  // Local R7.10 and the web deploy gate use apps/web Navbar; Nightly uses Workbench links.
+  const links = process.env.R7_10_LOCAL === '1' || test.info().config.metadata.navigationShell === 'web'
     ? [
         ['Explore', '/en/explore'],
         ['For Creators', '/en/for-creators'],

@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
+import { setTimeout } from 'node:timers';
 import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath, URL } from 'node:url';
@@ -27,20 +28,41 @@ test('actual Nightly specs preserve pilot skips and hard funnel failures on synt
     ['Explore', 'explore'], ['My trips', 'trips'], ['Record', 'record'],
     ['For creators', 'studio'], ['For business', 'merchants/dashboard'],
   ].map(([name, path]) => `<a href="/en/${path}">${name}</a>`).join('') + '</nav></header>';
+  const webHeader = '<header><nav>' + [
+    ['Explore', 'explore'], ['For Creators', 'for-creators'], ['For Merchants', 'for-merchants'],
+    ['Sign in', 'sign-in'], ['Sign up', 'sign-up'],
+  ].map(([name, path]) => `<a href="/en/${path}">${name}</a>`).join('') + '</nav></header>';
   const server = createServer((request, response) => {
     requests.push({ method: request.method, path: request.url });
     response.setHeader('Content-Type', 'text/html');
     if (request.url === '/en') {
       response.statusCode = mode === 'home-failure' ? 503 : 200;
-      const guides = mode === 'incomplete' ? ['first', 'second'] : mode.startsWith('mixed') ? ['first', 'complete'] : ['complete'];
+      const guides = mode.startsWith('refresh-') ? ['first'] : mode === 'incomplete' ? ['first', 'second'] : mode.startsWith('mixed') ? ['first', 'complete'] : ['complete'];
       const catalog = mode === 'empty' ? '<p>No published guides yet.</p>' : mode === 'catalog-error'
         ? '<p>Published content could not be loaded. Please retry.</p>'
         : guides.map(guide => `<a href="/en/g/${guide}">${guide}</a>`).join('');
-      response.end(`${header}<main><h1>Synthetic KinnsoOS fixture</h1>${catalog}</main>`);
+      const navigation = mode.startsWith('web-') ? webHeader : header;
+      const checkedHeader = mode === 'web-deployed-broken' ? navigation.replace('/en/for-creators', '/en/wrong') : navigation;
+      response.end(`${checkedHeader}<main><h1>Synthetic KinnsoOS fixture</h1>${catalog}</main>`);
     } else if (/^\/en\/g\/(first|second|complete)$/.test(request.url)) {
       const creator = request.url.endsWith('/complete') ? '<a href="/en/c/author">Creator</a>' : '';
       const experience = mode === 'mixed-no-experience' ? '' : '<a href="/en/experiences/linked?src=guide">Experience</a>';
-      response.end(`<h1>Synthetic published guide</h1>${creator}${experience}`);
+      const guide = `<h1>Synthetic published guide</h1>${creator}${experience}`;
+      response.end(mode.startsWith('refresh-') ? `<div class="k-app">${guide}</div><script>
+        fetch('/api/guides/first').then(response => response.json()).then(result => {
+          if (!result.ok) document.querySelector('.k-app').innerHTML = '<h1>Published guide</h1>' +
+            (result.code === 'NOT_FOUND' ? '<p>Guide not found.</p>' : '<p>Guide could not be loaded.</p><button>Retry guide</button>');
+        });
+      </script>` : guide);
+    } else if (request.url === '/api/guides/first') {
+      const status = mode === 'refresh-failure' ? 503 : mode === 'refresh-notfound' ? 404 : 200;
+      const result = mode === 'refresh-incomplete' ? { ok: true, data: { title: 'Synthetic published guide' } }
+        : { ok: false, code: mode === 'refresh-notfound' ? 'NOT_FOUND' : 'UNAVAILABLE' };
+      setTimeout(() => {
+        response.statusCode = status;
+        response.setHeader('Content-Type', 'application/json');
+        response.end(JSON.stringify(result));
+      }, 1000);
     } else if (request.url === '/en/c/author') {
       response.statusCode = mode === 'mixed-broken-creator' ? 500 : 200;
       response.end('<h1>Synthetic creator</h1>');
@@ -54,8 +76,16 @@ test('actual Nightly specs preserve pilot skips and hard funnel failures on synt
   });
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
   const funnel = ['funnel-smoke', '--grep', 'home to'];
+  const navigation = ['funnel-smoke', '--grep', 'anonymous KinnsoOS navigation'];
   try {
     for (const scenario of [
+      { mode: 'refresh-failure', specs: funnel, failed: true, error: 'guide refresh should return HTTP 200' },
+      { mode: 'refresh-notfound', specs: funnel, failed: true, error: 'guide refresh should return HTTP 200' },
+      { mode: 'refresh-ok-false', specs: funnel, failed: true, error: 'guide refresh should succeed' },
+      { mode: 'refresh-incomplete', specs: funnel, skipped: true, incomplete: ['first'] },
+      { mode: 'web-deployed', specs: ['--config', 'playwright.prod.config.ts', ...navigation] },
+      { mode: 'web-deployed-broken', specs: ['--config', 'playwright.prod.config.ts', ...navigation], failed: true, error: '/en/for-creators' },
+      { mode: 'web-local', specs: navigation, local: true },
       { mode: 'empty', specs: ['funnel-smoke', 'funnel-fixture', 'notfound'], skipped: true },
       { mode: 'full', specs: ['funnel-smoke', 'funnel-fixture', 'notfound'] },
       { mode: 'incomplete', specs: funnel, skipped: true, incomplete: ['first', 'second'] },
@@ -74,7 +104,7 @@ test('actual Nightly specs preserve pilot skips and hard funnel failures on synt
       const run = await promisify(execFile)('pnpm', [
         '--filter', '@kinnso/e2e', 'e2e', ...scenario.specs, '--reporter=json', '--workers=1',
       ], {
-        cwd: root, env: { ...process.env, CI: '', E2E_BASE_URL: `http://127.0.0.1:${server.address().port}`,
+        cwd: root, env: { ...process.env, CI: '', R7_10_LOCAL: scenario.local ? '1' : '', E2E_BASE_URL: `http://127.0.0.1:${server.address().port}`,
           BOOKING_LIVE: 'false', PLAYWRIGHT_JSON_OUTPUT_NAME: reportPath },
         maxBuffer: 8 * 1024 * 1024, timeout: 80_000,
       }).then(result => ({ ...result, code: 0 })).catch(error => error);

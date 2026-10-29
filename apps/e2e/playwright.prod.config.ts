@@ -40,5 +40,7 @@ export const PROD_SAFE_SPECS = [
 
 export default defineConfig({
   ...baseConfig,
+  // This deploy gate still targets apps/web, whose anonymous Navbar differs from the pilot.
+  metadata: { ...baseConfig.metadata, navigationShell: 'web' },
   testMatch: [...PROD_SAFE_SPECS],
 })
