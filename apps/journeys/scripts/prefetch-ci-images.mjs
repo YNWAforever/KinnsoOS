@@ -33,9 +33,17 @@ function validatedLock(lock){
  }
  return entries;
 }
+function retryablePull(result,message){
+ // Authentication, missing images and an unavailable daemon cannot recover via a registry mirror.
+ if(/unauthorized|forbidden|denied|manifest unknown|cannot connect to the docker daemon|\b40[13]\b/i.test(message))return false;
+ // Local process setup failures are not hung registry downloads.
+ if(['ENOENT','EACCES','ENOEXEC','EINVAL','ENOBUFS'].includes(result.error?.code))return false;
+ return Boolean(result.status===null||result.error||result.signal||/toomanyrequests|\b429\b|timeout|timed[ -]?out|awaiting headers|request cancel(?:ed|led)|dial tcp|connection (?:refused|reset|closed|aborted)|temporary failure|\beof\b|net\/http|context deadline|ECONNRESET|ECONNREFUSED|EAI_AGAIN|network is unreachable|no such host/i.test(message));
+}
 export async function prefetchCiImages(profile,{env=process.env,run=spawnSync,wait=pause,clock=Date.now,random=Math.random,log=console.log,lock=verifiedImages}={}){
  const plan=imagePlan(profile);requireContext(env);const locks=validatedLock(lock);
  const receipt={status:'IN_PROGRESS',profile,cliVersion,sourceRevision:/^[a-f0-9]{40}$/.test(env.GITHUB_SHA??'')?env.GITHUB_SHA:null,images:[]};
+ let failedImage;
  const deadline=clock()+480000;
  const execute=(program,args)=>{
   const remaining=deadline-clock();if(remaining<=0)throw Error('REGISTRY_TIME_BUDGET_EXHAUSTED');
@@ -49,16 +57,17 @@ export async function prefetchCiImages(profile,{env=process.env,run=spawnSync,wa
    let attempts=0,source='GHCR',reference=primary+'@'+pin.digest;
    for(;;){
     attempts++;log(`Pinned image ${image}, attempt ${attempts}/5`);
+    failedImage={image,attempts,source,downloadReference:reference,lockedDigest:pin.digest};
     const result=execute('docker',['pull','--platform','linux/amd64',reference]);
     if(result.status===0&&!result.error)break;
-    const message=String(result.stderr??'')+'\n'+String(result.stdout??'');
-    log(message.slice(-2000));
-    if(result.status===null||result.error||result.signal||/unauthorized|forbidden|denied|manifest unknown|\b40[13]\b/i.test(message)||!/toomanyrequests|\b429\b/i.test(message))throw Error('IMAGE_PULL_FAILED');
+    const message=String(result.stderr??'')+'\n'+String(result.stdout??'')+'\n'+String(result.error?.message??'');
+    failedImage.lastError=message.slice(-2000);log(failedImage.lastError);
+    if(!retryablePull(result,message))throw Error('IMAGE_PULL_FAILED');
     if(attempts===5)throw Error('REGISTRY_RETRY_EXHAUSTED');
     const delay=[15000,30000,60000,60000][attempts-1]+Math.floor(random()*5001);
     if(clock()+delay>=deadline)throw Error('REGISTRY_TIME_BUDGET_EXHAUSTED');
     if(source==='GHCR'){source='VERIFIED_DOCKER_HUB';reference=pin.mirror+'@'+pin.digest;}
-    log(`Registry throttled; wait ${delay}ms before acquiring the same locked digest via ${source}`);await wait(delay);
+    log(`Transient registry pull failure; wait ${delay}ms before acquiring the same locked digest via ${source}`);await wait(delay);
    }
    const inspection=execute('docker',['image','inspect',reference,'--format','{{json .RepoDigests}}']);
    let digests=[];try{digests=JSON.parse(inspection.stdout);}catch{}
@@ -66,10 +75,11 @@ export async function prefetchCiImages(profile,{env=process.env,run=spawnSync,wa
    const matches=d=>typeof d==='string'&&(d===reference||(source==='VERIFIED_DOCKER_HUB'&&canonical(d)===canonical(reference)));
    if(inspection.status!==0||inspection.error||!Array.isArray(digests)||!digests.some(matches))throw Error('IMAGE_DIGEST_REQUIRED');
    receipt.images.push({image,attempts,source,downloadReference:reference,lockedDigest:pin.digest,digests:digests.filter(matches)});
+   failedImage=undefined;
    for(const tag of [image,...(alias?[alias]:[])]){const tagged=execute('docker',['tag',reference,tag]);if(tagged.status!==0||tagged.error)throw Error('LOCAL_IMAGE_ALIAS_FAILED');}
   }
   receipt.status='PASS';return receipt;
- }catch(error){error.receipt={...receipt,status:'FAIL',reason:error.message};throw error;}
+ }catch(error){error.receipt={...receipt,status:'FAIL',reason:error.message,...(failedImage?{failedImage}:{})};throw error;}
 }
 async function main(args){
  let receipt;
