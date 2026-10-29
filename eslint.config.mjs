@@ -4,7 +4,7 @@ import tseslint from 'typescript-eslint'
 /**
  * Repo-wide lint pass.
  *
- * `turbo run lint` resolves to exactly one real task (web#lint), so before this config the
+ * `turbo run lint` runs web#lint and @kinnso/journeys#lint. Before this config the
  * two service-role-wielding workers, the e2e harness, the root scripts and all four
  * packages were never linted at all. This config covers everything turbo does not, and the
  * root `lint` script runs both.
@@ -18,8 +18,8 @@ import tseslint from 'typescript-eslint'
 export default tseslint.config(
   {
     ignores: [
-      // apps/web brings its own flat config (eslint-config-next) and its own lint script,
-      // which `turbo run lint` still runs. Linting it twice, under two rule sets, would
+      // Both Next.js apps bring their own flat config and lint script, which
+      // `turbo run lint` runs. Linting them twice, under two rule sets, would
       // report conflicting results for the same file.
       'apps/web/**',
       'apps/journeys/**',

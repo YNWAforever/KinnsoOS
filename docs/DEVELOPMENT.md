@@ -26,6 +26,7 @@ These suites use local fixtures or fake dependency ports. They do not start/rese
 node --test tooling-tests/*.test.mjs
 pnpm test:journeys
 pnpm --filter @kinnso/journeys typecheck
+pnpm lint                 # repository + both apps, including Journeys
 python -m unittest discover -s apps/journeys/tests -p source_package_test.py
 python scripts/git_deployment_hold_test.py -v
 ```

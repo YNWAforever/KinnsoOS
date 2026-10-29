@@ -28,7 +28,7 @@ The pre-existing isolated development target is `kinnsoos-b1-20261002`, API `htt
 - `pnpm test` / `npm test`: tooling tests and all workspace test scripts. Live integration suites require their guarded local environment.
 - `pnpm typecheck` / `npm run typecheck`: every workspace's TypeScript checks.
 - `pnpm build` / `npm run build`: both Next.js production builds; safe flags and approved per-app environments are required.
-- `pnpm lint`: existing service and original-site lint checks.
+- `pnpm lint`: repository, Journeys and original-site lint checks; see [Journeys lint](apps/journeys/README.md#lint).
 - `pnpm test:integration`, `pnpm test:e2e`: guarded Journeys integration and browser suites.
 - `pnpm --filter @kinnso/e2e e2e --config playwright.r7-10.config.ts`: original-site browser regression suite.
 - `pnpm source:pack`: the allowlisted Journeys corresponding-source archive.
