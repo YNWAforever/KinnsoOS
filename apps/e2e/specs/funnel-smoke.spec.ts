@@ -40,14 +40,25 @@ test('anonymous KinnsoOS navigation uses traveller-first entry points', async ({
   const homeResponse = await page.goto('/en')
   expect(homeResponse?.status(), 'home should return HTTP 200').toBe(200)
 
+  // Local R7.10 builds apps/web Navbar; Nightly/synthetic pilot chrome uses Workbench links.
+  const links = process.env.R7_10_LOCAL === '1'
+    ? [
+        ['Explore', '/en/explore'],
+        ['For Creators', '/en/for-creators'],
+        ['For Merchants', '/en/for-merchants'],
+        ['Sign in', '/en/sign-in'],
+        ['Sign up', '/en/sign-up'],
+      ] as const
+    : [
+        ['Explore', '/en/explore'],
+        ['My trips', '/en/trips'],
+        ['Record', '/en/record'],
+        ['For creators', '/en/studio'],
+        ['For business', '/en/merchants/dashboard'],
+      ] as const
+
   const header = page.getByRole('banner')
-  for (const [name, href] of [
-    ['Explore', '/en/explore'],
-    ['My trips', '/en/trips'],
-    ['Record', '/en/record'],
-    ['For creators', '/en/studio'],
-    ['For business', '/en/merchants/dashboard'],
-  ]) {
+  for (const [name, href] of links) {
     await expect(header.getByRole('link', { name, exact: true })).toHaveAttribute('href', href)
   }
 })
