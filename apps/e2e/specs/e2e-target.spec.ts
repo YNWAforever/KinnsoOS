@@ -21,7 +21,7 @@ test('the shared Playwright target accepts every loopback spelling without an op
 })
 
 test('the shared Playwright target refuses a remote host until it is explicitly allowed', () => {
-  const remote = 'https://remix-kinnso-web.vercel.app'
+  const remote = 'https://kinnso-os.vercel.app'
 
   expect(() => resolveE2EBaseURL({ E2E_BASE_URL: remote })).toThrow(E2E_REMOTE_TARGET_OPT_IN)
   expect(() => resolveE2EBaseURL({ E2E_BASE_URL: remote, [E2E_REMOTE_TARGET_OPT_IN]: 'true' }))

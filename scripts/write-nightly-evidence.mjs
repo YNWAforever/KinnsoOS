@@ -11,7 +11,7 @@ function main() {
     values[args[i]] = args[i + 1];
   }
   const surface = values['--surface'], outcome = values['--outcome'], target = values['--target'];
-  if (!['funnel', 'sitemap'].includes(surface) || !['success', 'failure', 'skipped', 'cancelled'].includes(outcome) || target !== 'https://remix-kinnso-web.vercel.app' || !values['--report'] || !values['--output']) throw Error('Invalid evidence scope');
+  if (!['funnel', 'sitemap'].includes(surface) || !['success', 'failure', 'skipped', 'cancelled'].includes(outcome) || target !== 'https://kinnso-os.vercel.app' || !values['--report'] || !values['--output']) throw Error('Invalid evidence scope');
   const source = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   if (!/^[a-f0-9]{40}$/.test(source) || process.env.GITHUB_SHA !== source) throw Error('Checkout revision mismatch');
 
@@ -43,14 +43,15 @@ function main() {
     sourceRevision: source, runtimeSourceRevision: 'NOT_CHECKED',
     runId: process.env.GITHUB_RUN_ID ?? null, runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? null,
     event: process.env.GITHUB_EVENT_NAME ?? null,
-    targetOrigin: target, scope: surface === 'funnel' ? 'legacy_anonymous_readonly_plus_labelled_funnel_fixture' : 'legacy_anonymous_sitemap_gets',
+    targetOrigin: target, scope: surface === 'funnel' ? 'kinnso_os_anonymous_readonly_plus_labelled_funnel_fixture' : 'kinnso_os_anonymous_sitemap_gets',
     executionOutcome: outcome, reportStatus, counts,
     signedInAcceptance: 'NOT_RUN', journeysRoleAcceptance: 'NOT_RUN',
   };
   mkdirSync(path.dirname(values['--output']), { recursive: true });
   writeFileSync(values['--output'], JSON.stringify(receipt, null, 2) + '\n', { flag: 'wx' });
   console.log(JSON.stringify(receipt));
-  if (outcome === 'success' && (reportStatus !== 'VALID' || (surface === 'funnel' ? counts.failed > 0 : counts.failures > 0))) process.exitCode = 1;
+  const acceptableReport = reportStatus === 'VALID' || (surface === 'sitemap' && reportStatus === 'EMPTY');
+  if (outcome === 'success' && (!acceptableReport || (surface === 'funnel' ? counts.failed > 0 : counts.failures > 0))) process.exitCode = 1;
 }
 
 try { main(); } catch { console.error('Read-only evidence could not be verified; raw report and environment values suppressed.'); process.exitCode = 1; }

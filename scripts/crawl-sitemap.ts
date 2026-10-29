@@ -2,7 +2,7 @@ import { pathToFileURL } from 'node:url'
 import { writeFile } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 
-const DEFAULT_BASE_URL = 'https://remix-kinnso-web.vercel.app'
+export const DEFAULT_BASE_URL = 'https://kinnso-os.vercel.app'
 const LOC_PATTERN = /<loc\b[^>]*>([\s\S]*?)<\/loc>/gi
 const DETAIL_ERROR_TITLES = [
   "We couldn't load this page",
@@ -105,6 +105,8 @@ function hasHtmlNoindex(body: string): boolean {
  * Fetch the sitemap index/shards, then request each page URL listed by them.
  * Sitemap documents are visited once and page URLs are de-duplicated before the
  * bounded worker pool checks their final response status.
+ * This is an owner-run availability check, not a search indexer: robots.txt
+ * Disallow directives do not fail the check or manufacture page URLs.
  */
 export async function crawlSitemap({
   baseUrl,
@@ -164,6 +166,12 @@ export async function crawlSitemap({
     if (isUrlset) {
       for (const loc of locs) pageUrls.add(resolveUrl(loc, url))
       return 'ok'
+    }
+
+    // An empty urlset is valid pilot content; an HTML error page is not.
+    if (locs.length === 0) {
+      failures.push({ url, error: 'InvalidSitemap' })
+      return 'failed'
     }
 
     // Be tolerant of valid XML with no namespace/root marker while preserving
@@ -253,7 +261,7 @@ async function runCli(): Promise<void> {
       runAttempt: process.env.GITHUB_RUN_ATTEMPT ?? 'NOT_CHECKED',
     }) + '\n', { flag: 'wx' })
   }
-  console.log(`Checked ${result.checked} sitemap URLs`)
+  console.log(`Checked ${result.checked} sitemap URLs; ${result.failures.length} failures`)
   for (const failure of result.failures) {
     const detail = failure.status === undefined ? failure.error ?? 'Failed' : String(failure.status)
     console.error(`${failure.url} ${detail}`)

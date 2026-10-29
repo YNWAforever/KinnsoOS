@@ -1,5 +1,26 @@
 import { test, expect } from '@playwright/test'
-import { findAttributedExperience } from '../funnel-guide'
+import { findAttributedExperience, findPublishedGuideLinks } from '../funnel-guide'
+
+for (const message of ['No published guides yet.', 'Published content is not connected yet.']) {
+  test(`synthetic pilot catalog: ${message}`, async ({ page }) => {
+    await page.setContent(`<h1>Synthetic pilot fixture</h1><p>${message}</p>`)
+    expect(await findPublishedGuideLinks(page)).toEqual([])
+  })
+}
+
+test('synthetic catalog waits for published guides instead of skipping during loading', async ({ page }) => {
+  await page.setContent(`<h1>Synthetic pilot fixture</h1><p id="catalog">Loading published guides…</p>
+    <script>setTimeout(() => {
+      document.querySelector('#catalog').outerHTML = '<a href="/en/g/second">Published guide</a>'
+    }, 100)</script>`)
+  const guides = await findPublishedGuideLinks(page)
+  expect(guides).toEqual(['/en/g/second'])
+  await page.route('**/en/g/**', route => route.fulfill({ contentType: 'text/html', body:
+    '<h1>Synthetic published guide</h1><a href="/en/c/synthetic">Creator</a>' +
+    '<a href="/en/experiences/synthetic?src=guide">Experience</a>' }))
+  expect(await findAttributedExperience(page, guides)).toBe('/en/experiences/synthetic?src=guide')
+})
+
 test('a summary-only first guide does not stop the attributed-link search', async ({ page }) => {
   await page.route('**/en/g/**', route => route.fulfill({ contentType: 'text/html', body:
     `<h1>Synthetic guide fixture</h1><a href="/en/c/synthetic">Creator</a>` +

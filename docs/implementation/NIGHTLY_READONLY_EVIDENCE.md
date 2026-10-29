@@ -1,41 +1,50 @@
 # Nightly read-only evidence retention
 
-N01/N18 remain **PARTIAL**. Code source `2d0d9381845b577024f4d86b05d0edf4cc165d3f`, based on main `513b8c871f2551fb0989718017fdc73c2e5dc311`.
+The Nightly funnel synthetic targets the KinnsoOS hosted pilot at `https://kinnso-os.vercel.app`. Both workflow jobs, the crawler's default and the evidence writer use this origin. The schedule, permissions, concurrency, pinned actions and `BOOKING_LIVE=false` remain unchanged. The fixture spec serves intercepted synthetic HTML; it does not prove hosted content or signed-in acceptance.
 
-The existing legacy [nightly run 38010991911](https://github.com/YNWAforever/KinnsoOS/actions/runs/38010991911) succeeded at the base SHA and retained zero artifacts. Successful runs therefore could not be audited from their artifacts. This increment retains Playwright JSON/HTML and aggregate sitemap receipts on both success and failure.
+The guide funnel checks `/en` for HTTP 200 before inspecting published `/en/g/` links. It waits for catalog loading to finish. An explicit empty or unconfigured catalog with zero visible guide links produces a Playwright skip with reason `PILOT_EMPTY: no published /en/g/ guides are available; guide-to-experience funnel not exercised.` The JSON report retains that reason and the receipt retains the skipped count. A catalog error, home non-200 or a published guide missing the required creator/attributed experience link remains a failure. When guides exist, the existing guide-to-experience and price assertions run. Anonymous navigation checks the KinnsoOS header destinations. With booking disabled, browser smoke requests use GET only; other methods are blocked. The notfound spec continues to require HTTP 404, including `/en/experiences/r7-missing-experience`.
 
-The original target `https://remix-kinnso-web.vercel.app`, schedule, permissions, concurrency, pinned actions, dependency setup, test selection and `BOOKING_LIVE=false` remain unchanged. The workflow continues anonymous read-only legacy checks plus an explicitly labelled intercepted funnel fixture. It does not prove Journeys runtime or signed-in acceptance.
+A valid empty sitemap urlset is expected during the pilot. The crawl exits 0 and reports `checked: 0` and `failureCount: 0`; its receipt retains `reportStatus: EMPTY`, `checkedUrls: 0` and `failures: 0` and also exits 0. This explicitly records zero page coverage. Missing sitemaps, network errors and non-sitemap HTML still fail; zero checked URLs cannot hide a nonzero failure count. The synthetic is an owner-run GET availability check and does not apply search-indexer robots rules. `robots.txt` containing `Disallow: /` does not fail it, change indexing settings or cause extra page discovery.
 
-Receipts verify checkout SHA against the workflow source and the actual report's origin, source, run ID and attempt. They preserve discovered counts, failures, skips and flakes separately. A skipped or cancelled command cannot reuse an existing report as executed evidence. Missing, malformed, empty or contradictory successful funnel evidence fails the evidence step; existing command failures remain failures. Sitemap counts are checked URLs and failure records, not invented pass counts. Sitemap JSON contains no raw URLs, response bodies or error strings.
+Receipts verify checkout SHA against the workflow source and the actual report's origin, source, run ID and attempt. They preserve failures, skips and flakes separately. A skipped or cancelled command cannot reuse an existing report as executed evidence. Missing, malformed, zero-test or contradictory successful funnel evidence fails the evidence step; command failures remain failures. Sitemap JSON contains aggregate counts without raw URLs, response bodies or transport details. Both jobs retain receipts and reports on success and failure.
 
-`runtimeSourceRevision` stays `NOT_CHECKED`, and both signed-in and Journeys role acceptance stay `NOT_RUN`. A checkout SHA identifies the checker source, not the deployed remote runtime. Upload success or a green nightly cannot close those gates.
+`runtimeSourceRevision` stays `NOT_CHECKED`, and signed-in and Journeys role acceptance stay `NOT_RUN`. A checkout SHA identifies the checker source, not the deployed runtime. A green nightly with an empty sitemap or skipped funnel cannot close those acceptance gates. The historical zero-page rejection introduced during PR #49 is superseded by this explicit pilot contract; invalid sitemap responses still fail.
 
-## Local verification
+## Local verification (2026-10-29)
 
-All final code checks ran from the clean code SHA above with frozen pnpm dependencies on Windows, Node 24.18.0. No hosted fixtures or provider writes were used.
+Frozen pnpm 11.6.0 dependencies, Node 24.22.1 and Chromium were used. Production probes used read-only GETs. No hosted content, provider or environment settings were changed.
 
-| Check | Actual result | Scope |
-| --- | --- | --- |
-| New nightly contracts | 24 PASS, 0 FAIL/SKIP | Meaningful RED-to-GREEN origin/source/run/attempt, count, missing report, skip and real loopback crawler controls |
-| Complete root tooling | 57 PASS, 0 FAIL/SKIP | Native Node tooling, including the new contracts |
-| Journeys unit / build / typecheck | 339 PASS, 0 FAIL/SKIP; build/typecheck exit 0 | Local source verification |
-| Existing sitemap / browser-artifact tests | 15 PASS, 0 FAIL | Explicit unit mode with injected fetch/contracts; not DB integration |
-| Actual Playwright funnel fixture | 2 PASS, 0 FAIL/SKIP/FLAKY | Loopback intercepted HTML, source-bound JSON; not hosted or signed-in UAT |
-| ESLint / e2e typecheck | Exit 0 | Changed CLI/config scope |
-| Parsed workflow comparison | PASS | Outside the declared reporter, receipt and retention changes, original workflow semantics match |
+| Command / control | Result |
+| --- | --- |
+| `pnpm lint` | Exit 0; existing warnings only |
+| `pnpm --filter @kinnso/e2e typecheck` | Exit 0 |
+| `pnpm --filter @kinnso/e2e exec tsc --noEmit --strict --skipLibCheck --target ES2022 --module esnext --moduleResolution bundler --typeRoots node_modules/@types ../../scripts/crawl-sitemap.ts` | Exit 0 |
+| `pnpm exec node --test tooling-tests/*.test.mjs` | 113 passed; no failures or skips |
+| `SUPABASE_URL=http://127.0.0.1:54421 pnpm --filter web test tests/crawl-sitemap.test.ts` | 16 passed; injected fetch only, no database requests |
+| Actual Nightly specs against synthetic loopback HTML, empty catalog | 11 passed, 1 skipped; JSON contains the `PILOT_EMPTY` reason |
+| Actual Nightly specs against synthetic loopback HTML, complete funnel | 12 passed, 0 skipped |
+| Synthetic home 503 / missing-experience 200 / catalog error controls | Each exits 1; no empty-pilot skip hides these errors |
+| `pnpm typecheck` | Blocked before Turbo: generated `packages/db/types.ts` is absent; scoped checker typechecks above pass |
 
-Earlier setup failures are retained separately: missing Turbo before dependency setup, two unit-mode attempts missing `SUPABASE_URL`, lint errors corrected before the final run, and a private verifier expectation that omitted Playwright's automatic `actualWorkers` metadata. They are not counted as product RED or final passes. Product RED controls were independently observed before their fixes.
+The GET probe confirms `/en` HTTP 200, `/sitemap.xml` HTTP 200 with an empty urlset, `/robots.txt` HTTP 200 with `Disallow: /`, and the missing experience HTTP 404. Run the same crawl used by the workflow with:
+
+```sh
+BASE_URL=https://kinnso-os.vercel.app \
+  node --experimental-strip-types scripts/crawl-sitemap.ts
+```
+
+It exits 0 with `Checked 0 sitemap URLs; 0 failures`.
+
+The browser probe revealed a material difference from the initial server-HTML probe: `/en` initially has zero guide links and “Loading published guides…”, but hydration loads four visible guide links from a catalog with eight published entries. The first guide is a summary without the required `/en/c/` creator link. Consequently the actual remote guide funnel fails that existing assertion; it is **not** recorded as an empty-pilot skip. The five notfound checks, KinnsoOS navigation and five intercepted fixture tests pass (11 passed, 1 failed overall). This remains a live content/contract limitation; the checker does not invent content or weaken the guide assertions to turn it green.
+
+```sh
+E2E_BASE_URL=https://kinnso-os.vercel.app E2E_ALLOW_REMOTE_TARGET=1 \
+  BOOKING_LIVE=false PLAYWRIGHT_JSON_OUTPUT_NAME=/tmp/nightly-funnel.json \
+  pnpm --filter @kinnso/e2e e2e funnel-smoke funnel-fixture notfound --reporter=list,json
+```
 
 ## Remaining gates and rollback
 
-At this documentation checkpoint the final PR head's Linux Root/Journeys CI and configured current-head review are pending. The candidate hosted nightly has not run. After any green authorized merge, inspect the next normal scheduled run's actual artifact, source, attempt, resolved target, command outcome and denominators; retain failures/skips rather than infer acceptance from job status. Do not use the intercepted fixture as real content or role UAT.
+The scheduled workflow with these changes has not run. After an authorized merge, inspect its actual reports, receipt source/run/attempt, target, command outcome and coverage counts. The hydrated guide contract failure must remain visible until the published content supplies the required links or the owner authorizes a different pilot acceptance contract. Intercepted fixtures are not hosted funnel acceptance.
 
-Revert this focused increment to remove the additional evidence collection. Preserve historical artifacts and original failure records. No database, capability, provider, credential, indexing, production booking/payment or application flow changes are included.
-
-## Configured review correction
-
-Current code increment `4beae1aaa34737684b7598a4e7450a0d55b62156` corrects finding [4236746985](https://github.com/YNWAforever/KinnsoOS/pull/49#discussion_r4236746985). The earlier implementation accepted zero checked sitemap URLs as valid success. Three true RED controls, including actual loopback empty XML and HTML crawler output, demonstrated the error. Receipts now mark zero checked URLs `EMPTY`; a successful command cannot satisfy the evidence gate with that result. Original counts and failures are retained. The allowed origin is substituted only in the receipt unit controls; those tests claim no remote crawl.
-
-All 27 evidence controls and the complete 60 root tooling cases pass with no failures/skips at the clean code SHA; Journeys 339 unit tests, build and typecheck pass at that SHA. Earlier 24/57 counts above remain historical. The original head `84e7750` root push failed profile enquiries with Next dev JSON parse errors; its failure artifact is preserved, its cause is unconfirmed. The original root PR passed, but that does not validate the corrected head. Fresh Linux CI and current-head configured review are required. Hosted nightly and role UAT remain `NOT_RUN`.
-
-Latest-main integration: native60tooling PASS0FAIL0SKIP against the main02cac8b combination. All five existing N18 source/config blobs are identical to1e87155; Journeys application subtree matches verified main02 exactly. Both append-only traceability increments and all18tasks/53mappings are preserved. Current integrated-head CI/configured review are fresh gates. Scheduled hosted nightly, formal role/U06 acceptance remain NOT_RUN; no nightly dispatch or production operation was performed.
+Revert this focused change to restore the previous checker behavior. No application, database, provider, credential, indexing or booking/payment configuration changes are included.
