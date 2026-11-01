@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-31T10:26:14.356Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3500",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [],
+  "failures": [
+    {
+      "name": "Review: actor invalidation during photo preparation prevents finalize",
+      "error": "Error: expect(locator).toContainText(expected) failed\n\nLocator: getByRole('alert')\nExpected substring: \"帳戶\"\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.have.text\" with timeout 7000ms\n  - waiting for getByRole('alert')\n"
+    },
+    {
+      "name": "Review: staging ACK loss keeps an opaque recoverable run reference",
+      "error": "Error: expect(received).toBeTruthy()\n\nReceived: null"
+    },
+    {
+      "name": "Review: T4 can explicitly remove a withdrawn bookmark",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByText('私人 brief 已保存並讀回。', { exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByText('私人 brief 已保存並讀回。', { exact: true })\n"
+    },
+    {
+      "name": "Review: original editor retries the same deletion after lost ACK",
+      "error": "Error: expect(page).toHaveURL(expected) failed\n\nExpected: \"http://127.0.0.1:3500/zh-HK/trips\"\nReceived: \"http://127.0.0.1:3500/zh-HK/trips/71000000-0000-4000-8000-000000000001\"\nTimeout:  7000ms\n\nCall log:\n  - Expect \"to.have.url\" with timeout 7000ms\n    11 × unexpected value \"http://127.0.0.1:3500/zh-HK/trips/71000000-0000-4000-8000-000000000001\"\n"
+    },
+    {
+      "name": "Review: original editor private cache is memory-only and reset clears pending edits",
+      "error": "Error: expect(locator).toContainText(expected) failed\n\nLocator: getByTestId('trip-save-state')\nExpected substring: \"未確認\"\nReceived string:    \"未保存，輸入已保留，請重試同一操作。\"\nTimeout: 7000ms\n\nCall log:\n  - Expect \"to.have.text\" with timeout 7000ms\n  - waiting for getByTestId('trip-save-state')\n    2 × locator resolved to <p role=\"status\" aria-live=\"polite\" data-testid=\"trip-save-state\">編輯中 — 尚未保存</p>\n      - unexpected value \"編輯中 — 尚未保存\"\n    9 × locator resolved to <p role=\"status\" aria-live=\"polite\" data-testid=\"trip-save-state\">未保存，輸入已保留，請重試同一操作。</p>\n      - unexpected value \"未保存，輸入已保留，請重試同一操作。\"\n"
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

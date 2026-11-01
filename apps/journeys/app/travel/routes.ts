@@ -1,4 +1,5 @@
 import { fixtures } from "./model";
+import { isStudioRoute } from '../../lib/studio/navigation';
 /** Supported amendments plus preserved original entry points. */
 const pages = new Set([
   "sessions",
@@ -81,6 +82,7 @@ const retained = new Set([
   "legal/payment-handling",
 ]);
 export function isKnownRoute(path: string) {
+  if(isStudioRoute(path))return true;
   if(/^studio\/missions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return true;
   if(path==='merchant/invitation')return true;
   if (

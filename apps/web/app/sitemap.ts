@@ -10,7 +10,7 @@ import { LOCALES, URL_CATEGORIES, toUrlCategory } from '@/lib/i18n/config'
 import { SITE_URL } from '@/lib/seo/metadata'
 import { MARKETING_PATHS } from '@/lib/seo/routes'
 
-export const revalidate = 21600 // 6h
+export const revalidate = 0 // Guide visibility is checked on each request after grant revocation.
 
 // The sitemap protocol caps a single file at 50,000 URLs / 50 MB. Because guides and
 // creators each fan out across every locale, the URL count grows fast, so we shard well

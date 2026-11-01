@@ -15,7 +15,7 @@ export function backendFailure(error: {message?:string; code?:string} | null) {
   if (/trip_not_found|guide_not_found|media_not_found|share_not_found|job_not_found|claim_not_found|merchant_not_found|mission_not_found|notification_not_found|support_not_found|report_not_found|submission_not_found|preset_not_found|creator_not_found/.test(message)) return failure('NOT_FOUND',404);
   if (/revision_conflict|idempotency_conflict|immutable_campaign_terms|already_participant/.test(message)) return failure('CONFLICT',409);
   if (/unauthenticated/.test(message)) return failure('AUTH_REQUIRED',401);
-  if (/forbidden|creator_required|not_authorized/.test(message)) return failure('FORBIDDEN',403);
+  if (/studio_restricted|source_stale|studio_confirmation_required|forbidden|creator_required|not_authorized/.test(message)) return failure('FORBIDDEN',403);
   if (/invalid_|preset_limit|stale_status|source_unavailable|guide_summary|amount_spent_required|invite_quota_exceeded/.test(message) || error?.code?.startsWith('22') || error?.code === '23514') return failure('INVALID',400);
   return failure('UNAVAILABLE',503);
 }

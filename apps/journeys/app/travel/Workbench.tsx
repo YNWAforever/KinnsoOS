@@ -54,6 +54,7 @@ const CreatorWorkspace = dynamic(
   () => import('./CreatorWorkspace').then(mod => mod.CreatorWorkspace),
   {loading: RoleWorkspaceLoading},
 );
+const WorkroomShell = dynamic(() => import('../workroom/WorkroomShell').then(mod => mod.WorkroomShell), {loading: RoleWorkspaceLoading});
 const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspace').then(mod => mod.CreatorMissionsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
 const MerchantOnboarding = dynamic(() => import('./MerchantOnboarding').then(mod => mod.MerchantOnboarding), {loading: RoleWorkspaceLoading});
@@ -271,7 +272,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
   creatorMissionEntry?:PrivateCreatorMissionEntry|null;
-  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
+  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean;conversation?:boolean;creatorBriefHandoff?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
@@ -650,6 +651,7 @@ export function Workbench({
     content = <CreatorShell path={path}>{content}</CreatorShell>;
   if(mode !== 'demo') {
     if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
+    else if(path==='workroom'||path.startsWith('workroom/')||path==='settings/connections')content=<WorkroomShell key={workspaceActor?.id??'guest'} path={path} actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.conversation===true} handoffEnabled={features.creatorBriefHandoff===true&&features.creator===true}/>;
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null} initialGuide={publicGuide}/>;
     else if(path.startsWith('c/')&&publicCreator)content=<PublicCreatorContent creator={publicCreator} locale={locale}/>;

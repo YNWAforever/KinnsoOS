@@ -1,6 +1,8 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import type { Database } from '@kinnso/db'
+import {discoveryDomainTransport} from '@kinnso/journeys/lib/discovery/domain-transport'
+import {capabilities} from '@kinnso/journeys/lib/contracts/capabilities'
 
 type SupabaseServerClientOptions = {
   global?: { headers?: Record<string, string> }
@@ -16,7 +18,7 @@ export async function createSupabaseServerClient(options?: SupabaseServerClientO
     process.env.NEXT_PUBLIC_SUPABASE_URL ?? process.env.SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? process.env.SUPABASE_ANON_KEY!,
     {
-      ...(options?.global ? { global: options.global } : {}),
+      global:{...options?.global,fetch:discoveryDomainTransport({enabled:()=>capabilities(process.env).matchedBriefHandoff?.mode==='connected'})},
       cookies: {
         getAll: () => cookieStore.getAll(),
         setAll: (cookiesToSet) => {

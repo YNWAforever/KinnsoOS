@@ -1,0 +1,361 @@
+{
+  "checkedAt": "2026-10-31T11:13:36.329592+00:00",
+  "checkedAtHongKong": "2026-10-31T19:13:36.329592+08:00",
+  "timezone": "Asia/Hong_Kong",
+  "acceptanceLevel": "LOCAL_EXAMPLES_ONLY",
+  "workspace": "C:\\Users\\laich\\.codex\\worktrees\\kinnso-studio-creator-20261031\\KinnsoOS",
+  "head": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "uncommittedLocalChanges": true,
+  "platform": {
+    "os": "Windows",
+    "node": "24.18.0",
+    "browser": "Windows / Chromium 145.0.7632.6",
+    "viewports": [
+      390,
+      1280
+    ],
+    "physicalMobileTested": false
+  },
+  "runtime": {
+    "URL": "http://127.0.0.1:3499/zh-HK/",
+    "PID": 24908,
+    "Mode": "EXAMPLES_ONLY",
+    "Flows": [
+      "C1-C5",
+      "T1-T5",
+      "M1-M5"
+    ],
+    "UpdatedAt": "2026-10-31T11:11:50.0615956Z",
+    "ResetOnRestart": true,
+    "RealConnections": false
+  },
+  "flows": [
+    "C1-C5",
+    "T1-T5",
+    "M1-M5"
+  ],
+  "tests": {
+    "merchant": {
+      "checkedAt": "2026-10-31T11:09:44.485Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "M1 shared home → profile diff → original save readback and private contacts",
+        "M2 exact case → explicit full reply → original receipt and case screen",
+        "M3 selected documents → three materials → original draft → M4 correct gaps and publish",
+        "M4 ready draft requires confirmation and published terms remain immutable",
+        "M5 UTC range, unknown denominators and CSV → private report → original insights",
+        "M3 own private source needs per-source consent before company draft",
+        "Company switch clears authored text, brief and delayed source result",
+        "Owner-only profile and insights; marketing campaign; clerk cannot become marketing",
+        "Membership revocation clears private brief and blocks saved receipt replay",
+        "Withdrawn document clears private material and denies its intent and saved brief",
+        "Lost intents ACK reload recovers same immutable merchant request",
+        "Lost briefs ACK reload recovers same immutable merchant request",
+        "Unreceived brief POST restores staged content and preserves UUID after reload",
+        "M1 lost domain ACK retries identical operation after reload without duplication",
+        "M2 lost domain ACK retries identical operation after reload without duplication",
+        "M3 lost domain ACK retries identical operation after reload without duplication",
+        "M4 lost domain ACK retries identical operation after reload without duplication",
+        "M1 stale version cannot overwrite a newer profile",
+        "Mobile and desktop, independent brief library, session isolation and account clearing",
+        "Shared composer carries the authored question into the merchant discussion",
+        "Document revocation between preflight and domain write blocks material handoff",
+        "M2 success needs its original receipt; retry does not duplicate a saved reply",
+        "Review: another proposal clears an unsaved brief even when its URL is unchanged",
+        "Review: allowed owner-to-marketing role change accepts a freshly read M4 brief",
+        "Review: original close command retains paused status and original filter visibility"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "creatorC1": {
+      "checkedAt": "2026-10-31T11:02:56.655Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "result": "PASS",
+      "checks": [
+        "Shared homepage and all three role entrances",
+        "Example documents, explicit selection, discussion and expandable evidence",
+        "Separate brief, explicit public projection, D2 excluded, original guide editor",
+        "Guide edit and confirmed save; no publication before confirmation; simulated publication readback",
+        "Example state is separate between browser sessions (not real Auth/RLS)",
+        "Reload of example state and explicit reset",
+        "Mobile/desktop home, no page errors, no external requests"
+      ],
+      "pageErrors": [],
+      "externalRequests": [],
+      "databaseMigrations": "NOT_RUN",
+      "realConnections": "NONE",
+      "deployment": "NONE"
+    },
+    "creatorC2C5": {
+      "checkedAt": "2026-10-31T11:02:25.028Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "C2 saved check → original editor correction → fresh check and reopen",
+        "C3 evidence and missing metrics → private report → results library",
+        "C4 revision → explicit delivery preview → original submitted review record",
+        "C4 invited participant cannot generate an actionable revision report",
+        "C5 concrete diff → original save and publish v2 → adopted v1 stays unchanged",
+        "Unknown report ACK keeps UUID and payload, then readback restores report",
+        "Lost report ACK can be checked after reload without storing report text in browser storage",
+        "C4 lost submission ACK is retried with exactly the same command after reload",
+        "Editing a confirmed C5 proposal invalidates the confirmation and requires saving again",
+        "An unreceived report POST recovers its immutable intent after reload",
+        "Stopping a source clears reports and prevents saved receipt recovery",
+        "C4 rejects duplicate or more than five evidence links through the original validator",
+        "Refreshing C4 or C5 evidence preserves authored changes for comparison",
+        "Task report ownership, separate discussions, mobile width and account clearing"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "travellerT1T5": {
+      "checkedAt": "2026-10-31T11:02:38.582Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "T1 shared homepage → private brief → original trip editor",
+        "T2 bookmarked guide exact adoption preserves old notes and v1 after author update",
+        "T2 summary-only and changed guide version refuse adoption",
+        "T3 explicit public projection → anonymous share → revoke and deny old token",
+        "T3 changing trip after confirmation blocks stale share",
+        "T4 private grouping suggestions and explicit bookmark removal → original saved list",
+        "T5 private note + sample image finalization/attachment; T3 image opt-in",
+        "Lost adoption acknowledgement reload reuses same request with no duplicate days",
+        "Unreceived share request reload retries original intent; no duplicate links",
+        "Finalize failure never claims image saved; retry attaches same sample once",
+        "Private brief isolation, source withdrawal, actor clearing and mobile widths",
+        "Unreceived brief save recovers the staged complete payload after reload",
+        "Lost share and revoke acknowledgements reuse their original identities",
+        "Readback mismatch after a successful write remains unknown until verified",
+        "Only selected sample media is anonymously readable and revoked with its token",
+        "Review: actor invalidation during photo preparation prevents finalize",
+        "Review: staging ACK loss keeps an opaque recoverable run reference",
+        "Review: T4 can explicitly remove a withdrawn bookmark",
+        "Review: original editor retries the same deletion after lost ACK",
+        "Review: original editor private cache is memory-only and reset clears pending edits",
+        "Original pending editor command survives reload in session memory without IndexedDB",
+        "Legacy preview cache is cleared and the original create-trip form remains usable"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "live3499": {
+      "checkedAt": "2026-10-31T11:12:06.092Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3499",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "M3 selected documents → three materials → original draft → M4 correct gaps and publish"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "reviewRed": {
+      "checkedAt": "2026-10-31T11:07:12.276Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [],
+      "failures": [
+        {
+          "name": "Review: another proposal clears an unsaved brief even when its URL is unchanged",
+          "error": "Error: expect(locator).toBeEnabled() failed\n\nLocator: getByRole('button', { name: '讀取資料與證據', exact: true })\nExpected: enabled\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.enabled\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取資料與證據', exact: true })\n"
+        },
+        {
+          "name": "Review: allowed owner-to-marketing role change accepts a freshly read M4 brief",
+          "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '已保存並讀回', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '已保存並讀回', exact: true })\n"
+        },
+        {
+          "name": "Review: original close command retains paused status and original filter visibility",
+          "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+        }
+      ],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "reviewGreen": {
+      "checkedAt": "2026-10-31T11:08:10.482Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "Review: another proposal clears an unsaved brief even when its URL is unchanged",
+        "Review: allowed owner-to-marketing role change accepts a freshly read M4 brief",
+        "Review: original close command retains paused status and original filter visibility"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    }
+  },
+  "journeys": {
+    "result": "PASS",
+    "tests": 1326,
+    "pass": 1325,
+    "fail": 0,
+    "skipped": 1,
+    "skippedReason": "Existing Windows symlink-dependent source test"
+  },
+  "typecheck": {
+    "result": "PASS",
+    "command": "node node_modules/typescript/bin/tsc --noEmit"
+  },
+  "build": {
+    "result": "PASS",
+    "command": "node node_modules/next/dist/bin/next build",
+    "backendEnvironment": "blank",
+    "syntheticRun": true,
+    "telemetry": "disabled"
+  },
+  "independentReview": {
+    "reviewerId": "01a1919b-f500-7e21-8336-4196f1b4f27b",
+    "P0": 0,
+    "P1": 0,
+    "P2": 3,
+    "fixed": 3,
+    "deferred": 0,
+    "cases": [
+      "New proposal resets even at the same URL",
+      "Current-role campaign projection compared consistently",
+      "Original close status paused remains filterable"
+    ]
+  },
+  "sourceArchive": {
+    "checkedAt": "2026-10-31T11:13:36.329592+00:00",
+    "entries": 641,
+    "sourceFiles": 640,
+    "mismatches": [],
+    "archiveSha256": "a1e4022f2604254fa2994c7476ca0d8fea6108ac732dd9a115eaec616413ee5e",
+    "sourceRevision": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+    "dirty": true
+  },
+  "sourceSha256": {
+    "apps/journeys/app/workroom/MerchantTaskFlow.tsx": "20f36dd0f2e2a81fa9a4d1833121a304934f29d3baf3155c9733e4bf205a0b3c",
+    "apps/journeys/app/workroom/merchant-tasks.css": "ffacb83e0254a3f7a50ecd8033d69f6dca682ef7f4a16ac576e80cfb84a858ab",
+    "apps/journeys/lib/studio/merchant-tasks.ts": "71a3b1ddf07cb1c63e2db273f85dc4adac51873e7c092c672a74153a63db4bcf",
+    "apps/journeys/lib/studio/merchant-execution.ts": "ea2da6ac2c2d696efcca7321ab02400c95944b67ec4e14d32974031952571269",
+    "apps/journeys/app/workroom/WorkroomShell.tsx": "086ed6d00a1c184803d210101c2ebea5be33b1f63473f2ab1e02575764e73414",
+    "apps/journeys/lib/studio/templates.ts": "c7f9f2289634c144311570356af24a23bb8781e0c8b8e285224c528c2ea6b6b2",
+    "apps/journeys/tests/studio-merchant-scope.test.mjs": "1ba34c3bfa34679ab72530c98a6c9aee4ddf3fed877150687be9c4a80b0ed857",
+    "apps/journeys/scripts/source-manifest.json": "ae822ec204edabb0acedccb82a302147359e9a02507998097663e7e7c860cfba",
+    "docs/prototypes/conversation-studio-local/merchant-backend.mjs": "055680f9dc6d643861775d74169c407763395f8d71244ee5eec159443f5e67da",
+    "docs/prototypes/conversation-studio-local/merchant-store.ts": "48f57ceb06fe99fb7b5b1bff04dc50d94977c8fa1f32592df41321d1785f51d8",
+    "docs/prototypes/conversation-studio-local/merchant-workspace.tsx": "1592ea24b4621a81da6fcbd33e84c44447f21dec310992eedd12861f7fab1226",
+    "docs/prototypes/conversation-studio-local/merchant-flows.mjs": "fa32c01278b273ff078381f0571921bd2fd1cdc9cb90d7055fdb4ab9e5580847",
+    "docs/prototypes/conversation-studio-local/entry.tsx": "f0d8442d4be14792c4e02821edd9bf53b4c8833394faab85bf7c3318ed5b93f8",
+    "docs/prototypes/conversation-studio-local/mock-backend.mjs": "3e196855a345b2decec8a8dc5d2e34807483fea1b510005198de8548f6ff830f",
+    "docs/prototypes/conversation-studio-local/server.mjs": "825ffa9751f8fa5f8fa865b7ac3b1c6c6d090fc2f963eabf8b58ed66a378ac74",
+    "apps/journeys/lib/merchants/onboarding-validation.ts": "620d2474a94fef73b411295d4f071f7e9ed1cc3a783dccc02bde0a7cdc2d5181",
+    "apps/journeys/lib/merchants/campaigns.ts": "21dc6487750798a0d53b59071b47a8aad020c33e8cecc161a6ebbbb9d083b77e",
+    "apps/journeys/lib/merchants/insights.ts": "c0fba47af531064299a308f3a062b755f1650a4369cfbbf8c39c46becdc05a2d",
+    "apps/journeys/lib/notifications/repository.ts": "a95315746cdaaaec6d6ce174944b0c3ed2d9ea2186ea8b2f2a6e3853fd676c05",
+    "supabase/migrations/20261010190951_kinnso_merchant_onboarding_profile.sql": "12729159686cf5b8272b593d693540b5393d3ea7c4098916e066db79e0374ed2",
+    "supabase/migrations/20261011004000_kinnso_merchant_insights.sql": "fd8568daadd79140ad3a710d47cf4329652418ea7b099f8607b3fb5aab1ec46a",
+    "supabase/migrations/20261010213700_kinnso_campaign_schedule_terms.sql": "8eb3efca4c192bc8f2d11926cb0a4b9485d00f2aa5954c8c268ac3ee8548ba6e"
+  },
+  "logs": {
+    "merchant-journeys-tests.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-journeys-tests.log",
+      "sha256": "47c51c32660b95794ddad172ce8aaba9ac0f3c64cf96abdb0ac238f2ad1ab3b9",
+      "updatedAt": "2026-10-31T11:09:26.984058+00:00"
+    },
+    "merchant-typecheck.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-typecheck.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "updatedAt": "2026-10-31T11:08:56.699409+00:00"
+    },
+    "merchant-build.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-build.log",
+      "sha256": "9f71ee9097bc81624be8ed8d2ea34e53bccd44652fc37dbaa8f15e70e2ef785a",
+      "updatedAt": "2026-10-31T11:10:45.113864+00:00"
+    },
+    "merchant-browser.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-browser.log",
+      "sha256": "0d0274b09ab8b093d8badf85c5533686886ccc843d0e52c8ff9973d1708cbd38",
+      "updatedAt": "2026-10-31T11:09:44.488148+00:00"
+    },
+    "merchant-review-red.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-review-red.log",
+      "sha256": "574772244b79ccdcc13101b03ad3eb9cfc5873ad52933849422539342dd50d55",
+      "updatedAt": "2026-10-31T11:07:12.277932+00:00"
+    },
+    "merchant-review-green.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-review-green.log",
+      "sha256": "caf547e0dc4cc690a8c53d8556f739902b5324ffada46ce642013f22a73f55c5",
+      "updatedAt": "2026-10-31T11:08:10.491294+00:00"
+    },
+    "merchant-live-preview.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-live-preview.log",
+      "sha256": "345fb523468d7b71a23c7c903ff3f268032d66ed5ad607371b9722a16b57eda7",
+      "updatedAt": "2026-10-31T11:12:06.095180+00:00"
+    },
+    "merchant-creator-regression.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-creator-regression.log",
+      "sha256": "05cdbb95196edf47dbde218556010bc38a78f5890062391716d386f36f0dd9ee",
+      "updatedAt": "2026-10-31T11:02:25.030520+00:00"
+    },
+    "merchant-traveller-regression.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-traveller-regression.log",
+      "sha256": "3cf79f1088f67206f650bc2c1fa4084b6904587653272ab5b7940b71183db483",
+      "updatedAt": "2026-10-31T11:02:38.581671+00:00"
+    },
+    "merchant-c1-regression.log": {
+      "path": "docs/prototypes/conversation-studio-local/merchant-c1-regression.log",
+      "sha256": "f6e38e6241574ee687263463aff8ce179362b99ed01d0410159cbe37e4f96529",
+      "updatedAt": "2026-10-31T11:02:56.668411+00:00"
+    }
+  },
+  "limitations": [
+    "No real Auth/RLS/RPC or persistent merchant brief acceptance",
+    "No migrations applied; prior creator SQL remains unexecuted",
+    "No deployment, hosted acceptance or CI candidate acceptance",
+    "No production credentials, OAuth, model, MCP or real connections",
+    "WhatsApp Business, Instagram, Search Console and Calendar remain unconnected",
+    "No external messaging, actual publication, booking or payment",
+    "Third-party rights and real device/assistive technology acceptance unresolved",
+    "M1 addresses and opening hours have no original writer fields; private brief only",
+    "Fixture session memory resets on restart or explicit reset"
+  ],
+  "databaseMigrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE",
+  "productionCredentials": "NOT_USED",
+  "booking": "DISABLED",
+  "payment": "DISABLED"
+}

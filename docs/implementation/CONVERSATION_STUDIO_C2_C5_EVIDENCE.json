@@ -1,0 +1,96 @@
+{
+  "decision": "LOCAL_EXAMPLE_REVIEW_READY_NOT_DB_OR_HOSTED_ACCEPTED",
+  "checkedAt": "2026-10-31T17:41:37.657361+08:00",
+  "timezone": "Asia/Hong_Kong",
+  "sourceBase": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "sourceFiles": {
+    "apps/journeys/app/workroom/CreatorTaskFlow.tsx": "6b1543c1a55413c00e1e5082a05072e68d7a87d8ccd5a7d8c3700e264b2002fe",
+    "apps/journeys/app/workroom/WorkroomShell.tsx": "83d3f56d00f72515fdfb3017fe9b62f28af77246f3049e6fe5b8b4381b34526c",
+    "apps/journeys/app/workroom/creator-tasks.css": "33134ce9a7c37cd0af38637f9507a0fc01bf8ba95e95db7ea90b375fa652a910",
+    "apps/journeys/lib/studio/creator-reports.ts": "36b7ff550df008f7e95fce38315a5f608386e8a440b283e719e1db5263f1ef66",
+    "apps/journeys/tests/studio-creator-reports.test.mjs": "36b0c94141350fc130b304c30207c338477fb59e435b999bed4b7b31b5f0dab9",
+    "apps/journeys/scripts/source-manifest.json": "5c47205e257e26c3f7002a42152951b481d0490ab039fb0edea08fac5f2dbf66",
+    "docs/prototypes/conversation-studio-local/server.mjs": "32ece796ae4f880166066ea7687fadabcc6cce1b47377e1514be500f30585913",
+    "docs/prototypes/conversation-studio-local/entry.tsx": "d55c3bdfc679895b708b78d17081a374df903cb51ccc4bc5f5f72ca95c066a89",
+    "docs/prototypes/conversation-studio-local/mock-backend.mjs": "aa3479e6d214e8aa0468e20267a90069146db6eeec34944e8b2e8dfcae3e952e",
+    "docs/prototypes/conversation-studio-local/example-data.mjs": "c3c69be507c7c11c2da4cc4833930b9b847621aa92506c90223a041d49c0e26e",
+    "docs/prototypes/conversation-studio-local/report-store.ts": "c9ea965cdcc83054f9382c484ddc6a54290deb73e4d35110026b4dd4b3dd505a",
+    "docs/prototypes/conversation-studio-local/creator-flows.mjs": "99a23d065b05e0fe396780b469fe7691fc319d6f551d312311b460cf33a70cdd",
+    "docs/prototypes/conversation-studio-local/smoke.mjs": "ab673eeda7788303d38b89e54c68a4e9e6278877498f7ddd6914c43508081087"
+  },
+  "sourceFingerprint": "f6d51d145e55c8f7e6c4196b9b8b2ccad1ab71fbfb21505a8f4badc822bfe2ef",
+  "previewUrl": "http://127.0.0.1:3499/zh-HK/",
+  "livePreview": {
+    "checkedAt": "2026-10-31T09:40:44.551Z",
+    "url": "http://127.0.0.1:3499/zh-HK/",
+    "platform": "Windows / Chromium 145.0.7632.6",
+    "result": "PASS",
+    "sharedHome": true,
+    "c2ToC5Entrances": true,
+    "c3ReportSaveReadback": true,
+    "externalRequests": [],
+    "health": {
+      "mode": "EXAMPLES_ONLY",
+      "persistent": false,
+      "realConnections": false
+    }
+  },
+  "tests": {
+    "creatorBrowser": {
+      "checkedAt": "2026-10-31T09:35:32.615Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "C2 saved check → original editor correction → fresh check and reopen",
+        "C3 evidence and missing metrics → private report → results library",
+        "C4 revision → explicit delivery preview → original submitted review record",
+        "C4 invited participant cannot generate an actionable revision report",
+        "C5 concrete diff → original save and publish v2 → adopted v1 stays unchanged",
+        "Unknown report ACK keeps UUID and payload, then readback restores report",
+        "Lost report ACK can be checked after reload without storing report text in browser storage",
+        "C4 lost submission ACK is retried with exactly the same command after reload",
+        "Editing a confirmed C5 proposal invalidates the confirmation and requires saving again",
+        "An unreceived report POST recovers its immutable intent after reload",
+        "Stopping a source clears reports and prevents saved receipt recovery",
+        "C4 rejects duplicate or more than five evidence links through the original validator",
+        "Refreshing C4 or C5 evidence preserves authored changes for comparison",
+        "Task report ownership, separate discussions, mobile width and account clearing"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    },
+    "journeys": {
+      "passed": 1318,
+      "failed": 0,
+      "skipped": 1,
+      "log": "docs/prototypes/conversation-studio-local/c2-c5-journeys-reviewed.log"
+    },
+    "typecheck": "PASS",
+    "buildLog": "docs/prototypes/conversation-studio-local/c2-c5-build-reviewed.log",
+    "c1RegressionLog": "docs/prototypes/conversation-studio-local/c1-reviewed-regression.log"
+  },
+  "sourceArchive": {
+    "entries": 631,
+    "mismatches": [],
+    "archiveSha256": "95c837c6a9a05a5ed9311a0a21f9c93cbf64e51173bea3433242f22db8c4a2c4"
+  },
+  "review": {
+    "reviewer": "Linnaeus",
+    "initialP2": 3,
+    "additionalFindingsRegradedP2": 2,
+    "fixedWithRegression": 5,
+    "deferred": []
+  },
+  "migrationsApplied": false,
+  "deployed": false,
+  "realConnections": false,
+  "productionCredentialsUsed": false,
+  "committed": false,
+  "pushed": false
+}

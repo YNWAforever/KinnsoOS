@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-31T10:58:54.485Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3500",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [
+    "M1 shared home → profile diff → original save readback and private contacts"
+  ],
+  "failures": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

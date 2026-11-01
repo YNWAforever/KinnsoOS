@@ -114,7 +114,9 @@ test('CLI malformed input has a stable non-echoing failure and no action', () =>
   assert.deepEqual(r.authorizedActions, []); assert.ok(!result.stdout.includes('DO_NOT_ECHO'));
 });
 test('hard-linked artifacts cannot borrow files from another ownership scope', t => {
-  const x = example(t); fs.linkSync(path.join(x.root, 'subset.json'), path.join(x.root, 'alias.json'));
+  const x = example(t);
+  try { fs.linkSync(path.join(x.root, 'subset.json'), path.join(x.root, 'alias.json')); }
+  catch (e) { if (process.platform === 'win32' && ['EPERM', 'EACCES'].includes(e.code)) return t.skip('Windows sandbox does not grant hard-link creation; owned Linux CI exercises this'); throw e; }
   assert.equal(run(x).status, 'BLOCKED_ARTIFACTS');
 });
 test('malformed nested target values return a blocked report without throwing', t => {

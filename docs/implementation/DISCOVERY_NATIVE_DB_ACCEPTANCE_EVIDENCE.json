@@ -1,0 +1,676 @@
+{
+  "schemaVersion": 2,
+  "status": "BLOCKED_RESOURCE_GATE",
+  "recordedAt": "2026-11-01T13:52:20.902Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "win32",
+  "node": "v24.18.0",
+  "runId": "99469666-49b4-4936-8df9-272aede284f1",
+  "baseHead": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "authorization": "User explicitly approved new attested isolated local DB only; no new permission needed within scope",
+  "source": {
+    "hash": "2091f77d353b5198846f71bdf2c6a2fe6174c0d9f3c9581fe40fe58fa4eaa430",
+    "fileCount": 2355
+  },
+  "migrations": {
+    "hash": "4794619cc689a953c93719a4dc5036e524ffad3aaf4f5366c1388bb043c0fe8b",
+    "count": 210,
+    "applied": 0,
+    "latest": "20261101100700_discovery_editor_lineage.sql"
+  },
+  "resources": {
+    "observedAt": "2026-11-01T13:51:38.005Z",
+    "sourceHash": "2091f77d353b5198846f71bdf2c6a2fe6174c0d9f3c9581fe40fe58fa4eaa430",
+    "migrationHash": "4794619cc689a953c93719a4dc5036e524ffad3aaf4f5366c1388bb043c0fe8b",
+    "freeMemoryBytes": 3609919488,
+    "cliVersion": "2.107.0",
+    "cliStatus": "EXECUTABLE_VERSION_VERIFIED",
+    "dockerVersion": "29.8.1",
+    "dockerDisk": {
+      "verified": true,
+      "freeBytes": 820012236800,
+      "totalBytes": 1081101176832,
+      "engineRoot": "/var/lib/docker",
+      "daemonPid": 152,
+      "identity": "2096:24",
+      "source": "/dev/sdd",
+      "mount": "/mnt/docker-desktop-disk",
+      "dataPath": "/mnt/docker-desktop-disk/data/docker",
+      "proof": "daemon-root-device-inode-before-after"
+    },
+    "projectExists": false,
+    "volumeExists": false,
+    "networkExists": false,
+    "occupiedPorts": [
+      135,
+      445,
+      2179,
+      3389,
+      5040,
+      6783,
+      49664,
+      49665,
+      49666,
+      49667,
+      49668,
+      49674,
+      49676,
+      49677,
+      56321,
+      56322,
+      58421,
+      58422,
+      139,
+      3425,
+      3499,
+      8763,
+      8772,
+      8783,
+      8884,
+      9527
+    ],
+    "errors": [],
+    "checkedAt": "2026-11-01T13:51:38.005Z",
+    "status": "INSUFFICIENT_RAM",
+    "preview3499": "preserved",
+    "mutations": 0
+  },
+  "native": {
+    "status": "BLOCKED",
+    "stackCreated": false,
+    "schemaReceipt": null,
+    "targetReceipt": null,
+    "requiredCases": 182,
+    "expanded": false,
+    "implemented": 31,
+    "unimplemented": 151,
+    "executed": 0,
+    "incomplete": [
+      "four GiB RAM gate",
+      "151 native case handlers",
+      "complete case expansion",
+      "generated DB types",
+      "remaining transaction and six-purpose revocation cases",
+      "full original writer chain"
+    ],
+    "summary": {
+      "status": "BLOCKED",
+      "counts": {
+        "PASS": 0,
+        "FAIL": 0,
+        "BLOCKED": 182,
+        "NOT_RUN": 0,
+        "SKIP": 0
+      },
+      "missing": [],
+      "issues": [],
+      "limitations": [
+        "REAL_MCP_NOT_RUN",
+        "RIGHTS_NOT_VERIFIED",
+        "CONNECTED_APP_HTTP_NOT_RUN",
+        "HOSTED_NOT_RUN"
+      ]
+    },
+    "implementationReady": [
+      "explicit stage runner with persisted receipts",
+      "isolated provisioner",
+      "Docker daemon-backed disk and topology attestor",
+      "ordered transactional migration replay",
+      "Auth fixtures and actor sessions",
+      "nonprivileged UUID worker pool",
+      "private intent late-rollback control",
+      "31 native case handlers"
+    ]
+  },
+  "verification": {
+    "offline": {
+      "tests": 134,
+      "pass": 133,
+      "fail": 0,
+      "skipped": 1
+    },
+    "journeysNode": {
+      "tests": 1424,
+      "pass": 1423,
+      "fail": 0,
+      "skipped": 1
+    },
+    "initialSandboxJourneys": {
+      "tests": 1424,
+      "pass": 1409,
+      "fail": 13,
+      "skipped": 2
+    },
+    "journeysTypecheck": {
+      "exitCode": 0,
+      "log": "journeys-types.log"
+    },
+    "typeAndUnitCommands": [
+      {
+        "name": "web-types",
+        "startedAt": "2026-11-01T06:04:36.786Z",
+        "endedAt": "2026-11-01T06:04:52.059Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-types",
+        "startedAt": "2026-11-01T06:04:52.060Z",
+        "endedAt": "2026-11-01T06:05:13.300Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-contracts-types",
+        "startedAt": "2026-11-01T06:05:13.300Z",
+        "endedAt": "2026-11-01T06:05:15.587Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-region-types",
+        "startedAt": "2026-11-01T06:05:15.588Z",
+        "endedAt": "2026-11-01T06:05:17.796Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-scan-engine-types",
+        "startedAt": "2026-11-01T06:05:17.797Z",
+        "endedAt": "2026-11-01T06:05:20.792Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-scoring-types",
+        "startedAt": "2026-11-01T06:05:20.792Z",
+        "endedAt": "2026-11-01T06:05:23.219Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-node",
+        "startedAt": "2026-11-01T06:05:23.219Z",
+        "endedAt": "2026-11-01T06:05:23.883Z",
+        "exitCode": 0,
+        "error": null
+      },
+      {
+        "name": "sme-vitest",
+        "startedAt": "2026-11-01T06:05:23.884Z",
+        "endedAt": "2026-11-01T06:05:28.852Z",
+        "exitCode": 1,
+        "error": null
+      },
+      {
+        "name": "web-cache",
+        "startedAt": "2026-11-01T06:05:28.852Z",
+        "endedAt": "2026-11-01T06:05:31.068Z",
+        "exitCode": 1,
+        "error": null
+      }
+    ],
+    "vitestReruns": [
+      {
+        "name": "sme-vitest-unsandboxed",
+        "startedAt": "2026-11-01T06:06:54.344Z",
+        "endedAt": "2026-11-01T06:07:05.774Z",
+        "exitCode": 0
+      },
+      {
+        "name": "web-cache-unsandboxed",
+        "startedAt": "2026-11-01T06:07:05.775Z",
+        "endedAt": "2026-11-01T06:07:07.816Z",
+        "exitCode": 0
+      }
+    ],
+    "smeNode": {
+      "tests": 14,
+      "pass": 14,
+      "fail": 0,
+      "skipped": 0
+    },
+    "smeVitest": {
+      "passed": 49,
+      "failed": 0,
+      "rerunExitCode": 0
+    },
+    "webCache": {
+      "passed": 2,
+      "failed": 0,
+      "rerunExitCode": 0
+    },
+    "contract": {
+      "checks": 7,
+      "status": "PASS",
+      "scope": "in_process_contract_roundtrip",
+      "officialMcpProtocol": "NOT_RUN",
+      "realConnections": false,
+      "timeUtc": "2026-11-01T06:06:06.690Z"
+    },
+    "browsers": {
+      "runs": [
+        {
+          "name": "creator",
+          "startedAt": "2026-11-01T08:11:56.692Z",
+          "endedAt": "2026-11-01T08:12:20.583Z",
+          "exitCode": 0,
+          "error": null
+        },
+        {
+          "name": "traveller",
+          "startedAt": "2026-11-01T08:12:20.583Z",
+          "endedAt": "2026-11-01T08:12:54.583Z",
+          "exitCode": 0,
+          "error": null
+        },
+        {
+          "name": "merchant",
+          "startedAt": "2026-11-01T08:12:54.583Z",
+          "endedAt": "2026-11-01T08:13:34.587Z",
+          "exitCode": 0,
+          "error": null
+        },
+        {
+          "name": "discovery",
+          "startedAt": "2026-11-01T08:13:34.588Z",
+          "endedAt": "2026-11-01T08:14:38.701Z",
+          "exitCode": 0,
+          "error": null
+        }
+      ],
+      "details": {
+        "creator": {
+          "passed": 14,
+          "failed": 0,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "platform": "Windows / Chromium 145.0.7632.6",
+          "timeUtc": "2026-11-01T08:12:20.566Z"
+        },
+        "traveller": {
+          "passed": 22,
+          "failed": 0,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "platform": "Windows / Chromium 145.0.7632.6",
+          "timeUtc": "2026-11-01T08:12:54.554Z"
+        },
+        "merchant": {
+          "passed": 25,
+          "failed": 0,
+          "externalRequests": 0,
+          "pageErrors": 0,
+          "platform": "Windows / Chromium 145.0.7632.6",
+          "timeUtc": "2026-11-01T08:13:34.568Z"
+        },
+        "discovery": {
+          "passed": 9,
+          "failed": 0,
+          "externalRequests": 0,
+          "consoleErrors": 0,
+          "timeUtc": "2026-11-01T08:14:38.676Z"
+        },
+        "c1": {
+          "passed": 12,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0,
+          "startTime": "2026-11-01T06:11:04.267Z",
+          "durationMs": 23930.501
+        },
+        "native-off": {
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0,
+          "flaky": 0,
+          "startTime": "2026-11-01T06:11:30.319Z",
+          "durationMs": 8467.965
+        }
+      },
+      "exampleTotal": 82,
+      "nativeDisabledTotal": 2
+    },
+    "build": "NOT_RERUN_NO_PRODUCT_SOURCE_CHANGE"
+  },
+  "review": {
+    "reviews": [
+      {
+        "reviewer": "Lovelace",
+        "agentId": "01a195b3-759a-7d61-a2b1-78409dab2a09",
+        "critical": 0,
+        "important": 3,
+        "fixed": 3,
+        "minor": 0
+      },
+      {
+        "reviewer": "Darwin",
+        "agentId": "01a19619-324c-7880-9516-acd3a2c32c72",
+        "critical": 3,
+        "important": 6,
+        "fixed": 9,
+        "minor": 0
+      }
+    ],
+    "method": "Two independent frozen/current-tree reviews; findings were reproduced with failing tests then fixed in one pass; whole L0 suite GREEN; no re-review",
+    "nativeAcceptance": false
+  },
+  "preservation": {
+    "checkedAt": "2026-11-01T13:52:20.886Z",
+    "baselineFiles": 2462,
+    "changed": [
+      "docs/operations/DISCOVERY_NATIVE_DISABLE_RECOVERY.md",
+      "docs/prototypes/conversation-studio-local/merchant-1280.png",
+      "docs/prototypes/conversation-studio-local/merchant-390.png"
+    ],
+    "missing": [],
+    "applicationChanges": []
+  },
+  "preview": {
+    "checkedAt": "2026-11-01T06:16:36.151Z",
+    "status": 200,
+    "previewHeader": "examples-only-no-real-connections",
+    "mode": "EXAMPLES_ONLY",
+    "persistent": false,
+    "realConnections": false
+  },
+  "cleanup": {
+    "checkedAt": "2026-11-01T06:14:53.7929107Z",
+    "stoppedOwnedPreviewPid": 31072,
+    "stoppedPort": 3501,
+    "userPreview": [
+      {
+        "LocalAddress": "127.0.0.1",
+        "LocalPort": 3499,
+        "OwningProcess": 45748
+      }
+    ],
+    "databaseResourcesCreated": 0
+  },
+  "boundaries": {
+    "productCodeChanges": 0,
+    "migrationsApplied": 0,
+    "dbFixturesCreated": 0,
+    "realConnectionsCreated": 0,
+    "deployment": false,
+    "commit": false,
+    "push": false,
+    "booking": false,
+    "payment": false
+  },
+  "limitations": [
+    "DB_AUTH_RLS_NOT_RUN",
+    "CONCURRENCY_ROLLBACK_REVOCATION_NOT_RUN",
+    "REAL_MCP_NOT_RUN",
+    "RIGHTS_NOT_VERIFIED",
+    "CONNECTED_APP_HTTP_NOT_RUN",
+    "HOSTED_NOT_RUN",
+    "151_NATIVE_HANDLERS_NOT_IMPLEMENTED"
+  ],
+  "sources": [
+    {
+      "kind": "approved plan",
+      "path": "docs/superpowers/plans/2026-11-01-kinnsoos-native-db-acceptance.md"
+    },
+    {
+      "kind": "current migration history",
+      "path": "supabase/migrations"
+    },
+    {
+      "kind": "CLI telemetry documentation",
+      "url": "https://supabase.com/docs/guides/local-development/cli/getting-started"
+    }
+  ],
+  "artifacts": [
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/plan-current.json",
+      "sha256": "640a1b30e71187ee2962bfee14ddaedb23a40ca4c1708443001190c05f19e718",
+      "bytes": 967
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/approval.json",
+      "sha256": "11d2cebe98e3e274729e2af0689fba2f68369bfb13225b5f3b6bd64f110a588b",
+      "bytes": 941
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/preflight-worker.json",
+      "sha256": "408f1badc7fc574fa06aeb648948406b593bd6f9ff40c88f28542b94ee5b3b9e",
+      "bytes": 1307
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/resource-final.json",
+      "sha256": "60c34e6a09babcdf0b3f09b0e5d11280f7d801ac4a705eebbd95d9da751f4319",
+      "bytes": 530
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/review-red.log",
+      "sha256": "1b1fb4ce08f46488fb6f454b9d77b08dfe8c79a7dab60f43b107624ebce40fd6",
+      "bytes": 4500
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/review-green.log",
+      "sha256": "fabf05280308953159e170f40b32ba0bc796ede78efbf8987d46da55315c2a4c",
+      "bytes": 4161
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/offline-tests-worker.log",
+      "sha256": "95a290f37a5ce77b537171bf6995ede5091f0b784d5e2ed224880a33f8a65982",
+      "bytes": 11977
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/journeys-node.log",
+      "sha256": "f397df4fd35e89a01663463e11f47b8526aadc32a6598d6a290e2a476d262a73",
+      "bytes": 167423
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/journeys-node-unsandboxed.log",
+      "sha256": "7a7d9beb6cfad4e7d8f45a406dff9ba7ffcd661a5709f785ce5215f9f13d6032",
+      "bytes": 139821
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/journeys-node-latest.log",
+      "sha256": "3ef36669d049e769b9318233732d096b78eb54e72fa9ac9f5ca85cb9cfaec342",
+      "bytes": 139707
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/journeys-node-worker.log",
+      "sha256": "6080d68101d2e262253aa9f8cb0f1f21a027ff9021398dc3f176c9c3b803a0e8",
+      "bytes": 139646
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/journeys-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/web-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-contracts-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-region-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-scan-engine-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-scoring-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-node.log",
+      "sha256": "bfd401830a4450e53dc1f39ab96c677ebac56815274b91712e00360d158818b7",
+      "bytes": 1311
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-vitest.log",
+      "sha256": "90a3cf85a5112258724e3a8190c784393031447bb6239e166a5d68c3290e2d4a",
+      "bytes": 3892
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/sme-vitest-unsandboxed.log",
+      "sha256": "57e054fd10b5d6101b8c4a6aee942775334e00041c49b6fed43ba31cb302075d",
+      "bytes": 1004
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/web-cache.log",
+      "sha256": "1d075ff5c34b9dc1d3cb681249d10ded69d17b7e9aec77d6a87c50820ee71a62",
+      "bytes": 1165
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/web-cache-unsandboxed.log",
+      "sha256": "85f0d765a2f734d55461b165379f5481ae00523ded3c107f230db03c2e392c42",
+      "bytes": 525
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/regressions.json",
+      "sha256": "1e2bfe0de6859b46f61def0e99804755010d8c2999ec05ca45a18e59d6c01d2b",
+      "bytes": 1470
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/vitest-reruns.json",
+      "sha256": "0510899bb48c804cc2606fff99e5c3140917399c159145ae7055ec1b1e42b4f0",
+      "bytes": 307
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/contract-roundtrip.json",
+      "sha256": "74a72672331ce23476c5ffb074149cd20d4bdba7f414805782c1588b7d9213f6",
+      "bytes": 162
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/browser-runs.json",
+      "sha256": "110d28a942eda3c16d5da1332740310eea50ef06a5dff524a58329890b4fb807",
+      "bytes": 947
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/browser-fixpass-runs.json",
+      "sha256": "d11e1f4ccb5921f0e00b9b676db893e3af9594a9cd6c4f5d23087f31af8494ab",
+      "bytes": 635
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/creator-browser-fixpass.json",
+      "sha256": "396c4b9c7cfdf3ba5a276b965eb8d472a4e2a8e3a8edc0accf10d2b44eaeadcd",
+      "bytes": 1532
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/creator-browser-fixpass.log",
+      "sha256": "d4b2828eb0003bd28799dec7107ba9b22a3fc993f49c50a463eb2f007a8889e5",
+      "bytes": 1195
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/traveller-browser-fixpass.json",
+      "sha256": "d8748e2431c923750661f701ce72b253e447f57399533adb2930805967c96ec7",
+      "bytes": 2117
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/traveller-browser-fixpass.log",
+      "sha256": "ebff6face45a60f6d70a2ad5a044a17065ca8340ca804157a1eae9b0d635c9c9",
+      "bytes": 1764
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/merchant-browser-fixpass.json",
+      "sha256": "39b264c6abb9d046077244912137ed07021746131168b4736bf04e2d40310ff9",
+      "bytes": 2455
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/merchant-browser-fixpass.log",
+      "sha256": "62e44d69cf2c8879651fce62fa546362100feb19d0433b6bb49f8ea953957d2c",
+      "bytes": 2096
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/c1-browser.json",
+      "sha256": "5488d8129f52b7cae4f37627184737a80a00a385a90572123dfafbd8dee7852d",
+      "bytes": 15244
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/c1-browser.log",
+      "sha256": "9fb7b9505d4026035e50ee13bf730c87411a8cd131ffff741a37b591525114fd",
+      "bytes": 1864
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/native-off-browser.json",
+      "sha256": "8a5fdd3a370966a360cdac90243512cc43c0e5ee84e964dda21b1d7b4853196c",
+      "bytes": 5016
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/native-off-browser.log",
+      "sha256": "706f4595deddbb0ae9a43363b37d4a2b065fb751013affaec68a9b125a785948",
+      "bytes": 353
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/discovery-browser-results.json",
+      "sha256": "142bd627265ce09a6a2806d011226c438b36f5a7e6d79352f9a8fceba2d0000a",
+      "bytes": 1783
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/discovery-browser-fixpass.log",
+      "sha256": "7c4ae0af2f8a8aec68789dd313e0fbb1bd0278174e092d0df986c9aa43184705",
+      "bytes": 788
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/discovery-runner-relocation.json",
+      "sha256": "ab210efc010aa83fee726b8205d298a4355e3deb5b1dc965e08075fcc82e6d60",
+      "bytes": 337
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/owned-preview.json",
+      "sha256": "6ce18413988ef7d324e2131965e9c43cb1f2f9d4e054643dd6268dc59a418494",
+      "bytes": 194
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/owned-cleanup.json",
+      "sha256": "d6b74387d7830f8f7c5a2cb31aded5793de9327e87d581242a2e43d4ad34a501",
+      "bytes": 279
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/owned-preview-fixpass.json",
+      "sha256": "4838f1ab19daa1631b9fcb892e99d41142cfc536d430417d08a4996e2e7851fa",
+      "bytes": 87
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/owned-preview-fixpass-cleanup.json",
+      "sha256": "037c064ea312c7598782f57302e5a1736a2ba6548d78a2f57bb2ce8f6951e714",
+      "bytes": 139
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/preview-3499-final.json",
+      "sha256": "9bb7c066db73e96128b6589690edc5dcc6219a1636550831e084438825900a53",
+      "bytes": 196
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/source-manifest.json",
+      "sha256": "f7801ecd0b2a93d1a8de3a41528baada0709cafcc9a3f994810139ac5d755ba4",
+      "bytes": 376712
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/migration-manifest.json",
+      "sha256": "9e3e50e152bb5c15f9a6a1e576a0dafb415145e7b6cd092c50572083579e3640",
+      "bytes": 45573
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/preservation.json",
+      "sha256": "49fc29f42bdd82adacb6a812b62b8d5dffa5fde0c865e85dbc1f9fb7fe9f6421",
+      "bytes": 327
+    },
+    {
+      "file": "evidence/discovery-native-db/99469666-49b4-4936-8df9-272aede284f1/native-case-results.json",
+      "sha256": "e7d534c35ec5b2b950086fe1ff70cead0bddc01c23c2179cb3decd441da7e54f",
+      "bytes": 103266
+    }
+  ]
+}
