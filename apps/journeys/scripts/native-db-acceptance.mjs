@@ -149,7 +149,8 @@ export async function executeStage(options,ports=defaults){
       await ports.verifySchema(plan,topology,schema);
       const result=await ports.runCases({plan,topology,schema}),summaryStatus=result?.summary?.status;
       if(summaryStatus==='LOCAL_NATIVE_DB_ACCEPTANCE_PASS')return {...result,status:'PASS'};
-      return {...result,status:summaryStatus==='FAIL'?'FAIL':'BLOCKED',code:summaryStatus??'NATIVE_RESULT_UNKNOWN'};
+      const terminal=summaryStatus==='FAIL'||summaryStatus==='INVALID_EVIDENCE';
+      return {...result,status:terminal?summaryStatus:'BLOCKED',code:summaryStatus??'NATIVE_RESULT_UNKNOWN'};
     }
     if(stage==='cleanup-owned'){
       const topology=await ports.attestTopology(plan,stage);

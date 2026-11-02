@@ -54,7 +54,10 @@ export async function provisionIsolatedStack(root,plan,preflight){
   }catch(error){
     const cleanupErrors=[];
     const cli=await cliEntry(root).catch(()=>null);
-    if(cli)await run(process.execPath,[cli,'stop','--workdir',configDir,'--no-backup','--yes'],{env:cliEnvironment(process.env),timeout:120000}).catch(e=>cleanupErrors.push(e));
+    // Only stop a stack this run actually tried to start. Before `start` there is
+    // no owned stack, and `--no-backup` would delete a same-project volume.
+    const startAttempted=started.some(command=>command.args.includes('start'));
+    if(cli&&startAttempted)await run(process.execPath,[cli,'stop','--workdir',configDir,'--no-backup','--yes'],{env:cliEnvironment(process.env),timeout:120000}).catch(e=>cleanupErrors.push(e));
     const exists=async(kind,name)=>{
       const result=await run('docker',['--host',engineHost,kind,'ls','--filter',`name=${name}`,'--format','{{.Name}}'],{timeout:30000});
       return result.stdout.split(/\r?\n/).map(value=>value.trim()).includes(name);

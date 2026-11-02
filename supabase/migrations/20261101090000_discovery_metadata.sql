@@ -17,7 +17,7 @@ create table public.trip_intents (
 );
 create index discovery_intent_owner on public.trip_intents(owner_actor_id,updated_at,id);
 create table public.merchant_links (
- id uuid primary key, company_id uuid not null references public.merchant_profiles(id),
+ id uuid primary key, company_id uuid not null references public.merchant_profiles(id) on delete cascade,
  sme_workspace_id text, location_ids text[] not null default '{}', link_version integer not null default 1 check(link_version>0),
  status text not null default 'unverified' check(status in('pending','active','revoked','unverified')),
  proof_digest text check(proof_digest ~ '^[a-f0-9]{64}$'), verified_at timestamptz,
@@ -26,7 +26,7 @@ create table public.merchant_links (
  check(status<>'active' or (sme_workspace_id is not null and proof_digest is not null and verified_at is not null))
 );
 create table public.offer_imports (
- id uuid primary key, link_id uuid not null references public.merchant_links(id),
+ id uuid primary key, link_id uuid not null references public.merchant_links(id) on delete cascade,
  external_offer_id text not null, source_revision integer not null check(source_revision>0),
  source_hash text not null check(source_hash ~ '^[a-f0-9]{64}$'),
  source_location_id text, applied_location_id text not null,
@@ -35,8 +35,8 @@ create table public.offer_imports (
  unique(link_id,external_offer_id,source_revision,applied_location_id)
 );
 create table public.offer_publications (
- id uuid primary key, company_id uuid not null references public.merchant_profiles(id),
- import_id uuid not null references public.offer_imports(id), revision integer not null check(revision>0),
+ id uuid primary key, company_id uuid not null references public.merchant_profiles(id) on delete cascade,
+ import_id uuid not null references public.offer_imports(id) on delete cascade, revision integer not null check(revision>0),
  content_version integer not null default 0 check(content_version>=0), content_hash text check(content_hash ~ '^[a-f0-9]{64}$'),
  preview_digest text check(preview_digest ~ '^[a-f0-9]{64}$'),
  status text not null default 'draft' check(status in('draft','published','withdrawn')),
@@ -45,7 +45,7 @@ create table public.offer_publications (
  or (content_version>0 and content_hash is not null and preview_digest is not null))
 );
 create table public.offer_publication_versions (
- publication_id uuid not null references public.offer_publications(id), content_version integer not null check(content_version>0),
+ publication_id uuid not null references public.offer_publications(id) on delete cascade, content_version integer not null check(content_version>0),
  content_hash text not null check(content_hash ~ '^[a-f0-9]{64}$'),
  body jsonb not null check(jsonb_typeof(body)='object' and octet_length(body::text)<=40000),
  created_at timestamptz not null default now(), primary key(publication_id,content_version),
@@ -63,7 +63,7 @@ create table public.match_runs (
 create index discovery_match_retention on public.match_runs(computed_at);
 create table public.match_choices (
  owner_actor_id uuid not null references auth.users(id) on delete cascade, intent_id uuid not null,
- publication_id uuid not null references public.offer_publications(id), revision integer not null check(revision>0),
+ publication_id uuid not null references public.offer_publications(id) on delete cascade, revision integer not null check(revision>0),
  choice text not null check(choice in('saved','dismissed','cleared')), updated_at timestamptz not null default now(),
  primary key(owner_actor_id,intent_id,publication_id),
  foreign key(intent_id,owner_actor_id) references public.trip_intents(id,owner_actor_id) on delete cascade

@@ -19,6 +19,11 @@ test('psql replay runs only through the attested DB container with fail-fast set
   assert.doesNotMatch(calls[0].options.input.toString(),/migration_journal/);
 });
 
+test('migration bytes cannot escape the attested container with psql meta-commands',async()=>{
+  const sql=Buffer.from('select 1;\n\\connect postgresql://elsewhere/postgres\n'),file={name:'20260101000000_a.sql',sha256:createHash('sha256').update(sql).digest('hex')};
+  await assert.rejects(applyMigrationBytes(target,file,sql,{async run(){throw Error('must not execute');}},()=>{}),{code:'MIGRATION_META_COMMAND_FORBIDDEN'});
+});
+
 test('first migration error stops later files and does not leak SQL or credentials',async()=>{
   const calls=[];
   const first=Buffer.from('20260101000000_a.sql'),second=Buffer.from('20260101000001_b.sql');

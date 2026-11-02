@@ -6,16 +6,16 @@ create table kinnso_internal.discovery_authority_keys (
  id text primary key, secret bytea not null check(octet_length(secret)>=32), active boolean not null default false
 );
 create table kinnso_internal.discovery_link_challenges (
- link_id uuid primary key references public.merchant_links(id), nonce text not null unique default rtrim(translate(encode(extensions.gen_random_bytes(32),'base64'),'+/','-_'),'=') check(nonce ~ '^[A-Za-z0-9_-]{43}$'),
+ link_id uuid primary key references public.merchant_links(id) on delete cascade, nonce text not null unique default rtrim(translate(encode(extensions.gen_random_bytes(32),'base64'),'+/','-_'),'=') check(nonce ~ '^[A-Za-z0-9_-]{43}$'),
  expires_at timestamptz not null default clock_timestamp()+interval '5 minutes', consumed_at timestamptz
 );
-create table kinnso_internal.discovery_used_proofs (proof_id text primary key, link_id uuid not null references public.merchant_links(id));
+create table kinnso_internal.discovery_used_proofs (proof_id text primary key, link_id uuid not null references public.merchant_links(id) on delete cascade);
 create table kinnso_internal.discovery_rights_approvals (
- basis_ref text primary key, company_id uuid not null references public.merchant_profiles(id), source_hash text not null,
+ basis_ref text primary key, company_id uuid not null references public.merchant_profiles(id) on delete cascade, source_hash text not null,
  allowed_fields text[] not null, purposes text[] not null, expires_at timestamptz not null, revoked_at timestamptz
 );
 create table kinnso_internal.discovery_source_checks (
- import_id uuid primary key references public.offer_imports(id), link_version integer not null,
+ import_id uuid primary key references public.offer_imports(id) on delete cascade, link_version integer not null,
  scope_version integer not null, checked_at timestamptz not null
 );
 alter table kinnso_internal.discovery_authority_keys enable row level security;

@@ -3,14 +3,14 @@
 create table public.studio_source_grants (
  id uuid primary key, publication_id uuid not null, publication_content_version integer not null,
  content_hash text not null, grant_version integer not null check(grant_version>0),
- grantor_company_id uuid not null references public.merchant_profiles(id),
+ grantor_company_id uuid not null references public.merchant_profiles(id) on delete cascade,
  issuer_actor_id uuid not null references auth.users(id) on delete cascade,
  allowed_fields text[] not null check(cardinality(allowed_fields) between 1 and 3 and allowed_fields<@array['title','details','terms']),
  purpose text not null check(purpose in('catalog','matching','private_brief','public_guide','trip_adoption','trip_share')),
  expires_at timestamptz not null, revoked_at timestamptz, rights_basis_ref text not null,
  verification_state text not null default 'unverified' check(verification_state in('unverified','approved')),
- foreign key(publication_id,publication_content_version,content_hash) references public.offer_publication_versions(publication_id,content_version,content_hash),
- foreign key(publication_id,grantor_company_id) references public.offer_publications(id,company_id),
+ foreign key(publication_id,publication_content_version,content_hash) references public.offer_publication_versions(publication_id,content_version,content_hash) on delete cascade,
+ foreign key(publication_id,grantor_company_id) references public.offer_publications(id,company_id) on delete cascade,
  unique(id,grant_version,publication_id,publication_content_version)
 );
 create unique index discovery_one_current_grant on public.studio_source_grants(publication_id,publication_content_version,purpose) where revoked_at is null;
@@ -18,7 +18,7 @@ create table kinnso_internal.discovery_source_provenance (
  source_id uuid primary key references public.studio_sources(id) on delete cascade, publication_id uuid not null,
  content_version integer not null, content_hash text not null, import_hash text not null check(import_hash ~ '^[a-f0-9]{64}$'),
  checked_at timestamptz not null, source_scope_version integer not null check(source_scope_version>0),
- foreign key(publication_id,content_version,content_hash) references public.offer_publication_versions(publication_id,content_version,content_hash)
+ foreign key(publication_id,content_version,content_hash) references public.offer_publication_versions(publication_id,content_version,content_hash) on delete cascade
 );
 create table kinnso_internal.discovery_derivative_bindings (
  target_kind text not null check(target_kind in('guide_version','trip_day','trip_stop','share_projection')),
@@ -75,6 +75,7 @@ end $$;
 create function kinnso_internal.discovery_immutable() returns trigger
 language plpgsql set search_path='' as $$
 begin raise exception 'discovery_immutable';end $$;
-create trigger discovery_import_immutable before update or delete on public.offer_imports for each row execute function kinnso_internal.discovery_immutable();
-create trigger discovery_publication_version_immutable before update or delete on public.offer_publication_versions for each row execute function kinnso_internal.discovery_immutable();
+-- Account deletion must cascade through owned rows; update immutability still blocks rewrites.
+create trigger discovery_import_immutable before update on public.offer_imports for each row execute function kinnso_internal.discovery_immutable();
+create trigger discovery_publication_version_immutable before update on public.offer_publication_versions for each row execute function kinnso_internal.discovery_immutable();
 revoke all on function kinnso_internal.discovery_no_licensed_ingestion(),kinnso_internal.discovery_assert_grant(uuid,integer,text,integer,text),kinnso_internal.discovery_revoke_grant(uuid),kinnso_internal.discovery_immutable() from public,anon,authenticated,service_role;

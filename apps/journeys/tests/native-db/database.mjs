@@ -9,6 +9,9 @@ function sqlLiteral(value){return `'${String(value).replaceAll("'", "''")}'`;}
 export async function applyMigrationBytes(target,file,bytes,runner,verifyTarget=requireVerifiedTarget,appendJournal=false){
   verifyTarget(target,'migrate');
   gate(sha256(bytes)===file.sha256,'MIGRATION_DRIFT');
+  // psql executes line-leading backslash commands even from --file=-; a migration
+  // must never be able to \connect or \! out of the attested container.
+  gate(!/^\s*\\/m.test(bytes.toString('utf8')),'MIGRATION_META_COMMAND_FORBIDDEN');
   const journal=appendJournal?`\ninsert into kinnso_na_control.migration_journal(version,name,sha256) values(${sqlLiteral(file.version)},${sqlLiteral(file.name)},${sqlLiteral(file.sha256)});\n`: '';
   const input=Buffer.concat([Buffer.from('\\set ON_ERROR_STOP on\n\\set VERBOSITY verbose\n'),bytes,Buffer.from(journal)]);
   const args=['exec','-i','--env','PGOPTIONS=-c statement_timeout=30000 -c lock_timeout=5000',target.dbContainerId,'psql','-X','-q','-v','ON_ERROR_STOP=1','--no-password','--username=postgres','--dbname=postgres','--single-transaction','--file=-'];

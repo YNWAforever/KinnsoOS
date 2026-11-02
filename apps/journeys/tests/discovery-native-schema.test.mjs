@@ -23,3 +23,9 @@ test('N review SQL candidate uses kind-scoped tombstones and explicit true gate'
 test('N review import draft can exist before immutable content preparation',()=>{
  assert.match(metadata,/content_version=0 and status='draft' and content_hash is null and preview_digest is null/);
 });
+test('merchant-owned discovery rows cascade on account deletion without allowing content rewrites',()=>{
+ assert.match(metadata,/references public\.merchant_profiles\(id\) on delete cascade/g);
+ assert.match(grants,/grantor_company_id uuid not null references public\.merchant_profiles\(id\) on delete cascade/);
+ assert.match(grants,/before update on public\.offer_imports/);assert.doesNotMatch(grants,/before update or delete on public\.offer_imports/);
+ assert.match(grants,/before update on public\.offer_publication_versions/);assert.doesNotMatch(grants,/before update or delete on public\.offer_publication_versions/);
+});

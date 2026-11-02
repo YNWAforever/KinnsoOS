@@ -24,6 +24,7 @@ test('conflict requires explicit new intent; receipt missing stays unknown',()=>
  let state=c.beginCommand(c.initialCommandState('A'),{requestId:'R1',expectedRevision:1,payload:{}});
  state=c.reduceStudioCommand(state,{type:'receiptMissing'});assert.equal(state.phase,'unknown');
  state=c.reduceStudioCommand(state,{type:'conflict'});assert.equal(state.phase,'conflict');
+ state=c.reduceStudioCommand(state,{type:'edit'});assert.equal(state.phase,'conflict');
  assert.throws(()=>c.beginCommand(state,{requestId:'R2',expectedRevision:2,payload:{}}),/CONFLICT/);
  state=c.reduceStudioCommand(state,{type:'resolveConflict'});assert.equal(c.beginCommand(state,{requestId:'R2',expectedRevision:2,payload:{}}).intent.requestId,'R2');
 });

@@ -162,7 +162,10 @@ export async function ownedCleanup(plan,target){
     docker(['network','inspect',expectedNetwork]).then(JSON.parse).then(rows=>rows[0]),
     docker(['volume','inspect',expectedVolume]).then(JSON.parse).then(rows=>rows[0])
   ]);
-  if(networkNow?.Id!==expectedNetwork||volumeNow?.Name!==expectedVolume)throw Object.assign(Error('changed'),{code:'CLEANUP_TARGET_CHANGED'});
+  if(networkNow?.Id!==expectedNetwork||networkNow.Labels?.['org.kinnso.na.project']!==project||networkNow.Labels?.['org.kinnso.na.run']!==plan.runId)
+    throw Object.assign(Error('changed'),{code:'CLEANUP_TARGET_CHANGED'});
+  if(volumeNow?.Name!==expectedVolume||(volumeNow.Labels?.['com.supabase.cli.project']!==project&&volumeNow.Labels?.['org.kinnso.na.project']!==project)||volumeNow.Labels?.['org.kinnso.na.run']!==plan.runId)
+    throw Object.assign(Error('changed'),{code:'CLEANUP_TARGET_CHANGED'});
   await docker(['volume','rm',expectedVolume]);
   await docker(['network','rm',expectedNetwork]);
   const [remainingVolume,remainingNetwork]=await Promise.all([

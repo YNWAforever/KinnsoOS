@@ -11,7 +11,7 @@ export function beginCommand(state:CommandState,intent:StudioEnvelope<unknown>):
 }
 export function reduceStudioCommand(state:CommandState,event:CommandEvent):CommandState{
  if(event.type==='scope')return initialCommandState(event.scope);
- if(event.type==='edit')return{...state,editRevision:state.editRevision+1,phase:state.intent?state.phase:'dirty'};
+ if(event.type==='edit')return{...state,editRevision:state.editRevision+1,phase:state.phase==='conflict'?'conflict':state.intent?state.phase:'dirty'};
  if(event.type==='verified'){
   if(event.scope!==state.scope||event.requestId!==state.intent?.requestId)return state;
   return{...state,phase:state.editRevision===state.intentEditRevision?'verified':'dirty',intent:null,savedRevision:event.revision,savedEditRevision:state.intentEditRevision};
