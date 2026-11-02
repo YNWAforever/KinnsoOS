@@ -38,6 +38,8 @@ export default tseslint.config(
       // Pre-cutover reference material and exported automation definitions, kept verbatim.
       'legacy/**',
       'n8n/**',
+      // Runnable prototypes and their captured evidence, kept as reference material.
+      'docs/prototypes/**',
     ],
   },
   js.configs.recommended,
