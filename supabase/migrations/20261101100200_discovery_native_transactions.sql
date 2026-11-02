@@ -82,7 +82,7 @@ language sql stable set search_path='' as $$
 $$;
 create or replace function kinnso_internal.assert_studio_refs(p_refs jsonb,p_actor uuid,p_thread uuid,p_public boolean default false) returns void
 language plpgsql set search_path='' as $$
-declare ref jsonb; s public.studio_sources; b record; purpose text:=case when p_public then 'public_guide' else 'private_brief' end;
+declare ref jsonb; s public.studio_sources; b record; v_purpose text:=case when p_public then 'public_guide' else 'private_brief' end;
 begin
  if jsonb_typeof(p_refs) is distinct from 'array' or jsonb_array_length(p_refs)>400 then raise exception 'invalid_studio_refs';end if;
  for ref in select value from jsonb_array_elements(p_refs) order by value->>'sourceId' loop
@@ -95,8 +95,8 @@ begin
  for b in select distinct g.publication_id,g.id,g.grant_version,g.publication_content_version,g.content_hash
  from jsonb_array_elements(p_refs) r join kinnso_internal.discovery_source_provenance sp on sp.source_id=(r->>'sourceId')::uuid
  cross join lateral jsonb_array_elements(sp.grant_refs) gr join public.studio_source_grants g on g.id=(gr->>'id')::uuid
- where gr->>'purpose'=purpose order by g.publication_id,g.id loop
-  perform kinnso_internal.discovery_assert_grant(b.id,b.grant_version,purpose,b.publication_content_version,b.content_hash);
+ where gr->>'purpose'=v_purpose order by g.publication_id,g.id loop
+  perform kinnso_internal.discovery_assert_grant(b.id,b.grant_version,v_purpose,b.publication_content_version,b.content_hash);
  end loop;
  if not kinnso_internal.studio_refs_current(p_refs,p_actor,p_public) then raise exception 'studio_restricted';end if;
 end $$;
