@@ -30,6 +30,8 @@ function buildArticleQuery(name: string, matchTerms: string[]): string {
     .join(' OR ')
 }
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   // Destinations are DB-only; resolve on demand (dynamicParams defaults to true) - same
   // choice as /g/[slug] and /experiences/[slug].

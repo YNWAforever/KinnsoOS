@@ -31,6 +31,8 @@ import { AnalyticsEntityView } from '@/components/kinnso/analytics/AnalyticsEnti
 export const revalidate = 2700
 export const dynamicParams = true
 
+export const dynamic = 'force-dynamic'
+
 export async function generateStaticParams() {
   return getStaticArticleParams()
 }
