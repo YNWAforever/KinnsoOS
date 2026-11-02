@@ -40,7 +40,7 @@ create table public.studio_artifact_versions(
 );
 create table public.studio_evidence_links(
  artifact_id uuid not null, artifact_revision integer not null, block_id uuid not null,
- source_id uuid not null references public.studio_sources(id), source_revision integer not null,
+ source_id uuid not null references public.studio_sources(id) on delete cascade, source_revision integer not null,
  acl_version integer not null, excerpt_hash text not null,
  primary key(artifact_id,artifact_revision,block_id,source_id),
  foreign key(artifact_id,artifact_revision) references public.studio_artifact_versions(artifact_id,revision) on delete cascade

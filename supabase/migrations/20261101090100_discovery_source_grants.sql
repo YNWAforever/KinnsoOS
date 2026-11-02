@@ -4,7 +4,7 @@ create table public.studio_source_grants (
  id uuid primary key, publication_id uuid not null, publication_content_version integer not null,
  content_hash text not null, grant_version integer not null check(grant_version>0),
  grantor_company_id uuid not null references public.merchant_profiles(id),
- issuer_actor_id uuid not null references auth.users(id),
+ issuer_actor_id uuid not null references auth.users(id) on delete cascade,
  allowed_fields text[] not null check(cardinality(allowed_fields) between 1 and 3 and allowed_fields<@array['title','details','terms']),
  purpose text not null check(purpose in('catalog','matching','private_brief','public_guide','trip_adoption','trip_share')),
  expires_at timestamptz not null, revoked_at timestamptz, rights_basis_ref text not null,
@@ -15,7 +15,7 @@ create table public.studio_source_grants (
 );
 create unique index discovery_one_current_grant on public.studio_source_grants(publication_id,publication_content_version,purpose) where revoked_at is null;
 create table kinnso_internal.discovery_source_provenance (
- source_id uuid primary key references public.studio_sources(id), publication_id uuid not null,
+ source_id uuid primary key references public.studio_sources(id) on delete cascade, publication_id uuid not null,
  content_version integer not null, content_hash text not null, import_hash text not null check(import_hash ~ '^[a-f0-9]{64}$'),
  checked_at timestamptz not null, source_scope_version integer not null check(source_scope_version>0),
  foreign key(publication_id,content_version,content_hash) references public.offer_publication_versions(publication_id,content_version,content_hash)
@@ -24,11 +24,11 @@ create table kinnso_internal.discovery_derivative_bindings (
  target_kind text not null check(target_kind in('guide_version','trip_day','trip_stop','share_projection')),
  target_id uuid not null, target_version integer not null check(target_version>0),
  field_path text not null check(field_path in('root_metadata','title','summary','city','day_title','sourceDescription','description')),
- source_id uuid not null references kinnso_internal.discovery_source_provenance(source_id),
+ source_id uuid not null references kinnso_internal.discovery_source_provenance(source_id) on delete cascade,
  grant_id uuid not null, grant_version integer not null, publication_id uuid not null, publication_content_version integer not null,
  upstream_guide_id uuid, upstream_guide_version integer, upstream_stop_id uuid,
  primary key(target_kind,target_id,target_version,field_path,source_id,grant_id),
- foreign key(grant_id,grant_version,publication_id,publication_content_version) references public.studio_source_grants(id,grant_version,publication_id,publication_content_version)
+ foreign key(grant_id,grant_version,publication_id,publication_content_version) references public.studio_source_grants(id,grant_version,publication_id,publication_content_version) on delete cascade
 );
 alter table public.studio_source_grants enable row level security;
 alter table kinnso_internal.discovery_source_provenance enable row level security;

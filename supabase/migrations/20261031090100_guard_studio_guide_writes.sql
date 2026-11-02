@@ -4,9 +4,9 @@
 create table kinnso_internal.studio_guide_bindings(
  guide_id uuid primary key references public.guides(id) on delete cascade,
  owner_actor_id uuid not null references auth.users(id) on delete cascade, artifact_id uuid not null,
- artifact_revision integer not null, thread_id uuid not null references public.studio_threads(id),
+ artifact_revision integer not null, thread_id uuid not null references public.studio_threads(id) on delete cascade,
  selected_block_ids jsonb not null, source_refs jsonb not null,
- foreign key(artifact_id,artifact_revision) references public.studio_artifact_versions(artifact_id,revision)
+ foreign key(artifact_id,artifact_revision) references public.studio_artifact_versions(artifact_id,revision) on delete cascade
 );
 create table kinnso_internal.studio_handoffs(
  id uuid primary key, actor_id uuid not null references auth.users(id) on delete cascade,
@@ -16,12 +16,12 @@ create table kinnso_internal.studio_handoffs(
  selected_block_ids jsonb not null, source_refs jsonb not null, payload jsonb not null,
  digest text not null, created_at timestamptz not null default now(),
  unique(actor_id,domain_request_id),
- foreign key(artifact_id,artifact_revision) references public.studio_artifact_versions(artifact_id,revision)
+ foreign key(artifact_id,artifact_revision) references public.studio_artifact_versions(artifact_id,revision) on delete cascade
 );
 create index studio_handoffs_guide on kinnso_internal.studio_handoffs(guide_id);
 create table kinnso_internal.studio_write_permits(
  transaction_id bigint not null, guide_id uuid not null, actor_id uuid not null,
- handoff_id uuid not null references kinnso_internal.studio_handoffs(id),
+ handoff_id uuid not null references kinnso_internal.studio_handoffs(id) on delete cascade,
  operation text not null, primary key(transaction_id,guide_id)
 );
 alter table kinnso_internal.studio_guide_bindings enable row level security;
