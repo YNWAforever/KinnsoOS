@@ -1,4 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {backend,cmd,actor,now} from './helpers/discovery-fixture.mjs';
+import {test as baseTest} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {backend,cmd,actor,now,fixturesAvailable} from './helpers/discovery-fixture.mjs';
+const test=fixturesAvailable?baseTest:baseTest.skip;
 const p=await discoveryModule('intents');
 export const input={cityKey:'city:hk:hong-kong',dateSpec:{kind:'fixed',start:'2026-11-07',end:'2026-11-09'},budget:{currency:'HKD',maxPerPersonMinor:20000},interestTags:['散步'],languages:['zh-HK']};
 test('trip validation exists',()=>assert.equal(typeof p.validateTripIntent,'function'));

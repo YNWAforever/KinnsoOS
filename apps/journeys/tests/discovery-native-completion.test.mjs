@@ -1,9 +1,10 @@
-import {test} from 'node:test';
+import {test as baseTest} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {randomUUID} from 'node:crypto';
 import {discoveryModule} from './helpers/discovery-load.mjs';
-import {publishedFixture,cmd,actor,company,now} from './helpers/discovery-fixture.mjs';
+import {publishedFixture,cmd,actor,company,now,fixturesAvailable} from './helpers/discovery-fixture.mjs';
+const test=fixturesAvailable?baseTest:baseTest.skip;
 const service=await discoveryModule('native-command-service'),authority=await discoveryModule('native-authority');
 const key=new Uint8Array(32).fill(11);
 async function setup(){

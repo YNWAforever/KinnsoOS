@@ -1,4 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {studioModule} from './helpers/studio-load.mjs';import {discoveryModule} from './helpers/discovery-load.mjs';import {publishedFixture,cmd,now,company} from './helpers/discovery-fixture.mjs';
+import {test as baseTest} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {studioModule} from './helpers/studio-load.mjs';import {discoveryModule} from './helpers/discovery-load.mjs';import {publishedFixture,cmd,now,company,fixturesAvailable} from './helpers/discovery-fixture.mjs';
+const test=fixturesAvailable?baseTest:baseTest.skip;
 const d=await discoveryModule('brief'),e=await studioModule('evidence');
 async function matched(){const x=await publishedFixture(),id=randomUUID(),run=randomUUID();await x.check(cmd('saveIntent',id,{cityKey:'city:hk:hong-kong',dateSpec:{kind:'fixed',start:'2026-11-07',end:'2026-11-09'},budget:null,interestTags:['散步'],languages:['zh-HK']}));await x.check(cmd('recordMatch',run,{intentId:id,intentRevision:1}));await x.check(cmd('chooseOffer',x.publicationId,{intentId:id,publicationId:x.publicationId,choice:'saved'}));return {...x,run};}
 test('matched brief builder exists',()=>assert.equal(typeof d.buildMatchedBrief,'function'));

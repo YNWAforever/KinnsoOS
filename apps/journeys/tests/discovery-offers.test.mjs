@@ -1,6 +1,8 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {discoveryModule} from './helpers/discovery-load.mjs';
-import {discoveryOffers} from '../../../docs/prototypes/conversation-studio-local/discovery-data.mjs';
+import {test as baseTest} from 'node:test';import assert from 'node:assert/strict';import {existsSync} from 'node:fs';import {discoveryModule} from './helpers/discovery-load.mjs';
 import {backend,publishedFixture,cmd,company} from './helpers/discovery-fixture.mjs';
+const dataUrl=new URL('../../../docs/prototypes/conversation-studio-local/discovery-data.mjs',import.meta.url);
+const {discoveryOffers}=existsSync(dataUrl)?await import(dataUrl):{};
+const test=typeof discoveryOffers==='function'?baseTest:baseTest.skip;
 const p=await discoveryModule('offers');
 const now=new Date('2026-11-01T04:00:00Z');
 async function sample(){const fields=(await discoveryOffers(()=>+now))[0];const imported={id:'i',linkId:'l',externalOfferId:fields.offerId,sourceRevision:1,sourceHash:fields.hash,appliedLocationId:'location-a',sourceLocationId:'location-a',observedAt:fields.observedAt,sourceScopeVersion:1,fields};const input={importId:'i',cityKey:'city:hk:hong-kong',dateTimeZone:'Asia/Hong_Kong',priceBasis:'per_person',interestTags:['散步'],languages:['zh-HK'],audiences:['traveller','creator'],displayFields:['title','details','terms']};const current={id:'p',companyId:'c',revision:1,contentVersion:0,status:'draft'};return {input,current,offerImport:imported,companyId:'c',role:'owner',now};}

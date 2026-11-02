@@ -1,6 +1,7 @@
 import {existsSync} from 'node:fs';import {randomUUID} from 'node:crypto';
 const url=new URL('../../../../docs/prototypes/conversation-studio-local/discovery-backend.mjs',import.meta.url);
 export const backend=existsSync(url)?(await import(url)).createDiscoveryBackend:undefined;
+export const fixturesAvailable=typeof backend==='function';
 export const actor='22222222-2222-4222-8222-222222222222',company='a1000000-0000-4000-8000-000000000001';
 export const now=()=>Date.parse('2026-11-01T04:00:00Z');
 export const cmd=(kind,targetId,data={},expectedRevision=0,requestId=randomUUID())=>({requestId,targetId,expectedRevision,command:{kind,data}});

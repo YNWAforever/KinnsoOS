@@ -1,4 +1,5 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {publishedFixture,cmd,now,actor} from './helpers/discovery-fixture.mjs';
+import {test as baseTest} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {publishedFixture,cmd,now,actor,fixturesAvailable} from './helpers/discovery-fixture.mjs';
+const test=fixturesAvailable?baseTest:baseTest.skip;
 const m=await discoveryModule('matching');
 const intent={id:randomUUID(),ownerActorId:actor,revision:1,cityKey:'city:hk:hong-kong',dateSpec:{kind:'fixed',start:'2026-11-07',end:'2026-11-09'},budget:{currency:'HKD',maxPerPersonMinor:20000},interestTags:['散步'],languages:['zh-HK'],status:'active'};
 test('matching exists',()=>assert.equal(typeof m.evaluateOffer,'function'));

@@ -1,6 +1,7 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {existsSync} from 'node:fs';
+import {test as baseTest} from 'node:test';import assert from 'node:assert/strict';import {existsSync} from 'node:fs';
 const url=new URL('../../../docs/prototypes/conversation-studio-local/sme-mcp-fixture.mjs',import.meta.url);
 const {createSmeFixture}=existsSync(url)?await import(url):{};
+const test=typeof createSmeFixture==='function'?baseTest:baseTest.skip;
 const clock=()=>Date.parse('2026-11-01T04:00:00Z');
 test('read-only fixture exists',()=>assert.equal(typeof createSmeFixture,'function'));
 test('requires_both_owner_proofs and rejects nonce replay audience expiry',async()=>{

@@ -533,6 +533,7 @@
     "tests/guide-review-context.test.mjs",
     "tests/guide-source-summary.test.mjs",
     "tests/guide-structured-data.test.mjs",
+    "tests/helpers/discovery-fixture.mjs",
     "tests/helpers/discovery-load.mjs",
     "tests/helpers/guide-workspace-harness.mjs",
     "tests/helpers/offline-trip-host.mjs",
