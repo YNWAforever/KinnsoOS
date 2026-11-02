@@ -1,0 +1,6 @@
+'use client';
+import {useApp} from '../travel/ui';
+import type {SourceDocument} from '../../lib/studio/contracts';
+export function EvidencePanel({sources,selected}:{sources:SourceDocument[];selected:string[]}){
+ const {t}=useApp();return <section className="cs-evidence" aria-label={t('Evidence','證據')}><h2>{t('See what this is based on','看看內容的依據')}</h2>{sources.filter(s=>selected.includes(s.id)).map(s=><details key={s.id}><summary>{s.title} · {s.status==='restricted'?'受限':'來源文字'} · v{s.version}</summary>{s.status==='active'?<><blockquote>{s.text}</blockquote><p className="cs-note">{t('Owner-selected text; opening hours, transport and third-party rights are unverified.','本人明選文字；營業時間、交通及第三方權利仍未驗證。')}<br/>{s.createdAt??t('Not saved yet','尚未保存')} · {s.rights==='own'?'本人原創聲明':s.rights==='licensed'?'商戶授權示例 · 特定版本及用途':'權利未驗證'}</p>{s.license&&<p className="cs-note">用途授權：{s.license.grants.filter(g=>!g.revokedAt).map(g=>({catalog:'展示',matching:'配對',private_brief:'私人 brief',public_guide:'公開 guide',trip_adoption:'私人行程採用',trip_share:'公開行程分享'}[g.purpose])).join('、')}。來源核對時間：{s.license.provenance.checkedAt}。保留引用；真實第三方權利仍未驗證。</p>}</>:<p>{t('This source is restricted and cannot be reused.','來源已受限，不可讀取或重用。')}</p>}</details>)}</section>;
+}

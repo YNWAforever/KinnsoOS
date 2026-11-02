@@ -15,6 +15,7 @@ const STUBS = {
   adoption: `export const adoptionPreview=(...a)=>globalThis.__ports.adoptionPreview?.(...a)??null;`,
   bookmarks: `export const bookmarks={list:(...a)=>globalThis.__ports.bookmarksList(...a),toggle:(...a)=>globalThis.__ports.bookmarksToggle(...a)};`,
   trips: `export const request=(...args)=>globalThis.__ports.request?.(...args)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'});export const trips={list:(...a)=>globalThis.__ports.tripsList?.(...a)??Promise.resolve({ok:true,data:{items:[],nextCursor:null}}),get:(...a)=>globalThis.__ports.tripsGet?.(...a)??Promise.resolve({ok:false,code:'NOT_FOUND',retryable:false,requestId:'x'}),adopt:(...a)=>globalThis.__ports.tripsAdopt?.(...a)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'}),create:(...a)=>globalThis.__ports.tripsCreate?.(...a),creation:(...a)=>globalThis.__ports.creationReceipt?.(...a)??Promise.resolve({ok:true,data:{tripId:null}})};`,
+  sharing: `export const sharing={create:intent=>globalThis.__ports.request?.('/api/shares','POST',intent)??Promise.resolve({ok:false,code:'UNAVAILABLE',retryable:true,requestId:'x'})};`,
   drafts: `export const subscribeAccountInvalidation=(...a)=>globalThis.__ports.subscribeInvalidation?.(...a)??(()=>{});export const invalidateAccountViews=(...a)=>globalThis.__ports.invalidateAccount?.(...a);
    export const synchronizeAccountCache=async()=>{};
    export const readPendingAdoption=async(...a)=>globalThis.__ports.readPending?.(...a)??null;
@@ -32,7 +33,7 @@ const STUBS = {
   guest: `export const GuestPlanner=()=>null;`,
   content: `export const PublicGuideContent=({guide})=>guide?guide.title:'';`,
   guard: `export const useDraftNavigation=()=>path=>globalThis.__ports.navigate?.(path);`,
-  metrics: `export const trackPilotEvent=(...args)=>globalThis.__ports.trackPilotEvent?.(...args);`,
+  metrics: `export const trackPilotEvent=(...args)=>globalThis.__ports.trackPilotEvent?.(...args);export const pilotSession=()=>null;`,
   children: `export const ImportPreview=()=>null;export const RecordCapture=()=>null;export const SharePreview=()=>null;export const TripWarnings=()=>null;export const TodayItinerary=()=>null;export const PendingAdoptionRecovery=()=>null;export const TripIndexShareHolds=()=>null;export const exportPrivateTrip=()=>{};`,
 };
 
@@ -43,6 +44,7 @@ function stubFor(specifier, importer='', live=new Set()) {
   if (specifier.endsWith('/guides/adoption-preview')) return 'adoption';
   if (specifier.endsWith('/bookmarks/repository')) return 'bookmarks';
   if (specifier.endsWith('/trips/repository')) return 'trips';
+  if (specifier.endsWith('/trips/sharing')) return 'sharing';
   if (specifier.endsWith('/trips/local-drafts')) return 'drafts';
   if (specifier === './ui') return 'ui';
   if (specifier === './GuestPlanner') return 'guest';

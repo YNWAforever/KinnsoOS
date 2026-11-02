@@ -6,6 +6,8 @@ export async function publishStructuredGuide(id:string,expectedVersion:number,re
   const client = await createSupabaseServerClient()
   const user = await client.auth.getUser()
   if (user.error || !user.data.user) return {ok:false as const,code:'AUTH_REQUIRED'}
+  const draft=await client.rpc('get_kinnso_guide_draft',{p_draft_id:id})
+  if(draft.error||(draft.data as {studio?:unknown}|null)?.studio)return{ok:false as const,code:'FORBIDDEN'}
   const result = await client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:expectedVersion,p_request_id:requestId,p_content:content as Json})
   if (result.error) return {ok:false as const,code:result.error.message.includes('conflict') ? 'CONFLICT' : 'INVALID'}
   revalidatePath(`/${locale}/explore`);revalidatePath(`/${locale}/studio/guides`)

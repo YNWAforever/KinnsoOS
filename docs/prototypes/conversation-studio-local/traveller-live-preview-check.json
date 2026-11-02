@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-31T10:34:21.822Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3499",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [
+    "T3 explicit public projection → anonymous share → revoke and deny old token"
+  ],
+  "failures": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

@@ -74,11 +74,12 @@ export const shareRecoveryConfigured=(env:Environment)=>shareReceiptKeyring(env)
 export function capabilities(env: Environment): Record<string, Capability> {
   const configured = backendTarget(env) !== null;
   const ready = new Set((env.KINNSO_ENABLED_CAPABILITIES ?? '').split(','));
-  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'shareRecovery', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
+  const localOnly = ['tripIntent', 'offerDiscovery', 'merchantOfferPublication', 'smeReadBridge', 'matchedBriefHandoff'];
+  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'shareRecovery', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'conversation', 'creatorBriefHandoff', 'booking', 'payment', ...localOnly]
     .map((name) => [name, {
       mode: configured && (name === 'auth' || name === 'catalog' ||
         (name === 'shareRecovery' ? ready.has('sharing') && shareRecoveryConfigured(env) : name === 'mediaUpload' ? ready.has('media') && mediaRuntimeConfigured(env) :
-          ready.has(name) && !['booking', 'payment'].includes(name))) ? 'connected' : 'unavailable',
+          ready.has(name) && !['booking', 'payment', ...localOnly].includes(name))) ? 'connected' : 'unavailable',
       dataOwner: 'backend', session: !['catalog', 'sharing'].includes(name),
       visibility: name === 'catalog' ? 'public' : 'private', transactionOwner: 'backend',
     } satisfies Capability]));

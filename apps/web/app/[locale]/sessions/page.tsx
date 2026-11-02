@@ -8,6 +8,8 @@ import { SessionsListingView } from '@/components/kinnso/pages/SessionsListingVi
 
 export const revalidate = 300
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

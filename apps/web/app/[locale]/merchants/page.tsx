@@ -6,6 +6,8 @@ import { MerchantsDirectoryView } from '@/components/kinnso/pages/MerchantsDirec
 import { getPublicMerchants } from '@/lib/merchants/public-queries'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

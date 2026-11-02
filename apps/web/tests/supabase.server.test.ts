@@ -20,7 +20,10 @@ describe('createSupabaseServerClient', () => {
       expect.any(String),
       expect.any(String),
       expect.objectContaining({
-        global: { headers: { 'x-kinnso-enquiry-attestation': 'signed' } },
+        global: expect.objectContaining({
+          headers: { 'x-kinnso-enquiry-attestation': 'signed' },
+          fetch: expect.any(Function),
+        }),
         cookies: expect.any(Object),
       }),
     )

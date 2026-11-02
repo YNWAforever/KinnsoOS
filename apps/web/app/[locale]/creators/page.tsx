@@ -6,6 +6,8 @@ import { CreatorsLandingView } from '@/components/kinnso/pages/CreatorsLandingVi
 import { getPublicCreators } from '@/lib/creators/queries'
 import { buildPageMetadata } from '@/lib/seo/metadata'
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

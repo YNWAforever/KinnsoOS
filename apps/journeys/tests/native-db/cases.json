@@ -1,0 +1,2205 @@
+{
+  "version": 1,
+  "catalogKind": "required-case-families",
+  "expanded": false,
+  "note": "Coverage checklist, not executed acceptance. Entries with implemented=true have a registered live handler but remain unverified until the isolated DB gate passes. All retained cases remain required; catalog expansion and native execution are still pending.",
+  "cases": [
+    {
+      "id": "NA01.liveTopology",
+      "task": "NA01",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "New run-labelled containers, internal network, newly created volume, exact loopback ports, gateway/Auth/REST DB ancestry and pinned images attested before clients"
+    },
+    {
+      "id": "NA02.fullReplay",
+      "task": "NA02",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "All 210 migrations replay in order with server journal; first failure stops"
+    },
+    {
+      "id": "NA02.catalog",
+      "task": "NA02",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Actual ACL/RLS/overloads/triggers/session guards and latest Creator 360 definitions match"
+    },
+    {
+      "id": "NA02.closedDefaults",
+      "task": "NA02",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Both discovery gates false; authority keys and rights registry empty"
+    },
+    {
+      "id": "NA02.generatedTypes",
+      "task": "NA02",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Generate only test-local database types and compile exact RPC contracts"
+    },
+    {
+      "id": "NA03.realAuth",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Local Auth creates live sessions for A/B travellers, creators, merchants, member and Ops; invalid sessions rejected",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.savePreferences.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.savePreferences.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.savePreferences.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.clearPreferences.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.clearPreferences.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.clearPreferences.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.saveIntent.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.saveIntent.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.saveIntent.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.archiveIntent.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.archiveIntent.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.archiveIntent.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.deleteIntent.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.deleteIntent.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.deleteIntent.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA03.beginLink.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.beginLink.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.beginLink.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.confirmLink.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.confirmLink.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.confirmLink.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeLink.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeLink.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeLink.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.importOffer.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.importOffer.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.importOffer.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.preparePublication.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.preparePublication.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.preparePublication.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.grantContentUse.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.grantContentUse.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.grantContentUse.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeContentUse.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeContentUse.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.revokeContentUse.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.publishOffer.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.publishOffer.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.publishOffer.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.withdrawOffer.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.withdrawOffer.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.withdrawOffer.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.recordMatch.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.recordMatch.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.recordMatch.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.chooseOffer.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Closed applicable gate denies with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.chooseOffer.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.chooseOffer.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Authorized command commits one receipt and correct domain readback",
+      "parameters": {
+        "newRequest": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "authorityAndRights": "valid where required",
+        "gateSource": "20261101100000_discovery_native_commands.sql:133"
+      }
+    },
+    {
+      "id": "NA03.authority.emptyKey",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.emptyRights",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.wrongActor",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.wrongDigest",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.wrongScope",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.wrongNonce",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.expiredProof",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.browserFacts",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.providerBodyMismatch",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA03.authority.scopeChangedDuringObservation",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Invalid authority cannot authorize writes; matching positive control succeeds"
+    },
+    {
+      "id": "NA04.discoveryRawGrants",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.originalGuideRls",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.originalTripRls",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.privateIntentRpc",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.crossCompany",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.sameCompanyForeignLocation",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.crossThread",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.foreignSourceGuideTrip",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.foreignReceipt",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.forgedRoleMetadata",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.opsPositiveAndPrivateDenial",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.expiredSession",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.revokedSession",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.anonymousLogin",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.publicOffersRequiresAuth",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA04.originalAnonymousPublicReaders",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS"
+    },
+    {
+      "id": "NA04.internalExecuteAcl",
+      "task": "NA04",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Exact allow/deny matrix with positive control, no foreign sentinel/rows/revisions; distinguish GRANT from RLS",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA05.sameUuid.savePreferences",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "savePreferences"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.clearPreferences",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "clearPreferences"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.saveIntent",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": true,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "saveIntent"
+      },
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA05.sameUuid.archiveIntent",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "archiveIntent"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.deleteIntent",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "deleteIntent"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.beginLink",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "beginLink"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.confirmLink",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "confirmLink"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.revokeLink",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "revokeLink"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.importOffer",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "importOffer"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.preparePublication",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "preparePublication"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.grantContentUse",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "grantContentUse"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.revokeContentUse",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "revokeContentUse"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.publishOffer",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "publishOffer"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.withdrawOffer",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "withdrawOffer"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.recordMatch",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "recordMatch"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.chooseOffer",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "chooseOffer"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.apply_kinnso_studio_command",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "apply_kinnso_studio_command"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.save_kinnso_guide_draft",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "save_kinnso_guide_draft"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.publish_kinnso_guide_draft",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "publish_kinnso_guide_draft"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.publish_guide_version",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "publish_guide_version"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.adopt_guide_to_trip",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "adopt_guide_to_trip"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.create_trip_share_v2",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "create_trip_share_v2"
+      }
+    },
+    {
+      "id": "NA05.sameUuid.ingest_kinnso_matched_source",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Two persistent actor sessions overlap with third-observer lock evidence; identical receipt and exactly one effect",
+      "parameters": {
+        "rounds": 10,
+        "orders": [
+          "A-first",
+          "B-first"
+        ],
+        "operation": "ingest_kinnso_matched_source"
+      }
+    },
+    {
+      "id": "NA05.changedPayload",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.changedTarget",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.crossActorUuid",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.revisionCas",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA05.intentLimit99Plus2",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.deleteTombstone",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA05.lostAckAndReceipt",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.postNeverSent",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.consumedNonceRecovery",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA05.revokedMinimalReceipt",
+      "task": "NA05",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Conflict/recovery preserves original UUID and payload; new connection verifies exact effect count"
+    },
+    {
+      "id": "NA06.nonceProofReceipt",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.importPublicationReceipt",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.matchedSourceProvenancePermit",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.briefEvidence",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.draftHandoffMarker",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.guideVersionBindings",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.adoptDayStopRevision",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.shareProjectionReceipt",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "After a real mid-write SQL exception all case-owned rows/revisions/receipts match baseline; same UUID succeeds once after fault removal"
+    },
+    {
+      "id": "NA06.faultCleanup",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "All case-owned triggers/roles removed and catalog fingerprint restored; cleanup failure blocks whole batch"
+    },
+    {
+      "id": "NA07.purpose.catalog",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.purpose.matching",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.purpose.private_brief",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.purpose.public_guide",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.purpose.trip_adoption",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.purpose.trip_share",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Revoked purpose hides only affected licensed content; other grants cannot supply missing authority; positive control retained"
+    },
+    {
+      "id": "NA07.grantExpired",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.publicationWithdrawn",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.publicationNewVersion",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.linkRevoked",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.scopeVersionChanged",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.locationChanged",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.rightsWithdrawn",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.sourceHashChanged",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.sourceRevisionChanged",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.readConsentRevoked",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.sourceOlderThan60s",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.freshReferenceOnlyRefresh",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.scopeChangedDuringRefresh",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "No new affected writes or newly read old licensed prose; exact references/actor/scope checked before and after refresh"
+    },
+    {
+      "id": "NA07.race.save.revokeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "save",
+        "order": "revokeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.save.writeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "save",
+        "order": "writeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.publish.revokeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "publish",
+        "order": "revokeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.publish.writeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "publish",
+        "order": "writeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.adopt.revokeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "adopt",
+        "order": "revokeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.adopt.writeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "adopt",
+        "order": "writeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.share.revokeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "share",
+        "order": "revokeFirst"
+      }
+    },
+    {
+      "id": "NA07.race.share.writeFirst",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Proven overlap follows declared commit order; fresh third reader after revoke sees no revoked content; own trip stops/notes survive",
+      "parameters": {
+        "rounds": 10,
+        "operation": "share",
+        "order": "writeFirst"
+      }
+    },
+    {
+      "id": "NA07.reader.guideRaw",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.versionRaw",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.catalogListingCreatorDefiners",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.studioSourceMessageBrief",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.handoffDraft",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.tripRaw",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.tripSnapshotAgentMediaExport",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.publicShare",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.oldCommandReceipt",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA07.reader.oldShareReceipt",
+      "task": "NA07",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Before/after revoke compare unique source sentinels, positive control, own content and authorized projection"
+    },
+    {
+      "id": "NA08.merchantMatchCreatorGuideTravellerShare",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.ownC1WithoutProvider",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.mixedSourcesAndOwnNotes",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.crossDayRepeatedSource",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.twoAdoptedVersions",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.oldBriefReplayNewHead",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.foreignDuplicateMissingMarker",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA08.guideDeleteTombstoneRecreate",
+      "task": "NA08",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Real Auth and original RPCs create canonical outputs with same-transaction lineage; original C/T/M behavior preserved"
+    },
+    {
+      "id": "NA09.disableWritesMinimalReceipt",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": true,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources",
+      "handler": "tests/native-db/native-live-cases.mjs"
+    },
+    {
+      "id": "NA09.reenableFreshSources",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA09.retention30DayMatches",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA09.retention90DayIntents",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA09.referencedRowsRetained",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA09.tombstoneNoResurrection",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA09.ownedCleanup",
+      "task": "NA09",
+      "required": true,
+      "evidenceLevel": "L1",
+      "implemented": false,
+      "expected": "Native readback proves scoped behavior; retain original outputs and unrelated resources"
+    },
+    {
+      "id": "NA03.licensedIngest.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates are required; deny new licensed write with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "gateSource": "20261101100200_discovery_native_transactions.sql:42"
+      }
+    },
+    {
+      "id": "NA03.licensedIngest.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates are required; deny new licensed write with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "gateSource": "20261101100200_discovery_native_transactions.sql:42"
+      }
+    },
+    {
+      "id": "NA03.licensedIngest.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates open, valid authority/rights and original writer commit once with licensed lineage",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "gateSource": "20261101100200_discovery_native_transactions.sql:42"
+      }
+    },
+    {
+      "id": "NA03.boundLicensedWrite.closed",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates are required; deny new licensed write with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": false,
+          "licensedWrites": false
+        },
+        "gateSource": "20261101100500_discovery_source_refresh.sql:107"
+      }
+    },
+    {
+      "id": "NA03.boundLicensedWrite.privateOnly",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates are required; deny new licensed write with unchanged effects",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": false
+        },
+        "gateSource": "20261101100500_discovery_source_refresh.sql:107"
+      }
+    },
+    {
+      "id": "NA03.boundLicensedWrite.allOpen",
+      "task": "NA03",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": false,
+      "expected": "Both gates open, valid authority/rights and original writer commit once with licensed lineage",
+      "parameters": {
+        "newRequest": true,
+        "hasLicensedRefs": true,
+        "gates": {
+          "privateWrites": true,
+          "licensedWrites": true
+        },
+        "gateSource": "20261101100500_discovery_source_refresh.sql:107"
+      }
+    },
+    {
+      "id": "NA06.privateIntentReceipt",
+      "task": "NA06",
+      "required": true,
+      "evidenceLevel": "L2",
+      "implemented": true,
+      "handler": "tests/native-db/native-live-cases.mjs",
+      "expected": "A test-only trigger on the later receipt insert proves the domain row was written, exact P0001 rolls back every effect, cleanup removes the fault, then same UUID retry succeeds once"
+    }
+  ]
+}

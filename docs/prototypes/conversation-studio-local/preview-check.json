@@ -1,0 +1,21 @@
+{
+  "checkedAt": "2026-10-31T10:31:48.661Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "result": "PASS",
+  "checks": [
+    "Shared homepage and all three role entrances",
+    "Example documents, explicit selection, discussion and expandable evidence",
+    "Separate brief, explicit public projection, D2 excluded, original guide editor",
+    "Guide edit and confirmed save; no publication before confirmation; simulated publication readback",
+    "Example state is separate between browser sessions (not real Auth/RLS)",
+    "Reload of example state and explicit reset",
+    "Mobile/desktop home, no page errors, no external requests"
+  ],
+  "pageErrors": [],
+  "externalRequests": [],
+  "databaseMigrations": "NOT_RUN",
+  "realConnections": "NONE",
+  "deployment": "NONE"
+}

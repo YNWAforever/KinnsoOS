@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import {useApp} from '../travel/ui';
+import type {GuideProjection} from '../../lib/studio/contracts';
+export function GuideHandoff({projection,onConfirm,onCancel,disabled}:{projection:GuideProjection;onConfirm:()=>void;onCancel:()=>void;disabled:boolean}){
+ const {t}=useApp(),[confirmed,setConfirmed]=useState(false);
+ return <section className="cs-card" aria-label={t('Public guide handoff preview','公開攻略交接預覽')}><h2>{t('Check every item before the guide editor','交到攻略編輯器前，逐項核對')}</h2><p>{t('Only these fields will be sent to the existing guide draft. Publishing is a separate action.','只有以下欄位會交到既有攻略草稿。發佈仍需另行確認。')}</p><h3>{projection.payload.title}</h3><p>{projection.payload.city}</p><p>{projection.payload.summary}</p>{projection.payload.content.days.flatMap(day=>day.stops).map((stop,i)=><article key={i}><h4>{stop.title}</h4><p style={{whiteSpace:'pre-wrap'}}>{stop.description}</p></article>)}<p className="cs-note">{projection.sources.length} {t('checked source(s), retaining original declarations or purpose grants. Private items are excluded.','份已核對來源，保留原創聲明或用途授權。私人項目已排除。')}</p><label><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/>{t('I checked the complete content and each selected source for public use.','我已核對完整內容及每項來源，確認可用於公開攻略。')}</label><div className="cs-actions"><button className="k-btn" onClick={onCancel} disabled={disabled}>{t('Back to brief','返回 brief')}</button><button className="k-btn primary" disabled={!confirmed||disabled} onClick={onConfirm}>{t('Save to existing guide draft','保存至既有 guide 草稿')}</button></div></section>;
+}

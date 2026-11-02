@@ -8,6 +8,7 @@ import { isApprovedEntityMediaUrl } from '@/lib/media/entity-media'
 export const alt = 'KINNSO guide'
 export const size = OG_SIZE
 export const contentType = 'image/png'
+export const dynamic = 'force-dynamic'
 
 export default async function Image({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { slug } = await params
@@ -22,8 +23,8 @@ export default async function Image({ params }: { params: Promise<{ locale: stri
     const card = guide
       ? <GuideCard title={truncate(guide.title, 70)} city={guide.city} handle={guide.creatorHandle} cover={cover} />
       : <DefaultCard title="Guide" subtitle="KINNSO" />
-    return new ImageResponse(card, { ...OG_SIZE, ...fontOpt })
+    return new ImageResponse(card, { ...OG_SIZE, ...fontOpt, headers: { 'Cache-Control': 'private, no-store' } })
   } catch {
-    return new ImageResponse(<DefaultCard title="Guide" subtitle="KINNSO" />, { ...OG_SIZE, ...fontOpt })
+    return new ImageResponse(<DefaultCard title="Guide" subtitle="KINNSO" />, { ...OG_SIZE, ...fontOpt, headers: { 'Cache-Control': 'private, no-store' } })
   }
 }

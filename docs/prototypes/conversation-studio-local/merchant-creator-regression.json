@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-31T11:02:25.028Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3500",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [
+    "C2 saved check → original editor correction → fresh check and reopen",
+    "C3 evidence and missing metrics → private report → results library",
+    "C4 revision → explicit delivery preview → original submitted review record",
+    "C4 invited participant cannot generate an actionable revision report",
+    "C5 concrete diff → original save and publish v2 → adopted v1 stays unchanged",
+    "Unknown report ACK keeps UUID and payload, then readback restores report",
+    "Lost report ACK can be checked after reload without storing report text in browser storage",
+    "C4 lost submission ACK is retried with exactly the same command after reload",
+    "Editing a confirmed C5 proposal invalidates the confirmation and requires saving again",
+    "An unreceived report POST recovers its immutable intent after reload",
+    "Stopping a source clears reports and prevents saved receipt recovery",
+    "C4 rejects duplicate or more than five evidence links through the original validator",
+    "Refreshing C4 or C5 evidence preserves authored changes for comparison",
+    "Task report ownership, separate discussions, mobile width and account clearing"
+  ],
+  "failures": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

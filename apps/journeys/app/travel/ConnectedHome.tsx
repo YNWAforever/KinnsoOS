@@ -5,6 +5,7 @@ import {useApp,Icon} from './ui';
 import {trips,request} from '../../lib/trips/repository';
 import type {CatalogResult} from '../../lib/catalog';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
+import {ConversationHome} from '../workroom/ConversationHome';
 function GuideCover({cover,city}:{cover:string|null;city:string}) {
  const [failed,setFailed]=useState(false);
  return <div className="os-guide-image">{cover&&!failed?<img src={cover} alt="" width={400} height={300} loading="lazy" style={{width:'100%',height:'100%'}} onError={()=>setFailed(true)}/>:<div className="os-image-fallback">{city}</div>}</div>;
@@ -14,7 +15,7 @@ export function ConnectedHome({actorId}:{actorId:string|null}) {
  useEffect(()=>{let active=true;const controller=new AbortController();setCatalog(null);fetch('/api/catalog',{cache:'no-store',signal:controller.signal}).then(r=>r.json()).then(r=>{if(active)setCatalog(r)}).catch(()=>{if(active)setCatalog({status:'error',code:'UNAVAILABLE'})});return()=>{active=false;controller.abort()}},[retry]);
  useEffect(()=>{let active=true;setLatest(null);const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){active=false;setLatest(null)}});
  if(actorId)void trips.list().then(r=>{if(active&&r.ok){setLatest(r.data.items[0]??null);if(r.data.items.length)void request('/api/return-visit','POST')}});return()=>{active=false;unsubscribe()}},[actorId]);
- return <div className="k-home"><div className="k-home-heading"><div><p className="k-eyebrow">{t('TRAVEL THROUGH PEOPLE WHO KNOW THE PLACE.','透過熟悉這裏的人，認識每個地方。')}</p><h1>{t('Find your kind of place.','找到屬於你的地方。')}<em>{t('Make the trip your own.','走出自己的旅程。')}</em></h1><p>{t('Find a route you love. Make the journey yours.','找到喜歡的路線，走出自己的旅程。')}</p></div><Link className="k-subtle-link" href={href('saved')}><Icon name="bookmark"/>{t('Your saved routes','我的收藏')}</Link></div>
+ return <div className="k-home"><ConversationHome/>
  {latest&&<Link className="k-continue" href={href('trips/'+latest.id)}><div className="k-continue-icon"><Icon name="trip"/></div><div><span>{t('PICK UP WHERE YOU LEFT OFF','繼續上次的旅程')}</span><h3>{latest.title}</h3></div><span className="k-btn dark">{t('Continue trip','繼續行程')}</span></Link>}
  <form action={href('explore')} className="os-search"><label>{t('Destination or interest','目的地或興趣')}<input name="q" maxLength={120} placeholder={t('Kyoto, coffee, a quieter weekend…','京都、咖啡、慢活週末…')}/></label><button className="k-btn primary">{t('Find guides','找攻略')}</button></form>
  <div className="k-quick-destinations"><span>{t('A good place to start','由這裏開始')}</span>{[['Kyoto','京都'],['Hong Kong','香港'],['Lisbon','里斯本'],['Tokyo','東京']].map(([name,label])=><Link key={name} href={href('explore')+'?q='+encodeURIComponent(name)}>{t(name,label)}<Icon name="arrow" size={14}/></Link>)}</div>

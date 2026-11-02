@@ -9,6 +9,8 @@ import { buildPageMetadata } from '@/lib/seo/metadata'
 
 export const revalidate = 3600
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

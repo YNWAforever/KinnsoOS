@@ -8,6 +8,8 @@ import { DestinationsIndexView } from '@/components/kinnso/pages/DestinationsInd
 
 export const revalidate = 300
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

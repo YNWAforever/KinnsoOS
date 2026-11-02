@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { GuideForm } from '@/components/kinnso/GuideForm'
 import { StructuredGuideForm,type StructuredContent } from '@/components/kinnso/StructuredGuideForm'
 import { updateGuideAction } from '@/lib/guides/actions'
+import {StudioBoundGuideForm} from '@/components/kinnso/StudioBoundGuideForm'
+import type {GuideDraft} from '@kinnso/journeys/lib/creators/contracts'
 import type { GuideInput } from '@/lib/guides/types'
 
 export default async function StudioEditGuidePage({
@@ -30,6 +32,11 @@ export default async function StudioEditGuidePage({
     .eq('creator_id', user.id)
     .maybeSingle()
   if (!guide) notFound()
+
+  const privateDraft=await supabase.rpc('get_kinnso_guide_draft',{p_draft_id:id})
+  if(privateDraft.error)return <p role="status">{locale==='zh-hk'?'未能核對來源或草稿權限，請重新登入或稍後重試。':'Draft or source permissions could not be checked. Sign in again or retry later.'}</p>
+  const sourceDraft=privateDraft.data as unknown as GuideDraft|null
+  if(sourceDraft?.studio)return <StudioBoundGuideForm key={user.id+id} initial={sourceDraft} actorId={user.id} locale={locale}/>
 
   const initial: GuideInput = {
     title: guide.title,

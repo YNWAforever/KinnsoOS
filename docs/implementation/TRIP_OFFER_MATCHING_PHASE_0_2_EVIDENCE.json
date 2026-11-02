@@ -1,0 +1,411 @@
+{
+  "status": "LOCAL_IMPLEMENTATION_VERIFIED_AWAITING_USER_REVIEW",
+  "scope": "local_fixture",
+  "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+  "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+  "preview": "http://127.0.0.1:3499/zh-HK/",
+  "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+  "baseRevision": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "tests": {
+    "node": {
+      "total": 1390,
+      "pass": 1389,
+      "fail": 0,
+      "skip": 1,
+      "skipReason": "Windows symlink creation unavailable; owned Linux CI required"
+    },
+    "newDiscoveryUnit": 64,
+    "browsers": {
+      "discovery": 9,
+      "C1": 12,
+      "C2_C5": 14,
+      "T1_T5": 22,
+      "M1_M5": 25,
+      "total": 82,
+      "fail": 0,
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    "typecheck": "PASS",
+    "build": "PASS",
+    "sourceReadback": "PASS",
+    "preview3499": "PASS"
+  },
+  "review": {
+    "independentPasses": 1,
+    "importantFound": 5,
+    "importantFixed": 5,
+    "minorFound": 2,
+    "minorFixed": 2,
+    "fixPasses": 1,
+    "independentRereview": false
+  },
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE",
+  "credentials": "NOT_USED",
+  "N01_N04": "BLOCKED_NOT_AUTHORIZED",
+  "H": "BLOCKED_NOT_AUTHORIZED",
+  "userAcceptance": "PENDING",
+  "acceptance": [
+    {
+      "acceptanceId": "A01",
+      "question": "原 route baseline 全數仍可解析；新功能 off 與未注入 store 時 C/T/M 與所有原入口不被替換",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A02",
+      "question": "fixture／未連接不會顯示 connected；Production／未知環境 gate 關閉；booking/payment 永不被啟用",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A03",
+      "question": "偽造 actor、company、workspace、location、role 或同名電郵不能連結；proof 過期、錯 audience、重播被拒",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A04",
+      "question": "六個 MCP tool 的 schema、範圍、空結果、partial、超限、逾時、惡意文字、未知 tool 均按契約；禁止任何 provider write／付費 call",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A05",
+      "question": "不傳旅人意向到 SME；工具／日誌不含 token、私人郵件、GSC 查詢或他人文件",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A06",
+      "question": "intent／preferences 本人隔離、日期與幣別驗證、訪客保存需登入；喜好城市不自動成為本次目的地",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A07",
+      "question": "confirmed SME offer 不會自行公開；contentVersion 與 optimistic revision 分開；各用途可獨立撤回；source revision／hash 不符停止公開；workspace-wide 來源逐店套用不互相授權",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A08",
+      "question": "倒序／閏日／跨午夜／時區／部分有效期、未知或異幣價格、未支援城市得到指定結果，無假距離／假零",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A09",
+      "question": "matching-v1 固定輸入得固定排序；100 筆上限及覆蓋說明；高佣金不改自然排序；展示權不明不回正文，日期不明才是 needs_confirmation",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A10",
+      "question": "saved/dismissed/cleared 僅影響本人 intent；採用前來源失效不能沿用舊 match",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A11",
+      "question": "公司／帳戶／intent 切換與晚到回應不洩漏原 scope；撤權後私人 brief、receipt 正文及新 handoff 被限制",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A12",
+      "question": "private／unknown／licensed 各來源用途正確；不能將商戶文字標成作者 own；權利不明無法公開",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A13",
+      "question": "brief→guide 在同一 UUID 重試不重複；ACK 前／後斷線、reload、衝突、prepare 未完成都有誠實恢復",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A14",
+      "question": "guide 保存／發佈分開確認，只有原收據＋內容讀回才算完成；原生候選必測 SQL writer 邊界，UI 成功不足",
+      "status": "PASS_LOCAL_NATIVE_BLOCKED",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A15",
+      "question": "未被接受的合作不能進 C4 提交；M4 發佈不等於發信／付款；原角色與期限檢查仍生效",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A16",
+      "question": "C1–C5 全流程與原收益／版本／交付歷程保持；T1–T5 尤其收藏 guide 採用、分享及撤回保持；M1–M5 全流程保持",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A17",
+      "question": "390px 手機及 1280px 桌面無橫向溢出；鍵盤可完成、焦點及錯誤可感知；減少動態設定生效",
+      "status": "PASS_LOCAL_LIMITED",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A18",
+      "question": "六用途獨立授權；public_guide 不授予 T2/T3。撤回後只限制相應來源欄位，私人筆記／自有內容與舊版本 bytes 保留；無法分離時拒讀；外部副本不可收回的說明可見",
+      "status": "PASS_LOCAL_NATIVE_BLOCKED",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": [
+        390,
+        1280
+      ],
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A19",
+      "question": "source manifest／GPL credit 保留；新增 UI 的來源封包與待審閱候選一致",
+      "status": "PASS_LOCAL",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json",
+        "evidence/trip-offer-phase-0-2/source-pack.json"
+      ],
+      "limitations": "Only the local fixture portion described in the acceptance report. Real DB/Auth/RLS/MCP and third-party rights remain unverified."
+    },
+    {
+      "acceptanceId": "A20",
+      "question": "真 Auth、RLS、兩方 owner、跨 location 隔離、token 撤銷及遠端來源變更只有 N/H 證據可通過；L 不得勾選 PASS",
+      "status": "BLOCKED_NOT_RUN",
+      "scope": "local_fixture",
+      "timeUtc": "2026-10-31T18:01:41.587179+00:00",
+      "timeHkt": "2026-11-01T02:01:41.587179+08:00",
+      "platform": "Windows / Node v24.18.0 / Chromium 145.0.7632.6",
+      "viewport": null,
+      "sourceFingerprint": "a7993d8c90c2f17265637e523bb4208b02b0c164f14a56d9cad186223d384941",
+      "artifact": [
+        "evidence/trip-offer-phase-0-2/full-node.log",
+        "evidence/trip-offer-phase-0-2/discovery-browser.json",
+        "evidence/trip-offer-phase-0-2/c1-browser.json"
+      ],
+      "limitations": "N/H not authorized or executed; no real Auth/RLS, remote MCP or provider verification."
+    }
+  ]
+}
