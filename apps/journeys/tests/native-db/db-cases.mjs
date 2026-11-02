@@ -45,7 +45,7 @@ export async function runSameUuidCase({client,input,observe,proveOverlap}){
   return {status:'PASS',expected:'same UUID produces one receipt and one effect',actual:{requestId:input.p_request_id,effectCount:effects.count},
     evidence:{first:x,second:y,effects,overlap}};
 }
-export async function runOwnerReadIsolationCase({owner,foreign,readRequest},{intentId,requestId}){
+export async function runOwnerReadIsolationCase({owner,foreign,readRequest},{intentId}){
   const own=response(await owner.rpc('read_kinnso_discovery',{p_scope:{kind:'intent',id:intentId}}));
   gate(!own.error&&own.data?.data?.id===intentId,'OWNER_POSITIVE_READ_FAILED');
   const denied=response(await foreign.rpc('read_kinnso_discovery',{p_scope:{kind:'intent',id:intentId}}));

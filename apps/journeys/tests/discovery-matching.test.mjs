@@ -24,7 +24,7 @@ test('partial dates explain 15 points; deterministic stable sorting; dismiss sco
  const choice={ownerActorId:actor,intentId:intent.id,publicationId,choice:'dismissed'};assert.equal(m.rankOffers(intent,[offer],[choice],new Date(now())).results.length,0);assert.equal(m.rankOffers({...intent,id:randomUUID()},[offer],[choice],new Date(now())).results.length,1);
 });
 test('recordMatch scores on server and delete clears saved matches',async()=>{
- const {b,check}=await publishedFixture(),id=randomUUID(),run=randomUUID();const {id:unused,ownerActorId,revision,status,...data}=intent;
+ const {b,check}=await publishedFixture(),id=randomUUID(),run=randomUUID();const {id:_unused,ownerActorId:_ownerActorId,revision:_revision,status:_status,...data}=intent;
  await check(cmd('saveIntent',id,data));await check(cmd('recordMatch',run,{intentId:id,intentRevision:1}));const r=await b.read({kind:'match',id:run});assert.equal(r.data.results[0].score,100);
  await check(cmd('deleteIntent',id,{},1));assert.equal((await b.read({kind:'match',id:run})).code,'NOT_FOUND');
 });

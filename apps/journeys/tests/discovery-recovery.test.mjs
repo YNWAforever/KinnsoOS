@@ -1,4 +1,4 @@
-import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {backend,cmd,actor,now,publishedFixture,company} from './helpers/discovery-fixture.mjs';
+import {test} from 'node:test';import assert from 'node:assert/strict';import {randomUUID} from 'node:crypto';import {discoveryModule} from './helpers/discovery-load.mjs';import {backend,cmd,actor,now,publishedFixture} from './helpers/discovery-fixture.mjs';
 const {verifyDiscoveryCommand}=await discoveryModule('store');
 const data={cityKey:'city:hk:hong-kong',dateSpec:{kind:'undecided'},budget:null,interestTags:[],languages:[]};
 test('verified command exists',()=>assert.equal(typeof verifyDiscoveryCommand,'function'));

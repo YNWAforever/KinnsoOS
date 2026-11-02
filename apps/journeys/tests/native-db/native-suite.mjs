@@ -1,4 +1,4 @@
-import {Blocked,gate} from './target.mjs';
+import {gate} from './target.mjs';
 import {summarizeCases} from './results.mjs';
 
 const now=()=>new Date().toISOString();

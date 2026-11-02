@@ -1,6 +1,6 @@
 import {spawn} from 'node:child_process';
 import {probeDockerDisk} from './disk-proof.mjs';
-import {Blocked,gate,validateTopology,attestTarget} from './target.mjs';
+import {Blocked,gate,attestTarget} from './target.mjs';
 
 export const engineHost='npipe:////./pipe/dockerDesktopLinuxEngine';
 export function commandEnvironment(parent){

@@ -15,7 +15,7 @@ import {support} from '../../lib/notifications/repository';
 import {templateById} from '../../lib/studio/templates';
 import {sameValue} from '../../lib/studio/contracts';
 import {peekGuestQuestion,clearGuestQuestion} from '../../lib/studio/guest-draft';
-import {merchantTaskAllowed,merchantProfileInput,merchantProfileDiff,merchantPublicationChecks,merchantInsightCards,merchantCampaignInput,type MerchantTaskId,type MerchantTaskStore,type MerchantSource,type MerchantBrief,type MerchantOperation,type MerchantTaskCatalogue} from '../../lib/studio/merchant-tasks';
+import {merchantTaskAllowed,merchantProfileInput,merchantProfileDiff,merchantPublicationChecks,merchantInsightCards,type MerchantTaskId,type MerchantTaskStore,type MerchantSource,type MerchantBrief,type MerchantOperation,type MerchantTaskCatalogue} from '../../lib/studio/merchant-tasks';
 import {executeMerchantBrief,type MerchantOutcome} from '../../lib/studio/merchant-execution';
 import './merchant-tasks.css';
 

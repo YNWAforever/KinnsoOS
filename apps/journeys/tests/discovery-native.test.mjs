@@ -6,7 +6,7 @@ const id='11111111-1111-4111-8111-111111111111';
 const intent={requestId:id,targetId:'22222222-2222-4222-8222-222222222222',expectedRevision:0,command:{kind:'clearPreferences',data:{}}};
 test('native boundary is present',()=>assert.equal(typeof native.createNativeDiscovery,'function'));
 test('disabled writes never invoke RPC; owner minimal receipts survive disable',async()=>{
- const calls=[];const api=native.createNativeDiscovery({enabled:()=>false,rpc:async(name,args)=>{calls.push(name);return {data:{status:'complete',receipt:{requestId:id,commandDigest:'a'.repeat(64),resourceId:intent.targetId,revision:1},resourceState:'present',secret:'never return'},error:null};}});
+ const calls=[];const api=native.createNativeDiscovery({enabled:()=>false,rpc:async(name,_args)=>{calls.push(name);return {data:{status:'complete',receipt:{requestId:id,commandDigest:'a'.repeat(64),resourceId:intent.targetId,revision:1},resourceState:'present',secret:'never return'},error:null};}});
  assert.equal((await api.command(intent)).code,'UNAVAILABLE');assert.equal(calls.length,0);
  const read=await api.receipt(id);assert.equal(read.status,'complete');assert.equal(JSON.stringify(read).includes('secret'),false);assert.deepEqual(calls,['get_kinnso_discovery_request']);
 });

@@ -1,4 +1,4 @@
-import {Blocked,gate} from './target.mjs';
+import {Blocked} from './target.mjs';
 
 export function assertCleanupIdentity(expected,fresh){
   const sameIds=Array.isArray(fresh?.containerIds)&&Array.isArray(expected?.containerIds)&&

@@ -1,9 +1,7 @@
 import {readFile} from 'node:fs/promises';
-import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {Blocked,gate,requireVerifiedTarget,targetIdentityHash} from './target.mjs';
 import {createReplayPlan} from './live-support.mjs';
-import {docker} from './docker-runtime.mjs';
 
 const sha256=value=>createHash('sha256').update(value).digest('hex');
 function sanitizeSqlState(error){return /^[0-9A-Z]{5}$/.test(error?.sqlState??'')?error.sqlState:'UNKNOWN';}

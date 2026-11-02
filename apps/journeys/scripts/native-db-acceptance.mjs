@@ -5,7 +5,6 @@ import {fileURLToPath} from 'node:url';
 import {Blocked,attestTarget,targetIdentityHash} from '../tests/native-db/target.mjs';
 import {buildMigrationManifest} from '../tests/native-db/migrations.mjs';
 import {sourceManifest,collectPreflight} from '../tests/native-db/inventory.mjs';
-import {ownedRunDirectory} from '../tests/native-db/live-support.mjs';
 import {createStageStore} from '../tests/native-db/stage-state.mjs';
 
 const root=fileURLToPath(new URL('../../../',import.meta.url));

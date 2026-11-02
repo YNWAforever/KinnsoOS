@@ -1,4 +1,4 @@
-import {fileURLToPath,pathToFileURL} from 'node:url';
+import {pathToFileURL} from 'node:url';
 import path from 'node:path';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import {cliEnvironment} from './inventory.mjs';

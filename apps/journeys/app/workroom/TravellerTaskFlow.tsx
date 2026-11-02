@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import {useRouter,useSearchParams} from 'next/navigation';
+import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from '../travel/ui';
 import {trips} from '../../lib/trips/repository';
@@ -22,7 +22,7 @@ export function PublicTravellerPreview({value,mediaBase='/api/media/'}:{value:Pu
  return <section className="tt-projection" aria-label="將公開的完整內容"><h3>{value.title}</h3>{value.days.map(d=><article key={d.id}><h4>第 {d.offset+1} 天 · {d.title}</h4>{d.stops.map(s=><div className="tt-stop" key={s.id}><strong>{s.title}</strong><p>{s.startMinuteOfDay===null?'時間未定':`${Math.floor(s.startMinuteOfDay/60).toString().padStart(2,'0')}:${(s.startMinuteOfDay%60).toString().padStart(2,'0')}`} · {s.durationMinutes===null?'停留時間未定':`${s.durationMinutes} 分鐘`}</p>{s.description&&<p>{s.description}</p>}{s.source&&<small>來源：{s.source.creatorName} · v{s.source.guideVersion}{s.source.withdrawn?' · 來源已撤回':''}</small>}</div>)}</article>)}<div className="tt-sample-images">{value.approvedMediaIds.map(id=><figure key={id}><img src={mediaBase+id} alt="固定示例色塊圖片" width={120} height={80}/><figcaption>自有示例色塊 · 不含私人描述</figcaption></figure>)}</div><p>已選圖片：{value.approvedMediaIds.length} 張{value.approvedMediaIds.length>0?'（固定示例圖）':''}</p><p>私人筆記、圖片描述、未選站點及未選圖片均不公開。</p></section>;
 }
 export function TravellerTaskFlow({templateId,actorId,store,discoveryStore}:{templateId:TravellerTaskId;actorId:string;store:TravellerStore;discoveryStore?:DiscoveryStore}){
- const {href}=useApp(),router=useRouter(),query=useSearchParams(),task=templateById(templateId);
+ const {href}=useApp(),query=useSearchParams(),task=templateById(templateId);
  const [list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[saved,setSaved]=useState<BookmarkRow[]>([]),[tripId,setTripId]=useState(''),[guideId,setGuideId]=useState('');
  const [trip,setTrip]=useState<TripSnapshot|null>(null),[guide,setGuide]=useState<GuideSnapshot|GuideSummary|null>(null);
  const [question,setQuestion]=useState(templateId==='T1'?'幫我安排一天慢遊，保留休息時間。':templateId==='T2'?'把收藏的 guide 加入我的行程，保留原有私人筆記。':templateId==='T3'?'只分享我選的內容，之後可以撤回。':templateId==='T4'?'整理收藏，分清可採用攻略與靈感摘要。':'記下今天的片刻，只保存在自己的行程。');

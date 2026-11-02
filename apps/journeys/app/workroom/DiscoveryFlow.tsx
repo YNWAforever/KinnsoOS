@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useApp} from '../travel/ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
-import type {DiscoveryStore,DiscoveryCommand,DiscoveryIntent,DiscoveryRead,DiscoveryData,TripIntent,MatchRun,MatchCandidate,CompanyOffers,DiscoveryPreferences} from '../../lib/discovery/contracts';
+import type {DiscoveryStore,DiscoveryCommand,DiscoveryIntent,DiscoveryRead,TripIntent,MatchRun,MatchCandidate,CompanyOffers,DiscoveryPreferences} from '../../lib/discovery/contracts';
 import {verifyDiscoveryCommand,createScopeFence} from '../../lib/discovery/store';
 import {TripIntentForm} from './TripIntentForm';
 import {OfferMatchCard} from './OfferMatchCard';
