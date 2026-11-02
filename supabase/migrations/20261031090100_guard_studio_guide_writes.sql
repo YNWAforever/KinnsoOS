@@ -256,7 +256,7 @@ begin
  if tg_table_name='guides' then
   -- Original bookmark triggers maintain counters; authenticated column grants
   -- still forbid direct counter writes. Every content/identity field stays guarded.
-  if (to_jsonb(new)-array['saves_count','updated_at']) is not distinct from (to_jsonb(old)-array['saves_count','updated_at']) then return new; end if;
+  if (to_jsonb(new)-array['saves_count','updated_at','tsv']) is not distinct from (to_jsonb(old)-array['saves_count','updated_at','tsv']) then return new; end if;
  end if;
  select h1.* into h from kinnso_internal.studio_write_permits p join kinnso_internal.studio_handoffs h1 on h1.id=p.handoff_id
  where p.transaction_id=txid_current() and p.guide_id=guide and p.actor_id=kinnso_internal.actor();
