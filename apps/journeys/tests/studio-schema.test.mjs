@@ -21,7 +21,7 @@ test('review source prevents identity resurrection and preserves pinned versions
  assert.ok(guard.includes('after insert on public.guides'));
  assert.ok(guard.includes("'studio-guide-identity:'||old.id"));
  assert.ok(guard.includes("'studio-guide-identity:'||new.id"));
- assert.ok(guard.includes("to_jsonb(new)-array['saves_count','updated_at']"));
+ assert.ok(guard.includes("to_jsonb(new)-array['saves_count','updated_at','tsv']"));
  assert.ok(!guard.includes('studio_prepare_guide.guide_id'));
  assert.ok(guard.includes('revision=v_artifact_revision'));
  assert.ok(!guard.includes('a.revision<>binding.artifact_revision'));
