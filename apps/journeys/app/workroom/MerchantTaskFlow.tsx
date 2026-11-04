@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {useStudioQuestion} from './useStudioQuestion';
 import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from '../travel/ui';
@@ -14,7 +15,7 @@ import {insightsQuery} from '../../lib/merchants/insights';
 import {support} from '../../lib/notifications/repository';
 import {templateById} from '../../lib/studio/templates';
 import {sameValue} from '../../lib/studio/contracts';
-import {peekGuestQuestion,clearGuestQuestion} from '../../lib/studio/guest-draft';
+import {clearGuestQuestion} from '../../lib/studio/guest-draft';
 import {merchantTaskAllowed,merchantProfileInput,merchantProfileDiff,merchantPublicationChecks,merchantInsightCards,type MerchantTaskId,type MerchantTaskStore,type MerchantSource,type MerchantBrief,type MerchantOperation,type MerchantTaskCatalogue} from '../../lib/studio/merchant-tasks';
 import {executeMerchantBrief,type MerchantOutcome} from '../../lib/studio/merchant-execution';
 import './merchant-tasks.css';
@@ -35,7 +36,7 @@ export function MerchantTaskFlow({templateId,actorId,store,library=false}:{templ
 function CompanyTask({templateId,actorId,company,store,onRestart}:{templateId:MerchantTaskId;actorId:string;company:string;store:MerchantTaskStore;onRestart:()=>void}){
  const {href}=useApp(),query=useSearchParams(),task=templateById(templateId);
  const [catalogue,setCatalogue]=useState<MerchantTaskCatalogue>({cases:[],documents:[]}),[campaigns,setCampaigns]=useState<CampaignSummary[]>([]),[selection,setSelection]=useState('');
- const [source,setSource]=useState<MerchantSource|null>(null),[profile,setProfile]=useState<ProfileInput|null>(null),[question,setQuestion]=useState(()=>peekGuestQuestion()||questions[templateId]),[notes,setNotes]=useState(''),[reply,setReply]=useState('多謝你的查詢！示例活動將於 11 月開始；完整時間與內容請以活動頁確認，未核實項目會另外註明。');
+ const [source,setSource]=useState<MerchantSource|null>(null),[profile,setProfile]=useState<ProfileInput|null>(null),[question,setQuestion]=useStudioQuestion(actorId,templateId,questions[templateId]),[notes,setNotes]=useState(''),[reply,setReply]=useState('多謝你的查詢！示例活動將於 11 月開始；完整時間與內容請以活動頁確認，未核實項目會另外註明。');
  const [documentIds,setDocumentIds]=useState<string[]>([]),[consents,setConsents]=useState<string[]>([]),[materials,setMaterials]=useState<{channel:string;text:string}[]>([]),[title,setTitle]=useState('週末慢遊活動（示例）'),[from,setFrom]=useState('2026-10-01'),[to,setTo]=useState('2026-11-01');
  const [brief,setBrief]=useState<MerchantBrief|null>(null),[stored,setStored]=useState(false),[confirmed,setConfirmed]=useState(false),[outcome,setOutcome]=useState<MerchantOutcome|null>(null),[message,setMessage]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[valid,setValid]=useState(true);
  const generation=useRef(0),locked=useRef(false);
@@ -48,7 +49,7 @@ function CompanyTask({templateId,actorId,company,store,onRestart}:{templateId:Me
    if(templateId==='M4'){const page=data(await merchantCampaigns.list(company));if(!active())return;setCampaigns(page.items);setSelection(page.items.some(c=>c.id===query.get('campaign'))?query.get('campaign')!:page.items[0]?.id??'');}
    const id=query.get('run');if(id){const r=await store.get(id,company);const b=data(!r.ok&&r.code==='NOT_FOUND'?await store.intent(id,company):r);if(!active())return;if(b.companyId!==company||b.ownerId!==actorId||b.templateId!==templateId)throw Error('這份 brief 不屬於目前公司或任務。');setBrief(b);setSource(b.source);setStored(r.ok);setQuestion(b.question);setNotes(b.notes);setMessage(r.ok?'已讀回私人 brief；核對／重試沿用當中的原請求。':'已恢復完整提案；保存結果未知，請核對同一請求。');}
   });return()=>{generation.current++;off();};
- },[company,actorId,templateId]);
+ },[company,actorId,templateId,setQuestion]);
  async function read(){await action(async active=>{
   const memberships=data(await merchants.memberships());if(!active())return;if(!merchantTaskAllowed(templateId,memberships.find(m=>m.merchantId===company)?.role))throw Object.assign(Error('公司權限已變更，私人內容已清除。'),{code:'FORBIDDEN'});
   let next:MerchantSource;

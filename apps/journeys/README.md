@@ -44,6 +44,39 @@ One unresolved edit is retained per trip on the device. Retry or review it befor
 saving another operation. Logout and account changes clear mounted private views
 and account caches; offline maps and photos are unavailable.
 
+The homepage's **Plan my trip** task can turn a reviewed manual brief into a
+device itinerary with one to thirty days. Choose **Prepare a trip draft**, name
+each day and enter its stops, date/time zone and note. Days can be reordered or
+removed after confirmation. Each day supports one to twenty stops, with at most
+two hundred stops in total. Review the complete itinerary and confirm
+**Save itinerary on this device**.
+Open **View saved device trips** to reopen, edit or delete it through the existing
+trip workspace. Device drafts are readable by anyone using the browser. Account
+import still requires sign-in and a separate confirmation.
+
+Saved manual copies also allow editing the trip title, optional start date,
+time zone and day titles. Invalid details keep the last saved copy intact.
+Device saves require a matching storage readback before confirming success or
+enabling account import; an unconfirmed read retains edits for same-copy retry.
+
+Saved manual trips support adding, moving and removing days and stops. Moving
+stops keeps their notes and times attached. Choose **Move to day** and confirm
+**Move stop to day** to append a stop to another day; focus follows the moved
+stop. Choosing a destination does not edit the trip. Moving stops between days
+preserves existing dates; day changes renumber dates from the start date.
+Removal requires confirmation and affects the saved copy only after Save.
+The editor supports thirty days, fifty stops per day and two hundred total.
+Empty days and unfinished stop names can stay in device working copies; account
+import retains its existing completeness checks. Guide-derived structural data
+is not changed. Temporary editor keys are not stored or sent to parent workflows.
+
+Saved manual stops also support optional start times (`HH:mm`, 00:00–23:59) and
+whole-minute durations (1–1440). Times use the trip's time zone. Blank fields
+mean unknown; midnight is `00:00`. Partial input stays with its stop when moved,
+and invalid input blocks Save and save-and-leave without changing the saved
+copy. Correct or clear the field, then Save. Reopening restores the saved times;
+temporary input text is not stored or sent to parent workflows.
+
 ## Catalog configuration
 
 Copy `.env.example` to `.env.local`. Configure `KINNSO_SUPABASE_URL` and `KINNSO_SUPABASE_PUBLISHABLE_KEY` for an approved Supabase target. The adapter rejects secret/service-role keys, uses only anonymous published-guide reads, selects explicit columns, caps page size at 12 with one lookahead record, and distinguishes unavailable, empty and unconfigured responses. Never paste credentials into source files. Existing RLS/grants must allow anonymous reads of **published** guide rows.
