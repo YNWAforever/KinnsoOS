@@ -31,7 +31,9 @@ async function creationInputHash(value:CreationInput){
  const bytes=new TextEncoder().encode(JSON.stringify(creationInput(value)));
  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
-function creationKey(ownerId:string,guideId:string|null){if(guideId!==null&&!opaqueId.test(guideId))throw Error('INVALID_CREATION');return ownerId+':'+(guideId??'manual')}
+// Published legacy catalog IDs are UUID-shaped but need not have RFC version/variant bits.
+// Receipt creation still validates generated request, flow and trip identities separately.
+function creationKey(ownerId:string,guideId:string|null){if(guideId!==null&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(guideId))throw Error('INVALID_CREATION');return ownerId+':'+(guideId??'manual')}
 async function creationTransaction<T>(ownerId:string,work:(tx:IDBTransaction,done:(value:T)=>void,fail:(reason:string)=>void)=>void):Promise<T>{
  const db=await open();
  try{return await new Promise<T>((resolve,reject)=>{
