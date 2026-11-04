@@ -11,7 +11,7 @@ test('common navigation preserves all three audiences and internal role boundary
 });
 test('workroom recognition accepts only exact routes and UUID thread paths',()=>{
  assert.equal(typeof nav.isStudioRoute,'function');
- for(const path of ['workroom','workroom/templates','workroom/documents','settings/connections','workroom/t/11111111-1111-4111-8111-111111111111'])assert.equal(nav.isStudioRoute(path),true,path);
+ for(const path of ['workroom','workroom/templates','workroom/documents','workroom/merchant-results','workroom/traveller-results','workroom/reports','settings/connections','workroom/t/11111111-1111-4111-8111-111111111111'])assert.equal(nav.isStudioRoute(path),true,path);
  for(const path of ['workroom/../ops','workroom/t/no','workroom/t/11111111-1111-4111-8111-111111111111/extra','workroom/unknown'])assert.equal(nav.isStudioRoute(path),false,path);
 });
 test('original route constants remain present after adding workroom routes',async()=>{

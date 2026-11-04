@@ -12,5 +12,5 @@ const common:StudioNav[]=[
 /** Discoverability only; the server independently authorizes each command. */
 export function getStudioNavigation(actor:{roles:string[]}|null):StudioNav[]{return [...common,...actor?.roles.includes('ops')?[{path:'ops',en:'Operations',zh:'營運工作區'}]:[]];}
 export function isStudioRoute(path:string):boolean {
- return ['workroom','workroom/templates','workroom/documents','settings/connections','workroom/discovery','merchant/offer-discovery'].includes(path)||/^workroom\/(?:t|discovery\/intents)\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(path);
+ return ['workroom','workroom/templates','workroom/documents','workroom/merchant-results','workroom/traveller-results','workroom/reports','settings/connections','workroom/discovery','merchant/offer-discovery'].includes(path)||/^workroom\/(?:t|discovery\/intents)\/[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(path);
 }
