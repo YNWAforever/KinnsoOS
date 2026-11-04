@@ -8,6 +8,8 @@ import * as m from "./model";
 import { AppContext, Chip, Empty, Icon, Modal, useApp } from "./ui";
 import { HomePage, ExplorePage, AdventurePage, TripsPage } from "./explore";
 import { ConnectedHome } from './ConnectedHome';
+import {isStudioRoute} from '../../lib/studio/navigation';
+import {retainGuestQuestionForRoute} from '../../lib/studio/guest-draft';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
@@ -289,6 +291,7 @@ export function Workbench({
   // Retain invalidation before a deferred private workspace mounts. Only a new
   // server-verified actor prop can restore that workspace's account scope.
   const workspaceActor = invalidatedActor === actor ? null : actor;
+  useEffect(()=>retainGuestQuestionForRoute(path,workspaceActor?.id??null),[path,workspaceActor?.id]);
   useEffect(() => subscribeAccountInvalidation(next => {
     if (actor && next !== actor.id) setInvalidatedActor(actor);
   }), [actor]);
@@ -650,8 +653,8 @@ export function Workbench({
   )
     content = <CreatorShell path={path}>{content}</CreatorShell>;
   if(mode !== 'demo') {
-    if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
-    else if(path==='workroom'||path.startsWith('workroom/')||path==='settings/connections')content=<WorkroomShell key={workspaceActor?.id??'guest'} path={path} actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.conversation===true} handoffEnabled={features.creatorBriefHandoff===true&&features.creator===true}/>;
+    if(!path) content=<ConnectedHome actorId={workspaceActor?.id??null}/>;
+    else if(isStudioRoute(path))content=<WorkroomShell key={workspaceActor?.id??'guest'} path={path} actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.conversation===true} handoffEnabled={features.creatorBriefHandoff===true&&features.creator===true}/>;
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null} initialGuide={publicGuide}/>;
     else if(path.startsWith('c/')&&publicCreator)content=<PublicCreatorContent creator={publicCreator} locale={locale}/>;

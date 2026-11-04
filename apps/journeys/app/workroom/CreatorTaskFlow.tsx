@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {useStudioQuestion} from './useStudioQuestion';
 import {useRouter,useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from '../travel/ui';
@@ -35,7 +36,7 @@ export function CreatorTaskFlow({templateId,actorId,store}:{templateId:CreatorTa
  const {href}=useApp(),router=useRouter(),query=useSearchParams(),task=templateById(templateId);
  const initialId=useRef(query.get('report')),epoch=useRef(0),busyRef=useRef(false),pending=useRef<CreatorReportIntent|null>(null),action=useRef<Action|null>(null),recoveryId=useRef<string|null>(null);
  const [choices,setChoices]=useState<{id:string;title:string}[]>([]),[selected,setSelected]=useState(''),[section,setSection]=useState<EarningsSection>('settled');
- const [question,setQuestion]=useState(task.title),[period,setPeriod]=useState({from:'2026-10-01',to:'2026-10-31'}),[prepared,setPrepared]=useState<CreatorReport|null>(null),[report,setReport]=useState<CreatorReport|null>(null),[saved,setSaved]=useState<CreatorReport|null>(null);
+ const [question,setQuestion]=useStudioQuestion(actorId,task.id,task.title),[period,setPeriod]=useState({from:'2026-10-01',to:'2026-10-31'}),[prepared,setPrepared]=useState<CreatorReport|null>(null),[report,setReport]=useState<CreatorReport|null>(null),[saved,setSaved]=useState<CreatorReport|null>(null);
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState(''),[valid,setValid]=useState(true),[stale,setStale]=useState(false),[unknown,setUnknown]=useState(false),[unknownAction,setUnknownAction]=useState(false),[confirmation,setConfirmation]=useState(false),[confirmed,setConfirmed]=useState(false);
  const [message,setMessage]=useState('');
  function clearPrivate(){epoch.current++;setValid(false);setReport(null);setPrepared(null);setSaved(null);setQuestion('');setMessage('');setChoices([]);setSelected('');setError('帳戶或來源權限已改變，私人內容已清除。');setStatus('');setConfirmation(false);pending.current=null;action.current=null;}
@@ -60,7 +61,7 @@ export function CreatorTaskFlow({templateId,actorId,store}:{templateId:CreatorTa
    const current=await readSource(value.source);if(generation!==epoch.current)return;if(!current.ok){showError(current.code);return;}setStale(!sameValue(current.data,value.source));setStatus(recoveryId.current?'先前操作尚待核對，已恢復原來的不可變意圖。':'已重新開啟私人報告。');
   })().catch(()=>{if(generation===epoch.current)showError('UNAVAILABLE');});
   return()=>{epoch.current++;off();};
- },[actorId,templateId,store]);
+ },[actorId,templateId,store,setQuestion]);
  const dirty=!!report&&!sameValue(report,saved),locked=busy||unknown||unknownAction||!valid;
  useEffect(()=>{if(!dirty&&!unknown&&!unknownAction)return;const unload=(event:BeforeUnloadEvent)=>{event.preventDefault();event.returnValue='';};const leave=(event:MouseEvent)=>{const anchor=event.target instanceof Element?event.target.closest('a[href]'):null;if(anchor instanceof HTMLAnchorElement&&anchor.origin===location.origin&&!window.confirm('仍有未保存成果或結果未知的操作，確定離開？')){event.preventDefault();event.stopPropagation();}};window.addEventListener('beforeunload',unload);document.addEventListener('click',leave,true);return()=>{window.removeEventListener('beforeunload',unload);document.removeEventListener('click',leave,true);};},[dirty,unknown,unknownAction]);
  function change(next:CreatorReport){setReport(next);setPrepared(next);setConfirmation(false);setConfirmed(false);setStatus('修改尚未保存。');}

@@ -17,7 +17,7 @@ const groups:{role:TaskTemplate['role'];topic:StudioTopic;rows:Row[]}[]=[
  ['C5','更新攻略版本','Update a guide version','本人攻略、目前版本、新原創內容','攻略擁有人及創作者權限','差異預覽 → 新的不可變發布版本','studio/guides','進階','8–12 分鐘'],
  ]},
  {role:'merchant',topic:'merchant',rows:[
- ['M1','更新商戶資料','Update business details','公司資料、地址、時間、原創文案','指定公司有效 owner 權限','欄位差異 → 原商戶資料','merchant/profile','入門','5 分鐘'],
+ ['M1','更新商戶資料','Update business details','公司資料、地址、時間、原創文案','指定公司有效 owner 權限','欄位差異 → 原商戶資料','merchant','入門','5 分鐘'],
  ['M2','處理查詢','Handle enquiries','原收件匣／支援個案','指定個案權限；外部讀取／發送分開','回覆草稿 → 原個案','support','入門','3–5 分鐘'],
  ['M3','製作活動素材','Prepare campaign material','活動、授權圖片及品牌文字','指定公司 owner／marketing','素材 brief → 原活動草稿','merchant/missions','入門','8 分鐘'],
  ['M4','檢查合作 brief','Check a collaboration brief','活動、里程碑、日期、條件','原活動編輯及發布權限','缺項及發布摘要 → 原活動','merchant/missions','進階','6 分鐘'],
@@ -34,9 +34,30 @@ const groups:{role:TaskTemplate['role'];topic:StudioTopic;rows:Row[]}[]=[
 export const templates:TaskTemplate[]=groups.flatMap(g=>g.rows.map(([id,title,en,inputs,permission,output,destination,difficulty,minutes])=>({id,title,en,inputs,permission,output,destination,difficulty,minutes,role:g.role,topic:g.topic})));
 export const templateById=(id:string)=>templates.find(t=>t.id===id)??templates.find(t=>t.id==='C1')!;
 export function suggestTemplates(question:string):{ids:TemplateId[];needsClarification:boolean}{
- const matches:TemplateId[]=[];
- if(/guide|攻略|寫|創作|publish|brief/i.test(question))matches.push('C1');
- if(/行程|目的地|旅行|trip|travel/i.test(question))matches.push('T1');
- if(/商戶|店舖|店鋪|活動素材|business|merchant/i.test(question))matches.push('M1');
+ // Match the requested action before broad nouns: a saved guide can be a
+ // traveller's adoption, and a collaboration brief can be a merchant's task.
+ const specific:[TemplateId,RegExp][]=[
+  ['T2',/adopt.*(?:guide|bookmark)|(?:use|turn).*(?:saved guide|bookmark)|turn.*guide.*(?:into|to).*(?:trip|itinerary)|(?:採用|把收藏|收藏.*變成).*(?:攻略|guide|行程)/i],
+  ['T3',/(?:share|revoke).*(?:trip|itinerary)|(?:分享|撤回).*行程|行程.*(?:分享|撤回)/i],
+  ['T4',/(?:organi[sz]e|sort).*(?:saved|bookmark|guide)|整理.*收藏/i],
+  ['T5',/(?:record|capture).*(?:moment|photo|memory)|(?:記錄|記下|留住).*(?:片刻|照片|旅程|旅途)/i],
+  ['C2',/before publish|pre[- ]?publish|發[布佈]前/i],
+  ['C3',/(?:review|check)\s+(?:my\s+)?performance|(?:creator|guide|content)\s+performance|earnings|(?<!活動)成效|收益.*檢討/i],
+  ['C4',/revision|deliverable|修訂|交付/i],
+  ['C5',/(?:update|edit).*(?:guide)|更新.*攻略/i],
+  ['M2',/enquir|inquir|customer questions?|處理查詢|回覆查詢/i],
+  ['M3',/campaign (?:material|content|asset)|活動素材/i],
+  ['M4',/collaboration brief|合作\s*brief/i],
+  ['M5',/campaign (?:result|performance)|活動(?:成果|成效)/i],
+ ];
+ const matches=specific.filter(([,pattern])=>pattern.test(question)).map(([id])=>id);
+ if(!matches.some(id=>id.startsWith('C'))&&/(?:write|create|寫|撰寫).*(?:guide|攻略)|創作/i.test(question))matches.push('C1');
+ if(!matches.some(id=>id.startsWith('T'))&&/(?:plan|規劃|安排).*(?:trip|itinerary|行程|旅行)/i.test(question))matches.push('T1');
+ if(!matches.some(id=>id.startsWith('M'))&&/(?:update|更新).*(?:商戶|店舖|店鋪|business|merchant)/i.test(question))matches.push('M1');
+ if(!matches.length){
+  if(/guide|攻略|publish|brief/i.test(question))matches.push('C1');
+  if(/行程|目的地|旅行|trip|travel/i.test(question))matches.push('T1');
+  if(/商戶|店舖|店鋪|business|merchant/i.test(question))matches.push('M1');
+ }
  return{ids:matches.length?matches:['C1','T1','M1'],needsClarification:matches.length!==1};
 }

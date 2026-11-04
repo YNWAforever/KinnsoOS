@@ -15,7 +15,8 @@
       "codex/pd06-durable-share-recovery-20261023": false,
       "codex/docs-core-flow-tests-20261025": false,
       "codex/phase-b-hps-synthetic-prep-20261027": false,
-      "codex/aud-09-10-lint-deps": false
+      "codex/aud-09-10-lint-deps": false,
+      "codex/homepage-trip-planning-20261104": false
     }
   }
 }

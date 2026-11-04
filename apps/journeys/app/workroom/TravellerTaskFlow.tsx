@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import {useStudioQuestion} from './useStudioQuestion';
 import {useSearchParams} from 'next/navigation';
 import {useEffect,useRef,useState} from 'react';
 import {useApp} from '../travel/ui';
@@ -25,7 +26,7 @@ export function TravellerTaskFlow({templateId,actorId,store,discoveryStore}:{tem
  const {href}=useApp(),query=useSearchParams(),task=templateById(templateId);
  const [list,setList]=useState<{id:string;title:string;revision:number}[]>([]),[saved,setSaved]=useState<BookmarkRow[]>([]),[tripId,setTripId]=useState(''),[guideId,setGuideId]=useState('');
  const [trip,setTrip]=useState<TripSnapshot|null>(null),[guide,setGuide]=useState<GuideSnapshot|GuideSummary|null>(null);
- const [question,setQuestion]=useState(templateId==='T1'?'幫我安排一天慢遊，保留休息時間。':templateId==='T2'?'把收藏的 guide 加入我的行程，保留原有私人筆記。':templateId==='T3'?'只分享我選的內容，之後可以撤回。':templateId==='T4'?'整理收藏，分清可採用攻略與靈感摘要。':'記下今天的片刻，只保存在自己的行程。');
+ const [question,setQuestion]=useStudioQuestion(actorId,templateId,templateId==='T1'?'幫我安排一天慢遊，保留休息時間。':templateId==='T2'?'把收藏的 guide 加入我的行程，保留原有私人筆記。':templateId==='T3'?'只分享我選的內容，之後可以撤回。':templateId==='T4'?'整理收藏，分清可採用攻略與靈感摘要。':'記下今天的片刻，只保存在自己的行程。');
  const [title,setTitle]=useState('我的輕鬆一天（示例）'),[date,setDate]=useState('2026-11-07'),[zone,setZone]=useState('Asia/Hong_Kong'),[stopNames,setStopNames]=useState('海旁慢步（示例）\n午後休息（示例）');
  const [note,setNote]=useState('PRIVATE_TRAVEL_MEMORY：今天的私人示例感想。'),[description,setDescription]=useState('示例色塊，沒有真實人物或位置。'),[photo,setPhoto]=useState(false),[stopId,setStopId]=useState('');
  const [selected,setSelected]=useState<string[]>([]),[selectedMedia,setSelectedMedia]=useState<string[]>([]),[removeIds,setRemoveIds]=useState<string[]>([]),[notes,setNotes]=useState('');
@@ -41,7 +42,7 @@ export function TravellerTaskFlow({templateId,actorId,store,discoveryStore}:{tem
    const id=query.get('run');if(id){const readback=await store.get(id);const savedBrief=data(!readback.ok&&readback.code==='NOT_FOUND'?await store.intent(id):readback);if(version!==generation.current)return;if(savedBrief.ownerId!==actorId||savedBrief.templateId!==templateId)throw Error('這份 brief 不屬於目前任務。');setBrief(savedBrief);setStored(readback.ok);setLoaded(true);setEvidence(savedBrief.evidence);setQuestion(savedBrief.question);setNotes(savedBrief.notes);setMessage(readback.ok?'已讀回私人 brief。執行時沿用當中的原請求。':'已恢復原 brief 的完整內容；保存結果未知，請核對同一請求。');}
   }catch(e){if(version===generation.current)setError(String((e as Error).message));}})();
   return()=>{generation.current++;cancellation.current?.abort();unsubscribe();};
- },[actorId,templateId]);
+ },[actorId,templateId,setQuestion]);
  async function action(work:(active:()=>boolean,signal:AbortSignal)=>Promise<void>){if(locked.current||!valid)return;locked.current=true;setBusy(true);setError('');const controller=new AbortController();cancellation.current=controller;const epoch=generation.current,active=()=>epoch===generation.current&&!controller.signal.aborted;
   try{await work(active,controller.signal);}catch(e){if(active())setError((e as Error).message);}finally{if(active()){locked.current=false;setBusy(false);cancellation.current=null;}}
  }

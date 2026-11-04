@@ -1,6 +1,13 @@
 import {test,expect,type Page} from '@playwright/test';
 import {createHash} from 'node:crypto';
 const actor='22222222-2222-4222-8222-222222222222';
+test('same-page actor prop changes clear the homepage question without an invalidation event',async({page})=>{
+ await backend(page);await page.goto('/zh-HK/');
+ await page.getByLabel('想去哪裏、寫甚麼，或讓旅客找到你的店？').fill('PRIVATE_ACTOR_A');
+ await page.evaluate(()=>{window.fixtureActor='33333333-3333-4333-8333-333333333333';window.fixtureNavigate('/zh-HK/?account-switch=1');});
+ await expect(page.getByLabel('想去哪裏、寫甚麼，或讓旅客找到你的店？')).toHaveValue('');
+ await expect(page.getByRole('button',{name:'開始聊聊'})).toBeDisabled();
+});
 async function backend(page:Page){
  const state={threads:new Map<string,any>(),receipts:new Map<string,any>(),guides:new Map<string,any>(),handoffs:new Map<string,any>(),published:new Map<string,any>(),writes:[] as any[],dropArtifact:false,denyGuideRead:false};
  await page.addInitScript(actor=>{window.fixtureActor=actor;},actor);

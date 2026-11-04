@@ -6,7 +6,8 @@ import {useApp} from '../travel/ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {createBriefFromSources,readableBrief} from '../../lib/studio/evidence';
 import {buildGuideProjection} from '../../lib/studio/guide-handoff';
-import {peekGuestQuestion,clearGuestQuestion} from '../../lib/studio/guest-draft';
+import {clearGuestQuestion} from '../../lib/studio/guest-draft';
+import {useStudioQuestion} from './useStudioQuestion';
 import {studioRepository,studioRequest,verifiedCommand} from '../../lib/studio/repository';
 import {rememberStudioRecovery as remember,forgetStudioRecovery as forget,readStudioRecovery} from '../../lib/studio/recovery';
 import {sameValue} from '../../lib/studio/contracts';
@@ -22,7 +23,7 @@ type Pending=StudioEnvelope<StudioCommand>;
 export function ThreadWorkspace({actorId,enabled,handoffEnabled,roles,threadId,discoveryStore,matchedContext}:{actorId:string|null;enabled:boolean;handoffEnabled:boolean;roles:string[];threadId?:string;discoveryStore?:DiscoveryStore;matchedContext?:MatchedSourceInput}){
  const {t,href,locale}=useApp(),router=useRouter();
  const [sources,setSources]=useState<SourceDocument[]>([]),[selected,setSelected]=useState<string[]>([]),[brief,setBrief]=useState<StudioBrief|null>(null);
- const [question,setQuestion]=useState(peekGuestQuestion),[messages,setMessages]=useState<{role:string;body:string}[]>([]),[status,setStatus]=useState(''),[error,setError]=useState('');
+ const [question,setQuestion]=useStudioQuestion(actorId,'C1','',!threadId),[messages,setMessages]=useState<{role:string;body:string}[]>([]),[status,setStatus]=useState(''),[error,setError]=useState('');
  const [busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false),[denied,setDenied]=useState(false),[preview,setPreview]=useState<GuideProjection|null>(null),[conflict,setConflict]=useState<StudioBrief|null>(null);
  const id=useRef(threadId??crypto.randomUUID()),created=useRef(false),threadRevision=useRef(0),persistedSources=useRef(new Set<string>()),epoch=useRef(0),busyRef=useRef(false),editEpoch=useRef(0),savedBody=useRef('');
  const pending=useRef<Pending|null>(null),domain=useRef<GuideHandoff|null>(null),recoverId=useRef<string|null>(null);
