@@ -80,6 +80,22 @@ export function projectPublicGuideCard(value: unknown): PublicGuideCard {
   };
 }
 
+export async function readActiveCreatorIds(ids: readonly string[],target:{origin:string;key:string},transport:typeof fetch):Promise<Set<string>>{
+ const checked=[...new Set(ids.filter(id=>uuid.test(id)))];
+ if(!checked.length)return new Set();
+ const url=new URL('/rest/v1/creators',target.origin);
+ url.search=new URLSearchParams({select:'id',id:`in.(${checked.join(',')})`,status:'eq.active',public_profile:'not.is.null',limit:String(checked.length+1)}).toString();
+ const rows=await readPublicRows(url,target.key,transport,undefined,{unavailableCode:'guide_unavailable',schemaCode:'guide_schema'});
+ if(rows.length>checked.length)throw new Error('guide_schema');
+ const active=new Set<string>();
+ for(const value of rows){
+  const row=record(value),id=text(row.id,64);
+  if(!uuid.test(id)||!checked.includes(id))throw new Error('guide_schema');
+  active.add(id);
+ }
+ return active;
+}
+
 export async function readPublicGuidesForTerms(
   terms: readonly string[],
   limit: number,
@@ -92,7 +108,7 @@ export async function readPublicGuidesForTerms(
   if (!target) throw new Error('guide_unconfigured');
   const url = new URL('/rest/v1/guides', target.origin);
   url.search = new URLSearchParams({
-    select: 'id,title,summary,city,cover_url,creator_handle,saves_count,published_at',
+    select: 'id,title,summary,city,cover_url,creator_handle,saves_count,published_at,creator_id',
     status: 'eq.published',
     or: `(${clean.map(term => `city.ilike.%${term}%`).join(',')})`,
     order: 'published_at.desc.nullslast,id.asc',
@@ -103,15 +119,19 @@ export async function readPublicGuidesForTerms(
     schemaCode: 'guide_schema',
   });
   if (rows.length > limit) throw new Error('guide_schema');
-  const seen = new Set<string>();
-  return rows.flatMap(value => {
+  const seen = new Set<string>(),cards=[];
+  for(const value of rows){
     try {
+      const creatorId=text(record(value).creator_id,64);
+      if(!uuid.test(creatorId))continue;
       const guide = projectPublicGuideCard(value);
-      if (seen.has(guide.id)) throw new Error('guide_schema');
+      if (seen.has(guide.id)) continue;
       seen.add(guide.id);
-      return [guide];
+      cards.push({guide,creatorId});
     } catch {
-      return [];
+      continue;
     }
-  });
+  }
+  const active=await readActiveCreatorIds(cards.map(value=>value.creatorId),target,transport);
+  return cards.filter(value=>active.has(value.creatorId)).map(value=>value.guide);
 }

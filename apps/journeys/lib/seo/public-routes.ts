@@ -90,3 +90,7 @@ export function publicRouteHref(locale: string, route: PublicRoute): string {
       return `${root}/sessions/${encodeURIComponent(route.slug)}`;
   }
 }
+
+export function isPublicRouteNamespace(locale:string,route:readonly string[]):boolean{
+ return Boolean(publicLanguage(locale))&&['destinations','g','c','experiences','m','sessions'].includes(route[0]??'');
+}

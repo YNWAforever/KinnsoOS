@@ -110,16 +110,16 @@ export function PublicDestinationDetail({
         {destination.description && <p>{destination.description}</p>}
       </article>
       <RelatedSection heading={labels.destinations.guidesHeading} section={related.guides} unavailable={labels.common.unavailable} render={guide => (
-          <Link href={`/${locale}/g/${guide.id}`} lang="">{guide.title}</Link>
+          <Link className="public-content-link" href={`/${locale}/g/${guide.id}`} lang="">{guide.title}</Link>
         )} />
       <RelatedSection heading={labels.destinations.experiencesHeading} section={related.experiences} unavailable={labels.common.unavailable} render={experience => (
-          <Link href={`/${locale}/experiences/${encodeURIComponent(experience.slug)}`} lang="">{experience.title}</Link>
+          <Link className="public-content-link" href={`/${locale}/experiences/${encodeURIComponent(experience.slug)}`} lang="">{experience.title}</Link>
         )} />
       <RelatedSection heading={labels.destinations.articlesHeading} section={related.articles} unavailable={labels.common.unavailable} render={article => (
-          article.canOpen ? <Link href={article.href} lang="">{article.title}</Link> : <span lang="">{article.title}</span>
+          article.canOpen ? <Link className="public-content-link" href={article.href} lang="">{article.title}</Link> : <span lang="">{article.title}</span>
         )} />
       <RelatedSection heading={labels.destinations.sessionsHeading} section={related.sessions} unavailable={labels.common.unavailable} render={session => (
-            <Link href={`/${locale}/sessions/${encodeURIComponent(session.slug)}`} lang="">{session.title}</Link>
+            <Link className="public-content-link" href={`/${locale}/sessions/${encodeURIComponent(session.slug)}`} lang="">{session.title}</Link>
           )} />
     </main>
   );

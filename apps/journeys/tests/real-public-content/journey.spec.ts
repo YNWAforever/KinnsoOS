@@ -8,6 +8,9 @@ test.afterAll(async()=>{await fixture?.cleanup()});
 
 async function signIn(page:Page,actor:{email:string;password:string},next:string){
  await page.goto(`/en/sign-in?next=${encodeURIComponent(next)}`);
+ await submitSignIn(page,actor,next);
+}
+async function submitSignIn(page:Page,actor:{email:string;password:string},next:string){
  await page.getByLabel('Email',{exact:true}).fill(actor.email);
  await page.getByLabel('Password',{exact:true}).fill(actor.password);
  await page.getByRole('button',{name:'Sign in',exact:true}).click();
@@ -45,7 +48,7 @@ async function journey(browser:Browser,locale:string,viewport:{width:number;heig
   await expect(page.getByRole('heading',{name:fixture.creator.display_name,exact:true})).toBeVisible();
   await page.goto(`/${locale}/articles/destinations/${fixture.ids.articleSlug}`);
   await expect(page.getByRole('heading',{name:/Synthetic Public Article/,exact:false})).toBeVisible();
-  await expect(page.locator(`a[href="/${locale}/c/${fixture.ids.articleAuthor}"]`)).toBeVisible();
+  await expect(page.locator(`a[href="/${locale}/c/${fixture.ids.articleAuthor}"]`)).toHaveCount(0);
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   expect(await page.locator('a[href*="remix-kinnso-web"]').count()).toBe(0);
   expect(external).toEqual([]);
@@ -65,18 +68,22 @@ test('real isolated target PUBLIC_CONTENT_8 withdrawal, suspension and bookmark 
  const contextB=await browser.newContext({baseURL:process.env.KINNSO_PUBLIC_IT_APP_ORIGIN});
  try{
   const pageA=await contextA.newPage(),pageB=await contextB.newPage();
-  await signIn(pageA,actors.A,guidePath);
+  await pageA.goto(guidePath);
+  await pageA.getByRole('link',{name:'Sign in to bookmark this guide',exact:true}).click();
+  await submitSignIn(pageA,actors.A,guidePath);
   try{
-   await expect(pageA.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible({timeout:20000});
+   await expect(pageA.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible({timeout:20000});
   }catch(error){
    const state=await pageA.locator('body').innerText();
    await test.info().attach('bookmark-state-before-save',{body:state,contentType:'text/plain'});
    console.log(state);
    throw error;
   }
+  await pageA.getByRole('button',{name:'Remove bookmark',exact:true}).click();
+  await expect(pageA.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible();
+  await pageA.reload();await expect(pageA.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible({timeout:20000});
   await pageA.getByRole('button',{name:'Bookmark guide',exact:true}).click();
   await expect(pageA.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();
-  await pageA.reload();await expect(pageA.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible({timeout:20000});
   await signIn(pageB,actors.B,guidePath);
   await expect(pageB.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible({timeout:20000});
   const ownerBookmarks=await fixture.admin.from('guide_saves').select('guide_id,traveler_user_id').eq('guide_id',fixture.ids.guides.published);
@@ -84,7 +91,6 @@ test('real isolated target PUBLIC_CONTENT_8 withdrawal, suspension and bookmark 
   expect(ownerBookmarks.data).toEqual([{guide_id:fixture.ids.guides.published,traveler_user_id:actors.A.id}]);
  }finally{await contextA.close();await contextB.close()}
  const updates=await Promise.all([
-  fixture.admin.from('guides').update({status:'draft'}).eq('id',fixture.ids.guides.published),
   fixture.admin.from('experiences').update({status:'paused'}).eq('id',fixture.ids.experiences.published),
   fixture.admin.from('merchant_profiles').update({status:'suspended'}).eq('id',fixture.merchant.id),
   fixture.admin.from('creators').update({status:'suspended'}).eq('id',fixture.creator.id),

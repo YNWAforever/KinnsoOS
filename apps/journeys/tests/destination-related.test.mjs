@@ -20,8 +20,10 @@ const destination = {
   experienceCount: 1,
   latestPublishedAt: '2026-01-01T00:00:00Z',
 };
+const guideCreatorId='11111111-1111-4111-8111-111111111111';
 const guideRow = {
   id: '11111111-1111-4111-8111-111111111111',
+  creator_id: guideCreatorId,
   title: 'Authored guide',
   summary: 'Guide summary',
   city: 'Tokyo',
@@ -56,6 +58,7 @@ test('related guide reader sanitizes terms and uses one bounded published query'
     env,
     async (input, options) => {
       const url = new URL(input);
+      if(url.pathname==='/rest/v1/creators'){assert.equal(url.searchParams.get('id'),'in.('+guideCreatorId+')');assert.equal(url.searchParams.get('status'),'eq.active');return Response.json([{id:guideCreatorId}]);}
       assert.equal(url.pathname, '/rest/v1/guides');
       assert.equal(url.searchParams.get('status'), 'eq.published');
       assert.equal(url.searchParams.get('limit'), '6');
@@ -64,7 +67,7 @@ test('related guide reader sanitizes terms and uses one bounded published query'
         url.searchParams.get('or'),
         '(city.ilike.%Tokyo%,city.ilike.%東京%,city.ilike.%Shibuya%)',
       );
-      assert.equal(url.searchParams.get('select'), 'id,title,summary,city,cover_url,creator_handle,saves_count,published_at');
+      assert.equal(url.searchParams.get('select'), 'id,title,summary,city,cover_url,creator_handle,saves_count,published_at,creator_id');
       assert.equal(options.headers.Authorization, undefined);
       assert.equal(options.cache, 'no-store');
       return Response.json([guideRow]);
@@ -106,12 +109,23 @@ test('related guide backend failure stays unavailable instead of becoming an emp
   );
 });
 
+test('related guides exclude rows whose creator is no longer active and public',async()=>{
+ const creatorId='11111111-1111-4111-8111-111111111111';let creatorCalls=0;
+ const result=await subject.readPublicGuidesForTerms(['Tokyo'],6,env,async input=>{
+  const url=new URL(input);
+  if(url.pathname==='/rest/v1/guides')return Response.json([{...guideRow,creator_id:creatorId}]);
+  assert.equal(url.pathname,'/rest/v1/creators');creatorCalls++;return Response.json([]);
+ });
+ assert.deepEqual(result,[]);assert.equal(creatorCalls,1);
+});
+
 test('destination related content keeps successful sections when another source fails', async () => {
   assert.equal(typeof subject.readDestinationRelated, 'function');
   const result = await subject.readDestinationRelated(destination, 'ja', env, async (input, options) => {
     const url = new URL(input);
     assert.equal(options.headers.Authorization, undefined);
     if (url.pathname === '/rest/v1/guides') return Response.json([guideRow]);
+    if (url.pathname === '/rest/v1/creators') return Response.json([{id:guideCreatorId}]);
     if (url.pathname === '/rest/v1/experiences') return Response.json({}, { status: 503 });
     if (url.pathname === '/rest/v1/rpc/search_articles') {
       const body = JSON.parse(options.body);

@@ -14,8 +14,8 @@ export function PublicExperienceContent({
   return (
     <main className="k-page">
       <nav aria-label={labels.experiences.backToMerchant}>
-        <Link href={`/${locale}/m/${encodeURIComponent(experience.merchant.slug)}`}>
-          {labels.experiences.backToMerchant} {experience.merchant.companyName}
+        <Link className="public-content-link" href={`/${locale}/m/${encodeURIComponent(experience.merchant.slug)}`}>
+          {labels.experiences.backToMerchant} <span lang="">{experience.merchant.companyName}</span>
         </Link>
       </nav>
       <article>
@@ -28,7 +28,7 @@ export function PublicExperienceContent({
           />
         )}
         <h1 lang="">{experience.title}</h1>
-        <p>{experience.city}</p>
+        <p lang="">{experience.city}</p>
         <p lang={locale}>
           {labels.experiences.priceLabel} {experience.currency} {experience.priceAmount.toLocaleString(locale)}
           {experience.durationMinutes !== null && (
@@ -39,7 +39,7 @@ export function PublicExperienceContent({
         {experience.description && <div lang="" style={{ whiteSpace: 'pre-wrap' }}>{experience.description}</div>}
         <p lang={locale}>
           {labels.experiences.hostedBy}{' '}
-          <Link href={`/${locale}/m/${encodeURIComponent(experience.merchant.slug)}`} lang="">
+          <Link className="public-content-link" href={`/${locale}/m/${encodeURIComponent(experience.merchant.slug)}`} lang="">
             {experience.merchant.companyName}
           </Link>
         </p>

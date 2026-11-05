@@ -57,3 +57,17 @@ test('published guide aliases redirect only after a successful published read',a
   assert.equal(error.message,'REDIRECT');assert.equal(error.target,'/en/g/'+id);return true;
  });
 });
+
+test('invalid public pagination is not-found before private actor lookup',async()=>{
+ for(const [route,search]of [
+  [['destinations'],{page:'0'}],
+  [['c','public-creator'],{page:['1','2']}],
+ ])await assert.rejects(page.exports.default({params:Promise.resolve({locale:'en',route}),searchParams:Promise.resolve(search)}),/NOT_FOUND/);
+});
+
+test('anonymous guide bookmark sign-in uses the supported auth page and returns to the public locale',async()=>{
+ for(const locale of ['zh-tw','zh-cn','ja','ko','th']){
+  const html=renderToStaticMarkup(await page.exports.default({params:Promise.resolve({locale,route:['g',id]}),searchParams:Promise.resolve({})}));
+  assert.ok(html.includes(`href="/en/sign-in?next=${encodeURIComponent(`/${locale}/g/${id}?bookmark=1`)}"`),locale);
+ }
+});

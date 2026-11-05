@@ -99,6 +99,12 @@ try{
    return route.abort();
   });
   const page=await context.newPage();
+  const auditCurrent=async()=>{
+   if(!javaScriptEnabled)return;
+   await page.addScriptTag({path:axePath});
+   const audit=await page.evaluate(async()=>await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}}));
+   assert.deepEqual(audit.violations.map(value=>value.id),[],JSON.stringify(audit.violations.map(value=>({id:value.id,nodes:value.nodes.map(node=>node.target)}))));
+  };
   try{
    for(const locale of locales){
     const response=await page.goto(`/${locale}/destinations`);assert.equal(response?.status(),200);
@@ -106,23 +112,20 @@ try{
     await expect(page.getByRole('heading',{level:1})).toBeVisible();
     assert.equal(await page.locator(`a[href="/${locale}/destinations/tokyo"]`).count(),1);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+    await auditCurrent();
     await page.goto(`/${locale}/destinations/tokyo`);
     await expect(page.getByRole('heading',{name:'Tokyo',exact:true})).toBeVisible();
     for(const href of [`/${locale}/g/${guideId}`,`/${locale}/experiences/city-walk`,`/${locale}/articles/destinations/tokyo-story`,`/${locale}/sessions/fixture-session`])assert.equal(await page.locator(`a[href="${href}"]`).count(),1,href);
     await page.locator(`a[href="/${locale}/g/${guideId}"]`).focus();await expect(page.locator(`a[href="/${locale}/g/${guideId}"]`)).toBeFocused();
-    await page.goto(`/${locale}/g/${guideId}`);await expect(page.getByRole('heading',{name:'Authored guide',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-creator"]`).count(),1);
-    await page.goto(`/${locale}/experiences/city-walk`);await expect(page.getByRole('heading',{name:'Authored experience',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/m/fixture-merchant"]`).count(),2);
-    await page.goto(`/${locale}/m/fixture-merchant`);await expect(page.getByRole('heading',{name:'Authored merchant',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/experiences/city-walk"]`).count(),1);
-    await page.goto(`/${locale}/sessions/fixture-session`);await expect(page.getByRole('heading',{name:'Authored session',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-creator"]`).count(),1);
-    await page.goto(`/${locale}/c/fixture-creator`);await expect(page.getByRole('heading',{name:'Authored creator',exact:true})).toBeVisible();
-    await page.goto(`/${locale}/articles/destinations/tokyo-story`);await expect(page.getByRole('heading',{name:'Authored article',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),1);
+    await auditCurrent();
+    await page.goto(`/${locale}/g/${guideId}`);await expect(page.getByRole('heading',{name:'Authored guide',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-creator"]`).count(),1);await auditCurrent();
+    await page.goto(`/${locale}/experiences/city-walk`);await expect(page.getByRole('heading',{name:'Authored experience',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/m/fixture-merchant"]`).count(),2);await auditCurrent();
+    await page.goto(`/${locale}/m/fixture-merchant`);await expect(page.getByRole('heading',{name:'Authored merchant',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/experiences/city-walk"]`).count(),1);await auditCurrent();
+    await page.goto(`/${locale}/sessions/fixture-session`);await expect(page.getByRole('heading',{name:'Authored session',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-creator"]`).count(),1);await auditCurrent();
+    await page.goto(`/${locale}/c/fixture-creator`);await expect(page.getByRole('heading',{name:'Authored creator',exact:true})).toBeVisible();await auditCurrent();
+    await page.goto(`/${locale}/articles/destinations/tokyo-story`);await expect(page.getByRole('heading',{name:'Authored article',exact:true})).toBeVisible();assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),0);await auditCurrent();
     assert.equal(await page.locator('a[href*="remix-kinnso-web"]').count(),0);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
-    if(javaScriptEnabled){
-     await page.addScriptTag({path:axePath});
-     const audit=await page.evaluate(async()=>await window.axe.run(document,{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22aa']}}));
-     assert.deepEqual(audit.violations.map(value=>value.id),[]);
-    }
     checks.push({locale,javaScriptEnabled,viewportWidth:viewport.width,destination:true,related:true,attribution:true,canonicalLinks:true,mobileOverflow:false});
    }
    await page.goto('/ja/destinations/service-error');assert.equal(await page.getByRole('alert').count(),1);

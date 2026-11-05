@@ -19,9 +19,9 @@ test('public destination preview source is loopback-only and explicitly fixture 
  assert.match(source,/assert\.equal\(new URL\([^)]+\)\.hostname,'127\.0\.0\.1'\)/s);
 });
 
-test('article fixture browser includes the verified creator attribution link',async()=>{
+test('article fixture browser rejects unverified author-to-creator links',async()=>{
  const source=await readFile(new URL('../../../scripts/check-public-article-preview.mjs',import.meta.url),'utf8');
  assert.match(source,/authors:\['fixture-author'\]/);
  assert.match(source,/article_authors/);
- assert.match(source,/\/c\/fixture-author/);
+ assert.match(source,/a\[href="\/\$\{locale\}\/c\/fixture-author"\]`\)\.count\(\),0/);
 });

@@ -3,7 +3,7 @@ import {authoredLanguage} from './public-language.ts';
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
 import {readPublicRows} from './public-http.ts';
 export type ArticleBlock={id:string;type:string;title:string;subtitle:string;html:string;image:string|null;fields:{label:string;href:string|null}[];images:{url:string;description:string}[]};
-export type PublicArticle={id:string;slug:string;category:string;locale:string;title:string;summary:string;metadataTitle:string;description:string;author:string|null;authorHandle:string|null;publishedAt:string;updatedAt:string|null;coverImage:string|null;shareImage:string|null;blocks:ArticleBlock[];faqs:{question:string;answer:string}[]};
+export type PublicArticle={id:string;slug:string;category:string;locale:string;title:string;summary:string;metadataTitle:string;description:string;author:string|null;publishedAt:string;updatedAt:string|null;coverImage:string|null;shareImage:string|null;blocks:ArticleBlock[];faqs:{question:string;answer:string}[]};
 const categories:Record<string,string>={destinations:'destination',dining:'dining',shopping:'shopping'};
 const slugPattern=/^[\p{L}\p{N}][\p{L}\p{M}\p{N}_.-]{0,199}$/u;
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,9 +67,9 @@ export async function readPublicArticle(category:string,slug:string,locale:strin
  const coverImage=((article.thumbnails??[]) as unknown[]).map(value=>link(value,true)).find(Boolean)??null;
  const shareImage=link(translation.og_image,true)??coverImage;
  if(!Array.isArray(article.authors)||article.authors.length>100||article.authors.some(author=>typeof author!=='string'))throw new Error('article_schema');
- let author:string|null=null,authorHandle:string|null=null;
- const first=article.authors[0];if(first){if(!slugPattern.test(first))throw new Error('article_schema');const url=new URL('/rest/v1/article_authors',target.origin);url.search=new URLSearchParams({select:'slug,name',slug:'eq.'+first,locale:'eq.'+authoredLocale,is_active:'eq.true',limit:'1'}).toString();const authors=await articleRows(url,target.key,transport);if(authors.length>1)throw new Error('article_schema');if(authors.length){const row=record(authors[0]);author=text(row.name)||null;const handle=row.slug;authorHandle=typeof handle==='string'&&slugPattern.test(handle)?handle:null;}}
+ let author:string|null=null;
+ const first=article.authors[0];if(first){if(!slugPattern.test(first))throw new Error('article_schema');const url=new URL('/rest/v1/article_authors',target.origin);url.search=new URLSearchParams({select:'name',slug:'eq.'+first,locale:'eq.'+authoredLocale,is_active:'eq.true',limit:'1'}).toString();const authors=await articleRows(url,target.key,transport);if(authors.length>1)throw new Error('article_schema');if(authors.length)author=text(record(authors[0]).name)||null;}
  const faqUrl=new URL('/rest/v1/article_faqs',target.origin);faqUrl.search=new URLSearchParams({select:'question,answer',article_id:'eq.'+article.id,locale:'eq.'+authoredLocale,order:'weight.desc',limit:'51'}).toString();
  const faqs=await articleRows(faqUrl,target.key,transport);if(faqs.length>50)throw new Error('article_schema');
- return {id:article.id,slug,category,locale:authoredLocale,title,summary,metadataTitle:text(translation.meta_title).trim()||title,description:text(translation.meta_description).trim()||summary,author,authorHandle,publishedAt,updatedAt,coverImage,shareImage,blocks,faqs:faqs.map(value=>{const faq=record(value);return {question:text(faq.question),answer:text(faq.answer)};})};
+ return {id:article.id,slug,category,locale:authoredLocale,title,summary,metadataTitle:text(translation.meta_title).trim()||title,description:text(translation.meta_description).trim()||summary,author,publishedAt,updatedAt,coverImage,shareImage,blocks,faqs:faqs.map(value=>{const faq=record(value);return {question:text(faq.question),answer:text(faq.answer)};})};
 }

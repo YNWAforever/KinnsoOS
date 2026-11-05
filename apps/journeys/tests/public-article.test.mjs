@@ -15,10 +15,10 @@ test('anonymous article reads bind exact category, slug and authored locale; nev
  const dto=await subject.readPublicArticle('destinations','real-article','zh-HK',env,async(input,options)=>{
   const url=new URL(input);assert.equal(options.method,'GET');assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');assert.deepEqual(options.headers,{apikey:env.KINNSO_SUPABASE_PUBLISHABLE_KEY});
   if(calls++===0){assert.equal(url.pathname,'/rest/v1/articles');assert.equal(url.searchParams.get('url'),'eq.real-article');assert.equal(url.searchParams.get('category'),'eq.destination');assert.equal(url.searchParams.get('article_translations.locale'),'eq.zh-hk');assert.equal(url.searchParams.get('deleted_at'),'is.null');assert.equal(url.searchParams.get('limit'),'1');assert.ok(url.searchParams.get('published_at').startsWith('lte.'));assert.ok(url.searchParams.get('or').startsWith('(end_at.is.null,end_at.gte.'));assert.ok(!url.searchParams.get('select').includes('*'));return Response.json([row]);}
-  if(url.pathname==='/rest/v1/article_authors'){assert.equal(url.searchParams.get('select'),'slug,name');assert.equal(url.searchParams.get('is_active'),'eq.true');assert.equal(url.searchParams.get('locale'),'eq.zh-hk');assert.equal(url.searchParams.get('limit'),'1');return Response.json([{slug:'real-author',name:'Real author',privateMarker:'NEVER'}]);}
+  if(url.pathname==='/rest/v1/article_authors'){assert.equal(url.searchParams.get('select'),'name');assert.equal(url.searchParams.get('is_active'),'eq.true');assert.equal(url.searchParams.get('locale'),'eq.zh-hk');assert.equal(url.searchParams.get('limit'),'1');return Response.json([{slug:'legacy-author-page',name:'Real author',privateMarker:'NEVER'}]);}
   assert.equal(url.pathname,'/rest/v1/article_faqs');assert.equal(url.searchParams.get('article_id'),'eq.'+id);assert.equal(url.searchParams.get('locale'),'eq.zh-hk');assert.equal(url.searchParams.get('limit'),'51');return Response.json([{question:'Real question',answer:'Real answer'}]);
  });
- assert.equal(calls,3);assert.equal(dto.title,'Authored title');assert.equal(dto.locale,'zh-hk');assert.equal(dto.author,'Real author');assert.equal(dto.authorHandle,'real-author');assert.equal(dto.coverImage,'https://cdn.kinnso.ai/cover.jpg');assert.equal(dto.shareImage,'https://cdn.kinnso.ai/share.jpg');assert.equal(dto.blocks[0].html,'<p>Real <strong>content</strong><a rel="noopener noreferrer nofollow">link</a></p>');assert.ok(!JSON.stringify(dto).includes('NEVER'));assert.deepEqual(dto.faqs,[{question:'Real question',answer:'Real answer'}]);
+ assert.equal(calls,3);assert.equal(dto.title,'Authored title');assert.equal(dto.locale,'zh-hk');assert.equal(dto.author,'Real author');assert.equal('authorHandle' in dto,false);assert.equal(dto.coverImage,'https://cdn.kinnso.ai/cover.jpg');assert.equal(dto.shareImage,'https://cdn.kinnso.ai/share.jpg');assert.equal(dto.blocks[0].html,'<p>Real <strong>content</strong><a rel="noopener noreferrer nofollow">link</a></p>');assert.ok(!JSON.stringify(dto).includes('NEVER'));assert.deepEqual(dto.faqs,[{question:'Real question',answer:'Real answer'}]);
 });
 test('invalid routes, missing exact translation and withdrawn articles cannot become guessed content',async()=>{
  assert.equal(typeof subject.readPublicArticle,'function');let calls=0;
@@ -42,25 +42,19 @@ test('article metadata uses only the actual authored locale, source dates and sa
  const json=presentation.articleStructuredData(article);assert.ok(!json.includes('</script>'));const data=JSON.parse(json);assert.equal(data.headline,article.title);assert.equal(data.inLanguage,'zh-hk');assert.equal(data.datePublished,row.published_at);assert.equal(data.dateModified,undefined);assert.deepEqual(data.image,[article.coverImage]);assert.equal(data.creditText,'Real author');
 });
 
-test('article author attribution requires a verified safe handle and links to the public creator route',async()=>{
+test('article author slugs are not misrepresented as public creator identities',async()=>{
  const safe=await subject.readPublicArticle('destinations',row.url,'zh-HK',env,async url=>{
   const u=new URL(url);
   if(u.pathname==='/rest/v1/articles')return Response.json([row]);
-  if(u.pathname==='/rest/v1/article_authors')return Response.json([{slug:'real-author',name:'Real author'}]);
+  if(u.pathname==='/rest/v1/article_authors')return Response.json([{slug:'legacy-author-page',name:'Real author'}]);
   return Response.json([]);
  });
- assert.equal(safe.authorHandle,'real-author');
- for(const authorRow of [[{slug:null,name:'Real author'}],[{slug:'../private',name:'Real author'}]]) {
-  const value=await subject.readPublicArticle('destinations',row.url,'zh-HK',env,async url=>
-   new URL(url).pathname==='/rest/v1/articles'?Response.json([row]):new URL(url).pathname==='/rest/v1/article_authors'?Response.json(authorRow):Response.json([]));
-  assert.equal(value.author,'Real author');
-  assert.equal(value.authorHandle,null);
- }
+ assert.equal(safe.author,'Real author');assert.equal('authorHandle' in safe,false);
  const compiled=await build({entryPoints:[fileURLToPath(new URL('../lib/seo/PublicArticleContent.tsx',import.meta.url))],bundle:true,write:false,platform:'node',format:'cjs',jsx:'automatic',external:['react','react/jsx-runtime','next/link']});
  const component={exports:{}};
  new Function('require','module','exports',compiled.outputFiles[0].text)(createRequire(import.meta.url),component,component.exports);
  const html=renderToStaticMarkup(component.exports.PublicArticleContent({article:safe,locale:'zh-HK'}));
- assert.match(html,/href="\/zh-HK\/c\/real-author"/);
+ assert.doesNotMatch(html,/href="\/zh-HK\/c\//);
 });
 test('article cover and share images are bounded approved CDN URLs with safe authored fallback',async()=>{
  for(const image of ['https://evil.test/cover.jpg','https://cdn.kinnso.ai/a?token=secret','https://user:secret@cdn.kinnso.ai/a','javascript:bad()']){

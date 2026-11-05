@@ -212,6 +212,8 @@ test('experience SSR keeps authored content language and sends no private actor 
     module.exports.PublicExperienceContent({ experience: value, locale: 'ja' }),
   );
   assert.match(html, /<h1 lang="">Authored city walk<\/h1>/);
+  assert.match(html, /<p lang="">Tokyo<\/p>/);
+  assert.match(html, /<span lang="">Authored merchant<\/span>/);
   assert.match(html, /\/ja\/m\/merchant-one/);
   assert.doesNotMatch(html, /private@example|Book now|RSVP|payment/i);
 });

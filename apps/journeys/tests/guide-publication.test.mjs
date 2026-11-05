@@ -2,8 +2,9 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 const page = await import('../lib/seo/guide-publication.ts').catch(() => ({}));
 const id='11111111-1111-4111-8111-111111111111';
+const creatorId='22222222-2222-4222-8222-222222222222';
 const guide={kind:'summary',id,title:'Published title',summary:'Authored summary',destinationId:null};
-const row={id,title:guide.title,creator_name:'Published author',creator_handle:'published-author',published_at:'2026-09-01T10:00:00Z',cover_url:'https://cdn.kinnso.ai/published-cover.jpg'};
+const row={id,creator_id:creatorId,title:guide.title,creator_name:'Published author',creator_handle:'published-author',published_at:'2026-09-01T10:00:00Z',cover_url:'https://cdn.kinnso.ai/published-cover.jpg'};
 const env={KINNSO_SUPABASE_URL:'https://approved.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://approved.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://approved.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
 
 test('publication projects only known public fields and binds guide identity and title',()=>{
@@ -30,12 +31,10 @@ test('page read uses the public key with exact published-ID filtering and a boun
   assert.equal(options.headers.apikey,'sb_publishable_test');assert.equal('Authorization' in options.headers,false);
   assert.equal(options.cache,'no-store');assert.equal(options.redirect,'error');
   if(u.pathname.endsWith('/rpc/kinnso_guide'))return Response.json(guide);
-  assert.equal(u.pathname,'/rest/v1/guides');assert.equal(options.method,'GET');
-  assert.equal(u.searchParams.get('id'),'eq.'+id);assert.equal(u.searchParams.get('status'),'eq.published');assert.equal(u.searchParams.get('limit'),'1');
-  assert.equal(u.searchParams.get('select'),'id,title,creator_name,creator_handle,published_at,cover_url');
-  return Response.json([row]);
+  if(u.pathname==='/rest/v1/guides'){assert.equal(options.method,'GET');assert.equal(u.searchParams.get('id'),'eq.'+id);assert.equal(u.searchParams.get('status'),'eq.published');assert.equal(u.searchParams.get('limit'),'1');assert.equal(u.searchParams.get('select'),'id,title,creator_name,creator_handle,creator_id,published_at,cover_url');return Response.json([row]);}
+  assert.equal(u.pathname,'/rest/v1/creators');assert.equal(u.searchParams.get('id'),'in.('+creatorId+')');assert.equal(u.searchParams.get('status'),'eq.active');return Response.json([{id:creatorId}]);
  });
- assert.deepEqual(result,{...guide,publication:{author:row.creator_name,authorHandle:row.creator_handle,publishedAt:row.published_at,coverUrl:row.cover_url}});assert.equal(calls.length,2);
+ assert.deepEqual(result,{...guide,publication:{author:row.creator_name,authorHandle:row.creator_handle,publishedAt:row.published_at,coverUrl:row.cover_url}});assert.equal(calls.length,3);
 });
 test('missing or withdrawn content is absent, while failed or mismatched metadata stays an error',async()=>{
  assert.equal(typeof page.readPublicGuidePage,'function');
@@ -76,4 +75,15 @@ test('guide metadata is canonical and guide source labels are localized in every
   assert.equal(meta.alternates.canonical,`https://kinnso-os.vercel.app/${locale}/g/${id}`);
   assert.deepEqual(meta.robots,{index:false,follow:false});
  }
+});
+
+test('a published guide is hidden when its creator is no longer active and public',async()=>{
+ let calls=0;
+ const result=await page.readPublicGuidePage(id,env,async url=>{
+  const u=new URL(url);
+  if(u.pathname.endsWith('/rpc/kinnso_guide'))return Response.json({...guide,kind:'itinerary',version:1,publishedAt:'2026-08-01T10:00:00Z',creator:{id:creatorId,name:'Suspended creator',handle:'suspended-creator'},days:[]});
+  if(u.pathname==='/rest/v1/guides')return Response.json([{...row,creator_id:creatorId}]);
+  assert.equal(u.pathname,'/rest/v1/creators');calls++;return Response.json([]);
+ });
+ assert.equal(result,null);assert.equal(calls,1);
 });

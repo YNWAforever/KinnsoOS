@@ -6,9 +6,9 @@ import {articleLabels} from './article-labels';
 /** HTML is sanitized in the anonymous server reader before crossing the SSR/hydration boundary. */
 export function PublicArticleContent({article,locale}:{article:PublicArticle;locale:PublicLanguage}) {
  let number=0;
- return <><nav className="k-page" aria-label={articleLabels[locale].title}><Link href={`/${locale}/articles`}>{articleLabels[locale].title}</Link></nav><script type="application/ld+json" dangerouslySetInnerHTML={{__html:articleStructuredData(article)}}/>
+ return <><nav className="k-page" aria-label={articleLabels[locale].title}><Link className="public-content-link" href={`/${locale}/articles`}>{articleLabels[locale].title}</Link></nav><script type="application/ld+json" dangerouslySetInnerHTML={{__html:articleStructuredData(article)}}/>
   <article className="k-page" lang={contentLanguage(article.locale)}>
-   <h1>{article.title}</h1>{article.author&&<p>{article.authorHandle?<Link href={`/${locale}/c/${encodeURIComponent(article.authorHandle)}`} lang="">{article.author}</Link>:article.author}</p>}<time dateTime={article.publishedAt}>{article.publishedAt.slice(0,10)}</time>
+   <h1>{article.title}</h1>{article.author&&<p>{article.author}</p>}<time dateTime={article.publishedAt}>{article.publishedAt.slice(0,10)}</time>
    {article.coverImage&&<img src={article.coverImage} alt={article.title} fetchPriority="high" style={{maxWidth:'100%',height:'auto'}}/>}
    {article.summary&&<p>{article.summary}</p>}
    {article.blocks.map((block,index)=><section key={index} id={'article-block-'+index}>
@@ -20,6 +20,6 @@ export function PublicArticleContent({article,locale}:{article:PublicArticle;loc
     {block.images.map((image,index)=><figure key={index}><img src={image.url} alt={image.description} loading="lazy" style={{maxWidth:'100%',height:'auto'}}/>{image.description&&<figcaption>{image.description}</figcaption>}</figure>)}
    </section>)}
    {article.faqs.length>0&&<section><h2>{articleQuestions[locale]}</h2><dl>{article.faqs.map((faq,index)=><div key={index}><dt>{faq.question}</dt><dd>{faq.answer}</dd></div>)}</dl></section>}
-   {['en','zh-HK'].includes(locale)&&<a href={articleCanonical(article)}>{locale==='en'?'View original article':'查看原文'}</a>}
+   {['en','zh-HK'].includes(locale)&&<a className="public-content-link" href={articleCanonical(article)}>{locale==='en'?'View original article':'查看原文'}</a>}
   </article></>;
 }

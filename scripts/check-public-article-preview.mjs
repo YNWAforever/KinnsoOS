@@ -51,7 +51,7 @@ try{
    await expect(page.locator('main li')).toHaveCount(12);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.getByRole('searchbox').focus();await expect(page.getByRole('searchbox')).toBeFocused();await page.locator('a[href*="page=2"]').focus();await page.keyboard.press('Enter');await expect(page.locator('main li')).toHaveCount(1);
    assert.ok(page.url().includes('q=tea'));assert.ok(page.url().includes('region=tokyo'));
    await page.locator('main li a').click();try{await expect(page.locator('article h1')).toHaveText('Authored '+authored+' 12');}catch(error){await writeFile(path.join(output,'failure.json'),JSON.stringify({locale,javaScriptEnabled,url:page.url(),observed:observed.slice(-5),body:await page.locator('body').innerText(),html:await page.content()},null,2));throw error;}
-   assert.equal(await page.locator('article strong').innerText(),'important');assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),1);assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`https://kinnso-os.vercel.app/${locale}/articles/destinations/${detailSlug}`);
+   assert.equal(await page.locator('article strong').innerText(),'important');assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),0);assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`https://kinnso-os.vercel.app/${locale}/articles/destinations/${detailSlug}`);
    assert.ok((await page.locator('meta[name="robots"]').getAttribute('content')).includes('noindex'));
    assert.equal(await page.locator('a[href*="remix-kinnso-web"]').count(),0);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);

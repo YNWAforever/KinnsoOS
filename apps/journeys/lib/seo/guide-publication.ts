@@ -3,6 +3,7 @@ import {backendTarget,type Environment} from '../contracts/capabilities.ts';
 import {readPublicGuide,type PublicGuide,type GuidePublication} from './public-guide.ts';
 import {publicContentMetadata} from './public-presentation.ts';
 import {publicLanguage} from './public-language.ts';
+import {readActiveCreatorIds} from './public-guides.ts';
 
 function record(value:unknown):Record<string,unknown> {
  if(!value||typeof value!=='object'||Array.isArray(value))throw new Error('guide_schema');
@@ -35,13 +36,23 @@ export function publication(guide:PublicGuide,value:unknown):GuidePublication {
 export async function readPublicGuidePage(id:string,env:Environment,transport:typeof fetch=fetch):Promise<PublicGuide|null> {
  const guide=await readPublicGuide(id,env,transport);if(!guide)return null;
  const target=backendTarget(env);if(!target)throw new Error('guide_unconfigured');
+ if(guide.kind==='itinerary'){
+  const active=await readActiveCreatorIds([guide.creator.id],target,transport);
+  if(!active.has(guide.creator.id))return null;
+ }
  const url=new URL('/rest/v1/guides',target.origin);
- url.search=new URLSearchParams({select:'id,title,creator_name,creator_handle,published_at,cover_url',id:'eq.'+id,status:'eq.published',limit:'1'}).toString();
+ url.search=new URLSearchParams({select:'id,title,creator_name,creator_handle,creator_id,published_at,cover_url',id:'eq.'+id,status:'eq.published',limit:'1'}).toString();
  const response=await transport(url,{method:'GET',headers:{apikey:target.key},cache:'no-store',redirect:'error',signal:AbortSignal.timeout(8000)});
  if(!response.ok)throw new Error('guide_unavailable');
  const rows:unknown=await response.json();
  if(!Array.isArray(rows)||rows.length>1)throw new Error('guide_schema');
  if(!rows.length)return null; // Publication withdrawn between the two anonymous reads.
+ if(guide.kind==='summary'){
+  const creatorId=record(rows[0]).creator_id;
+  if(typeof creatorId!=='string')return null;
+  const active=await readActiveCreatorIds([creatorId],target,transport);
+  if(!active.has(creatorId))return null;
+ }
  return {...guide,publication:publication(guide,rows[0])};
 }
 export function guidePageMetadata(guide:PublicGuide,locale='en'):Metadata {

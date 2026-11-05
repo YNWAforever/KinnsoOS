@@ -40,7 +40,7 @@ export function PublicMerchantContent({
           <ul>
             {experiences.map(experience => (
               <li key={experience.slug} lang="">
-                <Link href={`/${locale}/experiences/${encodeURIComponent(experience.slug)}`}>
+                <Link className="public-content-link" href={`/${locale}/experiences/${encodeURIComponent(experience.slug)}`}>
                   {experience.title}
                 </Link>
                 <span> · {experience.city}</span>

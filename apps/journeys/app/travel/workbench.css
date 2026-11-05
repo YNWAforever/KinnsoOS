@@ -235,6 +235,12 @@ body:has(.k-app) {
 .k-editor {
   padding: 40px 0 60px;
 }
+.public-content-link {
+  display: inline-flex;
+  min-width: 24px;
+  min-height: 24px;
+  align-items: center;
+}
 .k-eyebrow {
   font-size: 0.75rem !important;
   letter-spacing: 0.16em;

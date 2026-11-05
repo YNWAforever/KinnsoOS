@@ -7,14 +7,14 @@ function SessionLinks({ locale, sessions }: { locale: string; sessions: PublicSe
     <ul>
       {sessions.map(session => (
         <li key={session.id}>
-          <Link href={`/${locale}/sessions/${encodeURIComponent(session.slug)}`} lang="">
+          <Link className="public-content-link" href={`/${locale}/sessions/${encodeURIComponent(session.slug)}`} lang="">
             {session.title}
           </Link>
           <time dateTime={session.startsAt}> · {session.startsAt.slice(0, 10)}</time>
           {session.host && (
             <span>
               {' · '}
-              <Link href={`/${locale}/c/${encodeURIComponent(session.host.handle)}`} lang="">
+              <Link className="public-content-link" href={`/${locale}/c/${encodeURIComponent(session.host.handle)}`} lang="">
                 {session.host.displayName}
               </Link>
             </span>
@@ -96,7 +96,7 @@ export function PublicSessionContent({
   return (
     <main className="k-page">
       <nav aria-label={labels.sessions.eyebrow}>
-        <Link href={`/${locale}/sessions`}>{labels.sessions.eyebrow}</Link>
+        <Link className="public-content-link" href={`/${locale}/sessions`}>{labels.sessions.eyebrow}</Link>
       </nav>
       <article>
         <h1 lang="">{session.title}</h1>
@@ -104,13 +104,13 @@ export function PublicSessionContent({
         {session.description && <p lang="" style={{ whiteSpace: 'pre-wrap' }}>{session.description}</p>}
         {session.host && (
           <p>
-            <Link href={`/${locale}/c/${encodeURIComponent(session.host.handle)}`} lang="">
+            <Link className="public-content-link" href={`/${locale}/c/${encodeURIComponent(session.host.handle)}`} lang="">
               {session.host.displayName}
             </Link>
           </p>
         )}
         {session.replayUrl && (
-          <a href={session.replayUrl} target="_blank" rel="noopener noreferrer">
+          <a className="public-content-link" href={session.replayUrl} target="_blank" rel="noopener noreferrer">
             {labels.sessions.replaysHeading}
           </a>
         )}

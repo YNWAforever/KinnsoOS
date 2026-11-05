@@ -19,7 +19,7 @@ import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArt
 import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
 import {PublicGuideContent} from '../../../lib/seo/PublicGuideContent';
-import {parsePublicRoute} from '../../../lib/seo/public-routes';
+import {parsePublicRoute,isPublicRouteNamespace} from '../../../lib/seo/public-routes';
 import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} from '../../../lib/seo/public-experiences';
 import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
 import {PublicExperienceContent} from '../../../lib/seo/PublicExperienceContent';
@@ -52,6 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return articlePageMetadata(article);
   }
   const publicRoute=parsePublicRoute(locale,route,new URLSearchParams());
+  if(!publicRoute&&isPublicRouteNamespace(locale,route))notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();
@@ -121,6 +122,7 @@ export default async function Page({ params,searchParams }: Props) {
   const publicQuery=new URLSearchParams();
   for(const[key,value]of Object.entries(entryQuery)){if(Array.isArray(value))value.forEach(item=>publicQuery.append(key,item));else if(value!==undefined)publicQuery.append(key,value);}
   const publicRoute=parsePublicRoute(locale,route,publicQuery);
+  if(!publicRoute&&isPublicRouteNamespace(locale,route))notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();
@@ -177,6 +179,10 @@ export default async function Page({ params,searchParams }: Props) {
     const guide=await publishedGuide(publicRoute.reference);
     if(!guide)notFound();
     if(isGuideSlug(publicRoute.reference))redirect(`/${locale}/g/${guide.id}`);
+    if(guide.kind==='itinerary'&&['en','zh-HK'].includes(locale)){
+      const actor=await currentActor();
+      return <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}><Workbench key={locale+'g/'+guide.id} locale={locale as 'en'|'zh-HK'} path={'g/'+guide.id} mode={capabilities(process.env).trips.mode} actor={actor} publicGuide={guide} features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}/></Suspense>;
+    }
     return <PublicGuideContent guide={guide} locale={locale}/>;
   }
   const demo=route[0]==='demo';
