@@ -17,6 +17,11 @@ import {articleCategories,articleListQuery,readArticleListing,type ArticleCatego
 import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArticleListing';
 import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
+import {parsePublicRoute} from '../../../lib/seo/public-routes';
+import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} from '../../../lib/seo/public-experiences';
+import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
+import {PublicExperienceContent} from '../../../lib/seo/PublicExperienceContent';
+import {PublicMerchantContent} from '../../../lib/seo/PublicMerchantContent';
 import {serverClient} from '../../../lib/supabase/server';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
@@ -38,6 +43,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const article=await publishedArticle(route[1],route[2],locale);
     if(!article)notFound();
     return articlePageMetadata(article);
+  }
+  const publicRoute=parsePublicRoute(locale,route,new URLSearchParams());
+  if(publicRoute?.kind==='experience') {
+    const experience=await readPublicExperience(publicRoute.slug,process.env);
+    if(!experience)notFound();
+    return experiencePageMetadata(experience,locale);
+  }
+  if(publicRoute?.kind==='merchant') {
+    const merchant=await readPublicMerchant(publicRoute.slug,process.env);
+    if(!merchant)notFound();
+    return merchantPageMetadata(merchant,locale);
   }
   if(!['en','zh-HK'].includes(locale))notFound();
   if(route[0]==='c') {
@@ -84,6 +100,21 @@ export default async function Page({ params,searchParams }: Props) {
     const article=await publishedArticle(route[1],route[2],locale);if(!article)notFound();
     return <main><PublicArticleContent article={article} locale={language}/></main>;
   }
+  const entryQuery=await searchParams??{};
+  const publicQuery=new URLSearchParams();
+  for(const[key,value]of Object.entries(entryQuery)){if(Array.isArray(value))value.forEach(item=>publicQuery.append(key,item));else if(value!==undefined)publicQuery.append(key,value);}
+  const publicRoute=parsePublicRoute(locale,route,publicQuery);
+  if(publicRoute?.kind==='experience') {
+    const experience=await readPublicExperience(publicRoute.slug,process.env);
+    if(!experience)notFound();
+    return <PublicExperienceContent experience={experience} locale={locale}/>;
+  }
+  if(publicRoute?.kind==='merchant') {
+    const merchant=await readPublicMerchant(publicRoute.slug,process.env);
+    if(!merchant)notFound();
+    const experiences=await readMerchantExperiences(merchant.id,process.env);
+    return <PublicMerchantContent locale={locale} merchant={merchant} experiences={experiences}/>;
+  }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");
   if (
@@ -94,7 +125,7 @@ export default async function Page({ params,searchParams }: Props) {
   )
     notFound();
   const actor=demo?null:await currentActor();
-  const entryQuery=await searchParams,requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
+  const requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
   const merchantEntry=!demo&&actor&&path==='merchant'&&capabilities(process.env).merchant.mode==='connected'
     ?await readPrivateMerchantEntry(await serverClient(),actor.id,requestedCompany):null;
   const creatorMissionEntry=!demo&&actor&&route[0]==='studio'&&route[1]==='missions'&&route.length===3&&capabilities(process.env).creator.mode==='connected'

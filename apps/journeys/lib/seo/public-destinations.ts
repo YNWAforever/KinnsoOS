@@ -1,5 +1,5 @@
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
-import {articleRows} from './public-article.ts';
+import {readPublicRows} from './public-http.ts';
 
 export type PublicDestination={slug:string;name:string;description:string|null;heroImageUrl:string|null;matchTerms:string[];guideCount:number;experienceCount:number;latestPublishedAt:string|null};
 const columns='slug,name,description,hero_image_url,match_terms,guide_count,experience_count,latest_published_at';
@@ -28,7 +28,7 @@ async function read(params:Record<string,string>,env:Environment,transport:typeo
  const target=backendTarget(env);if(!target)throw Error('destination_unconfigured');
  const url=new URL('/rest/v1/destination_index',target.origin);url.search=new URLSearchParams({select:columns,...params}).toString();
  // The security-invoker view derives rows from published inventory; no actor or service key.
- const rows=await articleRows(url,target.key,transport);
+ const rows=await readPublicRows(url,target.key,transport);
  if(rows.length>Number(params.limit))throw Error('destination_schema');
  const items=rows.map(destination),seen=new Set<string>();
  for(const item of items){if(seen.has(item.slug))throw Error('destination_schema');seen.add(item.slug);}

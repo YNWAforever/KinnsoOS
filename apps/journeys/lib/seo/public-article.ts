@@ -1,6 +1,7 @@
 import sanitizeHtml from 'sanitize-html';
 import {authoredLanguage} from './public-language.ts';
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
+import {readPublicRows} from './public-http.ts';
 export type ArticleBlock={id:string;type:string;title:string;subtitle:string;html:string;image:string|null;fields:{label:string;href:string|null}[];images:{url:string;description:string}[]};
 export type PublicArticle={id:string;slug:string;category:string;locale:string;title:string;summary:string;metadataTitle:string;description:string;author:string|null;publishedAt:string;updatedAt:string|null;coverImage:string|null;shareImage:string|null;blocks:ArticleBlock[];faqs:{question:string;answer:string}[]};
 const categories:Record<string,string>={destinations:'destination',dining:'dining',shopping:'shopping'};
@@ -44,12 +45,7 @@ export function articleBlocks(content:unknown):ArticleBlock[] {
  return result;
 }
 export async function articleRows(url:URL,key:string,transport:typeof fetch,requestBody?:Record<string,unknown>):Promise<unknown[]> {
- let response:Response;try{response=await transport(url,{method:requestBody?'POST':'GET',headers:{apikey:key,...(requestBody?{'Content-Type':'application/json'}:{})},...(requestBody?{body:JSON.stringify(requestBody)}:{}),cache:'no-store',redirect:'error',signal:AbortSignal.timeout(8000)});}catch{throw new Error('article_unavailable');}
- if(!response.ok)throw new Error('article_unavailable');
- // A single article can carry rich JSON; bound the bytes as well as the row count.
- const reader=response.body?.getReader();if(!reader)throw new Error('article_schema');let size=0,body='';const decoder=new TextDecoder('utf-8',{fatal:true});
- try{while(true){const chunk=await reader.read();if(chunk.done)break;size+=chunk.value.length;if(size>2000000)throw new Error('article_schema');body+=decoder.decode(chunk.value,{stream:true});}body+=decoder.decode();const value:unknown=JSON.parse(body);if(!Array.isArray(value))throw new Error('article_schema');return value;}
- catch{await reader.cancel().catch(()=>{});throw new Error('article_schema');}
+ return readPublicRows(url,key,transport,requestBody,{unavailableCode:'article_unavailable',schemaCode:'article_schema'});
 }
 /** Anonymous RLS read of one published article and its exact authored translation. No session, raw source dump or fallback language. */
 export async function readPublicArticle(category:string,slug:string,locale:string,env:Environment,transport:typeof fetch=fetch):Promise<PublicArticle|null> {
