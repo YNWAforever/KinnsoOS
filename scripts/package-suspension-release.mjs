@@ -19,6 +19,7 @@ writeFileSync(new URL('manifest.json',output),JSON.stringify({
  source:name,sourceSha256:sha(source),payloadSha256:sha(payload),
  transformation:'Remove only the outer BEGIN and final COMMIT; deployment executor supplies its guarded transaction.',
  status:'PREPARED_NOT_AUTHORIZED',productionChanged:false,
- remaining:['fresh consistent production export and restore','catalog-bound failure/commit rehearsal','exact execution envelope and human approval'],
+ backupRestore:'WAIVED_BY_USER',
+ remaining:['backend-connected browser acceptance','fresh catalog precheck','human approval'],
 },null,2)+'\n');
 console.log(JSON.stringify({sourceSha256:sha(source),payloadSha256:sha(payload),status:'PREPARED_NOT_AUTHORIZED'}));
