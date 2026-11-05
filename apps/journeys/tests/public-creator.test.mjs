@@ -20,11 +20,11 @@ for(const locale of ['en','zh-HK'])test('public creator SSR separates unknown au
  assert.match(html,new RegExp('<a[^>]*lang=""[^>]*href="/'+locale+'/g/'+id+'"[^>]*>Original guide title</a>|<a[^>]*href="/'+locale+'/g/'+id+'"[^>]*lang=""[^>]*>Original guide title</a>'));
  assert.ok(html.includes('<h2>'+(locale==='en'?'Published guides':'已發布攻略')+'</h2>'));
  assert.ok(html.includes('aria-label="'+(locale==='en'?'Public creator profile':'創作者公開檔案')+'"'));
- assert.ok(html.includes('>'+(locale==='en'?'View more on original profile':'在原站檔案查看更多')+'</a>'));
+ assert.ok(html.includes(`href="/${locale}/c/real-creator?page=2"`));assert.ok(!html.includes('remix-kinnso-web'));
  assert.ok(!html.includes('<script>'));
  const empty=renderToStaticMarkup(component.exports.PublicCreatorContent({creator:{...creator,bio:'',guides:[],hasMore:false},locale}));
  assert.ok(empty.includes('<p>'+(locale==='en'?'No published guides yet.':'尚未有已發布攻略。')+'</p>'));
- assert.ok(empty.includes('>'+(locale==='en'?'View original profile':'查看原站檔案')+'</a>'));
+ assert.ok(!empty.includes('remix-kinnso-web'));assert.ok(!empty.includes('?page=2'));
 });
 test('creator reads bind handle, public projection and bounded published guides without actor credentials',async()=>{
  assert.equal(typeof subject.readPublicCreator,'function');let calls=0;
@@ -34,7 +34,7 @@ test('creator reads bind handle, public projection and bounded published guides 
   if(calls++===0){assert.equal(url.pathname,'/rest/v1/creators');assert.equal(url.searchParams.get('handle'),'eq.real-creator');assert.equal(url.searchParams.get('status'),'eq.active');assert.equal(url.searchParams.get('public_profile'),'not.is.null');assert.equal(url.searchParams.get('select'),'id,handle,display_name,bio');return Response.json([row]);}
   assert.equal(url.pathname,'/rest/v1/guides');assert.equal(url.searchParams.get('creator_id'),'eq.'+id);assert.equal(url.searchParams.get('status'),'eq.published');assert.equal(url.searchParams.get('select'),'id,title');assert.equal(url.searchParams.get('order'),'published_at.desc.nullslast,id.asc');return Response.json([{id,title:'Real published guide',travellerNote:'NEVER'}]);
  });
- assert.equal(calls,2);assert.deepEqual(dto,{id,handle:'real-creator',name:'Public name',bio:'Public bio',guides:[{id,title:'Real published guide'}],hasMore:false});assert.ok(!JSON.stringify(dto).includes('NEVER'));
+ assert.equal(calls,2);assert.deepEqual(dto,{id,handle:'real-creator',name:'Public name',bio:'Public bio',guides:[{id,title:'Real published guide'}],hasMore:false,page:1});assert.ok(!JSON.stringify(dto).includes('NEVER'));
 });
 test('absent, invalid and private creators never fall back to demo or owner projections',async()=>{
  assert.equal(typeof subject.readPublicCreator,'function');let calls=0;
@@ -51,10 +51,20 @@ test('wrong identity, oversized result and malformed guide projection fail close
  let calls=0;const dto=await subject.readPublicCreator('real-creator',env,async()=>Response.json(calls++?guides:[{...row,display_name:null,bio:null}]));
  assert.equal(dto.guides.length,6);assert.equal(dto.hasMore,true);assert.equal(dto.name,'real-creator');assert.equal(dto.bio,'');assert.equal('guideCount' in dto,false);
 });
-test('creator metadata retains the actual legacy locale URL without inventing authored translations or dates',()=>{
+test('creator metadata uses the canonical native locale URL without inventing authored translations or dates',()=>{
  assert.equal(typeof subject.creatorPageMetadata,'function');
  const meta=subject.creatorPageMetadata({id,handle:row.handle,name:row.display_name,bio:row.bio,guides:[],hasMore:false},'zh-HK');
- assert.equal(meta.title,row.display_name);assert.equal(meta.description,row.bio);assert.equal(meta.alternates.canonical,'https://remix-kinnso-web.vercel.app/zh-hk/c/real-creator');assert.equal(meta.alternates.languages,undefined);
+ assert.equal(meta.title,row.display_name);assert.equal(meta.description,row.bio);assert.equal(meta.alternates.canonical,'https://kinnso-os.vercel.app/zh-HK/c/real-creator');assert.equal(meta.alternates.languages,undefined);
  assert.deepEqual(meta.robots,{index:false,follow:false});assert.equal(meta.openGraph.type,'profile');assert.equal(meta.openGraph.url,meta.alternates.canonical);assert.equal(meta.openGraph.modifiedTime,undefined);assert.equal(meta.openGraph.publishedTime,undefined);
  assert.throws(()=>subject.creatorPageMetadata({...row,name:'Public',bio:''},'ja'),/creator_locale/);
+});
+
+test('creator continuation stays bounded, published-only and scoped to the same creator',async()=>{
+ let calls=0;
+ const result=await subject.readPublicCreator('real-creator',env,async(input)=>{
+ const url=new URL(input);if(calls++===0)return Response.json([row]);
+ assert.equal(url.searchParams.get('offset'),'6');assert.equal(url.searchParams.get('limit'),'7');assert.equal(url.searchParams.get('creator_id'),'eq.'+id);assert.equal(url.searchParams.get('status'),'eq.published');
+ return Response.json([{id,title:'Later guide'}]);
+ },2);assert.equal(result.page,2);assert.equal(result.guides[0].title,'Later guide');
+ for(const page of [0,-1,1.5,10001,Infinity]){await assert.rejects(subject.readPublicCreator('real-creator',env,async()=>{throw Error('must not fetch')},page),/creator_page/);}
 });

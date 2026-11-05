@@ -28,15 +28,15 @@ test('real public creator SSR and hydration show bounded published guides; withd
      expect(await profile.locator('h2').evaluate(node=>node.closest('[lang]')?.getAttribute('lang'))).toBe(locale);
      const links=page.locator('article li a');await expect(links).toHaveCount(6);
      for(let index=0;index<6;index++){await expect(links.nth(index)).toHaveText(guides[index].title);await expect(links.nth(index)).toHaveAttribute('lang','');await expect(links.nth(index)).toHaveAttribute('href',`/${locale}/g/${guides[index].id}`);}
-     const original=`https://remix-kinnso-web.vercel.app/${locale==='en'?'en':'zh-hk'}/c/${handle}`;
+     const original=`https://kinnso-os.vercel.app/${locale}/c/${handle}`;
      await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',original);
      await expect(page.locator('meta[property="og:type"]')).toHaveAttribute('content','profile');
      await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content',bio);
      await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
-     await expect(page.locator('link[hreflang]')).toHaveCount(0);await expect(page.locator('article > a')).toHaveAttribute('href',original);
-     await expect(page.locator('article script')).toHaveCount(0);expect(await page.content()).not.toContain(privateMarker);expect(await page.content()).not.toContain('Authored published guide 6');
+     await expect(page.locator('link[hreflang]')).toHaveCount(0);await expect(page.locator('article nav a')).toHaveAttribute('href',`/${locale}/c/${handle}?page=2`);await page.locator('article nav a').click();await expect(page.locator('article li a')).toHaveCount(2);await expect(page.locator('article li a').first()).toHaveText(guides[6].title);
+     await expect(page.locator('article script')).toHaveCount(0);expect(await page.content()).not.toContain(privateMarker);expect(await page.content()).not.toContain('Authored published guide 0');
     }
-    await page.locator('article li a').first().click();await expect(page.getByRole('heading',{name:guides[0].title,exact:true})).toBeVisible();
+    await page.locator('article li a').first().click();await expect(page.getByRole('heading',{name:guides[6].title,exact:true})).toBeVisible();
    } finally {await context.close();}
   }
   await ok(admin.from('creators').update({public_profile:null}).eq('id',actorId));

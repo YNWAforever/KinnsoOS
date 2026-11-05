@@ -1,5 +1,5 @@
 import { cache, Suspense } from "react";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Workbench } from "../../travel/Workbench";
 import { isKnownRoute } from "../../travel/routes";
 import { fixtures } from "../../travel/model";
@@ -8,6 +8,7 @@ import {publicEntryMetadata} from "../../../lib/seo/public-entry";
 import {currentActor} from '../../../lib/auth/actor';
 import {capabilities} from '../../../lib/contracts/capabilities';
 import {readPublicGuidePage,guidePageMetadata} from '../../../lib/seo/guide-publication';
+import {isGuideSlug,resolvePublishedGuideId} from '../../../lib/seo/legacy-guide';
 import {readPublicCreator,creatorPageMetadata} from '../../../lib/seo/public-creator';
 import {readPublicArticle} from '../../../lib/seo/public-article';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
@@ -16,8 +17,11 @@ import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
 import{readPrivateCreatorMissionEntry}from '../../../lib/creators/private-mission-entry';
 type Props = { params: Promise<{ locale: string; route?: string[] }>;searchParams?:Promise<Record<string,string|string[]|undefined>> };
-const publishedGuide=cache((id:string)=>readPublicGuidePage(id,process.env));
-const publishedCreator=cache((handle:string)=>readPublicCreator(handle,process.env));
+const publishedGuide=cache(async(reference:string)=>{
+ const id=isGuideSlug(reference)?await resolvePublishedGuideId(reference,process.env):reference;
+ return id?readPublicGuidePage(id,process.env):null;
+});
+const publishedCreator=cache((handle:string,page=1)=>readPublicCreator(handle,process.env,fetch,page));
 const publishedArticle=cache((category:string,slug:string,locale:string)=>readPublicArticle(category,slug,locale,process.env));
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, route = [] } = await params;
@@ -34,6 +38,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return creatorPageMetadata(creator,locale);
   }
   if(route[0]==='g') {
+    if(route.length!==2)notFound();
     const published=await publishedGuide(route[1]);
     if(!published)notFound();
     return guidePageMetadata(published);
@@ -57,7 +62,7 @@ export default async function Page({ params,searchParams }: Props) {
   if (
     !["en", "zh-HK"].includes(locale) ||
     (!["library", "workspace", "admin"].includes(path) &&
-      !isKnownRoute(path) && !(/^g\/[0-9a-f-]{36}$/.test(path) && !demo)) ||
+      !isKnownRoute(path) && !(route[0]==='g'&&route.length===2&&!demo&&(/^g\/[0-9a-f-]{36}$/i.test(path)||isGuideSlug(route[1])))) ||
     path.startsWith("legacy/")
   )
     notFound();
@@ -71,8 +76,12 @@ export default async function Page({ params,searchParams }: Props) {
     ?await readPrivateTripHeading(await serverClient(),actor.id,route[1]):null;
   const publicGuide=!demo&&route[0]==='g'?await publishedGuide(route[1]):null;
   if(!demo&&route[0]==='g'&&!publicGuide)notFound();
-  const publicCreator=!demo&&route[0]==='c'?await publishedCreator(route[1]):null;
+  if(publicGuide&&isGuideSlug(route[1]))redirect(`/${locale}/g/${publicGuide.id}`);
+  const creatorPage=entryQuery?.page===undefined?1:typeof entryQuery.page==='string'&&/^[1-9][0-9]{0,4}$/.test(entryQuery.page)?Number(entryQuery.page):NaN;
+  if(!demo&&route[0]==='c'&&(!Number.isInteger(creatorPage)||creatorPage>10000))notFound();
+  const publicCreator=!demo&&route[0]==='c'?await publishedCreator(route[1],creatorPage):null;
   if(!demo&&route[0]==='c'&&!publicCreator)notFound();
+  if(publicCreator&&creatorPage>1&&!publicCreator.guides.length)notFound();
   const publicArticle=!demo&&route[0]==='articles'&&route.length===3?await publishedArticle(route[1],route[2],locale):null;
   if(!demo&&route[0]==='articles'&&route.length===3&&!publicArticle)notFound();
   return (

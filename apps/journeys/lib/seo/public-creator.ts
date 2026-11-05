@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
-import {publicUrl} from './migration-policy.ts';
+import {publicUrl,CONSOLIDATED_ORIGIN} from './migration-policy.ts';
 
-export type PublicCreator={id:string;handle:string;name:string;bio:string;guides:{id:string;title:string}[];hasMore:boolean};
+export type PublicCreator={id:string;handle:string;name:string;bio:string;guides:{id:string;title:string}[];hasMore:boolean;page?:number};
 const handlePattern=/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/;
 const uuidPattern=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function record(value:unknown):Record<string,unknown> {
@@ -24,7 +24,8 @@ async function rows(url:URL,key:string,transport:typeof fetch):Promise<unknown[]
  return value;
 }
 /** Anonymous RLS reads, independent of the visitor's session. Never project DNA, private profile JSON or drafts. */
-export async function readPublicCreator(handle:string,env:Environment,transport:typeof fetch=fetch):Promise<PublicCreator|null> {
+export async function readPublicCreator(handle:string,env:Environment,transport:typeof fetch=fetch,page=1):Promise<PublicCreator|null> {
+ if(!Number.isInteger(page)||page<1||page>10000)throw new Error('creator_page');
  if(typeof handle!=='string'||!handlePattern.test(handle))return null;
  const target=backendTarget(env);if(!target)throw new Error('creator_unconfigured');
  const url=new URL('/rest/v1/creators',target.origin);
@@ -35,7 +36,7 @@ export async function readPublicCreator(handle:string,env:Environment,transport:
  if(typeof creator.id!=='string'||!uuidPattern.test(creator.id)||creator.handle!==handle)throw new Error('creator_schema');
  const name=text(creator.display_name),bio=text(creator.bio);
  const guideUrl=new URL('/rest/v1/guides',target.origin);
- guideUrl.search=new URLSearchParams({select:'id,title',creator_id:'eq.'+creator.id,status:'eq.published',order:'published_at.desc.nullslast,id.asc',limit:'7'}).toString();
+ guideUrl.search=new URLSearchParams({select:'id,title',creator_id:'eq.'+creator.id,status:'eq.published',order:'published_at.desc.nullslast,id.asc',limit:'7',offset:String((page-1)*6)}).toString();
  const guides=await rows(guideUrl,target.key,transport);
  if(guides.length>7)throw new Error('creator_schema');
  const projected=guides.map(value=>{
@@ -43,12 +44,12 @@ export async function readPublicCreator(handle:string,env:Environment,transport:
   if(typeof guide.id!=='string'||!uuidPattern.test(guide.id)||typeof guide.title!=='string'||!guide.title.trim())throw new Error('creator_schema');
   return {id:guide.id,title:guide.title};
  });
- return {id:creator.id,handle,name:name.trim()?name:handle,bio,guides:projected.slice(0,6),hasMore:guides.length>6};
+ return {id:creator.id,handle,name:name.trim()?name:handle,bio,guides:projected.slice(0,6),hasMore:guides.length>6,page};
 }
 export function creatorPageMetadata(creator:PublicCreator,locale:string):Metadata {
  if(!['en','zh-HK'].includes(locale))throw new Error('creator_locale');
  if(!handlePattern.test(creator.handle))throw new Error('creator_schema');
- const canonical=publicUrl(`https://remix-kinnso-web.vercel.app/${locale==='en'?'en':'zh-hk'}/c/${creator.handle}`);
+ const canonical=publicUrl(`${CONSOLIDATED_ORIGIN}/${locale}/c/${creator.handle}`);
  // Bio has no authored-language field. A translated shell does not establish a translated profile.
  return {title:creator.name,description:creator.bio,robots:{index:false,follow:false},alternates:{canonical},
   openGraph:{type:'profile',url:canonical,title:creator.name,description:creator.bio},

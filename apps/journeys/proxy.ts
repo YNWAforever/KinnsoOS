@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { backendTarget } from './lib/contracts/capabilities';
+import { legacyEntry } from './lib/routing/legacy-entry';
 
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -18,6 +19,13 @@ export async function proxy(request: NextRequest) {
       },
     } });
     await client.auth.getUser();
+  }
+  const entry=legacyEntry(request.nextUrl.pathname,request.method);
+  if(entry){
+    const destination=request.nextUrl.clone();destination.pathname=entry.pathname;
+    const redirected=NextResponse.redirect(destination,307);
+    for(const cookie of response.cookies.getAll())redirected.cookies.set(cookie);
+    response=redirected;
   }
   response.headers.set('Cache-Control', 'private, no-store');
   return response;

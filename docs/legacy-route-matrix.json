@@ -1,0 +1,2018 @@
+{
+  "schemaVersion": 1,
+  "baseline": {
+    "kinnso": "2b62a3f378c48eb2e6b1144c3ec77da9d1020e1d",
+    "legacy": "b264c163b2d36083bab73200b84b8adf271e3e6e"
+  },
+  "canonicalOrigin": "https://kinnso-os.vercel.app",
+  "legacyLocales": [
+    "en",
+    "zh-hk",
+    "zh-tw",
+    "ja",
+    "ko",
+    "th",
+    "zh-cn"
+  ],
+  "nativeLocales": [
+    "en",
+    "zh-HK"
+  ],
+  "retirementReady": false,
+  "notes": [
+    "Every row remains a release gate until behavioral and language acceptance is attached.",
+    "Existing route recognition alone is not functional parity.",
+    "Excluded activation does not remove read-only historical record obligations.",
+    "Backup and restoration are waived, not passed."
+  ],
+  "routes": [
+    {
+      "source": "apps/web/app/[locale]/about/page.tsx",
+      "sourceBlob": "05c1cb27f436ab66ed2c75c476ab8f39e8617995",
+      "legacyPath": "/{locale}/about",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/AboutView",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/analytics/page.tsx",
+      "sourceBlob": "9704e2f62e9d0da717459f8ccabc4b9a0afe19a0",
+      "legacyPath": "/{locale}/admin/analytics",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/admin/analytics/AdminAnalyticsView",
+        "@/lib/admin/analytics-dashboard",
+        "@/lib/admin/analytics-queries",
+        "@/lib/admin/guard",
+        "@/lib/i18n/dictionaries",
+        "@/lib/i18n/config",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/bookings/page.tsx",
+      "sourceBlob": "1605496665c8e0f772d71dc8c029527a5747617a",
+      "legacyPath": "/{locale}/admin/bookings",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/admin/bookings/AdminBookingsView",
+        "@/lib/admin/guard",
+        "@/lib/bookings/actions",
+        "@/lib/bookings/queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/creators/[creatorId]/page.tsx",
+      "sourceBlob": "01d3e10e41199de311e7a8e5edce2c1619716fa3",
+      "legacyPath": "/{locale}/admin/creators/[creatorId]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/creators-queries",
+        "@/lib/admin/audit",
+        "@/components/kinnso/admin/creators/CreatorDetailView",
+        "@/lib/admin/creators-actions"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/creators/directory/page.tsx",
+      "sourceBlob": "dc5e0025e2055f7fad7d982357f91fa4faf60e3f",
+      "legacyPath": "/{locale}/admin/creators/directory",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/creators-queries",
+        "@/lib/admin/creators-validation",
+        "@/components/kinnso/admin/creators/CreatorsDirectoryView",
+        "@/lib/admin/creators-actions"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/creators/page.tsx",
+      "sourceBlob": "31f0890191cee65d1792bfda99869fe6f5c3e6f4",
+      "legacyPath": "/{locale}/admin/creators",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/creators-queries",
+        "@/components/kinnso/admin/creators/CreatorsOverviewView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/creators/payouts/page.tsx",
+      "sourceBlob": "425d3b4a3e0a1837c9b86c1c5ebd3ff223c7abae",
+      "legacyPath": "/{locale}/admin/creators/payouts",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/creators-queries",
+        "@/lib/admin/creators-validation",
+        "@/lib/admin/payout-batches-queries",
+        "@/lib/admin/creators-actions",
+        "@/lib/admin/payout-batches-actions",
+        "@/components/kinnso/admin/creators/CreatorPayoutsView",
+        "@/components/kinnso/admin/creators/CreatorPayoutBatchesView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/enquiries/page.tsx",
+      "sourceBlob": "03774f849f635805ea558f1682e0514b5c34c2e4",
+      "legacyPath": "/{locale}/admin/enquiries",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/admin/AdminEnquiriesView",
+        "@/lib/admin/guard",
+        "@/lib/admin/enquiries-actions",
+        "@/lib/admin/enquiries-queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/merchants/[merchantId]/page.tsx",
+      "sourceBlob": "8de1cfc907fd68fa562a97ee784603927c87589d",
+      "legacyPath": "/{locale}/admin/merchants/[merchantId]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/merchants-queries",
+        "@/lib/admin/audit",
+        "@/components/kinnso/admin/merchants/MerchantDetailView",
+        "@/lib/admin/merchants-actions",
+        "@/lib/admin/budget-actions"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/merchants/applications/page.tsx",
+      "sourceBlob": "910b5353b753b8960c10b9533cc41ae5feb927da",
+      "legacyPath": "/{locale}/admin/merchants/applications",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/ops/merchants",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/admin/merchants/MerchantApplicationsView",
+        "@/lib/admin/guard",
+        "@/lib/admin/merchant-applications-actions",
+        "@/lib/admin/merchant-applications-queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/merchants/directory/page.tsx",
+      "sourceBlob": "0f18379519233e3f988dbc0b1cc38d065bdc740a",
+      "legacyPath": "/{locale}/admin/merchants/directory",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/merchants-queries",
+        "@/lib/admin/merchants-validation",
+        "@/components/kinnso/admin/merchants/MerchantsDirectoryView",
+        "@/lib/admin/merchants-actions"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/merchants/page.tsx",
+      "sourceBlob": "bd619c951969fed43735889783c6472ca254b423",
+      "legacyPath": "/{locale}/admin/merchants",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/merchants-queries",
+        "@/components/kinnso/admin/merchants/MerchantsOverviewView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/missions/[missionId]/page.tsx",
+      "sourceBlob": "0556230c880fbe531ce1c640a8eb8aa591ef5091",
+      "legacyPath": "/{locale}/admin/missions/[missionId]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/mission-review-queries",
+        "@/lib/admin/mission-review-actions",
+        "@/components/kinnso/admin/missions/MissionDetailView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/missions/page.tsx",
+      "sourceBlob": "023865272d40448154e0e9ec26ef139c16ab5e27",
+      "legacyPath": "/{locale}/admin/missions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/missions-queries",
+        "@/components/kinnso/admin/missions/MissionsOverviewView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/missions/review/page.tsx",
+      "sourceBlob": "3503e1f49af6391c6ddaa1d20fff4d87511c84d0",
+      "legacyPath": "/{locale}/admin/missions/review",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/mission-review-queries",
+        "@/lib/admin/mission-review-actions",
+        "@/components/kinnso/admin/missions/MissionReviewQueueView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/page.tsx",
+      "sourceBlob": "095b88b5025bd3ffba524f02342bf968e60628d9",
+      "legacyPath": "/{locale}/admin",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/queries",
+        "@/components/kinnso/admin/AdminDashboardView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/perks/page.tsx",
+      "sourceBlob": "7ae81cd086c5653de584413076642a7f4638886f",
+      "legacyPath": "/{locale}/admin/perks",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/perks-queries",
+        "@/lib/admin/perks-actions",
+        "@/components/kinnso/admin/AdminPerksView",
+        "@/lib/admin/perks-validation"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/sessions/page.tsx",
+      "sourceBlob": "1343ac803acdffc6af3f284f09d4920ca1ce146b",
+      "legacyPath": "/{locale}/admin/sessions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/sessions-queries",
+        "@/lib/admin/sessions-actions",
+        "@/components/kinnso/admin/AdminSessionsView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/team/directory/page.tsx",
+      "sourceBlob": "fa8fe010387ca2fa3a9757b688bb43de589c9872",
+      "legacyPath": "/{locale}/admin/team/directory",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/team-queries",
+        "@/lib/admin/team-actions",
+        "@/components/kinnso/admin/team/TeamDirectoryView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/team/page.tsx",
+      "sourceBlob": "59b9dddcdfa0096a2b1319490dbbc43c19ca88c2",
+      "legacyPath": "/{locale}/admin/team",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/team-queries",
+        "@/lib/admin/team-actions",
+        "@/components/kinnso/admin/team/TeamOverviewView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/testimonials/page.tsx",
+      "sourceBlob": "bae64b759227c0806d9cf083cc8be09df6b9675c",
+      "legacyPath": "/{locale}/admin/testimonials",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/admin/AdminTestimonialsView",
+        "@/lib/admin/guard",
+        "@/lib/admin/testimonials-actions",
+        "@/lib/admin/testimonials-queries",
+        "@/lib/admin/testimonials-validation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/admin/users/page.tsx",
+      "sourceBlob": "d25cb713cf21c2bbe399f4ac43fe3c0d878f595e",
+      "legacyPath": "/{locale}/admin/users",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/admin/users-queries",
+        "@/lib/admin/users-actions",
+        "@/components/kinnso/admin/AdminUsersView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/agent/page.tsx",
+      "sourceBlob": "a2e426398560a4f4f808ea0132a9ed597aff6e7b",
+      "legacyPath": "/{locale}/agent",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "node:crypto",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/agent/config",
+        "@/lib/agent/queries",
+        "@/lib/product-state",
+        "@/components/kinnso/pages/AgentChatView",
+        "@/components/kinnso/pages/AgentWaitlistView",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/articles/[category]/[url]/page.tsx",
+      "sourceBlob": "f0a52a4f60d54a6a5403d8adbf9f3511545662ba",
+      "legacyPath": "/{locale}/articles/[category]/[url]",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/articles/[category]/[url]",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "next",
+        "next/link",
+        "@/lib/articles/queries",
+        "@/lib/i18n/dictionaries",
+        "@/lib/i18n/config",
+        "@/lib/seo/metadata",
+        "@/lib/seo/article-indexability",
+        "@/lib/seo/jsonld",
+        "@/components/ArticleBlockRenderer",
+        "@/components/kinnso/articles/ArticleGuideLinks",
+        "@/components/kinnso/articles/ArticleExperienceLinks",
+        "@/components/ArticleToc",
+        "@/components/ArticleCard",
+        "@/components/ViewPing",
+        "@/components/JsonLd",
+        "@/components/kinnso/media/EntityMedia",
+        "@/lib/media/entity-media",
+        "@/lib/articles/blocks",
+        "@/lib/product-state",
+        "@/components/kinnso/analytics/AnalyticsEntityView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/articles/[category]/page.tsx",
+      "sourceBlob": "7df6bb7483928542df7cd293cdc51b2bf841b48a",
+      "legacyPath": "/{locale}/articles/[category]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "next",
+        "@/lib/articles/queries",
+        "@/lib/i18n/dictionaries",
+        "@/lib/i18n/config",
+        "@/lib/seo/metadata",
+        "@/components/ArticleCard",
+        "@/components/Pagination"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/articles/page.tsx",
+      "sourceBlob": "f6f861d220c2fec67445e5cdf687152acc41c9cd",
+      "legacyPath": "/{locale}/articles",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "next",
+        "next/link",
+        "@/lib/articles/queries",
+        "@/lib/product-state",
+        "@/lib/i18n/dictionaries",
+        "@/lib/i18n/config",
+        "@/lib/seo/metadata",
+        "@/components/ArticleCard"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/auth/callback/route.ts",
+      "sourceBlob": "cde5a6d52031275eff6b476ac035b2e93db73998",
+      "legacyPath": "/{locale}/auth/callback",
+      "disposition": "native-port-local",
+      "nativePath": "/{locale}/auth/callback",
+      "verification": "LOCAL_UNIT_ONLY",
+      "reason": "Internal delegation to canonical callback preserves PKCE/recovery, rejects ambiguous credentials and validates same-origin return paths. Provider and other-locale acceptance pending.",
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/i18n/config",
+        "@/lib/i18n/config"
+      ],
+      "evidence": [
+        "apps/journeys/tests/legacy-auth-callback.test.mjs"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/auth/reset-password/page.tsx",
+      "sourceBlob": "89e70c5a75e74ea804efdf60d43a442529aa5f25",
+      "legacyPath": "/{locale}/auth/reset-password",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/seo/metadata",
+        "./ResetPasswordForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/auth/sign-out/route.ts",
+      "sourceBlob": "dff4b5e8a17fb526ff2f50b56d79936627a6cb55",
+      "legacyPath": "/{locale}/auth/sign-out",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/server",
+        "@/lib/supabase/server",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/c/[handle]/page.tsx",
+      "sourceBlob": "33b05e6f10cfccac43d15bd5f02cce99dd78097e",
+      "legacyPath": "/{locale}/c/[handle]",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/c/[handle]",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/CreatorProfileView",
+        "@/lib/creators/queries",
+        "@/lib/offers/public-queries",
+        "@/components/kinnso/OfferClaimCard",
+        "@/lib/offers/actions",
+        "@/lib/seo/metadata",
+        "@/lib/articles/queries",
+        "@/lib/sessions/public-queries",
+        "@/lib/supabase/public",
+        "@/lib/resilience/optional",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/analytics/AnalyticsEntityView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/contact/page.tsx",
+      "sourceBlob": "a8d1b8dba6aa8861f5bbe6b958d447002c40b72f",
+      "legacyPath": "/{locale}/contact",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/ContactView",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/creator/page.tsx",
+      "sourceBlob": "fd63101ddebfdfd1022003d29ad1126e51a8ca22",
+      "legacyPath": "/{locale}/creator",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/onboarding/resumeRoute",
+        "@/lib/onboarding/progress",
+        "@/lib/onboarding/validateHandle",
+        "@/components/onboarding/HandlesStep",
+        "@/components/onboarding/WizardClient",
+        "@kinnso/scan",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/creators/apply/page.tsx",
+      "sourceBlob": "20b36400fa2d1a6fb3cdee997e1a9d5c67170a0c",
+      "legacyPath": "/{locale}/creators/apply",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "../../_routeHost",
+        "../../_routeHost"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/creators/page.tsx",
+      "sourceBlob": "4440d67f265bdc69583d421f9bdde2420741bdda",
+      "legacyPath": "/{locale}/creators",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/CreatorsLandingView",
+        "@/lib/creators/queries",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/destinations/[slug]/page.tsx",
+      "sourceBlob": "79a4fe414b25dae5421951fc3fcfe4eefe1b3642",
+      "legacyPath": "/{locale}/destinations/[slug]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/destinations/queries",
+        "@/lib/guides/queries",
+        "@/lib/experiences/public-queries",
+        "@/lib/sessions/public-queries",
+        "@/lib/articles/queries",
+        "@/lib/product-state",
+        "@/lib/seo/metadata",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/pages/DestinationDetailView",
+        "@/components/kinnso/ExperienceCard"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/destinations/page.tsx",
+      "sourceBlob": "5e27be45d09370a415923df719c3239a5f909be8",
+      "legacyPath": "/{locale}/destinations",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/seo/metadata",
+        "@/lib/destinations/queries",
+        "@/components/kinnso/pages/DestinationsIndexView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/experiences/[slug]/booked/page.tsx",
+      "sourceBlob": "0ac16aff96ccbe3e927474aff695f7e5ac41f520",
+      "legacyPath": "/{locale}/experiences/[slug]/booked",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/experiences/booking-confirmation-queries",
+        "@/lib/reviews/queries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/ReviewForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/experiences/[slug]/page.tsx",
+      "sourceBlob": "4fb43c80e6289cc53efcfaa7dd1e2914ed1f6c90",
+      "legacyPath": "/{locale}/experiences/[slug]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/experiences/public-queries",
+        "@/lib/experiences/public-availability-queries",
+        "@/lib/saves/experience-queries",
+        "@/lib/reviews/queries",
+        "@/lib/supabase/server",
+        "@/lib/supabase/public",
+        "@/lib/resilience/optional",
+        "@/lib/seo/metadata",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/pages/ExperiencePublicView",
+        "@/lib/product-state",
+        "@/lib/media/entity-media",
+        "@/components/kinnso/analytics/AnalyticsEntityView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/explore/page.tsx",
+      "sourceBlob": "ad8dfe5f64e5944a434ec2e75f877b57522d07f2",
+      "legacyPath": "/{locale}/explore",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/ExploreView",
+        "@/lib/guides/queries",
+        "@/lib/destinations/queries",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/feed/page.tsx",
+      "sourceBlob": "10682441c12b5eb5e310a7a10eee61e5edf843c6",
+      "legacyPath": "/{locale}/feed",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/for-creators/page.tsx",
+      "sourceBlob": "6683d8df4bd5c1f811d0718bb2640553954511ad",
+      "legacyPath": "/{locale}/for-creators",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/components/kinnso/pages/ForCreatorsView",
+        "@/lib/home/queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/product-state",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/for-merchants/page.tsx",
+      "sourceBlob": "1bef244de3824e8a24d7f4fe47a3601127c1b9db",
+      "legacyPath": "/{locale}/for-merchants",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/components/kinnso/pages/ForMerchantsView",
+        "@/lib/home/queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/product-state",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/forgot-password/page.tsx",
+      "sourceBlob": "3c92768cbf0700470eec6d0e7ee337c24788b424",
+      "legacyPath": "/{locale}/forgot-password",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/forgot-password",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/link",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/seo/metadata",
+        "./ForgotPasswordForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/g/[slug]/page.tsx",
+      "sourceBlob": "c0ddae882ff0c9660791c942a7160921b35ee914",
+      "legacyPath": "/{locale}/g/[slug]",
+      "disposition": "identifier-resolution",
+      "nativePath": "/{locale}/g/[id]",
+      "verification": "NOT_RUN",
+      "reason": "Local compatibility implemented; backend-connected and browser acceptance pending.",
+      "imports": [
+        "next",
+        "next/link",
+        "next/navigation",
+        "lucide-react",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/guides/queries",
+        "@/lib/saves/guide-queries",
+        "@/lib/reviews/queries",
+        "@/lib/offers/public-queries",
+        "@/components/kinnso/OfferClaimCard",
+        "@/lib/offers/actions",
+        "@/lib/supabase/server",
+        "@/lib/supabase/public",
+        "@/lib/resilience/optional",
+        "@/components/kinnso/editorial/Eyebrow",
+        "@/components/kinnso/GuideExperienceLinks",
+        "@/components/kinnso/GuideSaveButton",
+        "@/components/kinnso/media/EntityMedia",
+        "@/lib/media/entity-media",
+        "@/lib/seo/metadata",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/analytics/AnalyticsEntityView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/legal/creator-terms/page.tsx",
+      "sourceBlob": "3e5332a95e3b0a9fcadb97e78d32c33f512db58f",
+      "legacyPath": "/{locale}/legal/creator-terms",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/CreatorTermsView",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/m/[slug]/page.tsx",
+      "sourceBlob": "780836eb2377e558e4299c5737f6d038cfb038db",
+      "legacyPath": "/{locale}/m/[slug]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/merchants/public-queries",
+        "@/lib/experiences/public-queries",
+        "@/lib/guides/queries",
+        "@/lib/resilience/optional",
+        "@/lib/product-state-config",
+        "@/lib/seo/metadata",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/pages/PublicMerchantProfileView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/apply/page.tsx",
+      "sourceBlob": "759b0152926605841cfbab2704a0fd553bbe5a79",
+      "legacyPath": "/{locale}/merchants/apply",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/auth/viewer-role",
+        "@/lib/merchants/application-queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/MerchantApplyView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/creators/page.tsx",
+      "sourceBlob": "6a64b05799fffdf0b9f628c4399059fec0645be1",
+      "legacyPath": "/{locale}/merchants/creators",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/bookings/page.tsx",
+      "sourceBlob": "89522d07ae3b3e87003902e4461b55bc1fafff5f",
+      "legacyPath": "/{locale}/merchants/dashboard/bookings",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/MerchantBookingsView",
+        "@/lib/missions/queries",
+        "@/lib/bookings/queries",
+        "@/lib/bookings/actions",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/budget/page.tsx",
+      "sourceBlob": "28767b47a3c9c48ffb28fa40bc601f8233bc1c9f",
+      "legacyPath": "/{locale}/merchants/dashboard/budget",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/seo/metadata",
+        "@/lib/merchants/budget-queries",
+        "@/components/kinnso/pages/MerchantBudgetView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/creators/page.tsx",
+      "sourceBlob": "c58f1d1fd78659657c6793628105012ed19192f2",
+      "legacyPath": "/{locale}/merchants/dashboard/creators",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/merchants/creator-search",
+        "@/lib/merchants/relevance",
+        "@/lib/merchants/tier-policy",
+        "@/lib/merchants/saved",
+        "@/lib/merchants/invite",
+        "@/lib/merchants/saved-actions",
+        "@/lib/merchants/invite-actions",
+        "@/components/kinnso/pages/MerchantsCreatorsView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/experiences/[experienceId]/availability/page.tsx",
+      "sourceBlob": "e97cffcdc91523eb6dffe2d4052ebb7599d97c7b",
+      "legacyPath": "/{locale}/merchants/dashboard/experiences/[experienceId]/availability",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/experiences/queries",
+        "@/lib/experiences/availability-queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/MerchantAvailabilityView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/experiences/[experienceId]/edit/page.tsx",
+      "sourceBlob": "4badef53f51cd548b2414ff3876f87b37a831cd8",
+      "legacyPath": "/{locale}/merchants/dashboard/experiences/[experienceId]/edit",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/experiences/queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/ExperienceForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/experiences/new/page.tsx",
+      "sourceBlob": "5671e16065c0149f292ea3d5bea59e1d36ce489f",
+      "legacyPath": "/{locale}/merchants/dashboard/experiences/new",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/ExperienceForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/experiences/page.tsx",
+      "sourceBlob": "4af2517e784bf0fbc0387261a396af5d391e62e6",
+      "legacyPath": "/{locale}/merchants/dashboard/experiences",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/experiences/queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/MerchantExperiencesView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/insights/page.tsx",
+      "sourceBlob": "2e3a639004a8d2cde51e4902aea9a36dde81e9ab",
+      "legacyPath": "/{locale}/merchants/dashboard/insights",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/insights/merchant",
+        "@/components/kinnso/pages/MerchantInsightsView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/missions/[missionId]/page.tsx",
+      "sourceBlob": "ac1844ae875d5abb91eb753804e3e7867dfc35bc",
+      "legacyPath": "/{locale}/merchants/dashboard/missions/[missionId]",
+      "disposition": "identifier-resolution",
+      "nativePath": "/{locale}/merchant?company=[resolvedCompany]&campaign=[missionId]",
+      "verification": "NOT_RUN",
+      "reason": "Local compatibility implemented; backend-connected and browser acceptance pending.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/MissionDetailView",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/actions",
+        "@/lib/missions/queries",
+        "@/lib/creators/queries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/missions/page.tsx",
+      "sourceBlob": "4e5ac9c0ed9aaad38a12eac5ad95217edf17980a",
+      "legacyPath": "/{locale}/merchants/dashboard/missions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/MerchantMissionsView",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/queries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/offers/page.tsx",
+      "sourceBlob": "4ff440aeda7e88941c9cbf987db4a168f97dfa9a",
+      "legacyPath": "/{locale}/merchants/dashboard/offers",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/seo/metadata",
+        "@/lib/merchants/offers-queries",
+        "@/lib/merchants/offers-actions",
+        "@/components/kinnso/pages/MerchantOffersView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/page.tsx",
+      "sourceBlob": "5bc543bac53cbc530dcacdb42af18ff65506de5a",
+      "legacyPath": "/{locale}/merchants/dashboard",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/merchant",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/MerchantDashboardHomeView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/post/page.tsx",
+      "sourceBlob": "8b6b9ef7a5e78fea2cda67b1799da25e759c6c43",
+      "legacyPath": "/{locale}/merchants/dashboard/post",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/MissionPostWizard",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/actions",
+        "@/lib/missions/types"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/profile/page.tsx",
+      "sourceBlob": "15f1ca74d2cb670a7764fcfc56695315d64eb3ef",
+      "legacyPath": "/{locale}/merchants/dashboard/profile",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/merchants/dashboard/profile",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/merchants/profile-queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/MerchantProfileView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/dashboard/redeem/page.tsx",
+      "sourceBlob": "41ce3790feea40a3ee8f9883364f1badebcc52e2",
+      "legacyPath": "/{locale}/merchants/dashboard/redeem",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/seo/metadata",
+        "@/lib/offers/redeem-actions",
+        "@/components/kinnso/pages/MerchantRedeemView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/insights/page.tsx",
+      "sourceBlob": "28ed7c8bdf282c29c4771ce4721396e818a6011c",
+      "legacyPath": "/{locale}/merchants/insights",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/missions/[missionId]/page.tsx",
+      "sourceBlob": "bbb306b9018926db249f498e3859bb90ab4c3614",
+      "legacyPath": "/{locale}/merchants/missions/[missionId]",
+      "disposition": "identifier-resolution",
+      "nativePath": "/{locale}/merchant?company=[resolvedCompany]&campaign=[missionId]",
+      "verification": "NOT_RUN",
+      "reason": "Local compatibility implemented; backend-connected and browser acceptance pending.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/missions/page.tsx",
+      "sourceBlob": "4f05851338873f7bb2fc204150218f9a4a1b2dfd",
+      "legacyPath": "/{locale}/merchants/missions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/page.tsx",
+      "sourceBlob": "6ad60e4beb72c2e9ee09b36217ec0a86a367f8b1",
+      "legacyPath": "/{locale}/merchants",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/components/kinnso/pages/MerchantsDirectoryView",
+        "@/lib/merchants/public-queries",
+        "@/lib/seo/metadata"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/merchants/post/page.tsx",
+      "sourceBlob": "197aaa41796ac743bceacc49406d8fcab5b59004",
+      "legacyPath": "/{locale}/merchants/post",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/auth/viewer-role",
+        "@/lib/i18n/config",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/offers/[claimId]/page.tsx",
+      "sourceBlob": "e5c47e87b6889cd9845cd814ca4bd0bdb3747584",
+      "legacyPath": "/{locale}/offers/[claimId]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "next/headers",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/components/kinnso/pages/OfferClaimConfirmationView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/ops/accept-invite/page.tsx",
+      "sourceBlob": "6c9408607aeaabb7269c5e1f7de002626a859016",
+      "legacyPath": "/{locale}/ops/accept-invite",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/ops/settlements/page.tsx",
+      "sourceBlob": "615b5abe02830b484c4397797ef9f1fd1fecaf50",
+      "legacyPath": "/{locale}/ops/settlements",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/page.tsx",
+      "sourceBlob": "f01631dc2ec36fa070688b312d33f33e29d1432d",
+      "legacyPath": "/{locale}",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/components/kinnso/pages/HomeView",
+        "@/lib/articles/queries",
+        "@/lib/guides/queries",
+        "@/lib/home/queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/seo/metadata",
+        "@/lib/product-state"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/sessions/[slug]/page.tsx",
+      "sourceBlob": "2bcd7c45b39a33b1e99f7bfa823e76eaa40aa7d7",
+      "legacyPath": "/{locale}/sessions/[slug]",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/sessions/public-queries",
+        "@/lib/supabase/server",
+        "@/lib/seo/metadata",
+        "@/lib/seo/jsonld",
+        "@/components/JsonLd",
+        "@/components/kinnso/pages/SessionDetailView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/sessions/page.tsx",
+      "sourceBlob": "02849eee638a30ac502231d0318e7ce8b7cfa6a6",
+      "legacyPath": "/{locale}/sessions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/sessions/public-queries",
+        "@/lib/seo/metadata",
+        "@/components/kinnso/pages/SessionsListingView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/sign-in/page.tsx",
+      "sourceBlob": "350c4ad7ceda494ed4bfc1b472931270c4800d28",
+      "legacyPath": "/{locale}/sign-in",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/sign-in",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "next/link",
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/seo/metadata",
+        "@/lib/auth/safe-next",
+        "./SignInForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/sign-up/page.tsx",
+      "sourceBlob": "f3a42719dd604c5b00c2d1a09c03a9f256cc63c6",
+      "legacyPath": "/{locale}/sign-up",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/sign-up",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "next/link",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/seo/metadata",
+        "./SignUpForm",
+        "next/navigation"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/copilot/page.tsx",
+      "sourceBlob": "135e5963f5515c1692f101b820ac8ca478e2638f",
+      "legacyPath": "/{locale}/studio/copilot",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/navigation",
+        "@/lib/admin/guard",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@kinnso/scan",
+        "@/lib/contribution/queries",
+        "@/lib/copilot/policy",
+        "@/lib/copilot/config",
+        "@/lib/copilot/queries",
+        "@/components/kinnso/pages/CreatorCopilotView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/earnings/page.tsx",
+      "sourceBlob": "20bb90ed9c30e9d8068d8429142b1139c5592465",
+      "legacyPath": "/{locale}/studio/earnings",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/StudioEarningsView",
+        "@/lib/admin/guard",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/earnings-summary",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/guides/[id]/edit/page.tsx",
+      "sourceBlob": "bb8962363caedbb58f9feb59e4fb6d44a59a59e3",
+      "legacyPath": "/{locale}/studio/guides/[id]/edit",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/guides/[id]/edit",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/GuideForm",
+        "@/lib/guides/actions",
+        "@/lib/guides/types"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/guides/new/page.tsx",
+      "sourceBlob": "0739f67cc59c393f84d9f6fca1d97e44ad7c4ae0",
+      "legacyPath": "/{locale}/studio/guides/new",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/guides/new",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/GuideForm",
+        "@/lib/guides/actions",
+        "@/lib/guides/types"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/guides/page.tsx",
+      "sourceBlob": "55d28f2c44a3366972edfa5a42503872e462adf5",
+      "legacyPath": "/{locale}/studio/guides",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/guides",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/pages/MyGuidesView",
+        "@/lib/guides/types"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/inbox/page.tsx",
+      "sourceBlob": "e61ffa02dc7ee629bfcfbd16f7c4ac9506562eac",
+      "legacyPath": "/{locale}/studio/inbox",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/inbox",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/notifications/queries",
+        "@/lib/notifications/actions",
+        "@/components/kinnso/pages/StudioInboxView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/insights/page.tsx",
+      "sourceBlob": "9eae4270ca2f6cb50e66dfac30386462f59d4b1c",
+      "legacyPath": "/{locale}/studio/insights",
+      "disposition": "native-port-local",
+      "nativePath": "/{locale}/studio/insights",
+      "verification": "LOCAL_UNIT_ONLY",
+      "reason": "Actor-bound creator_insights RPC and accessible metric tables ported for en/zh-HK. Additional locales and connected browser acceptance pending.",
+      "imports": [
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/insights/creator",
+        "@/components/kinnso/pages/CreatorInsightsView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/creator-insights.test.mjs"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/missions/[id]/page.tsx",
+      "sourceBlob": "e0d0e807ba7f22fe4cc10e1f54c1f6d2f8717d33",
+      "legacyPath": "/{locale}/studio/missions/[id]",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/missions/[id]",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/CreatorMissionDetailView",
+        "@/lib/admin/guard",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/contribution/tiers",
+        "@/lib/contribution/queries",
+        "@/lib/missions/actions",
+        "@/lib/missions/detail",
+        "@/lib/missions/queries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/missions/page.tsx",
+      "sourceBlob": "38d95c9dd804f47384751bb7d0a61a9e316ba1eb",
+      "legacyPath": "/{locale}/studio/missions",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio/missions",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/CreatorMissionsView",
+        "@/lib/admin/guard",
+        "@/lib/contribution/tiers",
+        "@/lib/contribution/queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/list",
+        "@/lib/missions/actions",
+        "@/lib/missions/invite-actions",
+        "@/lib/missions/queries",
+        "@/lib/missions/types",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/offers/page.tsx",
+      "sourceBlob": "9db8e9e840fb13c3747d8685c546298f2228547f",
+      "legacyPath": "/{locale}/studio/offers",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/components/kinnso/pages/StudioOffersView",
+        "@/lib/admin/guard",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/missions/actions",
+        "@/lib/missions/queries",
+        "@/lib/missions/travelpayouts",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/page.tsx",
+      "sourceBlob": "8c0f3a8999ab6ef77bef7200a96435b523198d6a",
+      "legacyPath": "/{locale}/studio",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/studio",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/auth/viewer-role",
+        "@kinnso/scan",
+        "@/lib/studio/identity",
+        "@/lib/studio/readiness",
+        "@/lib/studio/next-action",
+        "@/lib/creators/eligibility",
+        "@/lib/missions/queries",
+        "@/lib/contribution/queries",
+        "@/lib/notifications/queries",
+        "@/lib/missions/earnings",
+        "@/components/kinnso/pages/StudioDashboardView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/perks/page.tsx",
+      "sourceBlob": "46b8b006a74d380f02a17bc9b1e0fe73fd2305c3",
+      "legacyPath": "/{locale}/studio/perks",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/contribution/queries",
+        "@/lib/perks/queries",
+        "@/lib/perks/list",
+        "@/lib/perks/actions",
+        "@/components/kinnso/pages/StudioPerksView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/scan/page.tsx",
+      "sourceBlob": "786eae8391783ed80802cbbe44f89f923eb40843",
+      "legacyPath": "/{locale}/studio/scan",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/pages/StudioScanView",
+        "@/components/kinnso/StudioOnboardingPrompt",
+        "@/lib/creator-mock",
+        "@/lib/studio/identity",
+        "@kinnso/scan"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/sessions/[id]/edit/page.tsx",
+      "sourceBlob": "11d2f823dc6dfa82378f02d06bdb2846434b0b6c",
+      "legacyPath": "/{locale}/studio/sessions/[id]/edit",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/sessions/studio-actions",
+        "@/lib/sessions/types",
+        "@/components/kinnso/pages/SessionForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/sessions/new/page.tsx",
+      "sourceBlob": "a20c37605df16b0d5f3721b9bceb7264c22b0430",
+      "legacyPath": "/{locale}/studio/sessions/new",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/sessions/studio-actions",
+        "@/components/kinnso/pages/SessionForm"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/sessions/page.tsx",
+      "sourceBlob": "02b9b35393ee285daf76d826b0d20b4f4175f3fb",
+      "legacyPath": "/{locale}/studio/sessions",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/components/kinnso/pages/MySessionsView",
+        "@/lib/sessions/types"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/studio/tier/page.tsx",
+      "sourceBlob": "1aa44a8e6b36fdbc7339a8ec6c56d50a2a8584e2",
+      "legacyPath": "/{locale}/studio/tier",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/supabase/server",
+        "@/lib/admin/guard",
+        "@/lib/contribution/queries",
+        "@/lib/missions/queries",
+        "@/lib/perks/queries",
+        "@/lib/perks/next-tier",
+        "@/components/kinnso/pages/StudioTierView"
+      ]
+    },
+    {
+      "source": "apps/web/app/[locale]/trips/page.tsx",
+      "sourceBlob": "fecb53225a29bf15e474626234f8d40fe5087c7f",
+      "legacyPath": "/{locale}/trips",
+      "disposition": "native-equivalent-candidate",
+      "nativePath": "/{locale}/trips",
+      "verification": "NOT_RUN",
+      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "imports": [
+        "next",
+        "next/navigation",
+        "@/components/kinnso/pages/TravelerTripsView",
+        "@/lib/bookings/queries",
+        "@/lib/saves/guide-queries",
+        "@/lib/saves/experience-queries",
+        "@/lib/i18n/config",
+        "@/lib/i18n/dictionaries",
+        "@/lib/seo/metadata",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/admin/analytics/route.ts",
+      "sourceBlob": "9cdae00aaa91248188ee5e13aec91d348791a619",
+      "legacyPath": "/api/admin/analytics",
+      "disposition": "operational",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "imports": [
+        "next/server",
+        "@/lib/auth/viewer-role",
+        "@/lib/admin/analytics-queries",
+        "@/lib/supabase/server"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/agent/route.ts",
+      "sourceBlob": "09e917c65309dab4c01b3bc4f98f4aae92dce2fa",
+      "legacyPath": "/api/agent",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/server",
+        "ai",
+        "@/lib/supabase/server",
+        "@/lib/agent/config",
+        "@/lib/product-state",
+        "@/lib/agent/policy",
+        "@/lib/agent/tools",
+        "@/lib/agent/queries",
+        "@/lib/http/client-ip",
+        "@/lib/i18n/config",
+        "@/lib/ai/chat-messages"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/analytics/route.ts",
+      "sourceBlob": "3a8d741a66e83bea2c6e56d5e2190900963d15a8",
+      "legacyPath": "/api/analytics",
+      "disposition": "operational",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js",
+        "@/lib/analytics/server",
+        "@/lib/supabase/server",
+        "@/lib/http/client-ip"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/copilot/route.ts",
+      "sourceBlob": "8299935fdb5cd1a6c97d908ed18cd768b6559264",
+      "legacyPath": "/api/copilot",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/server",
+        "ai",
+        "@/lib/supabase/server",
+        "@/lib/auth/viewer-role",
+        "@/lib/contribution/queries",
+        "@/lib/copilot/policy",
+        "@/lib/copilot/config",
+        "@/lib/copilot/system-prompt",
+        "@/lib/copilot/request",
+        "@/lib/copilot/tools/n8n",
+        "@/lib/copilot/queries",
+        "@kinnso/scan",
+        "@/lib/i18n/config"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/cron/traveller-analytics-retention/route.ts",
+      "sourceBlob": "5b0f0d2b179a8846c3a63aa82f185f7fc42e0fb3",
+      "legacyPath": "/api/cron/traveller-analytics-retention",
+      "disposition": "operational",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "imports": [
+        "next/server",
+        "@/lib/supabase/service",
+        "@/lib/http/safe-equal"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/cron/travelpayouts-sync/route.ts",
+      "sourceBlob": "1161acc942925db730c76415f577ff9cb80ea711",
+      "legacyPath": "/api/cron/travelpayouts-sync",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/server",
+        "@/lib/missions/travelpayouts",
+        "@/lib/supabase/service",
+        "@/lib/http/safe-equal"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/health/route.ts",
+      "sourceBlob": "fb5d53d299a2d07598b1d9b20e98ee952a20aa56",
+      "legacyPath": "/api/health",
+      "disposition": "operational",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "imports": [
+        "next/server",
+        "@supabase/supabase-js"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/revalidate/route.ts",
+      "sourceBlob": "7cbcc54e627ccf0dda6b3f74647742ca3d985cb9",
+      "legacyPath": "/api/revalidate",
+      "disposition": "operational",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "imports": [
+        "next/server",
+        "next/cache",
+        "@/lib/http/safe-equal"
+      ]
+    },
+    {
+      "source": "apps/web/app/api/stripe/webhook/route.ts",
+      "sourceBlob": "175030e65afd7ec2ec44a88e751a79f49533810f",
+      "legacyPath": "/api/stripe/webhook",
+      "disposition": "excluded-gated",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Paid AI or financial/provider execution remains gated; source retention does not authorize activation.",
+      "imports": [
+        "next/server",
+        "stripe",
+        "@/lib/stripe/client",
+        "@/lib/supabase/service"
+      ]
+    },
+    {
+      "source": "apps/web/app/page.tsx",
+      "sourceBlob": "0d24782f8e33ae88bda64ef755676922e269b7ba",
+      "legacyPath": "/page.tsx",
+      "disposition": "port-required",
+      "nativePath": null,
+      "verification": "NOT_RUN",
+      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "imports": [
+        "next/navigation",
+        "@/lib/i18n/config"
+      ]
+    }
+  ]
+}

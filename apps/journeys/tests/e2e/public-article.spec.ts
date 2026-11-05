@@ -22,7 +22,7 @@ test('published article has real rich content without JS, survives hydration, an
     await expect(page.getByText(body,{exact:false})).toBeVisible();await expect(page.locator('article strong')).toHaveText('important');await expect(page.getByText('Authored list item',{exact:true})).toBeVisible();
     await expect(page.locator('article')).toHaveAttribute('lang',locale==='en'?'en':'zh-Hant-HK');
     await expect(page.locator('article script')).toHaveCount(0);await expect(page.locator('article a[href^="javascript:"]')).toHaveCount(0);expect(await page.content()).not.toContain(marker);
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',`https://remix-kinnso-web.vercel.app/${authored}/articles/destinations/${slug}`);
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href',`https://kinnso-os.vercel.app/${locale}/articles/destinations/${slug}`);
     await expect(page.locator('link[hreflang]')).toHaveCount(0);await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content',/noindex/);
     await expect(page.locator('article img')).toHaveAttribute('src','https://cdn.kinnso.ai/synthetic-cover.jpg');await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content','https://cdn.kinnso.ai/synthetic-cover.jpg');await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content','summary_large_image');
     const data=JSON.parse(await page.locator('script[type="application/ld+json"]').textContent()??'{}');expect(data.headline).toBe(title+' '+authored);expect(data.inLanguage).toBe(authored);expect(data.creditText).toBe('Real author');expect(data.dateModified).toBe('2026-01-03T00:00:00+00:00');
