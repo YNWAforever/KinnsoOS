@@ -1,6 +1,7 @@
 # Complete destination discovery
 
-Status: builder-reviewed design; implementation awaits user approval of this document.
+Status: approved 2026-11-06; implementation follows
+`docs/superpowers/plans/2026-11-06-complete-destination-discovery.md`.
 
 ## Intent and selected approach
 

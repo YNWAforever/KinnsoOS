@@ -80,14 +80,14 @@ const retained = new Set([
   "legal/traveller-terms",
   "legal/payment-handling",
 ]);
+const publicIdentifier = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}_.-]{0,199}$/u;
 export function isKnownRoute(path: string) {
   if(/^studio\/missions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return true;
   if(path==='merchant/invitation')return true;
-  if (
-    /^(articles\/[^/]+(?:\/[^/]+)?|sessions\/[^/]+|m\/[^/]+)$/.test(path) &&
-    !path.split("/").includes("..")
-  )
+  if (/^articles\/[^/]+(?:\/[^/]+)?$/.test(path) && !path.split("/").includes(".."))
     return true;
+  const publicDetail = /^(destinations|experiences|sessions|m)\/([^/]+)$/.exec(path);
+  if (publicDetail) return publicIdentifier.test(publicDetail[2]);
   if (
     /^merchants\/dashboard(?:\/(post|missions|creators|offers|redeem|insights|profile|experiences|bookings|budget)(?:\/demo-[a-zA-Z0-9-]+)?)?$/.test(
       path,
@@ -98,10 +98,6 @@ export function isKnownRoute(path: string) {
   if (pages.has(path) || retained.has(path)) return true;
   if (path === 'studio/guides/new' || /^studio\/guides\/[0-9a-f-]{36}\/edit$/.test(path)) return true;
   if (path.startsWith("legacy/")) return true;
-  if (
-    /^destinations\/(kyoto|hong-kong|lisbon|tokyo|seoul|singapore)$/.test(path)
-  )
-    return true;
   if (/^c\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(path)) return true;
   if (
     /^(trips\/[^/]+|studio\/adventures\/[^/]+\/edit|bookings\/[^/]+)$/.test(
