@@ -25,6 +25,18 @@ Private local logs: `.local-private/single-origin/`. Those artifacts are not pro
 
 ## Remaining release gates
 
+Destination reader continuation: `public-destinations.ts` now provides anonymous,
+bounded index pages and exact detail lookup against the existing
+`security_invoker` destination view. It validates identifiers, counts and response
+shape, rejects ambiguous identity, and distinguishes unavailable service from
+empty inventory. Five focused tests and TypeScript passed; independent source
+review found no concrete issue. This is a data-access checkpoint, **not a wired
+destination page or backend acceptance**; the route matrix remains unchanged.
+Related guide, experience, article and gated session sections must still be
+ported together with their linked routes. Merchant attribution must use the
+public projection, never the private merchant profile table. No database,
+deployment, configuration or production record changes were made.
+
 The [104-route matrix](legacy-route-matrix.json) records pinned legacy source blobs, imported contracts and unresolved parity. Native route recognition alone is not acceptance. Remaining work includes public-language and content parity, creator/session/tier/perk routes, merchant and operations capabilities, API ownership, old-origin draft recovery and explicit retirement mappings.
 
 The earlier isolated suspension-test containers are absent. The running pilot backend has not been substituted. Provision and attest an owned candidate-specific backend before connected/browser writes. Preserve the shared-backend labeled campaign's paused status and the approved submission.
