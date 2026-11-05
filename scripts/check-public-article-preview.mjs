@@ -21,8 +21,9 @@ const backend=createServer(async(req,res)=>{
    rows=Array.from({length:13},(_,index)=>({url:input.p_locale==='th'&&index===12?'เที่ยว':'published-'+index,category:input.p_category,title:input.p_category==='shopping'&&index===0?null:'Authored '+input.p_locale+' '+index,summary:'Synthetic article summary',thumbnails:[],published_at:'2026-01-01T00:00:00Z',total_count:13})).slice(input.p_offset,input.p_offset+input.p_limit);
   }else if(url.pathname==='/rest/v1/articles'){
    const locale=url.searchParams.get('article_translations.locale')?.slice(3),slug=url.searchParams.get('url')?.slice(3);
-   if(known.has(locale)&&(/^published-\d+$/.test(slug??'')||locale==='th'&&slug==='เที่ยว'))rows=[{id:'11111111-1111-4111-8111-111111111111',url:slug,category:url.searchParams.get('category')?.slice(3),thumbnails:[],published_at:'2026-01-01T00:00:00Z',edit_at:null,authors:[],article_translations:[{locale,title:'Authored '+locale+' '+(slug==='เที่ยว'?'12':slug.split('-')[1]),summary:'Synthetic article summary',content:[{id:'body',type:'text',title:'Authored section',content:'<p>Durable fixture body <strong>important</strong></p>'}],meta_title:null,meta_description:null,og_image:null}]}];
-  }else if(url.pathname==='/rest/v1/article_faqs')rows=[{question:'Fixture question',answer:'Fixture answer'}];
+   if(known.has(locale)&&(/^published-\d+$/.test(slug??'')||locale==='th'&&slug==='เที่ยว'))rows=[{id:'11111111-1111-4111-8111-111111111111',url:slug,category:url.searchParams.get('category')?.slice(3),thumbnails:[],published_at:'2026-01-01T00:00:00Z',edit_at:null,authors:['fixture-author'],article_translations:[{locale,title:'Authored '+locale+' '+(slug==='เที่ยว'?'12':slug.split('-')[1]),summary:'Synthetic article summary',content:[{id:'body',type:'text',title:'Authored section',content:'<p>Durable fixture body <strong>important</strong></p>'}],meta_title:null,meta_description:null,og_image:null}]}];
+  }else if(url.pathname==='/rest/v1/article_authors')rows=[{slug:'fixture-author',name:'Fixture author'}];
+  else if(url.pathname==='/rest/v1/article_faqs')rows=[{question:'Fixture question',answer:'Fixture answer'}];
   else throw Error('Unexpected fixture request: '+url.pathname);
   res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify(rows));
  }catch(error){res.writeHead(500,{'Content-Type':'application/json'});res.end(JSON.stringify({error:String(error)}));}
@@ -50,7 +51,7 @@ try{
    await expect(page.locator('main li')).toHaveCount(12);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.getByRole('searchbox').focus();await expect(page.getByRole('searchbox')).toBeFocused();await page.locator('a[href*="page=2"]').focus();await page.keyboard.press('Enter');await expect(page.locator('main li')).toHaveCount(1);
    assert.ok(page.url().includes('q=tea'));assert.ok(page.url().includes('region=tokyo'));
    await page.locator('main li a').click();try{await expect(page.locator('article h1')).toHaveText('Authored '+authored+' 12');}catch(error){await writeFile(path.join(output,'failure.json'),JSON.stringify({locale,javaScriptEnabled,url:page.url(),observed:observed.slice(-5),body:await page.locator('body').innerText(),html:await page.content()},null,2));throw error;}
-   assert.equal(await page.locator('article strong').innerText(),'important');assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`https://kinnso-os.vercel.app/${locale}/articles/destinations/${detailSlug}`);
+   assert.equal(await page.locator('article strong').innerText(),'important');assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),1);assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`https://kinnso-os.vercel.app/${locale}/articles/destinations/${detailSlug}`);
    assert.ok((await page.locator('meta[name="robots"]').getAttribute('content')).includes('noindex'));
    assert.equal(await page.locator('a[href*="remix-kinnso-web"]').count(),0);
    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
