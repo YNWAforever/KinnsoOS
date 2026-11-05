@@ -3,7 +3,7 @@ export function legacyEntry(pathname:string,method:string):{pathname:string;camp
  if(!['GET','HEAD'].includes(method)||!/^\/(en|zh-hk|zh-HK)(?:\/|$)/.test(pathname))return null;
  try{
   const segments=pathname.split('/').slice(1);
-  if(segments.some(segment=>{const decoded=decodeURIComponent(segment);return !decoded||decoded==='.'||decoded==='..'||! /^[\p{L}\p{N}_.-]+$/u.test(decoded);}))return null;
+  if(segments.some(segment=>{const decoded=decodeURIComponent(segment);return !decoded||decoded==='.'||decoded==='..'||! /^[\p{L}\p{M}\p{N}_.-]+$/u.test(decoded);}))return null;
  }catch{return null;}
  const [,language,...parts]=pathname.split('/');
  if(['auth','callback'].includes(decodeURIComponent(parts[0]??'')))return null;

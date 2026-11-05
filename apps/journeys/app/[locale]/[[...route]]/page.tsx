@@ -11,6 +11,11 @@ import {readPublicGuidePage,guidePageMetadata} from '../../../lib/seo/guide-publ
 import {isGuideSlug,resolvePublishedGuideId} from '../../../lib/seo/legacy-guide';
 import {readPublicCreator,creatorPageMetadata} from '../../../lib/seo/public-creator';
 import {readPublicArticle} from '../../../lib/seo/public-article';
+import {publicLanguage} from '../../../lib/seo/public-language';
+import {PublicArticleContent} from '../../../lib/seo/PublicArticleContent';
+import {articleCategories,articleListQuery,readArticleListing,type ArticleCategory} from '../../../lib/seo/article-listing';
+import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArticleListing';
+import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
 import {serverClient} from '../../../lib/supabase/server';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
@@ -25,12 +30,16 @@ const publishedCreator=cache((handle:string,page=1)=>readPublicCreator(handle,pr
 const publishedArticle=cache((category:string,slug:string,locale:string)=>readPublicArticle(category,slug,locale,process.env));
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, route = [] } = await params;
-  if(!['en','zh-HK'].includes(locale))notFound();
+  if(route[0]==='articles'&&route.length<=2){
+    const language=publicLanguage(locale);if(!language||(route.length===2&&!Object.hasOwn(articleCategories,route[1])))notFound();
+    const labels=articleLabels[language];return{title:route.length===2?labels.categories[route[1] as ArticleCategory]:labels.title,robots:{index:false,follow:false},alternates:{canonical:`https://kinnso-os.vercel.app/${language}/${route.join('/')}`}};
+  }
   if(route[0]==='articles'&&route.length===3) {
     const article=await publishedArticle(route[1],route[2],locale);
     if(!article)notFound();
     return articlePageMetadata(article);
   }
+  if(!['en','zh-HK'].includes(locale))notFound();
   if(route[0]==='c') {
     if(route.length!==2)notFound();
     const creator=await publishedCreator(route[1]);
@@ -57,6 +66,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function Page({ params,searchParams }: Props) {
   const { locale, route = [] } = await params;
+  if(route[0]==='articles'&&route.length<=2){
+    const language=publicLanguage(locale);if(!language)notFound();
+    if(route.length===1){
+      const sections=await Promise.all((Object.keys(articleCategories) as ArticleCategory[]).map(async category=>{
+        const listing=await readArticleListing(language,category,articleListQuery(new URLSearchParams()),process.env,fetch,6);if(!listing)notFound();return{category,listing};
+      }));return <PublicArticlesHub locale={language} sections={sections}/>;
+    }
+    if(!Object.hasOwn(articleCategories,route[1]))notFound();
+    const params=new URLSearchParams();for(const[key,value]of Object.entries(await searchParams??{})){if(Array.isArray(value))value.forEach(item=>params.append(key,item));else if(value!==undefined)params.append(key,value);}
+    let query;try{query=articleListQuery(params);}catch{notFound();}
+    const listing=await readArticleListing(language,route[1],query,process.env);if(!listing||(listing.page>1&&!listing.items.length))notFound();
+    return <PublicArticleListing locale={language} category={route[1] as ArticleCategory} listing={listing}/>;
+  }
+  if(!['en','zh-HK'].includes(locale)&&route[0]==='articles'&&route.length===3){
+    const language=publicLanguage(locale);if(!language)notFound();
+    const article=await publishedArticle(route[1],route[2],locale);if(!article)notFound();
+    return <main><PublicArticleContent article={article} locale={language}/></main>;
+  }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");
   if (

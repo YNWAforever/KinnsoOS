@@ -18,7 +18,7 @@ test('anonymous article reads bind exact category, slug and authored locale; nev
 });
 test('invalid routes, missing exact translation and withdrawn articles cannot become guessed content',async()=>{
  assert.equal(typeof subject.readPublicArticle,'function');let calls=0;
- for(const [category,slug,locale] of [['bad','real-article','en'],['dining','../secret','en'],['dining','x?key=y','en'],['dining','x','ja'],['dining','x'.repeat(201),'en']])assert.equal(await subject.readPublicArticle(category,slug,locale,env,async()=>{calls++;throw Error('not allowed')}),null);
+ for(const [category,slug,locale] of [['bad','real-article','en'],['dining','../secret','en'],['dining','x?key=y','en'],['dining','x','fr'],['dining','x'.repeat(201),'en']])assert.equal(await subject.readPublicArticle(category,slug,locale,env,async()=>{calls++;throw Error('not allowed')}),null);
  assert.equal(calls,0);assert.equal(await subject.readPublicArticle('destinations','real-article','en',env,async()=>Response.json([])),null);
  assert.equal(await subject.readPublicArticle('destinations','real-article','en',env,async()=>Response.json([row])),null);
  await assert.rejects(subject.readPublicArticle('destinations','real-article','en',{},async()=>{throw Error('not allowed')}),/article_unconfigured/);

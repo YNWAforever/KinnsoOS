@@ -476,10 +476,10 @@
       "source": "apps/web/app/[locale]/articles/[category]/[url]/page.tsx",
       "sourceBlob": "f0a52a4f60d54a6a5403d8adbf9f3511545662ba",
       "legacyPath": "/{locale}/articles/[category]/[url]",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-local",
       "nativePath": "/{locale}/articles/[category]/[url]",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
+      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
       "imports": [
         "next/navigation",
         "next",
@@ -502,16 +502,22 @@
         "@/lib/articles/blocks",
         "@/lib/product-state",
         "@/components/kinnso/analytics/AnalyticsEntityView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/article-listing.test.mjs",
+        "apps/journeys/tests/public-languages.test.mjs",
+        "apps/journeys/tests/public-language-page.test.mjs",
+        "scripts/check-public-article-preview.mjs"
       ]
     },
     {
       "source": "apps/web/app/[locale]/articles/[category]/page.tsx",
       "sourceBlob": "7df6bb7483928542df7cd293cdc51b2bf841b48a",
       "legacyPath": "/{locale}/articles/[category]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-local",
+      "nativePath": "/{locale}/articles/[category]",
+      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
+      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
       "imports": [
         "next/navigation",
         "next",
@@ -521,16 +527,22 @@
         "@/lib/seo/metadata",
         "@/components/ArticleCard",
         "@/components/Pagination"
+      ],
+      "evidence": [
+        "apps/journeys/tests/article-listing.test.mjs",
+        "apps/journeys/tests/public-languages.test.mjs",
+        "apps/journeys/tests/public-language-page.test.mjs",
+        "scripts/check-public-article-preview.mjs"
       ]
     },
     {
       "source": "apps/web/app/[locale]/articles/page.tsx",
       "sourceBlob": "f6f861d220c2fec67445e5cdf687152acc41c9cd",
       "legacyPath": "/{locale}/articles",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-local",
+      "nativePath": "/{locale}/articles",
+      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
+      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
       "imports": [
         "next/navigation",
         "next",
@@ -541,6 +553,12 @@
         "@/lib/i18n/config",
         "@/lib/seo/metadata",
         "@/components/ArticleCard"
+      ],
+      "evidence": [
+        "apps/journeys/tests/article-listing.test.mjs",
+        "apps/journeys/tests/public-languages.test.mjs",
+        "apps/journeys/tests/public-language-page.test.mjs",
+        "scripts/check-public-article-preview.mjs"
       ]
     },
     {

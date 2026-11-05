@@ -30,3 +30,16 @@ The [104-route matrix](legacy-route-matrix.json) records pinned legacy source bl
 The earlier isolated suspension-test containers are absent. The running pilot backend has not been substituted. Provision and attest an owned candidate-specific backend before connected/browser writes. Preserve the shared-backend labeled campaign's paused status and the approved submission.
 
 After parity implementation: rerun full migration/backend/browser/device checks, freeze the exact source and deployment/configuration envelope, then obtain scoped production cutover approval. Do not retire the old host or redirect uncovered routes based on this checkpoint. Paid AI, media/uploads and money/provider activation remain gated.
+
+## Article continuation after 8048f8f
+
+- Public article detail supports all seven existing languages with exact authored translations. Missing translations stay absent; no fallback content is invented.
+- Article hub and category pages now render native listings using the existing anonymous `search_articles` invoker RPC. Keyword, region and tag filters survive pagination; duplicate/malformed controls and out-of-range pages are rejected.
+- Existing navigation labels were copied from the pinned legacy dictionaries. Document language survives SSR and client navigation. All rendered article links and canonical metadata stay on KinnsoOS.
+- Review found nullable-title and Thai combining-mark failures. Incomplete titles now keep RPC page positions/counts while displaying the source slug without a broken detail link. Valid combining marks are preserved.
+- The built browser test exposed an additional encoded-slug 404 not caught by decoded reader fixtures. One-time decoding at the reader boundary fixes the actual Thai route while strict validation still rejects separators, traversal, malformed escapes and double encoding.
+- Final local verification: **1,344 passed, 2 skipped, 0 failed**; TypeScript and production-mode webpack build passed. **28 local-fixture browser scenarios passed** across seven languages, mobile/desktop widths, JavaScript enabled/disabled, keyboard pagination, canonical metadata, missing-title records and Thai-slug navigation.
+- Browser evidence uses a fresh browser profile and a synthetic loopback service started by `scripts/check-public-article-preview.mjs`. It is **not real Supabase, provider or authenticated workflow acceptance**. Private evidence is under `.local-private/single-origin/articles-preview/`.
+- Follow-up source review confirmed the reported fixes and found no concrete security concern in the bounded decoding change.
+
+The matrix now has 66 port-required routes, 17 native-equivalent candidates, 5 locally ported routes, 3 identifier-resolution routes, 5 operational routes and 8 gated activation routes. Local ports remain open release gates until connected and remaining functional parity checks pass. Production and backup/restore boundaries are unchanged.

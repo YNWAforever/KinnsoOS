@@ -2,10 +2,11 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 import { backendTarget } from './lib/contracts/capabilities';
 import { legacyEntry } from './lib/routing/legacy-entry';
+import {publicLanguage} from './lib/seo/public-language';
 
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-kinnso-locale', request.nextUrl.pathname.split('/')[1] === 'en' ? 'en' : 'zh-HK');
+  requestHeaders.set('x-kinnso-locale', publicLanguage(request.nextUrl.pathname.split('/')[1])??'zh-HK');
   let response = NextResponse.next({ request: { headers: requestHeaders } });
   const target = backendTarget(process.env);
   if (target) {
