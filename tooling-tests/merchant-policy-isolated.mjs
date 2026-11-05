@@ -2,7 +2,9 @@
 // Requires Docker and the locally available postgres:17 image. No ports,
 // host mounts, network, production credentials, or existing containers used.
 import { spawn, spawnSync } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { buildMigrationTransaction } from '../scripts/migration-release.mjs'
 import assert from 'node:assert/strict'
 
 const name = `kinnso-merchant-policy-${Date.now()}`
@@ -88,7 +90,32 @@ try {
   ok(reviewSource.slice(reviewSource.indexOf('create or replace function')))
   assert.equal(ok(as(2, `select app_private.can_delete_empty_mission('${id(23)}');`)), 't')
   allow('baseline suspended owner can append review history', 2, `select mission_review_event_append('${id(41)}','approve',null);`)
-  ok(migration)
+  // Rehearse the catalog-bound envelope, including rollback on a failed final
+  // check. This fixture catalog is NOT a production authorization fingerprint.
+  const catalogQuery = `select md5(jsonb_build_object('functions', (select jsonb_agg(jsonb_build_array(n.nspname,p.proname,pg_get_functiondef(p.oid),p.proacl::text,pg_get_userbyid(p.proowner)) order by n.nspname,p.proname) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where (n.nspname='app_private' and p.proname='can_delete_empty_mission') or (n.nspname='public' and p.proname='mission_review_event_append')), 'policies',(select jsonb_agg(to_jsonb(x) order by policyname) from pg_policies x where schemaname='public' and tablename='missions'))::text)`
+  const baseline = ok('set search_path=pg_catalog; '+catalogQuery)
+  const payload = migration.replace(/^begin;\r?$/m, '').replace(/commit;\s*$/, '')
+  const committed = ok(`begin; set local search_path=pg_catalog; ${payload}\n${catalogQuery}; rollback;`)
+  const candidate = {sql:payload,sha256:createHash('sha256').update(payload).digest('hex')}
+  assert.equal(ok('set search_path=pg_catalog; '+catalogQuery), baseline)
+  const wrong = '00000000000000000000000000000000'
+  const failed = sql(buildMigrationTransaction(candidate,{catalogQuery,baseline,committed:wrong,acknowledgment:'KINNSO_COMMIT_ACK_FIXTURE_FAILURE'}))
+  assert.notEqual(failed.status,0)
+  assert.match(failed.stderr,/MIGRATION_POSTCHECK_FAILED/)
+  assert.equal(ok('set search_path=pg_catalog; '+catalogQuery),baseline)
+  checks++; console.log('PASS failed envelope postcheck rolls back every change')
+  const envelope = buildMigrationTransaction(candidate,{catalogQuery,baseline,committed,acknowledgment:'KINNSO_COMMIT_ACK_FIXTURE_SUCCESS'})
+  ok(envelope)
+  assert.equal(ok('set search_path=pg_catalog; '+catalogQuery),committed)
+  checks++; console.log('PASS guarded envelope commit and independent catalog verification')
+  const replay=sql(envelope)
+  assert.notEqual(replay.status,0)
+  assert.match(replay.stderr,/MIGRATION_BASELINE_CHANGED/)
+  checks++; console.log('PASS completed envelope cannot be replayed')
+  const evidence=new URL(`.local-private/envelope-${name}/`,root)
+  mkdirSync(evidence,{recursive:true})
+  writeFileSync(new URL('fixture-envelope.sql',evidence),envelope)
+  writeFileSync(new URL('result.json',evidence),JSON.stringify({scope:'ISOLATED_FIXTURE_ONLY',baseline,committed,payloadSha256:candidate.sha256,envelopeSha256:createHash('sha256').update(envelope).digest('hex'),rollback:'PASS',commit:'PASS',postcheck:'PASS',replayDenied:'PASS',productionChanged:false},null,2))
   assert.equal(ok(as(2, `with removed as (delete from missions where id='${id(23)}' returning id) select count(*) from removed;`)), '0')
   checks++; console.log('PASS suspended owner cannot delete campaign')
   const deniedReview = sql(as(2, `select mission_review_event_append('${id(41)}','approve',null);`))
