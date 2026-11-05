@@ -1,5 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 let subject={};
 try{subject=await import('./real-public-content/target.mjs')}catch{}
 
@@ -72,4 +74,10 @@ test('runner source inputs include the public suite and preserve exactly eight c
   'tests/real-public-content/result-summary.mjs',
   'tests/real-public-content/journey.spec.ts',
  ])assert.ok(inputs.includes(name),name);
+});
+
+test('public runner source parses as an executable module',()=>{
+ const runner=fileURLToPath(new URL('../scripts/real-public-content-runner.mjs',import.meta.url));
+ const checked=spawnSync(process.execPath,['--check',runner],{encoding:'utf8',windowsHide:true});
+ assert.equal(checked.status,0,checked.stderr);
 });
