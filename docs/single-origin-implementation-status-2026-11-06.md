@@ -55,3 +55,32 @@ After parity implementation: rerun full migration/backend/browser/device checks,
 - Follow-up source review confirmed the reported fixes and found no concrete security concern in the bounded decoding change.
 
 The matrix now has 66 port-required routes, 17 native-equivalent candidates, 5 locally ported routes, 3 identifier-resolution routes, 5 operational routes and 8 gated activation routes. Local ports remain open release gates until connected and remaining functional parity checks pass. Production and backup/restore boundaries are unchanged.
+
+## 2026-11-06 public destination phase evidence
+
+- Accepted only the public article, creator, guide, destination, experience,
+  merchant-attribution and session read families listed in
+  `docs/public-destination-phase-envelope-2026-11-06.md`. All other routes,
+  including experience booking and creator/session administration, remain
+  release gates.
+- Final code candidate for connected evidence:
+  `3b48a23b35f74740276e6fcd20b44f7d8a938b1a`.
+- Full local Journeys suite: 1,409 passed, 2 skipped, 0 failed. TypeScript
+  passed. The production-mode webpack build passed. Default Turbopack remains a
+  separate hosted-build gate because this worktree’s external dependency
+  symlink is outside its filesystem root.
+- Built local fixture browser checks passed 28 destination and 28 article
+  combinations across seven public languages, widths 390/1280 and JavaScript
+  on/off. Destination checks include axe, keyboard focus, reflow and unavailable
+  states; these remain `LOCAL_FIXTURE_UI_ONLY`.
+- A fresh candidate-specific Supabase project,
+  `kinnsoos-public-it-20261106`, applied all 199 migrations on dedicated
+  API/database ports 59721/59722. Five owned containers were attested by source
+  archive, migration manifest, image, network, volume and app-process identity.
+- Connected run `ffd297c8-43ff-4641-8041-e7c0d5eee9b9` passed exactly eight of
+  eight cases: one per public language plus withdrawal, suspension and
+  cross-account bookmark isolation. The post-run baseline returned to zero
+  guides, experiences, sessions, articles and guide saves.
+- Backup/restore remains waived. Production remains unchanged: no deployment,
+  database change, feature-setting change, role grant, redirect, provider
+  activation or old-host retirement occurred.

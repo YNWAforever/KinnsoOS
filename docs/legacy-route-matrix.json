@@ -476,10 +476,10 @@
       "source": "apps/web/app/[locale]/articles/[category]/[url]/page.tsx",
       "sourceBlob": "f0a52a4f60d54a6a5403d8adbf9f3511545662ba",
       "legacyPath": "/{locale}/articles/[category]/[url]",
-      "disposition": "native-port-local",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/articles/[category]/[url]",
-      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
-      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next/navigation",
         "next",
@@ -507,17 +507,20 @@
         "apps/journeys/tests/article-listing.test.mjs",
         "apps/journeys/tests/public-languages.test.mjs",
         "apps/journeys/tests/public-language-page.test.mjs",
-        "scripts/check-public-article-preview.mjs"
+        "scripts/check-public-article-preview.mjs",
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "apps/journeys/scripts/check-public-destination-preview.mjs",
+        "docs/public-destination-phase-envelope-2026-11-06.md"
       ]
     },
     {
       "source": "apps/web/app/[locale]/articles/[category]/page.tsx",
       "sourceBlob": "7df6bb7483928542df7cd293cdc51b2bf841b48a",
       "legacyPath": "/{locale}/articles/[category]",
-      "disposition": "native-port-local",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/articles/[category]",
-      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
-      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next/navigation",
         "next",
@@ -532,17 +535,20 @@
         "apps/journeys/tests/article-listing.test.mjs",
         "apps/journeys/tests/public-languages.test.mjs",
         "apps/journeys/tests/public-language-page.test.mjs",
-        "scripts/check-public-article-preview.mjs"
+        "scripts/check-public-article-preview.mjs",
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "apps/journeys/scripts/check-public-destination-preview.mjs",
+        "docs/public-destination-phase-envelope-2026-11-06.md"
       ]
     },
     {
       "source": "apps/web/app/[locale]/articles/page.tsx",
       "sourceBlob": "f6f861d220c2fec67445e5cdf687152acc41c9cd",
       "legacyPath": "/{locale}/articles",
-      "disposition": "native-port-local",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/articles",
-      "verification": "LOCAL_UNIT_AND_FIXTURE_BROWSER",
-      "reason": "Seven authored article languages, bounded anonymous search, filter-preserving pagination, incomplete-title handling and same-origin canonical detail links. Real-backend and remaining detail feature parity not yet accepted.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next/navigation",
         "next",
@@ -558,7 +564,10 @@
         "apps/journeys/tests/article-listing.test.mjs",
         "apps/journeys/tests/public-languages.test.mjs",
         "apps/journeys/tests/public-language-page.test.mjs",
-        "scripts/check-public-article-preview.mjs"
+        "scripts/check-public-article-preview.mjs",
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "apps/journeys/scripts/check-public-destination-preview.mjs",
+        "docs/public-destination-phase-envelope-2026-11-06.md"
       ]
     },
     {
@@ -614,10 +623,10 @@
       "source": "apps/web/app/[locale]/c/[handle]/page.tsx",
       "sourceBlob": "33b05e6f10cfccac43d15bd5f02cce99dd78097e",
       "legacyPath": "/{locale}/c/[handle]",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/c/[handle]",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -636,6 +645,11 @@
         "@/lib/seo/jsonld",
         "@/components/JsonLd",
         "@/components/kinnso/analytics/AnalyticsEntityView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
@@ -715,10 +729,10 @@
       "source": "apps/web/app/[locale]/destinations/[slug]/page.tsx",
       "sourceBlob": "79a4fe414b25dae5421951fc3fcfe4eefe1b3642",
       "legacyPath": "/{locale}/destinations/[slug]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/destinations/[slug]",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -735,16 +749,21 @@
         "@/components/JsonLd",
         "@/components/kinnso/pages/DestinationDetailView",
         "@/components/kinnso/ExperienceCard"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
       "source": "apps/web/app/[locale]/destinations/page.tsx",
       "sourceBlob": "5e27be45d09370a415923df719c3239a5f909be8",
       "legacyPath": "/{locale}/destinations",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/destinations",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -753,6 +772,11 @@
         "@/lib/seo/metadata",
         "@/lib/destinations/queries",
         "@/components/kinnso/pages/DestinationsIndexView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
@@ -778,10 +802,10 @@
       "source": "apps/web/app/[locale]/experiences/[slug]/page.tsx",
       "sourceBlob": "4fb43c80e6289cc53efcfaa7dd1e2914ed1f6c90",
       "legacyPath": "/{locale}/experiences/[slug]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/experiences/[slug]",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -801,6 +825,11 @@
         "@/lib/product-state",
         "@/lib/media/entity-media",
         "@/components/kinnso/analytics/AnalyticsEntityView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
@@ -895,10 +924,10 @@
       "source": "apps/web/app/[locale]/g/[slug]/page.tsx",
       "sourceBlob": "c0ddae882ff0c9660791c942a7160921b35ee914",
       "legacyPath": "/{locale}/g/[slug]",
-      "disposition": "identifier-resolution",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/g/[id]",
-      "verification": "NOT_RUN",
-      "reason": "Local compatibility implemented; backend-connected and browser acceptance pending.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/link",
@@ -924,6 +953,11 @@
         "@/lib/seo/jsonld",
         "@/components/JsonLd",
         "@/components/kinnso/analytics/AnalyticsEntityView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
@@ -947,10 +981,10 @@
       "source": "apps/web/app/[locale]/m/[slug]/page.tsx",
       "sourceBlob": "780836eb2377e558e4299c5737f6d038cfb038db",
       "legacyPath": "/{locale}/m/[slug]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/m/[slug]",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -965,6 +999,11 @@
         "@/lib/seo/jsonld",
         "@/components/JsonLd",
         "@/components/kinnso/pages/PublicMerchantProfileView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
@@ -1437,10 +1476,10 @@
       "source": "apps/web/app/[locale]/sessions/[slug]/page.tsx",
       "sourceBlob": "2bcd7c45b39a33b1e99f7bfa823e76eaa40aa7d7",
       "legacyPath": "/{locale}/sessions/[slug]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/sessions/[slug]",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1452,16 +1491,21 @@
         "@/lib/seo/jsonld",
         "@/components/JsonLd",
         "@/components/kinnso/pages/SessionDetailView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
       "source": "apps/web/app/[locale]/sessions/page.tsx",
       "sourceBlob": "02849eee638a30ac502231d0318e7ce8b7cfa6a6",
       "legacyPath": "/{locale}/sessions",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/sessions",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Accepted for the 2026-11-06 public destination phase; connected eight-case browser acceptance and local seven-language/device checks passed on the isolated target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1470,6 +1514,11 @@
         "@/lib/sessions/public-queries",
         "@/lib/seo/metadata",
         "@/components/kinnso/pages/SessionsListingView"
+      ],
+      "evidence": [
+        "apps/journeys/tests/real-public-content/journey.spec.ts",
+        "docs/public-destination-phase-envelope-2026-11-06.md",
+        "apps/journeys/scripts/check-public-destination-preview.mjs"
       ]
     },
     {
