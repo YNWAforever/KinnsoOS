@@ -4,11 +4,13 @@ Status: **READY_FOR_USER_REVIEW**. This is not a production-release approval.
 
 ## Release identity
 
-- Code candidate: `3b48a23b35f74740276e6fcd20b44f7d8a938b1a`.
+- Code candidate: `43fa96ba563ef5635dc78b5f2d0dedfb690f2f21`.
 - Canonical serving project: `kinnso-os.vercel.app`.
 - Isolated target: `kinnsoos-public-it-20261106`, loopback API/database ports `59721`/`59722`, app port `3498`.
-- Full migration chain: 199 migration versions.
-- Connected run: `ffd297c8-43ff-4641-8041-e7c0d5eee9b9`; pass counters were 8 passed, 0 failed, 0 skipped.
+- Full migration chain: 200 migration versions, including the reviewed public-inventory suspension policy.
+- Connected run: `27b4e3da-2eae-476c-8a0c-739816c12592`; pass counters were 8 passed, 0 failed, 0 skipped.
+- Candidate source archive SHA-256: `547b82586ba2e3c999b0b734173089d9904b2daf79585d2c3ed819e7f3970807`.
+- Migration manifest SHA-256: `5f50f6a2c8e0a6a448aba0bcf77a3b5144a843f20d794f1ea1fd98a2ab08c103`.
 - The connected result SHA is identical to the code candidate.
 
 ## Accepted route slice
@@ -25,7 +27,7 @@ The following public route families are accepted for this phase only:
 
 ## Evidence
 
-- Full Journeys suite: 1,409 passed, 2 skipped, 0 failed.
+- Full Journeys suite: 1,417 passed, 2 skipped, 0 failed.
 - TypeScript: pass.
 - Production-mode webpack build: pass. Default Turbopack was blocked only by this worktree’s external `node_modules` symlink; the hosted build remains a separate target gate.
 - Local built-browser destination journey: 28/28 combinations (7 languages × 2 widths × JavaScript off/on), including axe, keyboard focus, reflow and unavailable-state checks.
@@ -44,14 +46,14 @@ Production remains unchanged. No production database migration, feature-setting 
 {
   "schemaVersion": 1,
   "status": "READY_FOR_USER_REVIEW",
-  "codeHead": "3b48a23b35f74740276e6fcd20b44f7d8a938b1a",
+  "codeHead": "43fa96ba563ef5635dc78b5f2d0dedfb690f2f21",
   "project": "kinnsoos-public-it-20261106",
   "finalTarget": {
     "name": "kinnso-os.vercel.app",
     "productionChanged": false
   },
   "connectedResult": {
-    "productHead": "3b48a23b35f74740276e6fcd20b44f7d8a938b1a",
+    "productHead": "43fa96ba563ef5635dc78b5f2d0dedfb690f2f21",
     "passed": 8,
     "expected": 8
   },

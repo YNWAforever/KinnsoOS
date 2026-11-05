@@ -64,8 +64,8 @@ The matrix now has 66 port-required routes, 17 native-equivalent candidates, 5 l
   including experience booking and creator/session administration, remain
   release gates.
 - Final code candidate for connected evidence:
-  `3b48a23b35f74740276e6fcd20b44f7d8a938b1a`.
-- Full local Journeys suite: 1,409 passed, 2 skipped, 0 failed. TypeScript
+  `43fa96ba563ef5635dc78b5f2d0dedfb690f2f21`.
+- Full local Journeys suite: 1,417 passed, 2 skipped, 0 failed. TypeScript
   passed. The production-mode webpack build passed. Default Turbopack remains a
   separate hosted-build gate because this worktree’s external dependency
   symlink is outside its filesystem root.
@@ -74,10 +74,10 @@ The matrix now has 66 port-required routes, 17 native-equivalent candidates, 5 l
   on/off. Destination checks include axe, keyboard focus, reflow and unavailable
   states; these remain `LOCAL_FIXTURE_UI_ONLY`.
 - A fresh candidate-specific Supabase project,
-  `kinnsoos-public-it-20261106`, applied all 199 migrations on dedicated
+  `kinnsoos-public-it-20261106`, applied all 200 migrations on dedicated
   API/database ports 59721/59722. Five owned containers were attested by source
   archive, migration manifest, image, network, volume and app-process identity.
-- Connected run `ffd297c8-43ff-4641-8041-e7c0d5eee9b9` passed exactly eight of
+- Connected run `27b4e3da-2eae-476c-8a0c-739816c12592` passed exactly eight of
   eight cases: one per public language plus withdrawal, suspension and
   cross-account bookmark isolation. The post-run baseline returned to zero
   guides, experiences, sessions, articles and guide saves.
