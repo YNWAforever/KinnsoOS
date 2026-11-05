@@ -280,6 +280,27 @@ describe('mission actions builders', () => {
 })
 
 describe('createMissionAction', () => {
+  it.each(['pending', 'suspended', 'rejected'])('denies %s merchants before writing a campaign or review', async (status) => {
+    const merchant = createBuilder()
+    merchant.maybeSingle.mockImplementation(async () => ({
+      data: merchant.eq.mock.calls.some(([key, value]) => key === 'status' && value !== status)
+        ? null : { id: 'merchant-profile-1' },
+      error: null,
+    }))
+    const supabase = createSupabaseMock({ merchant_profiles: merchant })
+    createSupabaseServerClientMock.mockResolvedValue(supabase)
+    for (const run of [
+      () => createMissionAction(missionDraftFixture, { publish: true }),
+      () => reviewParticipantAction({ participantId: 'participant-1', action: 'approve' }),
+      () => reviewSubmissionAction({ submissionId: 'submission-1', action: 'approve' }),
+    ]) {
+      merchant.eq.mockClear()
+      expect((await run()).ok).toBe(false)
+    }
+    expect(supabase.from.mock.calls.every(([table]) => table === 'merchant_profiles')).toBe(true)
+    expect(revalidatePathMock).not.toHaveBeenCalled()
+  })
+
   it('keeps a publishing brief private until its milestones are saved', async () => {
     const calls: string[] = []
     const missionBuilder = createBuilder({

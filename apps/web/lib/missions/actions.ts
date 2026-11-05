@@ -131,12 +131,15 @@ async function getActiveOpsMember(supabase: Supabase, userId: string) {
   return data
 }
 
-async function getMerchantProfileForUser(supabase: Supabase, userId: string) {
-  const { data, error } = await supabase
+async function getMerchantProfileForUser(supabase: Supabase, userId: string, activeOnly = false) {
+  let query = supabase
     .from('merchant_profiles')
     .select('id')
     .eq('user_id', userId)
-    .maybeSingle()
+  // Role exclusion still needs to recognize inactive merchants. Write actions
+  // require active membership; the database must enforce the same boundary.
+  if (activeOnly) query = query.eq('status', 'active')
+  const { data, error } = await query.maybeSingle()
 
   if (error) return null
   return data
@@ -233,7 +236,7 @@ export async function createMissionAction(
     if (!opsMember) return formError('Active ops member access is required')
     opsMemberId = opsMember.id
   } else {
-    const merchantProfile = await getMerchantProfileForUser(supabase, user.id)
+    const merchantProfile = await getMerchantProfileForUser(supabase, user.id, true)
     if (!merchantProfile) return formError('Merchant profile is required')
     merchantProfileId = merchantProfile.id
   }
@@ -362,7 +365,7 @@ export async function reviewParticipantAction(
   const user = await getAuthenticatedUser(supabase)
   if (!user) return formError('Sign in is required')
 
-  const merchantProfile = await getMerchantProfileForUser(supabase, user.id)
+  const merchantProfile = await getMerchantProfileForUser(supabase, user.id, true)
   if (!merchantProfile) return formError('Merchant profile is required')
 
   const { data: participant, error: participantError } = await supabase
@@ -419,7 +422,7 @@ export async function reviewSubmissionAction(
   const user = await getAuthenticatedUser(supabase)
   if (!user) return formError('Sign in is required')
 
-  const merchantProfile = await getMerchantProfileForUser(supabase, user.id)
+  const merchantProfile = await getMerchantProfileForUser(supabase, user.id, true)
   if (!merchantProfile) return formError('Merchant profile is required')
 
   const { data: submission, error: submissionError } = await supabase
