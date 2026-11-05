@@ -22,6 +22,8 @@ import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} fro
 import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
 import {PublicExperienceContent} from '../../../lib/seo/PublicExperienceContent';
 import {PublicMerchantContent} from '../../../lib/seo/PublicMerchantContent';
+import {readPublicSessionDiscovery,readPublicSession,sessionIndexMetadata,sessionPageMetadata} from '../../../lib/seo/public-sessions';
+import {PublicSessionsContent,PublicSessionContent,PublicSessionUnavailable} from '../../../lib/seo/PublicSessionContent';
 import {serverClient} from '../../../lib/supabase/server';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
@@ -54,6 +56,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const merchant=await readPublicMerchant(publicRoute.slug,process.env);
     if(!merchant)notFound();
     return merchantPageMetadata(merchant,locale);
+  }
+  if(publicRoute?.kind==='sessions-index') return sessionIndexMetadata(locale);
+  if(publicRoute?.kind==='session') {
+    const session=await readPublicSession(publicRoute.slug,process.env);
+    if(!session)notFound();
+    return sessionPageMetadata(session,locale);
   }
   if(!['en','zh-HK'].includes(locale))notFound();
   if(route[0]==='c') {
@@ -114,6 +122,20 @@ export default async function Page({ params,searchParams }: Props) {
     if(!merchant)notFound();
     const experiences=await readMerchantExperiences(merchant.id,process.env);
     return <PublicMerchantContent locale={locale} merchant={merchant} experiences={experiences}/>;
+  }
+  if(publicRoute?.kind==='sessions-index') {
+    const discovery=await readPublicSessionDiscovery(process.env);
+    return <PublicSessionsContent locale={locale} discovery={discovery}/>;
+  }
+  if(publicRoute?.kind==='session') {
+    let session;
+    try {
+      session=await readPublicSession(publicRoute.slug,process.env);
+    } catch {
+      return <PublicSessionUnavailable locale={locale}/>;
+    }
+    if(!session)notFound();
+    return <PublicSessionContent locale={locale} session={session}/>;
   }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");
