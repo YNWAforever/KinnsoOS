@@ -8,7 +8,7 @@ const location=process.env.KINNSO_REAL_IT_APPROVAL_FILE;
 if(!location)throw new Error('BLOCKED_APPROVAL_REQUIRED');
 const approval=JSON.parse(readFileSync(location,'utf8'));
 validateApproval(approval,execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim());
-if(!['FULL_EXISTING_8','TRAVELLER_CORE_12','en/desktop','en/mobile','zh-HK/desktop','zh-HK/mobile','en/','zh-HK/'].includes(approval.testSelection??'FULL_EXISTING_8'))throw new Error('UNAPPROVED_TEST_SELECTION');
+if(!['FULL_EXISTING_8','TRAVELLER_CORE_12','en/desktop','en/mobile','zh-HK/desktop','zh-HK/mobile','en/','zh-HK/','PUBLIC_CONTENT_8'].includes(approval.testSelection??'FULL_EXISTING_8'))throw new Error('UNAPPROVED_TEST_SELECTION');
 if(!process.env.KINNSO_REAL_IT_EVIDENCE)throw new Error('BLOCKED_EVIDENCE_DIRECTORY_REQUIRED');
 
 export default defineConfig({

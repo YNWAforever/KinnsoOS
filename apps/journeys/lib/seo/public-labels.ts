@@ -75,6 +75,12 @@ export type PublicLabels = {
     verificationDate: string;
     notRecorded: string;
     notice: string;
+    checkingBookmark: string;
+    signInToBookmark: string;
+    bookmarkGuide: string;
+    removeBookmark: string;
+    bookmarkError: string;
+    retryBookmark: string;
     metadataDescription: (title: string) => string;
   };
 };
@@ -153,6 +159,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: 'Place verification date',
       notRecorded: 'Not recorded',
       notice: 'Publication time is not a verification date. Check current place facts and their sources before travel. Author content is not automatically translated.',
+      checkingBookmark: 'Checking bookmark status…',
+      signInToBookmark: 'Sign in to bookmark this guide',
+      bookmarkGuide: 'Bookmark guide',
+      removeBookmark: 'Remove bookmark',
+      bookmarkError: 'Bookmark was not confirmed. Retry.',
+      retryBookmark: 'Retry bookmark change',
       metadataDescription: (title) => `${title} on Kinnso.`,
     },
   },
@@ -229,6 +241,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: '地點查核日期',
       notRecorded: '未記錄',
       notice: '發布時間不等於查核日期。出發前請核對最新地點資料及來源。作者內容不會自動翻譯。',
+      checkingBookmark: '正在核對收藏狀態…',
+      signInToBookmark: '登入以收藏呢篇攻略',
+      bookmarkGuide: '收藏攻略',
+      removeBookmark: '取消收藏',
+      bookmarkError: '未確認收藏結果，請重試。',
+      retryBookmark: '重試收藏變更',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -305,6 +323,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: '地點查核日期',
       notRecorded: '未記錄',
       notice: '發布時間不等於查核日期。出發前請核對最新地點資料及來源。作者內容不會自動翻譯。',
+      checkingBookmark: '正在核對收藏狀態…',
+      signInToBookmark: '登入以收藏這篇攻略',
+      bookmarkGuide: '收藏攻略',
+      removeBookmark: '取消收藏',
+      bookmarkError: '未確認收藏結果，請重試。',
+      retryBookmark: '重試收藏變更',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -381,6 +405,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: '地点核验日期',
       notRecorded: '未记录',
       notice: '发布时间不等同于核验日期。出发前请核对最新地点资料及来源。作者内容不会自动翻译。',
+      checkingBookmark: '正在检查收藏状态…',
+      signInToBookmark: '登录以收藏这篇攻略',
+      bookmarkGuide: '收藏攻略',
+      removeBookmark: '取消收藏',
+      bookmarkError: '未能确认收藏结果，请重试。',
+      retryBookmark: '重试收藏变更',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -457,6 +487,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: '場所の確認日',
       notRecorded: '記録なし',
       notice: '公開日時は確認日ではありません。旅行前に最新の場所情報と出典を確認してください。作者の内容は自動翻訳されません。',
+      checkingBookmark: '保存状態を確認中…',
+      signInToBookmark: 'ログインしてこのガイドを保存',
+      bookmarkGuide: 'ガイドを保存',
+      removeBookmark: '保存を解除',
+      bookmarkError: '保存を確認できませんでした。再試行してください。',
+      retryBookmark: '保存を再試行',
       metadataDescription: (title) => `Kinnsoのガイド、${title}。`,
     },
   },
@@ -533,6 +569,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: '장소 확인일',
       notRecorded: '기록 없음',
       notice: '게시 시간은 확인일이 아닙니다. 여행 전에 최신 장소 정보와 출처를 확인하세요. 작성자 콘텐츠는 자동 번역되지 않습니다.',
+      checkingBookmark: '저장 상태 확인 중…',
+      signInToBookmark: '로그인하여 이 가이드 저장',
+      bookmarkGuide: '가이드 저장',
+      removeBookmark: '저장 취소',
+      bookmarkError: '저장을 확인하지 못했습니다. 다시 시도해 주세요.',
+      retryBookmark: '저장 다시 시도',
       metadataDescription: (title) => `Kinnso 가이드: ${title}.`,
     },
   },
@@ -609,6 +651,12 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       verificationDate: 'วันที่ตรวจสอบสถานที่',
       notRecorded: 'ไม่ได้บันทึก',
       notice: 'เวลาเผยแพร่ไม่ใช่วันที่ตรวจสอบ โปรดตรวจสอบข้อมูลสถานที่และแหล่งที่มาล่าสุดก่อนเดินทาง เนื้อหาของผู้เขียนไม่ได้แปลโดยอัตโนมัติ',
+      checkingBookmark: 'กำลังตรวจสอบสถานะการบันทึก…',
+      signInToBookmark: 'เข้าสู่ระบบเพื่อบันทึกไกด์นี้',
+      bookmarkGuide: 'บันทึกไกด์',
+      removeBookmark: 'ยกเลิกการบันทึก',
+      bookmarkError: 'ยังไม่ยืนยันการบันทึก โปรดลองอีกครั้ง',
+      retryBookmark: 'ลองบันทึกอีกครั้ง',
       metadataDescription: (title) => `ไกด์ Kinnso: ${title}`,
     },
   },

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import {guideStructuredData} from './guide-publication';
 import Link from 'next/link';
 import {publicLabels} from './public-labels.ts';
+import {PublicGuideActions} from './PublicGuideActions.tsx';
 // Renders during SSR and hydration. React escapes authored text; every field is a public projection.
 // The public contract supplies no author language; lang="" prevents inheriting the UI locale.
 export function PublicGuideContent({guide,locale='en'}:{guide:PublicGuide;locale?:string}) {
@@ -26,5 +27,5 @@ export function PublicGuideContent({guide,locale='en'}:{guide:PublicGuide;locale
   {guide.publication?.coverUrl&&<figure style={{position:'relative',aspectRatio:'16 / 9',margin:'1rem 0'}}><Image src={guide.publication.coverUrl} alt={guide.title} fill sizes="(max-width: 768px) 100vw, 768px" style={{objectFit:'cover'}}/></figure>}
   {guide.kind==='summary'?<p>{guide.summary}</p>:<>
   {guide.days.map(day=><section key={day.id}><h2>{day.title}</h2>{day.stops.map(stop=><section key={stop.id}><h3>{stop.title}</h3><p>{stop.description}</p></section>)}</section>)}
- </>}</article></>;
+ </>}</article><PublicGuideActions guideId={guide.id} locale={locale}/></>;
 }

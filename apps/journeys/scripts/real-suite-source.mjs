@@ -14,6 +14,11 @@ const commonInputs=[
  'tests/real-integration/target-catalog.sql',
 ];
 const original=['playwright.real-integration.config.ts','tests/real-integration/journey.spec.ts'];
+const publicContentInputs=[
+ 'tests/real-public-content/fixture.mjs',
+ 'tests/real-public-content/target.mjs',
+ 'tests/real-public-content/result-summary.mjs',
+];
 const selections=new Map([
  ['FULL_EXISTING_8',[8,...original]],['TRAVELLER_CORE_12',[12,...original]],
  ['en/desktop',[3,...original]],['en/mobile',[3,...original]],
@@ -21,6 +26,7 @@ const selections=new Map([
  ['en/',[6,...original]],['zh-HK/',[6,...original]],
  ['TODAY_SLICE_4',[4,'playwright.today-slice.config.ts','tests/real-integration/today-slice.spec.ts']],
  ['STALE_TAB_4',[4,'playwright.stale-tab.config.ts','tests/real-integration/stale-tab.spec.ts']],
+ ['PUBLIC_CONTENT_8',[8,'playwright.public-content.config.ts','tests/real-public-content/journey.spec.ts']],
 ]);
 
 export class SourceInputBlocked extends Error {
@@ -35,7 +41,12 @@ export function realSuiteSourceInputs(testSelection='FULL_EXISTING_8'){
  const selected=selections.get(testSelection);
  if(!selected)throw new SourceInputBlocked('UNAPPROVED_TEST_SELECTION');
  const [expectedCaseCount,config,spec]=selected;
- return {testSelection,expectedCaseCount,config,requiredInputs:[...commonInputs,config,spec]};
+ return {testSelection,expectedCaseCount,config,requiredInputs:[
+  ...commonInputs,
+  config,
+  spec,
+  ...(testSelection==='PUBLIC_CONTENT_8'?publicContentInputs:[]),
+ ]};
 }
 
 // The caller supplies the existing approval-file pointer. No discovery, dotenv,

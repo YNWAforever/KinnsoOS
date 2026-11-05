@@ -46,6 +46,7 @@ for(const locale of ['en','zh-HK','zh-tw','zh-cn','ja','ko','th']){
  test('guide page renders without private actor: '+locale,async()=>{
   const html=renderToStaticMarkup(await page.exports.default({params:Promise.resolve({locale,route:['g',id]}),searchParams:Promise.resolve({})}));
   assert.match(html,/<h1>Authored guide<\/h1>/);
+  if(locale==='en')assert.match(html,/Sign in to bookmark this guide/i);
   const meta=await page.exports.generateMetadata({params:Promise.resolve({locale,route:['g',id]})});
   assert.equal(meta.alternates.canonical,`https://kinnso-os.vercel.app/${locale}/g/${id}`);
  });
