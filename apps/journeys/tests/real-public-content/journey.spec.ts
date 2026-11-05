@@ -66,7 +66,14 @@ test('real isolated target PUBLIC_CONTENT_8 withdrawal, suspension and bookmark 
  try{
   const pageA=await contextA.newPage(),pageB=await contextB.newPage();
   await signIn(pageA,actors.A,guidePath);
-  await expect(pageA.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible({timeout:20000});
+  try{
+   await expect(pageA.getByRole('button',{name:'Bookmark guide',exact:true})).toBeVisible({timeout:20000});
+  }catch(error){
+   const state=await pageA.locator('body').innerText();
+   await test.info().attach('bookmark-state-before-save',{body:state,contentType:'text/plain'});
+   console.log(state);
+   throw error;
+  }
   await pageA.getByRole('button',{name:'Bookmark guide',exact:true}).click();
   await expect(pageA.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();
   await pageA.reload();await expect(pageA.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible({timeout:20000});
