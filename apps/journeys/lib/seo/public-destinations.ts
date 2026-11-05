@@ -1,5 +1,8 @@
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
 import {readPublicRows} from './public-http.ts';
+import type {Metadata} from 'next';
+import {publicLabels} from './public-labels.ts';
+import {publicContentMetadata} from './public-presentation.ts';
 
 export type PublicDestination={slug:string;name:string;description:string|null;heroImageUrl:string|null;matchTerms:string[];guideCount:number;experienceCount:number;latestPublishedAt:string|null};
 const columns='slug,name,description,hero_image_url,match_terms,guide_count,experience_count,latest_published_at';
@@ -45,4 +48,14 @@ export async function readPublicDestination(slug:string,env:Environment,transpor
  const rows=await read({slug:'eq.'+slug,limit:'2'},env,transport);
  if(rows.length>1||rows.length===1&&rows[0].slug!==slug)throw Error('destination_schema');
  return rows[0]??null;
+}
+
+export function destinationIndexMetadata(locale:string):Metadata {
+ const labels=publicLabels(locale);if(!labels)throw new Error('destination_locale');
+ return publicContentMetadata({locale,path:'/destinations',title:labels.destinations.title,description:labels.destinations.body});
+}
+
+export function destinationPageMetadata(destination:PublicDestination,locale:string):Metadata {
+ const labels=publicLabels(locale);if(!labels||!slugPattern.test(destination.slug))throw new Error('destination_schema');
+ return publicContentMetadata({locale,path:`/destinations/${encodeURIComponent(destination.slug)}`,title:destination.name,description:destination.description||labels.destinations.metadataDescription(destination.name)});
 }

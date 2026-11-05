@@ -229,6 +229,39 @@ export async function readPublicSession(
   return (await withHosts([session], target, transport))[0];
 }
 
+export async function readSessionsForDestination(
+  terms: readonly string[],
+  env: Environment,
+  transport: typeof fetch = fetch,
+): Promise<SessionDiscovery> {
+  if (!terms.length) return { status: 'empty', items: [] };
+  const target = backendTarget(env);
+  if (!target) return { status: 'unavailable', items: [] };
+  const url = new URL('/rest/v1/community_sessions', target.origin);
+  url.search = new URLSearchParams({
+    select: columns,
+    status: 'in.(scheduled,live)',
+    destination_tags_ci: `ov.{${terms.map(term => term.toLowerCase()).join(',')}}`,
+    order: 'starts_at.asc,id.asc',
+    limit: '6',
+  }).toString();
+  try {
+    const rows = await readPublicRows(url, target.key, transport, undefined, {
+      unavailableCode: 'session_unavailable',
+      schemaCode: 'session_schema',
+    });
+    if (rows.length > 6) throw new Error('session_schema');
+    const records = rows.map(value => projectSession(value));
+    if (records.some(value => value === null)) throw new Error('session_schema');
+    const items = records as SessionRecord[];
+    return items.length
+      ? { status: 'ready', items: await withHosts(items, target, transport) }
+      : { status: 'empty', items: [] };
+  } catch {
+    return { status: 'unavailable', items: [] };
+  }
+}
+
 export function sessionIndexMetadata(locale: string): Metadata {
   const labels = publicLabels(locale);
   if (!labels) throw new Error('unsupported_public_language');

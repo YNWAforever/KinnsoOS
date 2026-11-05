@@ -5,6 +5,7 @@ import { publicLanguage } from './public-language.ts';
 import { publicContentMetadata } from './public-presentation.ts';
 import { readPublicRows } from './public-http.ts';
 import { projectPublicMerchant, readPublicMerchant } from './public-merchants.ts';
+import { sanitizePublicTerms } from './public-terms.ts';
 
 export type PublicExperienceCard = {
   slug: string;
@@ -73,7 +74,7 @@ function number(value: unknown, minimum: number, integer = false): number {
   return value;
 }
 
-function projectCard(value: unknown): PublicExperienceCard & {
+export function projectPublicExperienceCard(value: unknown): PublicExperienceCard & {
   merchantProfileId: string;
   id: string;
   description: string | null;
@@ -154,7 +155,7 @@ export async function readPublicExperience(
   });
   if (rows.length > 1) throw new Error('experience_schema');
   if (!rows.length) return null;
-  const card = projectCard(rows[0]);
+  const card = projectPublicExperienceCard(rows[0]);
   if (card.slug !== slug) throw new Error('experience_schema');
   const merchantUrl = new URL('/rest/v1/merchant_public_profiles', target.origin);
   merchantUrl.search = new URLSearchParams({
@@ -210,10 +211,50 @@ export async function readMerchantExperiences(
   if (rows.length > 12) throw new Error('experience_schema');
   const seen = new Set<string>();
   return rows.map(value => {
-    const card = projectCard(value);
+    const card = projectPublicExperienceCard(value);
     if (card.merchantProfileId !== merchantId || seen.has(card.slug)) {
       throw new Error('experience_schema');
     }
+    seen.add(card.slug);
+    return {
+      slug: card.slug,
+      title: card.title,
+      city: card.city,
+      priceAmount: card.priceAmount,
+      currency: card.currency,
+      coverUrl: card.coverUrl,
+      savesCount: card.savesCount,
+    };
+  });
+}
+
+export async function readPublicExperienceCardsForTerms(
+  terms: readonly string[],
+  limit: number,
+  env: Environment,
+  transport: typeof fetch = fetch,
+): Promise<PublicExperienceCard[]> {
+  const clean = sanitizePublicTerms(terms);
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > 6 || !clean.length) return [];
+  const target = backendTarget(env);
+  if (!target) throw new Error('experience_unconfigured');
+  const url = new URL('/rest/v1/experiences', target.origin);
+  url.search = new URLSearchParams({
+    select: columns,
+    status: 'eq.published',
+    or: `(${clean.map(term => `city.ilike.%${term}%`).join(',')})`,
+    order: 'published_at.desc,id.asc',
+    limit: String(limit),
+  }).toString();
+  const rows = await readPublicRows(url, target.key, transport, undefined, {
+    unavailableCode: 'experience_unavailable',
+    schemaCode: 'experience_schema',
+  });
+  if (rows.length > limit) throw new Error('experience_schema');
+  const seen = new Set<string>();
+  return rows.map(value => {
+    const card = projectPublicExperienceCard(value);
+    if (seen.has(card.slug)) throw new Error('experience_schema');
     seen.add(card.slug);
     return {
       slug: card.slug,

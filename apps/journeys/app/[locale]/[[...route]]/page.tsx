@@ -24,6 +24,9 @@ import {PublicExperienceContent} from '../../../lib/seo/PublicExperienceContent'
 import {PublicMerchantContent} from '../../../lib/seo/PublicMerchantContent';
 import {readPublicSessionDiscovery,readPublicSession,sessionIndexMetadata,sessionPageMetadata} from '../../../lib/seo/public-sessions';
 import {PublicSessionsContent,PublicSessionContent,PublicSessionUnavailable} from '../../../lib/seo/PublicSessionContent';
+import {readDestinationListing,readPublicDestination,destinationIndexMetadata,destinationPageMetadata} from '../../../lib/seo/public-destinations';
+import {readDestinationRelated} from '../../../lib/seo/destination-related';
+import {PublicDestinationIndex,PublicDestinationDetail,PublicDestinationUnavailable} from '../../../lib/seo/PublicDestinationContent';
 import {serverClient} from '../../../lib/supabase/server';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
@@ -62,6 +65,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const session=await readPublicSession(publicRoute.slug,process.env);
     if(!session)notFound();
     return sessionPageMetadata(session,locale);
+  }
+  if(publicRoute?.kind==='destinations-index') return destinationIndexMetadata(locale);
+  if(publicRoute?.kind==='destination') {
+    const destination=await readPublicDestination(publicRoute.slug,process.env);
+    if(!destination)notFound();
+    return destinationPageMetadata(destination,locale);
   }
   if(!['en','zh-HK'].includes(locale))notFound();
   if(route[0]==='c') {
@@ -136,6 +145,27 @@ export default async function Page({ params,searchParams }: Props) {
     }
     if(!session)notFound();
     return <PublicSessionContent locale={locale} session={session}/>;
+  }
+  if(publicRoute?.kind==='destinations-index') {
+    let listing;
+    try {
+      listing=await readDestinationListing(publicRoute.page,process.env);
+    } catch {
+      return <PublicDestinationUnavailable locale={locale}/>;
+    }
+    if(publicRoute.page>1&&!listing.items.length)notFound();
+    return <PublicDestinationIndex locale={locale} page={listing.page} hasNext={listing.hasNext} destinations={listing.items}/>;
+  }
+  if(publicRoute?.kind==='destination') {
+    let destination;
+    try {
+      destination=await readPublicDestination(publicRoute.slug,process.env);
+    } catch {
+      return <PublicDestinationUnavailable locale={locale}/>;
+    }
+    if(!destination)notFound();
+    const related=await readDestinationRelated(destination,locale,process.env);
+    return <PublicDestinationDetail locale={locale} destination={destination} related={related}/>;
   }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");
