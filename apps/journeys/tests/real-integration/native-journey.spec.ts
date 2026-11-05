@@ -60,6 +60,10 @@ for(const locale of ['en','zh-HK'])for(const [size,viewport] of Object.entries({
    const page=await context.newPage();
    await page.goto(`/${locale}/trips/${created.value.id}`);
    await expect(page.getByText(title,{exact:true})).toHaveCount(0);
+   await expect(page.getByText(locale==='en'?'Sign in to keep trips in your Kinnso account.':'登入以將行程保存至 Kinnso 帳戶。',{exact:true})).toBeVisible();
+   const signInLink=page.getByRole('link',{name:locale==='en'?'Sign in':'登入',exact:true}).last();
+   await expect(signInLink).toHaveAttribute('href', '/'+locale+'/sign-in?next='+encodeURIComponent('/'+locale+'/trips/'+created.value.id));
+   await signInLink.click();
    await expect(page).toHaveURL(/sign-in/);
   }finally{await context.close()}
  });
