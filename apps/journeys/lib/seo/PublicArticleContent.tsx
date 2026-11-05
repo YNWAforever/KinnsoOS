@@ -8,7 +8,7 @@ export function PublicArticleContent({article,locale}:{article:PublicArticle;loc
  let number=0;
  return <><nav className="k-page" aria-label={articleLabels[locale].title}><Link href={`/${locale}/articles`}>{articleLabels[locale].title}</Link></nav><script type="application/ld+json" dangerouslySetInnerHTML={{__html:articleStructuredData(article)}}/>
   <article className="k-page" lang={contentLanguage(article.locale)}>
-   <h1>{article.title}</h1>{article.author&&<p>{article.author}</p>}<time dateTime={article.publishedAt}>{article.publishedAt.slice(0,10)}</time>
+   <h1>{article.title}</h1>{article.author&&<p>{article.authorHandle?<Link href={`/${locale}/c/${encodeURIComponent(article.authorHandle)}`} lang="">{article.author}</Link>:article.author}</p>}<time dateTime={article.publishedAt}>{article.publishedAt.slice(0,10)}</time>
    {article.coverImage&&<img src={article.coverImage} alt={article.title} fetchPriority="high" style={{maxWidth:'100%',height:'auto'}}/>}
    {article.summary&&<p>{article.summary}</p>}
    {article.blocks.map((block,index)=><section key={index} id={'article-block-'+index}>

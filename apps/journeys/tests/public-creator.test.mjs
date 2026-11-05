@@ -1,17 +1,17 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
-import {transform} from 'esbuild';
+import {fileURLToPath} from 'node:url';
+import {build} from 'esbuild';
 import {renderToStaticMarkup} from 'react-dom/server';
 const subject=await import('../lib/seo/public-creator.ts');
 const env={KINNSO_SUPABASE_URL:'https://approved.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://approved.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://approved.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
 const id='e1c2820d-25e5-9795-54b5-637be546e04a';
 const row={id,handle:'real-creator',display_name:'Public name',bio:'Public bio',privateDna:'NEVER'};
 
-const compiled=await transform(await readFile(new URL('../lib/seo/PublicCreatorContent.tsx',import.meta.url),'utf8'),{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
+const compiled=await build({entryPoints:[fileURLToPath(new URL('../lib/seo/PublicCreatorContent.tsx',import.meta.url))],bundle:true,write:false,platform:'node',format:'cjs',jsx:'automatic',external:['react','react/jsx-runtime','next/link']});
 const component={exports:{}};
-new Function('require','module','exports',compiled.code)(createRequire(import.meta.url),component,component.exports);
+new Function('require','module','exports',compiled.outputFiles[0].text)(createRequire(import.meta.url),component,component.exports);
 for(const locale of ['en','zh-HK'])test('public creator SSR separates unknown authored language from localized navigation: '+locale,()=>{
  const creator={id,handle:row.handle,name:'作者原名',bio:'Original bio <script>unsafe()</script>\nSecond line',guides:[{id,title:'Original guide title'}],hasMore:true};
  const html=renderToStaticMarkup(component.exports.PublicCreatorContent({creator,locale}));
@@ -56,7 +56,7 @@ test('creator metadata uses the canonical native locale URL without inventing au
  const meta=subject.creatorPageMetadata({id,handle:row.handle,name:row.display_name,bio:row.bio,guides:[],hasMore:false},'zh-HK');
  assert.equal(meta.title,row.display_name);assert.equal(meta.description,row.bio);assert.equal(meta.alternates.canonical,'https://kinnso-os.vercel.app/zh-HK/c/real-creator');assert.equal(meta.alternates.languages,undefined);
  assert.deepEqual(meta.robots,{index:false,follow:false});assert.equal(meta.openGraph.type,'profile');assert.equal(meta.openGraph.url,meta.alternates.canonical);assert.equal(meta.openGraph.modifiedTime,undefined);assert.equal(meta.openGraph.publishedTime,undefined);
- assert.throws(()=>subject.creatorPageMetadata({...row,name:'Public',bio:''},'ja'),/creator_locale/);
+ assert.throws(()=>subject.creatorPageMetadata({...row,name:'Public',bio:''},'fr'),/unsupported_public_language/);
 });
 
 test('creator continuation stays bounded, published-only and scoped to the same creator',async()=>{
@@ -67,4 +67,17 @@ test('creator continuation stays bounded, published-only and scoped to the same 
  return Response.json([{id,title:'Later guide'}]);
  },2);assert.equal(result.page,2);assert.equal(result.guides[0].title,'Later guide');
  for(const page of [0,-1,1.5,10001,Infinity]){await assert.rejects(subject.readPublicCreator('real-creator',env,async()=>{throw Error('must not fetch')},page),/creator_page/);}
+});
+
+test('creator attribution and metadata remain localized in every public language',()=>{
+ const expected={en:['Published guides','No published guides yet.'], 'zh-HK':['已發布攻略','尚未有已發布攻略。'], 'zh-tw':['已發佈指南','尚未有已發佈的指南。'], 'zh-cn':['已发布指南','还没有已发布的指南。'], ja:['公開済みガイド','まだ公開されたガイドはありません。'], ko:['발행한 가이드','아직 발행한 가이드가 없습니다.'], th:['ไกด์ที่เผยแพร่','ยังไม่มีไกด์ที่เผยแพร่']};
+ for(const locale of Object.keys(expected)){
+  const creator={id,handle:row.handle,name:'作者原名',bio:'Original bio',guides:[],hasMore:false};
+  const html=renderToStaticMarkup(component.exports.PublicCreatorContent({creator,locale}));
+  assert.ok(html.includes('<h2>'+expected[locale][0]+'</h2>'),locale);
+  assert.ok(html.includes('<p>'+expected[locale][1]+'</p>'),locale);
+  const meta=subject.creatorPageMetadata(creator,locale);
+  assert.equal(meta.alternates.canonical,`https://kinnso-os.vercel.app/${locale}/c/real-creator`);
+  assert.deepEqual(meta.robots,{index:false,follow:false});
+ }
 });

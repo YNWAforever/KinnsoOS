@@ -1,6 +1,6 @@
 import type {Metadata} from 'next';
 import {backendTarget,type Environment} from '../contracts/capabilities.ts';
-import {publicUrl,CONSOLIDATED_ORIGIN} from './migration-policy.ts';
+import {publicContentMetadata} from './public-presentation.ts';
 
 export type PublicCreator={id:string;handle:string;name:string;bio:string;guides:{id:string;title:string}[];hasMore:boolean;page?:number};
 const handlePattern=/^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/;
@@ -47,11 +47,7 @@ export async function readPublicCreator(handle:string,env:Environment,transport:
  return {id:creator.id,handle,name:name.trim()?name:handle,bio,guides:projected.slice(0,6),hasMore:guides.length>6,page};
 }
 export function creatorPageMetadata(creator:PublicCreator,locale:string):Metadata {
- if(!['en','zh-HK'].includes(locale))throw new Error('creator_locale');
  if(!handlePattern.test(creator.handle))throw new Error('creator_schema');
- const canonical=publicUrl(`${CONSOLIDATED_ORIGIN}/${locale}/c/${creator.handle}`);
  // Bio has no authored-language field. A translated shell does not establish a translated profile.
- return {title:creator.name,description:creator.bio,robots:{index:false,follow:false},alternates:{canonical},
-  openGraph:{type:'profile',url:canonical,title:creator.name,description:creator.bio},
-  twitter:{card:'summary',title:creator.name,description:creator.bio}};
+ return publicContentMetadata({locale,path:`/c/${encodeURIComponent(creator.handle)}`,title:creator.name,description:creator.bio,type:'profile'});
 }

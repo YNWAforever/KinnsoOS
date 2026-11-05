@@ -10,6 +10,7 @@ import {capabilities} from '../../../lib/contracts/capabilities';
 import {readPublicGuidePage,guidePageMetadata} from '../../../lib/seo/guide-publication';
 import {isGuideSlug,resolvePublishedGuideId} from '../../../lib/seo/legacy-guide';
 import {readPublicCreator,creatorPageMetadata} from '../../../lib/seo/public-creator';
+import {PublicCreatorContent} from '../../../lib/seo/PublicCreatorContent';
 import {readPublicArticle} from '../../../lib/seo/public-article';
 import {publicLanguage} from '../../../lib/seo/public-language';
 import {PublicArticleContent} from '../../../lib/seo/PublicArticleContent';
@@ -17,6 +18,7 @@ import {articleCategories,articleListQuery,readArticleListing,type ArticleCatego
 import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArticleListing';
 import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
+import {PublicGuideContent} from '../../../lib/seo/PublicGuideContent';
 import {parsePublicRoute} from '../../../lib/seo/public-routes';
 import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} from '../../../lib/seo/public-experiences';
 import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
@@ -72,19 +74,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if(!destination)notFound();
     return destinationPageMetadata(destination,locale);
   }
-  if(!['en','zh-HK'].includes(locale))notFound();
-  if(route[0]==='c') {
-    if(route.length!==2)notFound();
-    const creator=await publishedCreator(route[1]);
+  if(publicRoute?.kind==='creator') {
+    const creator=await publishedCreator(publicRoute.handle,publicRoute.page);
     if(!creator)notFound();
     return creatorPageMetadata(creator,locale);
   }
-  if(route[0]==='g') {
-    if(route.length!==2)notFound();
-    const published=await publishedGuide(route[1]);
+  if(publicRoute?.kind==='guide') {
+    const published=await publishedGuide(publicRoute.reference);
     if(!published)notFound();
-    return guidePageMetadata(published);
+    return guidePageMetadata(published,locale);
   }
+  if(!['en','zh-HK'].includes(locale))notFound();
   const entryMetadata=route[0]!=='demo'?publicEntryMetadata(route.join('/'),locale as 'en'|'zh-HK'):null;
   if(entryMetadata)return entryMetadata;
   const guide = route[0]==='demo'&&route[1]==='g'?fixtures.find(g=>g.slug===route[2]):undefined;
@@ -112,7 +112,7 @@ export default async function Page({ params,searchParams }: Props) {
     const listing=await readArticleListing(language,route[1],query,process.env);if(!listing||(listing.page>1&&!listing.items.length))notFound();
     return <PublicArticleListing locale={language} category={route[1] as ArticleCategory} listing={listing}/>;
   }
-  if(!['en','zh-HK'].includes(locale)&&route[0]==='articles'&&route.length===3){
+  if(route[0]==='articles'&&route.length===3){
     const language=publicLanguage(locale);if(!language)notFound();
     const article=await publishedArticle(route[1],route[2],locale);if(!article)notFound();
     return <main><PublicArticleContent article={article} locale={language}/></main>;
@@ -167,6 +167,18 @@ export default async function Page({ params,searchParams }: Props) {
     const related=await readDestinationRelated(destination,locale,process.env);
     return <PublicDestinationDetail locale={locale} destination={destination} related={related}/>;
   }
+  if(publicRoute?.kind==='creator') {
+    const creator=await publishedCreator(publicRoute.handle,publicRoute.page);
+    if(!creator)notFound();
+    if(publicRoute.page>1&&!creator.guides.length)notFound();
+    return <PublicCreatorContent creator={creator} locale={locale}/>;
+  }
+  if(publicRoute?.kind==='guide') {
+    const guide=await publishedGuide(publicRoute.reference);
+    if(!guide)notFound();
+    if(isGuideSlug(publicRoute.reference))redirect(`/${locale}/g/${guide.id}`);
+    return <PublicGuideContent guide={guide} locale={locale}/>;
+  }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");
   if (
@@ -184,16 +196,6 @@ export default async function Page({ params,searchParams }: Props) {
     ?await readPrivateCreatorMissionEntry(await serverClient(),actor.id,route[2]):null;
   const tripHeading=!demo&&actor&&route[0]==='trips'&&route.length===2&&capabilities(process.env).trips.mode==='connected'
     ?await readPrivateTripHeading(await serverClient(),actor.id,route[1]):null;
-  const publicGuide=!demo&&route[0]==='g'?await publishedGuide(route[1]):null;
-  if(!demo&&route[0]==='g'&&!publicGuide)notFound();
-  if(publicGuide&&isGuideSlug(route[1]))redirect(`/${locale}/g/${publicGuide.id}`);
-  const creatorPage=entryQuery?.page===undefined?1:typeof entryQuery.page==='string'&&/^[1-9][0-9]{0,4}$/.test(entryQuery.page)?Number(entryQuery.page):NaN;
-  if(!demo&&route[0]==='c'&&(!Number.isInteger(creatorPage)||creatorPage>10000))notFound();
-  const publicCreator=!demo&&route[0]==='c'?await publishedCreator(route[1],creatorPage):null;
-  if(!demo&&route[0]==='c'&&!publicCreator)notFound();
-  if(publicCreator&&creatorPage>1&&!publicCreator.guides.length)notFound();
-  const publicArticle=!demo&&route[0]==='articles'&&route.length===3?await publishedArticle(route[1],route[2],locale):null;
-  if(!demo&&route[0]==='articles'&&route.length===3&&!publicArticle)notFound();
   return (
     <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}>
       <Workbench
@@ -202,9 +204,6 @@ export default async function Page({ params,searchParams }: Props) {
         path={path}
         mode={demo?'demo':capabilities(process.env).trips.mode}
         actor={actor}
-        publicGuide={publicGuide}
-        publicCreator={publicCreator}
-        publicArticle={publicArticle}
         tripHeading={tripHeading}
         merchantEntry={merchantEntry}
         creatorMissionEntry={creatorMissionEntry}

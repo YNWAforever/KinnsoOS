@@ -56,6 +56,7 @@ export type PublicLabels = {
     metadataDescription: (title: string, host: string) => string;
   };
   creators: {
+    profileLabel: string;
     guidesHeading: string;
     guidesEmpty: string;
     previous: string;
@@ -64,10 +65,16 @@ export type PublicLabels = {
   };
   guides: {
     sourceHeading: string;
+    structuredItinerary: string;
+    readingSummary: string;
     author: string;
     publishedVersion: string;
     publishedAt: string;
+    daysStops: string;
+    originalLanguage: string;
+    verificationDate: string;
     notRecorded: string;
+    notice: string;
     metadataDescription: (title: string) => string;
   };
 };
@@ -127,6 +134,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `${title}, hosted by ${host}.`,
     },
     creators: {
+      profileLabel: 'Public creator profile',
       guidesHeading: 'Published guides',
       guidesEmpty: 'No published guides yet.',
       previous: 'Previous',
@@ -135,10 +143,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: 'Guide source',
+      structuredItinerary: 'Structured itinerary',
+      readingSummary: 'Reading summary — no structured itinerary',
       author: 'Author',
       publishedVersion: 'Published version',
       publishedAt: 'Published at',
+      daysStops: 'Days / stops',
+      originalLanguage: 'Original content language',
+      verificationDate: 'Place verification date',
       notRecorded: 'Not recorded',
+      notice: 'Publication time is not a verification date. Check current place facts and their sources before travel. Author content is not automatically translated.',
       metadataDescription: (title) => `${title} on Kinnso.`,
     },
   },
@@ -196,18 +210,25 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `${host}主辦嘅${title}。`,
     },
     creators: {
-      guidesHeading: '已發佈指南',
-      guidesEmpty: '暫未有已發佈的指南。',
+      profileLabel: '創作者公開檔案',
+      guidesHeading: '已發布攻略',
+      guidesEmpty: '尚未有已發布攻略。',
       previous: '上一頁',
       next: '下一頁',
       metadataDescription: (name) => `Kinnso 創作者 ${name}。`,
     },
     guides: {
       sourceHeading: '攻略來源',
+      structuredItinerary: '結構化行程',
+      readingSummary: '閱讀摘要——未提供結構化行程',
       author: '作者',
       publishedVersion: '發布版本',
       publishedAt: '發布時間',
+      daysStops: '日數／站點',
+      originalLanguage: '內容原文語言',
+      verificationDate: '地點查核日期',
       notRecorded: '未記錄',
+      notice: '發布時間不等於查核日期。出發前請核對最新地點資料及來源。作者內容不會自動翻譯。',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -265,6 +286,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `由${host}主持的${title}。`,
     },
     creators: {
+      profileLabel: '創作者公開檔案',
       guidesHeading: '已發佈指南',
       guidesEmpty: '尚未有已發佈的指南。',
       previous: '上一頁',
@@ -273,10 +295,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: '攻略來源',
+      structuredItinerary: '結構化行程',
+      readingSummary: '閱讀摘要——未提供結構化行程',
       author: '作者',
       publishedVersion: '發布版本',
       publishedAt: '發布時間',
+      daysStops: '天數／站點',
+      originalLanguage: '內容原文語言',
+      verificationDate: '地點查核日期',
       notRecorded: '未記錄',
+      notice: '發布時間不等於查核日期。出發前請核對最新地點資料及來源。作者內容不會自動翻譯。',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -334,6 +362,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `由${host}主持的${title}。`,
     },
     creators: {
+      profileLabel: '创作者公开档案',
       guidesHeading: '已发布指南',
       guidesEmpty: '还没有已发布的指南。',
       previous: '上一页',
@@ -342,10 +371,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: '攻略来源',
+      structuredItinerary: '结构化行程',
+      readingSummary: '阅读摘要——未提供结构化行程',
       author: '作者',
       publishedVersion: '发布版本',
       publishedAt: '发布时间',
+      daysStops: '天数／站点',
+      originalLanguage: '内容原文语言',
+      verificationDate: '地点核验日期',
       notRecorded: '未记录',
+      notice: '发布时间不等同于核验日期。出发前请核对最新地点资料及来源。作者内容不会自动翻译。',
       metadataDescription: (title) => `Kinnso 攻略：${title}。`,
     },
   },
@@ -403,6 +438,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `${host}主催の${title}。`,
     },
     creators: {
+      profileLabel: '公開クリエイタープロフィール',
       guidesHeading: '公開済みガイド',
       guidesEmpty: 'まだ公開されたガイドはありません。',
       previous: '前へ',
@@ -411,10 +447,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: 'ガイドの出典',
+      structuredItinerary: '構造化された旅程',
+      readingSummary: '読むための要約 — 構造化された旅程はありません',
       author: '作者',
       publishedVersion: '公開バージョン',
       publishedAt: '公開日時',
+      daysStops: '日数 / 立ち寄り先',
+      originalLanguage: '元のコンテンツ言語',
+      verificationDate: '場所の確認日',
       notRecorded: '記録なし',
+      notice: '公開日時は確認日ではありません。旅行前に最新の場所情報と出典を確認してください。作者の内容は自動翻訳されません。',
       metadataDescription: (title) => `Kinnsoのガイド、${title}。`,
     },
   },
@@ -472,6 +514,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `${host}이 주최하는 ${title}.`,
     },
     creators: {
+      profileLabel: '공개 크리에이터 프로필',
       guidesHeading: '발행한 가이드',
       guidesEmpty: '아직 발행한 가이드가 없습니다.',
       previous: '이전',
@@ -480,10 +523,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: '가이드 출처',
+      structuredItinerary: '구조화된 일정',
+      readingSummary: '읽기 요약 — 구조화된 일정 없음',
       author: '작성자',
       publishedVersion: '게시 버전',
       publishedAt: '게시 시간',
+      daysStops: '일수 / 방문지',
+      originalLanguage: '원본 콘텐츠 언어',
+      verificationDate: '장소 확인일',
       notRecorded: '기록 없음',
+      notice: '게시 시간은 확인일이 아닙니다. 여행 전에 최신 장소 정보와 출처를 확인하세요. 작성자 콘텐츠는 자동 번역되지 않습니다.',
       metadataDescription: (title) => `Kinnso 가이드: ${title}.`,
     },
   },
@@ -541,6 +590,7 @@ const labels: Record<PublicLanguage, PublicLabels> = {
       metadataDescription: (title, host) => `${title} โดย${host}`,
     },
     creators: {
+      profileLabel: 'โปรไฟล์ครีเอเตอร์สาธารณะ',
       guidesHeading: 'ไกด์ที่เผยแพร่',
       guidesEmpty: 'ยังไม่มีไกด์ที่เผยแพร่',
       previous: 'ก่อนหน้า',
@@ -549,10 +599,16 @@ const labels: Record<PublicLanguage, PublicLabels> = {
     },
     guides: {
       sourceHeading: 'แหล่งที่มาของไกด์',
+      structuredItinerary: 'แผนเดินทางแบบโครงสร้าง',
+      readingSummary: 'สรุปสำหรับอ่าน — ไม่มีแผนเดินทางแบบโครงสร้าง',
       author: 'ผู้เขียน',
       publishedVersion: 'เวอร์ชันที่เผยแพร่',
       publishedAt: 'เวลาเผยแพร่',
+      daysStops: 'จำนวนวัน / จุดแวะ',
+      originalLanguage: 'ภาษาต้นฉบับของเนื้อหา',
+      verificationDate: 'วันที่ตรวจสอบสถานที่',
       notRecorded: 'ไม่ได้บันทึก',
+      notice: 'เวลาเผยแพร่ไม่ใช่วันที่ตรวจสอบ โปรดตรวจสอบข้อมูลสถานที่และแหล่งที่มาล่าสุดก่อนเดินทาง เนื้อหาของผู้เขียนไม่ได้แปลโดยอัตโนมัติ',
       metadataDescription: (title) => `ไกด์ Kinnso: ${title}`,
     },
   },
