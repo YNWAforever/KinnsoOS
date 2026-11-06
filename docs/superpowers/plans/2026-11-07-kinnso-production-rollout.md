@@ -358,3 +358,30 @@ Approval authorizes exactly:
 Approval does not authorize paid providers, media activation, offers/redemptions, bookings, payments, payouts, or a second automatic database attempt.
 
 This approval permits the controlled production rollout only. It does not approve public launch: real author-consented structured content, physical iOS/Android and VoiceOver/NVDA acceptance, external alert binding and launch-owner acceptance remain open.
+
+## Execution Result
+
+Executed on 2026-11-07 under the approved scope.
+
+- Database ledger: `209 / 20261107020000`.
+- Production-only migrations preserved: `20261025140000`, `20261105123750`.
+- Content RPCs: 6 present.
+- Audit append and direct perk/testimonial writes: denied to authenticated clients.
+- Legacy operations write policies: absent.
+- Moderator read policies: present.
+- Destination view: requires an active public creator.
+- Application row counts: unchanged.
+- Staged deployment: `dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP`, `READY`, 71 routes, exact metadata commit `950d08b`.
+- Promotion: canonical alias now serves the staged deployment.
+- Health: HTTP 200, `ok=true`, `db=up`.
+- Disabled AI/media probes: HTTP 503 `UNAVAILABLE`.
+- Admin analytics: HTTP 401 `AUTH_REQUIRED`.
+- Error, fatal and HTTP 500 scans: zero matching logs.
+- Rollback deployment: `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`, still `READY`.
+- Backup/restore: waived by the user.
+- Journeys deployment: unchanged.
+- Public launch: HOLD because real consented content, physical device/screen-reader acceptance, external alert binding and launch-owner acceptance remain open.
+
+The connected Supabase executor applied five individually transactional migrations rather than the approved one-transaction envelope. Every connector-generated ledger version was normalized under an exact compare guard; no migration was replayed and no automatic retry occurred.
+
+The post-promotion interactive Edge rerun was blocked by the Windows Computer Use helper's kernel-assets OS error 3. Backend-attested production checks passed: the approved account has active creator, merchant and operations-admin access; transaction-scoped suspension removed all operations authority; a second test account could not read the first account's private trip, merchant or operations membership; the labeled campaign is paused; and the approved collaboration is active. The exact candidate's previously recorded browser suite remains evidence for the UI, but it is not represented as a post-promotion interactive replay.

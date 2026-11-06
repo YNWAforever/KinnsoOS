@@ -1,6 +1,6 @@
 # Creator, merchant and operations combined release envelope
 
-Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Deployment recommendation: **HOLD**.
+Status: **DEPLOYED_AND_VERIFIED**. Technical release verification: **PASS**. Public launch recommendation: **HOLD**.
 
 ## Candidate identity
 
@@ -109,15 +109,19 @@ Physical iOS Safari, physical Android Chrome, actual VoiceOver and actual NVDA r
 
 ## Production rollout
 
-Production is unchanged and remains on deployment `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`, source lineage `42be3ce4c7207b6ec11ec8c4bd85a5feaa6588ef`. The deployment is READY, no rollback is pending, and `/api/health` on the old production release returns 404.
+The five approved database migrations were applied to Supabase project `scryfkefedzuetfdtrvl`. The production ledger now contains **209 entries** and ends at `20261107020000`. Both production-only migrations remain present. The six audited content RPCs exist, authenticated clients cannot execute `ops_audit_log_append` or write partner perks/testimonials directly, the three legacy operations write policies are absent, the moderator read policies are present, and the destination view requires an active public creator. Application row counts were unchanged.
 
-Production binds to Supabase project `scryfkefedzuetfdtrvl` with `trips,bookmarks,creator,merchant,ops,notifications` enabled. Its ledger has 204 entries but ends at `20261105123750`, while the candidate’s 204-entry clean chain ends at `20261107020000`. Production is missing the reviewed public-inventory suspension, redeem-perk repair, operations-lifecycle and security hardening, and audited content migration. It also retains the permissive operations write policies, permits authenticated audit-log appends and lacks the six audited content RPCs.
+The approved single-transaction envelope could not be reproduced through the connected Supabase executor. Each migration was applied independently, its connector-generated ledger timestamp was normalized back to the reviewed filename version under an exact compare guard, no migration was replayed, and no automatic retry occurred. The resulting schema and ledger match the approved post-state.
 
-The exact rollback target is recorded as `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`. The currently deployed app does not use the table-write paths revoked by migration 204, so the reviewed database delta can be applied before the new app, followed by application verification and capability checks. A database reversal must be a reviewed forward fix; historical migrations must not be replayed.
+Source `950d08b2011f1c23265a193b8f7adc377a44eb26` built successfully as `dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP`, generated all 71 routes and passed staged checks while the canonical alias still pointed to the old deployment. The staged health endpoint returned HTTP 200 with `{"ok":true,"db":"up"}`; admin analytics returned `AUTH_REQUIRED`; agent and media probes returned `UNAVAILABLE`; and the staged error scan was clean. The deployment metadata records the exact source commit.
 
-No production error logs were found for the last 24 hours. The installed Vercel CLI does not expose the metrics command, and an external alert binding is not verified.
+Vercel regenerated the published source ZIP with build-time line endings and no Git metadata, so its whole-file hash is `e868704072aa97dce4f54cdeb694ab640d0dfccf45deceabbde5ffc41258293c` rather than the locally packaged `c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8`. The deployed ZIP has the same 679 entries, no missing or extra paths, and its files match commit `950d08b`; the deployment API also records that exact commit.
 
-The final non-production Preview `dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE` built successfully under the production project settings, generated all 71 routes and is READY. Preview has no backend variables, so its health endpoint correctly reports `db: down`; it is build/routing evidence only. The canonical production alias was not changed.
+`dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP` was promoted without rebuilding and now serves `https://kinnso-os.vercel.app`. Production `/api/health` returns HTTP 200 and `db=up`; admin analytics is protected; public entry routes return HTTP 200; agent and media return HTTP 503; and the bounded error, fatal and HTTP 500 scans are clean. `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs` remains READY as the application rollback target. Database rollback remains forward-fix only.
+
+Backend-attested production checks confirm the approved account has active creator, merchant and operations-admin access. A transaction-scoped suspension check removed all operations authority, then rolled back to the existing active membership. A second authenticated test account could not read the first account's trip, merchant or operations membership. The labeled campaign remains paused, and the approved collaboration participant remains active. The post-promotion interactive Edge replay is **BLOCKED** because the Windows Computer Use helper failed to write its kernel assets with OS error 3; the exact-build browser evidence remains available.
+
+The final non-production Preview `dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE` remains build/routing evidence only. The installed Vercel CLI does not expose the metrics command, and an external alert binding is not verified.
 
 ## Route matrix
 
@@ -136,11 +140,11 @@ The final non-production Preview `dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE` built succes
 
 - No author-consented structured guide, source/verification record or lawful cover asset exists. Production has eight summary-only cards plus one synthetic test guide.
 - Physical iOS/Android, VoiceOver and NVDA remain unverified.
-- Production is missing five reviewed migrations and still has the pre-hardening schema/security behavior; the current app is 41 commits behind the runtime candidate.
-- Production deployment, database application, capability verification and rollout approval remain separate gates.
+- External alert binding and final launch-owner acceptance remain incomplete.
+- The post-promotion interactive Edge replay is blocked by the Windows Computer Use kernel-assets error; authenticated backend attestation passed and the exact-build browser evidence remains available.
 
 ## Boundaries
 
-Production and the deployed Journeys application remain unchanged. No production migration, feature-setting change, deployment, redirect, role grant, provider activation or old-host retirement occurred. Backup/restore remains **waived**, not passed.
+Production now serves the approved combined application and database release. The Journeys application remains unchanged. No provider activation or old-host retirement occurred. Backup/restore remains **waived**, not passed.
 
 Paid AI, uploads/media execution, affiliate provider activation, traveller offer-claim retrieval, booking, payment and payout execution remain gated.

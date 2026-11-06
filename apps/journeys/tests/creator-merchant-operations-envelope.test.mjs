@@ -6,7 +6,7 @@ const envelope=JSON.parse(await readFile(new URL('../../../docs/creator-merchant
 const matrix=JSON.parse(await readFile(new URL('../../../docs/legacy-route-matrix.json',import.meta.url),'utf8'));
 
 test('combined creator-merchant-operations envelope binds the final application and clean database evidence',()=>{
- assert.equal(envelope.status,'READY_FOR_USER_REVIEW');assert.equal(envelope.launchRecommendation,'HOLD');
+ assert.equal(envelope.status,'DEPLOYED_VERIFIED_PUBLIC_LAUNCH_HOLD');assert.equal(envelope.launchRecommendation,'HOLD');assert.equal(envelope.deploymentReady,true);
  assert.equal(envelope.applicationSourceHead,envelope.releaseCommits.finalApplication);
  assert.match(envelope.applicationSourceHead,/^[a-f0-9]{40}$/);
  assert.match(envelope.sourceArchive.sha256,/^[a-f0-9]{64}$/);assert.equal(envelope.sourceArchive.metadataRevision,envelope.applicationSourceHead);assert.equal(envelope.sourceArchive.dirty,false);
@@ -19,7 +19,12 @@ test('combined creator-merchant-operations envelope binds the final application 
  assert.ok(envelope.tests.operationalApis.connectedSafeModePassed>=1);
  assert.ok(envelope.tests.operationalApis.connectedAnalyticsPersistencePassed>=1);
  assert.ok(envelope.tests.operationsModeration.connectedPassed>=1);
- assert.equal(envelope.productionChanged,false);assert.equal(envelope.journeysDeploymentChanged,false);assert.equal(envelope.backupRestore,'WAIVED');
+ assert.equal(envelope.tests.productionRollout.status,'DEPLOYED_VERIFIED');
+ assert.equal(envelope.tests.productionRollout.currentDeployment,'dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP');
+ assert.equal(envelope.tests.productionRollout.currentDatabaseLedgerHead,'20261107020000');
+ assert.equal(envelope.tests.productionRollout.runtimeHealthEndpointOnCurrentProduction,200);
+ assert.equal(envelope.tests.productionRollout.interactiveBrowserRerun,'BLOCKED_COMPUTER_USE_KERNEL_ASSETS');
+ assert.equal(envelope.productionChanged,true);assert.equal(envelope.journeysDeploymentChanged,false);assert.equal(envelope.backupRestore,'WAIVED');
  assert.ok(envelope.remainingLaunchGates.length>0);assert.ok(envelope.gated.length>0);
 });
 

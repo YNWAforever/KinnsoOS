@@ -11,9 +11,13 @@ const envelope=JSON.parse(await readFile(envelopeUrl,'utf8'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
 
 test('production envelope freezes exactly five reviewed migration files',async()=>{
- assert.equal(envelope.status,'READY_FOR_APPROVAL_NOT_APPLIED');
- assert.equal(envelope.productionChanged,false);
- assert.equal(envelope.approval.status,'PENDING');
+ assert.equal(envelope.status,'DEPLOYED_AND_VERIFIED_WITH_INTERACTIVE_BROWSER_RERUN_BLOCKED');
+ assert.equal(envelope.productionChanged,true);
+ assert.equal(envelope.approval.status,'APPROVED_AND_EXECUTED');
+ assert.equal(envelope.executionResult.database.migrationCount,209);
+ assert.equal(envelope.executionResult.database.migrationHead,'20261107020000');
+ assert.equal(envelope.executionResult.promotion.status,'PASS');
+ assert.equal(envelope.executionResult.authenticatedBackendAttestation.interactiveEdgeRerun.status,'BLOCKED');
  assert.equal(envelope.approval.requiredHumanReply,'approve');
  assert.equal(envelope.migrationCandidate.fileCount,5);
  assert.equal(envelope.migrationCandidate.files.length,5);

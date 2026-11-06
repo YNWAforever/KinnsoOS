@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "READY_FOR_APPROVAL_NOT_APPLIED",
+  "status": "DEPLOYED_AND_VERIFIED_WITH_INTERACTIVE_BROWSER_RERUN_BLOCKED",
   "launchDecision": "HOLD",
   "envelopeId": "kinnso-production-20261107-9947e97",
   "observedAt": "2026-11-07",
@@ -9,7 +9,16 @@
     "runtimeCodeCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
     "sourceArchiveSha256": "c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8",
     "sourceArchiveDirty": false,
-    "sourceArchiveFileCount": 678
+    "sourceArchiveFileCount": 678,
+    "deployedArtifact": {
+      "deploymentId": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "metadataCommit": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+      "routesGenerated": 71,
+      "stagedArchiveSha256": "e868704072aa97dce4f54cdeb694ab640d0dfccf45deceabbde5ffc41258293c",
+      "stagedArchiveEntryCount": 679,
+      "contentMatchesCommit": true,
+      "hashDifferenceReason": "Vercel regenerated the ZIP with build-time line endings and no Git metadata; the deployment metadata records the exact source commit and the package contents match the commit blobs."
+    }
   },
   "target": {
     "vercelProject": "ynwaforevers-projects/kinnso-os",
@@ -155,6 +164,14 @@
       "status": "READY",
       "rollbackTarget": true
     },
+    "promotedProductionDeployment": {
+      "id": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "url": "https://kinnso-pwi55gb7i-ynwaforevers-projects.vercel.app",
+      "status": "READY",
+      "target": "production",
+      "sourceCommit": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+      "canonicalOrigin": "https://kinnso-os.vercel.app"
+    },
     "hostedPreview": {
       "id": "dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE",
       "url": "https://kinnso-hiaj9vbd7-ynwaforevers-projects.vercel.app",
@@ -173,6 +190,81 @@
     "rollbackCommand": "vercel rollback dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs",
     "rollbackTurnsOffAutomaticProductionAssignment": true,
     "databaseRollback": "FORWARD_FIX_ONLY; preserve additive schema and migration history"
+  },
+  "executionResult": {
+    "status": "PASS_WITH_INTERACTIVE_BROWSER_RERUN_BLOCKED",
+    "database": {
+      "status": "PASS",
+      "migrationCount": 209,
+      "migrationHead": "20261107020000",
+      "productionOnlyMigrationsPreserved": true,
+      "contentMutationRpcsPresent": 6,
+      "authenticatedAuditAppendAllowed": false,
+      "legacyOperationsWritePoliciesAbsent": true,
+      "moderatorReadPoliciesPresent": true,
+      "directPerkAndTestimonialWritesAllowed": false,
+      "destinationViewRequiresActivePublicCreator": true,
+      "rowCountsUnchanged": true,
+      "transactionMode": "FIVE_INDIVIDUAL_TRANSACTIONS",
+      "approvedSingleTransactionEnvelopeReproduced": false,
+      "automaticRetryUsed": false,
+      "replayObserved": false
+    },
+    "staging": {
+      "status": "PASS",
+      "deploymentId": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "readyState": "READY",
+      "routesGenerated": 71,
+      "canonicalAliasUnchangedBeforePromotion": true,
+      "health": {
+        "httpStatus": 200,
+        "body": {
+          "ok": true,
+          "db": "up"
+        }
+      },
+      "adminAnalytics": "AUTH_REQUIRED",
+      "agentCapability": "UNAVAILABLE",
+      "mediaUploadCapability": "UNAVAILABLE",
+      "recentErrorLogs": 0
+    },
+    "promotion": {
+      "status": "PASS",
+      "canonicalDeploymentId": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "canonicalReadyState": "READY",
+      "previousDeploymentStillReady": true,
+      "backupRestore": "WAIVED_BY_USER",
+      "journeysDeploymentChanged": false
+    },
+    "productionPublicChecks": {
+      "healthHttpStatus": 200,
+      "healthDatabase": "up",
+      "englishHomepageHttpStatus": 200,
+      "traditionalChineseHomepageHttpStatus": 200,
+      "creatorMerchantOperationsEntryRoutesHttpStatus": 200,
+      "adminAnalyticsHttpStatus": 401,
+      "agentHttpStatus": 503,
+      "mediaHttpStatus": 503,
+      "errorLogs": 0,
+      "fatalLogs": 0,
+      "http500Logs": 0
+    },
+    "authenticatedBackendAttestation": {
+      "approvedAccountSessionValid": true,
+      "creatorAccess": true,
+      "merchantAccess": true,
+      "operationsAdminAccess": true,
+      "suspendedMemberDeniedAllOperationsRoles": true,
+      "secondaryAccountCannotSeeApprovedAccountTrip": true,
+      "secondaryAccountCannotSeeApprovedAccountMerchant": true,
+      "secondaryAccountCannotSeeApprovedAccountOperationsMembership": true,
+      "labeledCampaignClosed": true,
+      "approvedCollaborationStillActive": true,
+      "interactiveEdgeRerun": {
+        "status": "BLOCKED",
+        "reason": "The Windows Computer Use helper failed to write its kernel assets with OS error 3; the existing exact-build browser evidence remains available but was not interactively replayed after promotion."
+      }
+    }
   },
   "preflightChecks": [
     "sourceHead, runtimeCodeCommit, archive hash and clean worktree match this envelope",
@@ -215,7 +307,7 @@
     "payout and settlement execution"
   ],
   "approval": {
-    "status": "PENDING",
+    "status": "APPROVED_AND_EXECUTED",
     "scope": "APPLY_EXACT_FIVE_MIGRATIONS_THEN_STAGE_PROMOTE_AND_VERIFY_EXACT_APPLICATION_950d08b",
     "requiredHumanReply": "approve",
     "doesNotApprovePublicLaunch": true,
@@ -224,9 +316,9 @@
       "physical iOS/Android and actual VoiceOver/NVDA acceptance",
       "external alert binding and launch-owner acceptance"
     ],
-    "productionCurrentlyChanged": false
+    "productionCurrentlyChanged": true
   },
-  "productionChanged": false,
+  "productionChanged": true,
   "journeysDeploymentChanged": false,
   "backupRestore": "WAIVED"
 }

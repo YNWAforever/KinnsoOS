@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "status": "BLOCKED",
-  "deploymentReady": false,
+  "status": "DEPLOYED_VERIFIED_PUBLIC_LAUNCH_HOLD",
+  "deploymentReady": true,
   "observedAt": "2026-11-07",
   "applicationSourceHead": "950d08b2011f1c23265a193b8f7adc377a44eb26",
   "runtimeApplicationCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
@@ -9,7 +9,8 @@
   "remainingBlockers": [
     "real author consent and rights-reviewed structured guides are absent",
     "physical iOS and Android plus VoiceOver and NVDA acceptance are not available",
-    "production database ledger and security schema diverge from the exact release"
+    "external alert binding and final launch-owner acceptance remain incomplete",
+    "the post-promotion interactive Edge replay is blocked by the Windows Computer Use kernel-assets error"
   ],
   "content": {
     "status": "FAIL",
@@ -136,16 +137,17 @@
     "limitations": "Automated Chromium viewport, touch, axe and doubled-text probes do not establish physical iOS/Android or screen-reader acceptance."
   },
   "production": {
-    "status": "BLOCKED",
+    "status": "DEPLOYED_VERIFIED",
     "project": "ynwaforevers-projects/kinnso-os",
     "canonicalOrigin": "https://kinnso-os.vercel.app",
     "currentDeployment": {
-      "id": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs",
-      "url": "https://kinnso-q2i4ams92-ynwaforevers-projects.vercel.app",
+      "id": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "url": "https://kinnso-pwi55gb7i-ynwaforevers-projects.vercel.app",
       "target": "production",
       "status": "READY",
-      "sourceCommitAlias": "42be3ce4c7207b6ec11ec8c4bd85a5feaa6588ef",
-      "isAncestorOfCandidate": true
+      "sourceCommitAlias": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+      "canonicalOrigin": "https://kinnso-os.vercel.app",
+      "previousDeploymentId": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs"
     },
     "buildConfiguration": {
       "projectNodeVersion": "24.x",
@@ -171,57 +173,63 @@
       "previewEnvironmentVariables": 0
     },
     "currentRuntime": {
-      "healthEndpoint": 404,
+      "healthEndpoint": 200,
+      "healthDatabase": "up",
+      "adminAnalytics": "AUTH_REQUIRED",
+      "agentCapability": "UNAVAILABLE",
+      "mediaUploadCapability": "UNAVAILABLE",
       "recentErrorLogs24h": 0,
+      "recentFatalLogs": 0,
+      "recentHttp500Logs": 0,
       "logQuery": "NO_MATCHING_ERROR_LOGS",
       "metricsCli": "UNAVAILABLE_IN_INSTALLED_CLI",
       "externalAlertBinding": "NOT_VERIFIED"
     },
+    "postDeploymentVerification": {
+      "canonicalPages": "PASS",
+      "authenticatedBackendAttestation": "PASS",
+      "approvedAccountRoles": {
+        "creator": "active",
+        "merchant": "active",
+        "operations": "admin_active"
+      },
+      "suspendedMemberOperationsAccess": "DENIED",
+      "crossAccountIsolation": "PASS",
+      "labeledCampaignStatus": "paused",
+      "approvedCollaborationStatus": "active",
+      "interactiveEdgeRerun": "BLOCKED_COMPUTER_USE_KERNEL_ASSETS",
+      "sourceArtifact": {
+        "deploymentMetadataCommit": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+        "packageContentMatchesCommit": true,
+        "stagedArchiveSha256": "e868704072aa97dce4f54cdeb694ab640d0dfccf45deceabbde5ffc41258293c",
+        "note": "Vercel regenerated line endings and removed local Git metadata from the ZIP; the deployment metadata and source contents were verified separately."
+      }
+    },
     "databaseDrift": {
-      "productionLedgerCount": 204,
-      "productionLedgerHead": "20261105123750",
-      "candidateLedgerCount": 204,
+      "productionLedgerCount": 209,
+      "productionLedgerHead": "20261107020000",
+      "candidateLedgerCount": 209,
       "candidateLedgerHead": "20261107020000",
-      "drift": true,
+      "drift": false,
       "productionOnlyMigrationsToPreserve": [
         "20261025140000_grant_ops_audit_log_select",
         "20261105123750_active_merchant_mission_writes_reviewed_envelope"
       ],
       "repositoryMappingToPreserve": "20261104195741_active_merchant_mission_writes.sql is represented in production by the reviewed 20261105123750 envelope and must not be replayed blindly.",
-      "missingContentRpcFunctions": 6,
-      "legacyOperationsWritePoliciesPresent": true,
-      "authenticatedAuditAppendAllowed": true,
-      "destinationViewChecksCreatorPublicProfile": false,
-      "pendingMigrations": [
-        {
-          "version": "20261106090000",
-          "name": "kinnso_public_inventory_suspension",
-          "sha256": "f2ddb200fb7c0f3fabdbd93dc6da4e308bd9fbc81cca8a286da0aefc4534c476"
-        },
-        {
-          "version": "20261106110000",
-          "name": "fix_redeem_perk_ambiguity",
-          "sha256": "8ef837fb1e1756aa4e19671796126129cf3e29b7de9f0e3578d0be1926c590d0"
-        },
-        {
-          "version": "20261106123312",
-          "name": "harden_ops_team_lifecycle",
-          "sha256": "a97ba336dd6a6b1f334e98a655a2a4f449bc789a2c0b0da310788ddbaf2384e2"
-        },
-        {
-          "version": "20261106135230",
-          "name": "harden_ops_team_security",
-          "sha256": "c0749878b9b8aeff29f97c09c00778bc094ae24ec67c2cb1fe18a595f8cda1f2"
-        },
-        {
-          "version": "20261107020000",
-          "name": "kinnso_ops_content_audit",
-          "sha256": "8b7a0727886f2e3f03d726220169bfaf1cda3168351f1c30216ee34ad5cd4d3d"
-        }
-      ]
+      "missingContentRpcFunctions": 0,
+      "legacyOperationsWritePoliciesPresent": false,
+      "moderatorReadPoliciesPresent": true,
+      "authenticatedAuditAppendAllowed": false,
+      "destinationViewChecksCreatorPublicProfile": true,
+      "authenticatedDirectPerkAndTestimonialWritesAllowed": false,
+      "pendingMigrations": [],
+      "transactionMode": "FIVE_INDIVIDUAL_TRANSACTIONS",
+      "approvedSingleTransactionEnvelopeReproduced": false,
+      "automaticRetryUsed": false,
+      "replayObserved": false
     },
     "rollback": {
-      "status": "READY_TARGET_ONLY",
+      "status": "AVAILABLE",
       "pendingRollback": false,
       "applicationTargetDeploymentId": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs",
       "databaseStrategy": "Application rollback keeps additive schema and policy changes; database reversal requires a separate reviewed forward fix and must not replay history.",
@@ -237,7 +245,7 @@
       "productionChanged": false
     }
   },
-  "productionChanged": false,
+  "productionChanged": true,
   "journeysDeploymentChanged": false,
   "backupRestore": "WAIVED"
 }
