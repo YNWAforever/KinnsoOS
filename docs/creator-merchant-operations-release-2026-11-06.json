@@ -4,7 +4,7 @@
   "technicalReleaseStatus": "PASS",
   "deploymentReady": false,
   "launchRecommendation": "HOLD",
-  "applicationSourceHead": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+  "applicationSourceHead": "950d08b2011f1c23265a193b8f7adc377a44eb26",
   "runtimeApplicationCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
   "releaseCommits": {
     "feature": "6a495a26919c4e85398047217de627de1c796d91",
@@ -18,13 +18,14 @@
     "auditedContentMigration": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
     "migrationJourneyAndHeadingFix": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
     "finalDeviceAndAccessibilityHarness": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
-    "finalSourcePackage": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
-    "finalApplication": "b049d310b3016eea78aa8754da0992e8bdd1e48b"
+    "vercelSourcePackagingAndEnvelopeVerification": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+    "finalSourcePackage": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+    "finalApplication": "950d08b2011f1c23265a193b8f7adc377a44eb26"
   },
   "sourceArchive": {
-    "sha256": "a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c",
-    "metadataRevision": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
-    "fileCount": 676,
+    "sha256": "c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8",
+    "metadataRevision": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+    "fileCount": 678,
     "dirty": false
   },
   "database": {
@@ -81,14 +82,14 @@
   },
   "tests": {
     "journeysUnit": {
-      "passed": 1489,
+      "passed": 1492,
       "skipped": 2,
       "failed": 0
     },
     "typecheck": "PASS",
     "productionModeWebpackBuild": "PASS",
     "sourcePackage": {
-      "passed": 10,
+      "passed": 12,
       "skipped": 1,
       "failed": 0
     },
@@ -178,7 +179,15 @@
       "rollbackTargetRecorded": true,
       "pendingRollback": false,
       "externalAlertBinding": "NOT_VERIFIED",
-      "hostedPreview": "BLOCKED_PACKAGING"
+      "hostedPreview": "READY_BUILD_ONLY_UNBOUND"
+    },
+    "productionRolloutEnvelope": {
+      "contractTestsPassed": 3,
+      "migrationFiles": 5,
+      "envelopeSha256": "33897aba413aaf1a6344176ff6a8e4f56316d7f441cdb6feb89a1fa001cbdb40",
+      "hostedPreviewDeployment": "dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE",
+      "approvalStatus": "PENDING",
+      "productionChanged": false
     }
   },
   "routeMatrix": {

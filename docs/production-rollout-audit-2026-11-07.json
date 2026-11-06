@@ -3,9 +3,9 @@
   "status": "BLOCKED",
   "deploymentReady": false,
   "observedAt": "2026-11-07",
-  "applicationSourceHead": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+  "applicationSourceHead": "950d08b2011f1c23265a193b8f7adc377a44eb26",
   "runtimeApplicationCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
-  "sourceArchiveSha256": "a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c",
+  "sourceArchiveSha256": "c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8",
   "remainingBlockers": [
     "real author consent and rights-reviewed structured guides are absent",
     "physical iOS and Android plus VoiceOver and NVDA acceptance are not available",
@@ -228,12 +228,13 @@
       "deployedAppUsesRevokedDirectOperationsWrites": false
     },
     "hostedPreview": {
-      "status": "BLOCKED_PACKAGING",
-      "productionChanged": false,
-      "attempts": [
-        "Directory upload omitted required .gitignore from the exact-source pack.",
-        "Local Vercel CLI build could not spawn cmd.exe on Windows."
-      ]
+      "status": "READY_BUILD_ONLY_UNBOUND",
+      "deploymentId": "dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE",
+      "url": "https://kinnso-hiaj9vbd7-ynwaforevers-projects.vercel.app",
+      "routesGenerated": 71,
+      "environmentBound": false,
+      "health": "db_down_expected",
+      "productionChanged": false
     }
   },
   "productionChanged": false,

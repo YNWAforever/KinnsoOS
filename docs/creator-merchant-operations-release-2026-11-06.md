@@ -4,7 +4,7 @@ Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Dep
 
 ## Candidate identity
 
-- Final application source: `b049d310b3016eea78aa8754da0992e8bdd1e48b`.
+- Final application source: `950d08b2011f1c23265a193b8f7adc377a44eb26`.
 - Runtime application commit: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
 - Feature implementation: `6a495a26919c4e85398047217de627de1c796d91`.
 - Source-package repair: `5f9669d0fc80e8dd2faa7d20ae83881b28ecab50`.
@@ -15,8 +15,9 @@ Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Dep
 - Operations content administration and audited migration: `76d881ba528856bfb719dd43cd6f36ad0e6f317f`.
 - Migration-journey and admin-heading fix: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
 - Final device and accessibility harness: `b049d310b3016eea78aa8754da0992e8bdd1e48b`.
-- Corresponding-source SHA-256: `a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c`.
-- The source archive contains 676 hashed files and records final revision `b049d31`, `dirty=false`.
+- Vercel packaging and approval-envelope verification: `950d08b2011f1c23265a193b8f7adc377a44eb26`.
+- Corresponding-source SHA-256: `c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8`.
+- The source archive contains 678 hashed files and records final revision `950d08b`, `dirty=false`.
 - Canonical user-facing project: `kinnso-os.vercel.app`.
 
 ## Implemented in this candidate
@@ -75,10 +76,10 @@ The temporary diagnostic rows were removed afterward.
 
 ## Verification
 
-- Full Journeys suite at the final application source: **1,489 passed, 2 skipped, 0 failed**.
+- Full Journeys suite at the final application source: **1,492 passed, 2 skipped, 0 failed**.
 - TypeScript: pass.
 - Exact clean-commit source pack plus production-mode webpack build: pass; all 71 routes generated.
-- Source-package acceptance: **10 passed, 1 Windows symlink test skipped, 0 failed**.
+- Source-package acceptance: **12 passed, 1 Windows symlink test skipped, 0 failed**.
 - Connected browser coverage: **111 distinct creator, merchant, operations, inbox, recovery, publication, access-lifecycle and SSR cases passed across the candidate line**.
 - The hardened build passed **14 connected browser cases**: the complete creator-merchant-operations migration journey, operations-team lifecycle, authenticated recovery/sign-out behavior, legacy aliases and explicit no-write capability gates.
 - The operations security integration suite passed **3/3** on the clean 203-migration database, including simultaneous owner demotions, accept-versus-revoke, stale-session denial, invite token isolation, audit forgery denial, confirmed-email enforcement and expired-invite replacement.
@@ -89,6 +90,7 @@ The temporary diagnostic rows were removed afterward.
 - Browser coverage includes 320px layouts, 200% text, keyboard controls, duplicate/interrupted commands, role revocation, cross-company denial, stale responses and SSR privacy isolation.
 - The complete authenticated creator-merchant-operations migration journey passed on the exact final build in **25.3 seconds**, including creator session creation, perk redemption, merchant offers, operations directories, role revocation, legacy enquiry routing and responsive width.
 - The shorter audited content-admin mutation flow also passed on the final build.
+- The production rollout envelope contract passed **3/3**, re-hashing the five migration files, preserving the divergent production ledger entries, and checking the exact approval scope and rollback target.
 - The final source built successfully under both Node.js 24.22.1 and Node.js 26.13.0, generating all 71 routes.
 - The device draft suite passed **13/13**, covering offline/device-style navigation, IndexedDB persistence, recovery, Back/Forward protection, import and cancellation.
 - Connected accessibility passed **1/1**, public accessibility passed **36/36**, component accessibility passed **50/50**, and the content workflow passed **5/5**.
@@ -113,7 +115,9 @@ Production binds to Supabase project `scryfkefedzuetfdtrvl` with `trips,bookmark
 
 The exact rollback target is recorded as `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`. The currently deployed app does not use the table-write paths revoked by migration 204, so the reviewed database delta can be applied before the new app, followed by application verification and capability checks. A database reversal must be a reviewed forward fix; historical migrations must not be replayed.
 
-No production error logs were found for the last 24 hours. The installed Vercel CLI does not expose the metrics command, and an external alert binding is not verified. Two hosted Preview attempts were rejected by Vercel packaging/CLI limitations before runtime: the directory upload omitted the required `.gitignore`, and local prebuilt packaging could not spawn `cmd.exe`. No Preview alias or production alias was changed.
+No production error logs were found for the last 24 hours. The installed Vercel CLI does not expose the metrics command, and an external alert binding is not verified.
+
+The final non-production Preview `dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE` built successfully under the production project settings, generated all 71 routes and is READY. Preview has no backend variables, so its health endpoint correctly reports `db: down`; it is build/routing evidence only. The canonical production alias was not changed.
 
 ## Route matrix
 
