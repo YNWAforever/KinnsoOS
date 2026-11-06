@@ -19,6 +19,7 @@ test('operations invites and audits are retry-safe on the isolated target',async
   const ownerMember=(await ok(admin.from('kinnso_ops_members').insert({user_id:owner.id,display_name:'Synthetic lifecycle owner',role:'owner',status:'active'}).select('id').single())).id;
   const targetMember=(await ok(admin.from('kinnso_ops_members').insert({user_id:member.id,display_name:'Synthetic lifecycle analyst',role:'analyst',status:'active'}).select('id').single())).id;
   createdMembers.push(ownerMember,targetMember);
+  const alreadyMember=await owner.client.rpc('admin_invite_ops_member',{p_email:member.email,p_role:'analyst'});assert.equal(alreadyMember.error?.message.includes('already_ops_member'),true);
 
   const inviteEmail=invitee.email;
   const firstToken=await ok(owner.client.rpc('admin_invite_ops_member',{p_email:inviteEmail,p_role:'admin'}));
