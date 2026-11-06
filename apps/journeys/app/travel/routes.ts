@@ -44,6 +44,7 @@ const pages = new Set([
   "ops/monitoring",
   "ops/merchants",
   "ops/settlements",
+  "ops/accept-invite",
   "me",
   "settings",
   "demo-lab",

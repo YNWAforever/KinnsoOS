@@ -4,12 +4,13 @@ import {useSearchParams} from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useApp,Modal } from './ui';
 import {OpsDashboardWorkspace} from './OpsDashboardWorkspace';
+import {OpsTeamWorkspace} from './OpsTeamWorkspace';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
 import { ops, type Routing, type QueueRow, type QueuePreset, type SubmissionDetail,type BulkResult, type CurrencyTotal, type Preview, type QueueCursor, type QueuePage } from '../../lib/ops/repository';
 import { deadlineState, queueFilterPath, readQueueFilter, type QueueFilter } from '../../lib/ops/queue-filters';
 export function OpsWorkspace({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const {t,locale}=useApp();const [valid,setValid]=useState(true),[page,setPage]=useState<QueuePage|null>(null),[totals,setTotals]=useState<CurrencyTotal[]|null>(null),[error,setError]=useState(''),[selected,setSelected]=useState<string[]>([]),[preview,setPreview]=useState<Preview|null>(null),[result,setResult]=useState<BulkResult|null>(null),[reason,setReason]=useState(''),[action,setAction]=useState('request_revision'),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
- const search=useSearchParams(),view=search.get('view'),recordId=search.get('id'),dashboard=Boolean(view&&['overview','analytics','creators','merchants','missions','sessions','team','perks','testimonials','users','payouts','bookings'].includes(view)&&view!=='reviews');
+ const search=useSearchParams(),view=search.get('view'),recordId=search.get('id'),teamMode=view==='team',dashboard=Boolean(view&&['overview','analytics','creators','merchants','missions','sessions','perks','testimonials','users','payouts','bookings'].includes(view)&&view!=='reviews');
  const pending=useRef<{jobId:string;action:string;reason:string;requestId:string}|null>(null);
  const generation=useRef(0),evidenceOpener=useRef<HTMLElement|null>(null);
  const [detail,setDetail]=useState<SubmissionDetail|null>(null);
@@ -25,10 +26,10 @@ export function OpsWorkspace({actorId,enabled}:{actorId:string|null;enabled:bool
  async function changeFilter(next:QueueFilter){setFilter(next);window.history.replaceState(null,'',queueFilterPath(locale,next));await load(next);}
  useEffect(()=>{setValid(true);clearPrivate();setError('');setBusy(false);
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){++generation.current;setValid(false);clearPrivate();setBusy(false);}});
-  if(dashboard)return()=>{++generation.current;unsubscribe();};
+  if(dashboard||teamMode)return()=>{++generation.current;unsubscribe();};
   const initial=readQueueFilter(new URLSearchParams(window.location.search));
   if(!initial)setError('INVALID_FILTER');else{setFilter(initial);if(actorId&&enabled)void load(initial);}
-  return()=>{++generation.current;unsubscribe();};},[actorId,enabled,locale,dashboard]);
+  return()=>{++generation.current;unsubscribe();};},[actorId,enabled,locale,dashboard,teamMode]);
  async function prepare(ids=selected){const current=++generation.current;clearPreview();setBusy(true);const r=await ops.preview(ids);if(current!==generation.current)return;setBusy(false);if(!r.ok){if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED')clearPrivate();setError(r.code);return;}setPreview(r.data);setError('');}
  async function run(){if(!preview)return;const current=++generation.current;pending.current??={jobId:preview.jobId,action,reason,requestId:crypto.randomUUID()};const p=pending.current;setBusy(true);const r=await ops.run(p.jobId,p.action,'other',p.reason,p.requestId);if(current!==generation.current)return;setBusy(false);
   if(!r.ok){if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED')clearPrivate();setError(r.code);setUnknown(r.code==='UNAVAILABLE');if(r.code!=='UNAVAILABLE')pending.current=null;return;}setUnknown(false);pending.current=null;setResult(r.data);setError('');}
@@ -45,6 +46,7 @@ export function OpsWorkspace({actorId,enabled}:{actorId:string|null;enabled:bool
  }
  if(!actorId||!valid)return <section className="k-page"><h1>{t('Operations queue','營運待辦')}</h1><Link href={`/${locale}/sign-in?next=${encodeURIComponent(queueFilterPath(locale,filter))}`}>{t('Sign in to continue','登入後繼續')}</Link></section>;
  if(!enabled)return <section className="k-page"><h1>{t('Operations queue','營運待辦')}</h1><p>{t('Operations access is not connected yet.','營運服務尚未接通。')}</p></section>;
+ if(teamMode)return <OpsTeamWorkspace actorId={actorId} enabled={enabled}/>;
  if(dashboard)return <OpsDashboardWorkspace actorId={actorId} enabled={enabled} view={view!} id={recordId}/>;
  const missions=new Map((page?.items??[]).map(row=>[row.missionId,row.missionTitle]));if(filter.missionId&&!missions.has(filter.missionId))missions.set(filter.missionId,t('Mission from filter link','篩選連結中的活動'));
  return <section className="k-page"><h1>{t('Operations queue','營運待辦')}</h1><nav className="k-nav-chips" aria-label={t('Operations sections','營運功能')}><Link href={`/${locale}/ops?view=overview`}>{t('Overview','總覽')}</Link><Link href={`/${locale}/ops?view=creators`}>{t('Creators','創作者')}</Link><Link href={`/${locale}/ops?view=merchants`}>{t('Merchants','商戶')}</Link><Link href={`/${locale}/ops?view=missions`}>{t('Missions','活動')}</Link><Link href={`/${locale}/ops?view=sessions`}>{t('Sessions','活動及分享會')}</Link><Link href={`/${locale}/ops?view=team`}>{t('Team','團隊')}</Link></nav>{error&&<p role="alert">{error==='FORBIDDEN'?t('Active operations access is required. Your account does not have permission for this action. Bulk review requires an active operations admin or owner role; moderator access alone is insufficient. Refresh the queue to return to permitted work.','需要有效的營運存取權。此帳戶沒有執行這項操作的權限。批次審核需要有效的營運 admin 或 owner 角色；moderator 權限並不足夠。請重新載入待辦，返回獲授權的工作。'):error==='INVALID_FILTER'?t('This filter link is invalid. Reset filters to continue.','此篩選連結無效，請重設篩選。'):t('The request could not be completed. Refresh or retry.','請求未能完成，請重新整理或重試。')}</p>}

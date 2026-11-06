@@ -4404,6 +4404,38 @@ body:has(.k-app) {
   border-color: var(--k-orange);
   color: var(--k-orange);
 }
+.k-team-member {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.k-team-member > * {
+  min-width: 0;
+}
+.k-team-member p {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.k-team-member .k-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+@media (max-width: 650px) {
+  .k-team-member {
+    flex-direction: column;
+  }
+  .k-team-member .k-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .k-team-member .k-actions > * {
+    width: 100%;
+  }
+}
 .k-merchant .k-card {
   margin-block: 24px;
   min-width: 0;
