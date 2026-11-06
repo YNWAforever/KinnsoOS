@@ -387,6 +387,7 @@
     "tests/creator-insights.test.mjs",
     "tests/creator-ladder-api.test.mjs",
     "tests/creator-ladder-contract.test.mjs",
+    "tests/creator-merchant-operations-envelope.test.mjs",
     "tests/creator-perk-migration.test.mjs",
     "tests/creator-routes.test.mjs",
     "tests/creator-session-mutations-api.test.mjs",
