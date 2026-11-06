@@ -63,6 +63,7 @@
     "app/api/merchant/team/route.ts",
     "app/api/ops/assignments/route.ts",
     "app/api/ops/bulk/route.ts",
+    "app/api/ops/content/route.ts",
     "app/api/ops/dashboard/route.ts",
     "app/api/ops/invitations/accept/route.ts",
     "app/api/ops/merchant-applications/route.ts",
@@ -149,6 +150,7 @@
     "app/travel/MonitoringWorkspace.tsx",
     "app/travel/OpsDashboardWorkspace.tsx",
     "app/travel/OpsInviteAcceptance.tsx",
+    "app/travel/OpsContentAdmin.tsx",
     "app/travel/OpsRecordActions.tsx",
     "app/travel/OpsTeamWorkspace.tsx",
     "app/travel/OpsWorkspace.tsx",
@@ -254,6 +256,7 @@
     "lib/operational-api/analytics-report.ts",
     "lib/operational-api/health.ts",
     "lib/ops/queue-filters.ts",
+    "lib/ops/content-actions.ts",
     "lib/ops/reports.ts",
     "lib/ops/record-actions.ts",
     "lib/ops/repository.ts",
@@ -440,6 +443,7 @@
     "tests/e2e/u06-collaboration-tasks.spec.ts",
     "tests/e2e/u06-creator-discovery.spec.ts",
     "tests/e2e/u06-creator-merchant-ops-migration.spec.ts",
+    "tests/e2e/u06-ops-content-admin.spec.ts",
     "tests/e2e/u06-ops-moderation-controls.spec.ts",
     "tests/e2e/u06-ops-team-lifecycle.spec.ts",
     "tests/e2e/u06-role-bundle.spec.ts",
@@ -520,6 +524,7 @@
     "tests/integration/merchant-legacy-analytics.test.mjs",
     "tests/integration/merchant-onboarding.test.mjs",
     "tests/integration/monthly-budget.test.mjs",
+    "tests/integration/ops-content.test.mjs",
     "tests/integration/ops-routing.test.mjs",
     "tests/integration/ops-scale.test.mjs",
     "tests/integration/ops-team-lifecycle.test.mjs",
@@ -574,6 +579,8 @@
     "tests/ops-team-migration.test.mjs",
     "tests/ops-team-security-migration.test.mjs",
     "tests/ops-record-actions.test.mjs",
+    "tests/ops-content-actions.test.mjs",
+    "tests/ops-content-migration.test.mjs",
     "tests/operational-api-contracts.test.mjs",
     "tests/operational-api-route-handlers.test.mjs",
     "tests/operational-api-routes.test.mjs",
@@ -670,6 +677,7 @@
     "tests/contracts/20261024120000_kinnso_private_trip_progress.sql": "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql",
     "tests/contracts/20261106110000_fix_redeem_perk_ambiguity.sql": "supabase/migrations/20261106110000_fix_redeem_perk_ambiguity.sql",
     "tests/contracts/20261106123312_harden_ops_team_lifecycle.sql": "supabase/migrations/20261106123312_harden_ops_team_lifecycle.sql",
-    "tests/contracts/20261106135230_harden_ops_team_security.sql": "supabase/migrations/20261106135230_harden_ops_team_security.sql"
+    "tests/contracts/20261106135230_harden_ops_team_security.sql": "supabase/migrations/20261106135230_harden_ops_team_security.sql",
+    "tests/contracts/20261107020000_kinnso_ops_content_audit.sql": "supabase/migrations/20261107020000_kinnso_ops_content_audit.sql"
   }
 }

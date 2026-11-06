@@ -39,7 +39,7 @@ test('legacy operations routes map to the native operations workspaces',()=>{
   ['admin/creators/directory',{pathname:'/en/ops',search:{view:'creators'}}],
   ['admin/creators/11111111-1111-4111-8111-111111111111',{pathname:'/en/ops',search:{view:'creators',creator:'11111111-1111-4111-8111-111111111111'}}],
   ['admin/creators/payouts',{pathname:'/en/ops',search:{view:'payouts'}}],
-  ['admin/enquiries',{pathname:'/en/ops/support'}],
+  ['admin/enquiries',{pathname:'/en/ops',search:{view:'enquiries'}}],
   ['admin/merchants',{pathname:'/en/ops',search:{view:'merchants'}}],
   ['admin/merchants/directory',{pathname:'/en/ops',search:{view:'merchants'}}],
   ['admin/merchants/applications',{pathname:'/en/ops/merchants'}],

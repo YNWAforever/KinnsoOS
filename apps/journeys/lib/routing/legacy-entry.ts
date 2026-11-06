@@ -15,7 +15,7 @@ export function legacyEntry(pathname:string,method:string):LegacyEntry|null {
  const campaign=path.match(/^merchants\/(?:dashboard\/)?missions\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
  if(campaign)return{pathname:`/${locale}/merchant/campaigns/${campaign[1]}`,campaignId:campaign[1]};
  if(path==='admin')return{pathname:`/${locale}/ops`,search:{view:'overview'}};
- if(path==='admin/enquiries')return{pathname:`/${locale}/ops/support`};
+ if(path==='admin/enquiries')return{pathname:`/${locale}/ops`,search:{view:'enquiries'}};
  if(path==='admin/merchants/applications')return{pathname:`/${locale}/ops/merchants`};
  const adminResource=path.match(/^admin\/(creators|merchants)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
  if(adminResource)return{pathname:`/${locale}/ops`,search:{view:adminResource[1],...adminResource[1]==='creators'?{creator:adminResource[2]}:{merchant:adminResource[2]}}};

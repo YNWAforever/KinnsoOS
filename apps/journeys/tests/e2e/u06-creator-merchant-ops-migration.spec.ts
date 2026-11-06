@@ -109,7 +109,7 @@ test('creator, merchant and operations migration works end to end on the isolate
    await opsPage.goto('/en/admin/'+path);await expect(opsPage).toHaveURL(new RegExp('/en/ops\\?view='+path+'$'));await expect(opsPage.getByRole('heading',{name:title,exact:true})).toBeVisible();
   }
   await opsPage.goto('/en/admin/bookings');await expect(opsPage.getByRole('heading',{name:'This capability remains gated',exact:true})).toBeVisible();
-  await opsPage.goto('/en/admin/enquiries');await expect(opsPage).toHaveURL(/\/en\/ops\/support$/);
+  await opsPage.goto('/en/admin/enquiries');await expect(opsPage).toHaveURL(/\/en\/ops\?view=enquiries$/);
   await opsPage.goto('/en/admin/merchants/applications');await expect(opsPage).toHaveURL(/\/en\/ops\/merchants$/);
   await opsPage.setViewportSize({width:320,height:800});await opsPage.goto('/en/admin/creators');await expect.poll(()=>opsPage.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
   await ok(admin.from('kinnso_ops_members').update({status:'paused'}).eq('id',opsMemberId));await opsPage.reload();await expect(opsPage.getByRole('alert').filter({hasText:'Operations record could not be loaded'})).toBeVisible();await expect(opsPage.getByText(`Synthetic migration creator ${runId}`,{exact:true})).toHaveCount(0);

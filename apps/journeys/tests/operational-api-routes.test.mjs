@@ -8,6 +8,7 @@ const routes=[
  ['../app/api/analytics/route.ts','POST'],
  ['../app/api/cron/traveller-analytics-retention/route.ts','GET'],
  ['../app/api/health/route.ts','GET'],
+ ['../app/api/ops/content/route.ts','POST'],
  ['../app/api/revalidate/route.ts','POST'],
 ];
 

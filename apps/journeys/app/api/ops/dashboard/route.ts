@@ -1,7 +1,7 @@
 import {apiContext,backendFailure,failure,reply} from '../../../../lib/api/server';
 import {uuid} from '../../../../lib/api/validation';
 
-const views=new Set(['overview','analytics','creators','merchants','missions','sessions','team','perks','testimonials','users','payouts','bookings']);
+const views=new Set(['overview','analytics','creators','merchants','missions','sessions','team','perks','testimonials','users','enquiries','payouts','bookings']);
 const gated=new Set(['payouts','bookings']);
 const columns={
  missions:'id,title,status,starts_at,application_closes_at,created_at,merchant_profile_id',
@@ -36,6 +36,10 @@ export async function GET(request:Request){
   }
   if(view==='team'||view==='users'){
    const result=await ctx.client.rpc('admin_list_ops_members');
+   return result.error?backendFailure(result.error):reply({ok:true,data:{view,items:result.data??[]}});
+  }
+  if(view==='enquiries'){
+   const result=await ctx.client.rpc('admin_list_enquiries',{p_status_group:'active',p_type:null,p_limit:50,p_cursor_created_at:null,p_cursor_id:null});
    return result.error?backendFailure(result.error):reply({ok:true,data:{view,items:result.data??[]}});
   }
   const table=view==='missions'?'missions':view==='sessions'?'community_sessions':view==='perks'?'partner_perks':view==='testimonials'?'testimonials':null;

@@ -10,7 +10,7 @@ import { ops, type Routing, type QueueRow, type QueuePreset, type SubmissionDeta
 import { deadlineState, queueFilterPath, readQueueFilter, type QueueFilter } from '../../lib/ops/queue-filters';
 export function OpsWorkspace({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const {t,locale}=useApp();const [valid,setValid]=useState(true),[page,setPage]=useState<QueuePage|null>(null),[totals,setTotals]=useState<CurrencyTotal[]|null>(null),[error,setError]=useState(''),[selected,setSelected]=useState<string[]>([]),[preview,setPreview]=useState<Preview|null>(null),[result,setResult]=useState<BulkResult|null>(null),[reason,setReason]=useState(''),[action,setAction]=useState('request_revision'),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
- const search=useSearchParams(),view=search.get('view'),recordId=search.get('id'),teamMode=view==='team',dashboard=Boolean(view&&['overview','analytics','creators','merchants','missions','sessions','perks','testimonials','users','payouts','bookings'].includes(view)&&view!=='reviews');
+ const search=useSearchParams(),view=search.get('view'),recordId=search.get('id'),teamMode=view==='team',dashboard=Boolean(view&&['overview','analytics','creators','merchants','missions','sessions','perks','testimonials','users','enquiries','payouts','bookings'].includes(view)&&view!=='reviews');
  const pending=useRef<{jobId:string;action:string;reason:string;requestId:string}|null>(null);
  const generation=useRef(0),evidenceOpener=useRef<HTMLElement|null>(null);
  const [detail,setDetail]=useState<SubmissionDetail|null>(null);
