@@ -59,9 +59,11 @@ test('creator, merchant and operations migration works end to end on the isolate
   expect((await ok(admin.from('community_sessions').select('status').eq('id',sessionId).single())).status).toBe('live');
   await creatorPage.goto('/en/studio/tier');await expect(creatorPage.getByRole('heading',{name:'rising',exact:true})).toBeVisible();await expect(creatorPage.getByText('Next-tier migration benefit',{exact:false})).toBeVisible();
   await creatorPage.goto('/en/studio/perks');await expect(creatorPage.getByRole('heading',{name:'Migration rail benefit',exact:true})).toBeVisible();
-  const redeemResponse=creatorPage.waitForResponse(response=>new URL(response.url()).pathname==='/api/creator/perks'&&response.request().method()==='POST');
-  await creatorPage.getByRole('button',{name:'Redeem perk',exact:true}).click();
-  const redeemed=await redeemResponse,redeemBody=await redeemed.json();
+  const[redeemed]=await Promise.all([
+   creatorPage.waitForResponse(response=>new URL(response.url()).pathname==='/api/creator/perks'&&response.request().method()==='POST'),
+   creatorPage.getByRole('article').filter({hasText:'Migration rail benefit'}).getByRole('button',{name:'Redeem perk',exact:true}).click(),
+  ]);
+  const redeemBody=await redeemed.json();
   expect(redeemed.status(),JSON.stringify(redeemBody)).toBe(200);expect(redeemBody.ok).toBe(true);
   await expect(creatorPage.getByText('MIGRATION-CODE',{exact:true})).toBeVisible();
   await creatorPage.goto('/en/studio/offers');await expect(creatorPage.getByRole('heading',{name:'Affiliate offers',exact:true})).toBeVisible();await expect(creatorPage.getByText('Affiliate offer execution and partner tracking links remain disabled',{exact:false})).toBeVisible();
