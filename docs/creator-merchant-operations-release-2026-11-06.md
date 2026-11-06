@@ -1,10 +1,10 @@
 # Creator, merchant and operations combined release envelope
 
-Status: **READY_FOR_USER_REVIEW**. Launch recommendation: **HOLD**.
+Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Deployment recommendation: **HOLD**.
 
 ## Candidate identity
 
-- Final application source: `76d881ba528856bfb719dd43cd6f36ad0e6f317f`.
+- Final application source: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
 - Feature implementation: `6a495a26919c4e85398047217de627de1c796d91`.
 - Source-package repair: `5f9669d0fc80e8dd2faa7d20ae83881b28ecab50`.
 - Operations team implementation: `366dc65f388c3342d8ad018314009f36e14edb81`.
@@ -12,8 +12,9 @@ Status: **READY_FOR_USER_REVIEW**. Launch recommendation: **HOLD**.
 - Operations security and legacy-route hardening: `0eb3c55316c828484f8bf4d223a78a94df850f34`.
 - Operational APIs and moderation controls: `cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc`.
 - Operations content administration and audited migration: `76d881ba528856bfb719dd43cd6f36ad0e6f317f`.
-- Corresponding-source SHA-256: `da80ead579488249a9585a105e41489352a158330c960c4a7251d3eb10d2e33f`.
-- The source archive contains 676 hashed files and records final revision `76d881b`, `dirty=false`.
+- Migration-journey and admin-heading fix: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
+- Corresponding-source SHA-256: `36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67`.
+- The source archive contains 676 hashed files and records final revision `9947e97`, `dirty=false`.
 - Canonical user-facing project: `kinnso-os.vercel.app`.
 
 ## Implemented in this candidate
@@ -41,24 +42,26 @@ Status: **READY_FOR_USER_REVIEW**. Launch recommendation: **HOLD**.
 
 ## Database evidence
 
-The disposable project `kinnsoos-public-it-20261106` was previously reset from an empty database and all **203 migrations** applied in order through `20261106135230_harden_ops_team_security`. The reviewed **204th migration**, `20261107020000_kinnso_ops_content_audit`, was then applied to that isolated chain and recorded in the migration ledger without deleting retained records.
+The separate disposable project `kinnsoos-clean-review-20261107` was started on a dedicated Docker network with seed data disabled and replayed all **204 migrations** from zero through `20261107020000_kinnso_ops_content_audit`. Docker reported **16.6 GB** of capacity, with WSL2 reporting 15 GiB total and 12 GiB available. The reset database contained zero Auth users, sessions, perks, testimonials, enquiries and audit rows.
 
-The latest browser work intentionally retained clearly labeled synthetic records for review: **39 Auth users, 39 creator records, 8 merchant profiles, 19 operations members, 55 audit rows, 8 sessions, 8 perks, 8 testimonials and 11 enquiries**. The latest successful moderation run is `5d77d43b-ea5d-4783-9667-0ef56561124f`; its creator is active/verified/listed and its merchant is active on the growth tier. Guides, experiences, merchant offers, analytics events and operations invitations remain zero.
+The clean exploration API loaded **216 functions**. PostgreSQL confirmed all six content administration RPCs are `SECURITY DEFINER` and executable by authenticated users, while `ops_audit_log_append` is not client-executable. The three operations read policies exist, the former permissive operations write policies are absent, and authenticated users have no direct `INSERT`, `UPDATE` or `DELETE` grants on partner perks or testimonials.
+
+The retained browser project `kinnsoos-public-it-20261106` intentionally contains clearly labeled synthetic records for review: **51 Auth users, 51 creator records, 10 merchant profiles, 23 operations members, 75 audit rows, 10 sessions, 10 perks, 10 testimonials and 13 enquiries**. The latest successful moderation run is `5d77d43b-ea5d-4783-9667-0ef56561124f`; its creator is active/verified/listed and its merchant is active on the growth tier. Guides, experiences, merchant offers, analytics events and operations invitations remain zero.
 
 The latest passing content run retained:
 
 | Entity | ID | Final state | Audit actions |
 | --- | --- | --- | --- |
-| Session | `d1ec2717-b72f-4f2c-9fdf-f9bc42e08b2c` | cancelled | create, live, ended, cancelled |
-| Partner perk | `dec2f0ac-90e5-4cb3-855e-e9198d525e33` | active | create, active |
-| Testimonial | `9aba8e72-4ed2-48e6-8f59-386e2936f9bd` | published | create, published |
-| Enquiry | `81f98460-b197-4af8-9a3b-0f2383e5cf18` | resolved | in progress, resolved |
+| Session | `22fa4bd2-3518-43e6-a5f8-7d7287e889b8` | cancelled | create, live, ended, cancelled |
+| Partner perk | `ff8a1920-e1dc-4c11-b153-ef71b2e2ce8a` | active | create, active |
+| Testimonial | `2a97b78d-6c0b-4578-931d-b716efa13820` | published | create, published |
+| Enquiry | `c24728a0-8e47-46a4-84ed-51fa60ba160c` | resolved | in progress, resolved |
 
-The ten content audit rows belong to operations member `7047dfbd-eb8c-4e06-bc48-241f01216bf3`; the run contains one event per successful state transition and no duplicate events.
+The ten content audit rows belong to operations member `a642fc9c-b0be-400f-a1ac-c15654eace2a`; the run contains one event per successful state transition and no duplicate events.
 
-### Combined-chain limitation
+### Combined-chain verification
 
-A fresh 204-migration reset was not started because Windows reported only **0.97 GiB free RAM**, below the established **4 GiB resource gate**. No existing Docker volume or network was stopped or removed. This limitation is recorded as a launch gate rather than converted into passing evidence.
+The clean 204-migration reset passed. A dedicated network was required because Docker’s predefined address pools were exhausted; only the temporary clean-review network and containers were created, then removed after verification.
 
 The repaired RPC was exercised directly from the clean chain and returned:
 
@@ -82,7 +85,8 @@ The temporary diagnostic rows were removed afterward.
 - The focused operations-content browser workflow verified session, perk, testimonial and enquiry mutations, ten exact audit events, and the corrected legacy enquiry alias.
 - The isolated operations-content integration case verified duplicate-create reconciliation, concurrent status audit deduplication, moderator-role denial and denial of direct authenticated perk, testimonial and cross-creator session writes.
 - Browser coverage includes 320px layouts, 200% text, keyboard controls, duplicate/interrupted commands, role revocation, cross-company denial, stale responses and SSR privacy isolation.
-- A longer exact-head migration journey was attempted after the alias change, but Chromium closed during a subsequent perk-redemption step under the documented memory pressure before completion. The shorter content-admin journey passed on the same build and explicitly covers the changed alias.
+- The complete authenticated creator-merchant-operations migration journey passed on the exact final build in **25.3 seconds**, including creator session creation, perk redemption, merchant offers, operations directories, role revocation, legacy enquiry routing and responsive width.
+- The shorter audited content-admin mutation flow also passed on the final build.
 
 ## Route matrix
 
@@ -99,7 +103,6 @@ The temporary diagnostic rows were removed afterward.
 
 ## Remaining launch gates
 
-- A fresh 204-migration reset remains blocked by the 4 GiB memory resource gate; the predecessor 203-migration reset and subsequent reviewed migration are verified separately.
 - Real author-reviewed guides, lawful cover assets and the three-guide content pilot remain content gates.
 - Physical iOS/Android, VoiceOver and NVDA acceptance remains unverified.
 - Production deployment, production database changes and rollback promotion require separate scoped approval.

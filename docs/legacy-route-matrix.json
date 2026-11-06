@@ -213,7 +213,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean reset plus reviewed 204th migration",
+        "204-migration clean reset",
         "authenticated content-admin browser workflow",
         "legacy alias redirected to the native enquiry view"
       ]
@@ -427,7 +427,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean reset plus reviewed 204th migration",
+        "204-migration clean reset",
         "perk create and activation with audit evidence",
         "direct authenticated operations writes denied"
       ]
@@ -452,7 +452,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean reset plus reviewed 204th migration",
+        "204-migration clean reset",
         "session create and status transitions with audit evidence",
         "concurrent duplicate writes reconciled without duplicate audit"
       ]
@@ -526,7 +526,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean reset plus reviewed 204th migration",
+        "204-migration clean reset",
         "testimonial draft publication with audit evidence",
         "direct authenticated operations writes denied"
       ]
@@ -2484,11 +2484,11 @@
   ],
   "observedAt": "2026-11-07",
   "candidate": {
-    "applicationSourceHead": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
-    "sourceArchiveSha256": "da80ead579488249a9585a105e41489352a158330c960c4a7251d3eb10d2e33f",
+    "applicationSourceHead": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
+    "sourceArchiveSha256": "36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67",
     "migrationCount": 204,
     "lastMigration": "20261107020000",
-    "combinedChainReset": "BLOCKED_RESOURCE_GATE_FREE_RAM_BELOW_4_GIB",
+    "combinedChainReset": "PASS_CLEAN_204",
     "productionChanged": false,
     "backupRestore": "WAIVED"
   }
