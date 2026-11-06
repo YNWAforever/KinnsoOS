@@ -1,4 +1,4 @@
-/** The existing application uses lower-case locale segments. */
+/** Public product routes use the consolidated KinnsoOS origin and supported locale casing. */
 export function canonicalRoot(locale: string): string {
-  return "https://remix-kinnso-web.vercel.app/" + (locale === "en" ? "en" : "zh-hk");
+  return "https://kinnso-os.vercel.app/" + (locale === "en" ? "en" : "zh-HK");
 }

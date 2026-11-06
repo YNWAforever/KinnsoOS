@@ -4381,10 +4381,48 @@ body:has(.k-app) {
   border-radius: 9px;
   overflow-wrap: anywhere;
 }
+.k-nav-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 16px;
+}
+.k-nav-chips a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+.k-nav-chips a.active {
+  border-color: var(--k-orange);
+  color: var(--k-orange);
+}
 .k-merchant .k-card {
   margin-block: 24px;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+#merchant-offers,
+#merchant-offers .k-form,
+#merchant-offers .k-form label {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#merchant-offers .k-form input,
+#merchant-offers .k-form select,
+#merchant-offers .k-form textarea,
+#merchant-offers .k-form .k-btn {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .k-collab-nav {
   display: flex;

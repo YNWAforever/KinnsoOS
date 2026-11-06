@@ -2371,18 +2371,12 @@ function BusinessTool({ section }: { section: string }) {
             "此業務工具使用現有帳戶及權限，如有需要請於原站登入，尚未接通跨站無縫返回。",
           )}
         </p>
-        <a
+        <Link
           className="k-btn primary"
-          href={
-            "https://remix-kinnso-web.vercel.app/en/merchants/dashboard/" +
-            target[section]
-          }
-          target="_blank"
-          rel="noreferrer"
+          href={href("merchants/dashboard/" + target[section])}
         >
-          {t("Open existing business tool", "開啟現有業務工具")}
-          <Icon name="external" />
-        </a>
+          {t("Open business tool", "開啟業務工具")}
+        </Link>
         <p className="k-meta">
           {t(
             "Source-verified route; live account access is not tested. No private data is passed in the URL.",
@@ -2427,6 +2421,11 @@ export function CreatorShell({
             ["studio/adventures", "My adventures", "我的旅程記錄", "map"],
             ["studio/opportunities", "Opportunities", "合作機會", "trip"],
             ["studio/earnings", "Earnings", "收益", "wallet"],
+            ["studio/sessions", "Sessions", "活動", "calendar"],
+            ["studio/tier", "Creator tier", "創作者級別", "wallet"],
+            ["studio/perks", "Partner perks", "夥伴禮遇", "spark"],
+            ["studio/offers", "Affiliate offers (gated)", "聯盟優惠（暫停）", "pin"],
+            ["studio/scan", "Creator scan (gated)", "創作者掃描（暫停）", "camera"],
           ].map(([p, en, zh, icon]) => (
             <Link
               key={p}
@@ -2466,7 +2465,7 @@ export function CreatorShell({
   );
 }
 export function CanonicalContent({ path }: { path: string }) {
-  const { t } = useApp(),
+  const { t, href } = useApp(),
     label = path.startsWith("articles")
       ? t("Travel reads", "旅行閱讀")
       : path.startsWith("sessions")
@@ -2483,22 +2482,16 @@ export function CanonicalContent({ path }: { path: string }) {
         </h2>
         <p>
           {t(
-            "Continue to the original English application for this retained collection. Content and session availability are not connected to the demo.",
-            "前往原有英文應用程式查看此保留內容，示範尚未接通內容及活動名額。",
+            "Open this collection in the current Kinnso application. Sample demo availability is not a production inventory count.",
+            "在目前的 Kinnso 應用程式開啟此內容。示範可用狀態不代表正式庫存數量。",
           )}
         </p>
-        <a
+        <Link
           className="k-btn primary"
-          href={
-            "https://remix-kinnso-web.vercel.app/en/" +
-            path.split("/").map(encodeURIComponent).join("/")
-          }
-          target="_blank"
-          rel="noreferrer"
+          href={href(path)}
         >
-          {t("Open existing collection", "開啟現有內容")}
-          <Icon name="external" />
-        </a>
+          {t("Open collection", "開啟內容")}
+        </Link>
       </section>
     </div>
   );

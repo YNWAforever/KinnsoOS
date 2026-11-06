@@ -20,3 +20,12 @@ test('page alias preserves query and refreshed secure session cookies without ca
  const cookie=response.cookies.get('session');assert.equal(cookie.value,'refreshed');assert.equal(cookie.httpOnly,true);assert.equal(cookie.secure,true);assert.equal(cookie.sameSite,'lax');
  for(const method of ['POST','PUT','PATCH','DELETE']){const response=await mod.exports.proxy(new NextRequest('https://kinnso-os.vercel.app/zh-hk/creator',{method}));assert.equal(response.headers.get('location'),null);}
 });
+test('workspace aliases add canonical view and record parameters without dropping existing filters',async()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ const response=await mod.exports.proxy(new NextRequest('https://kinnso-os.vercel.app/en/admin/creators/'+id+'?status=active&view=ignored'));
+ const location=new URL(response.headers.get('location'));
+ assert.equal(location.pathname,'/en/ops');
+ assert.equal(location.searchParams.get('status'),'active');
+ assert.equal(location.searchParams.get('view'),'creators');
+ assert.equal(location.searchParams.get('creator'),id);
+});

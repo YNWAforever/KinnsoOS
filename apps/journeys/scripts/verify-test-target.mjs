@@ -1,11 +1,12 @@
 import { pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 // Explicit local projects only; CI keeps its original volume, pilot uses a new one.
-export const approvedLocalProjects = Object.freeze(['kinnsoos-b1-20261002','kinnsoos-pilot-20261013']);
+export const approvedLocalProjects = Object.freeze(['kinnsoos-b1-20261002','kinnsoos-pilot-20261013','kinnsoos-public-it-20261106']);
 /** @param {Record<string,string|undefined>} [env] */
 export function testTargetConfiguration(env = process.env, {allowCanonicalCi = false} = {}) {
   const canonical=allowCanonicalCi&&env.CI==='true'&&env.KINNSO_TEST_PROJECT==='kinnso-v3';
-  const origin=canonical?'http://127.0.0.1:54421':'http://127.0.0.1:58421';
+  const candidate=env.KINNSO_TEST_PROJECT==='kinnsoos-public-it-20261106';
+  const origin=canonical?'http://127.0.0.1:54421':candidate?'http://127.0.0.1:59721':'http://127.0.0.1:58421';
   if (env.KINNSO_TEST_TARGET !== 'local' || !(approvedLocalProjects.includes(env.KINNSO_TEST_PROJECT)||canonical) ||
     env.KINNSO_TEST_API_ORIGIN !== origin ||
     env.KINNSO_TEST_DB_CONTAINER !== 'supabase_db_' + env.KINNSO_TEST_PROJECT ||

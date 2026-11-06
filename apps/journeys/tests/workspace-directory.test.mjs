@@ -20,7 +20,8 @@ for(const locale of ['en','zh-HK']){
   const html=directory(locale,{creator:true,merchant:true,ops:true,catalog:true,trips:true});
   for(const path of ['studio','merchant','ops'])assert.match(html,new RegExp(`href="/${locale}/${path}"`));
   for(const path of ['studio','merchants/dashboard','demo-lab'])assert.match(html,new RegExp(`href="/${locale}/demo/${path}"`));
-  assert.match(html,/https:\/\/remix-kinnso-web.vercel.app\//);
+  assert.doesNotMatch(html,/remix-kinnso-web\.vercel\.app/);
+  assert.doesNotMatch(html,/>Open original application|>開啟原有系統/);
   assert.doesNotMatch(html,/Preview new demo layout|預覽新版示範版面/);
  });
  test(`directory ${locale}: catalog connectivity does not imply trip or role readiness`,()=>{

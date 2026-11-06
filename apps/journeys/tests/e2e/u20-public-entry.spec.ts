@@ -30,8 +30,7 @@ for(const locale of ['en','zh-HK']){
   const main=page.locator('main');
   for(const path of ['studio','merchant','ops'])await expect(main.locator(`a[href="/${locale}/${path}"]`).first()).toBeVisible();
   for(const path of ['studio','merchants/dashboard','demo-lab'])await expect(main.locator(`a[href="/${locale}/demo/${path}"]`)).toBeVisible();
-  const originalLocale=locale==='en'?'en':'zh-hk';
-  for(const path of ['studio','merchants/dashboard','admin'])await expect(main.locator(`a[href="https://remix-kinnso-web.vercel.app/${originalLocale}/${path}"]`)).toBeVisible();
+  await expect(main.locator('a[href*="remix-kinnso-web.vercel.app"]')).toHaveCount(0);
   const demo=main.locator(`a[href="/${locale}/demo/studio"]`);
   await demo.focus();await page.keyboard.press('Enter');
   await expect(page).toHaveURL(`/${locale}/demo/studio`);

@@ -23,3 +23,50 @@ test('legacy entry never redirects mutation, auth callback, ambiguous or encoded
 });
 
 test('locale alias preserves dotted handles and encoded Unicode content identifiers',()=>{for(const suffix of ['c/jane.doe','g/香港攻略','articles/destinations/%E9%A6%99%E6%B8%AF'])assert.deepEqual(legacyEntry('/zh-hk/'+suffix,'GET'),{pathname:'/zh-HK/'+suffix});for(const suffix of ['g/%2fsecret','g/%5csecret','g/%252fsecret','g/%2e%2e','g/%00secret','g/%ZZ'])assert.equal(legacyEntry('/zh-hk/'+suffix,'GET'),null);});
+
+test('legacy operations routes map to the native operations workspaces',()=>{
+ const cases=new Map([
+  ['admin',{pathname:'/en/ops',search:{view:'overview'}}],
+  ['admin/analytics',{pathname:'/en/ops',search:{view:'analytics'}}],
+  ['admin/creators',{pathname:'/en/ops',search:{view:'creators'}}],
+  ['admin/creators/directory',{pathname:'/en/ops',search:{view:'creators'}}],
+  ['admin/creators/11111111-1111-4111-8111-111111111111',{pathname:'/en/ops',search:{view:'creators',creator:'11111111-1111-4111-8111-111111111111'}}],
+  ['admin/creators/payouts',{pathname:'/en/ops',search:{view:'payouts'}}],
+  ['admin/enquiries',{pathname:'/en/ops/support'}],
+  ['admin/merchants',{pathname:'/en/ops',search:{view:'merchants'}}],
+  ['admin/merchants/directory',{pathname:'/en/ops',search:{view:'merchants'}}],
+  ['admin/merchants/applications',{pathname:'/en/ops/merchants'}],
+  ['admin/merchants/11111111-1111-4111-8111-111111111111',{pathname:'/en/ops',search:{view:'merchants',merchant:'11111111-1111-4111-8111-111111111111'}}],
+  ['admin/missions',{pathname:'/en/ops',search:{view:'missions'}}],
+  ['admin/missions/review',{pathname:'/en/ops',search:{view:'reviews'}}],
+  ['admin/missions/11111111-1111-4111-8111-111111111111',{pathname:'/en/ops',search:{missionId:'11111111-1111-4111-8111-111111111111'}}],
+  ['admin/perks',{pathname:'/en/ops',search:{view:'perks'}}],
+  ['admin/sessions',{pathname:'/en/ops',search:{view:'sessions'}}],
+  ['admin/team',{pathname:'/en/ops',search:{view:'team'}}],
+  ['admin/team/directory',{pathname:'/en/ops',search:{view:'team'}}],
+  ['admin/testimonials',{pathname:'/en/ops',search:{view:'testimonials'}}],
+  ['admin/users',{pathname:'/en/ops',search:{view:'users'}}],
+ ]);
+ for(const [path,expected] of cases)assert.deepEqual(legacyEntry('/en/'+path,'GET'),expected,path);
+ for(const path of ['admin/unknown','admin/creators/not-a-uuid','admin/merchants/not-a-uuid','admin/missions/not-a-uuid'])assert.equal(legacyEntry('/en/'+path,'GET'),null,path);
+});
+
+test('legacy creator and merchant entry routes map to native workspaces without losing section intent',()=>{
+ const cases=new Map([
+  ['creators/apply',{pathname:'/en/studio'}],
+  ['merchants/apply',{pathname:'/en/merchant'}],
+  ['merchants/creators',{pathname:'/en/merchant',search:{section:'creators'}}],
+  ['merchants/insights',{pathname:'/en/merchant',search:{section:'insights'}}],
+  ['merchants/missions',{pathname:'/en/merchant',search:{section:'missions'}}],
+  ['merchants/post',{pathname:'/en/merchant',search:{section:'post'}}],
+  ['merchants/dashboard',{pathname:'/en/merchant'}],
+  ['merchants/dashboard/creators',{pathname:'/en/merchant',search:{section:'creators'}}],
+  ['merchants/dashboard/missions',{pathname:'/en/merchant',search:{section:'missions'}}],
+  ['merchants/dashboard/offers',{pathname:'/en/merchant',search:{section:'offers'}}],
+  ['merchants/dashboard/redeem',{pathname:'/en/merchant',search:{section:'redeem'}}],
+  ['merchants/dashboard/insights',{pathname:'/en/merchant',search:{section:'insights'}}],
+  ['merchants/dashboard/profile',{pathname:'/en/merchant',search:{section:'profile'}}],
+  ['merchants/dashboard/post',{pathname:'/en/merchant',search:{section:'post'}}],
+ ]);
+ for(const [path,expected] of cases)assert.deepEqual(legacyEntry('/en/'+path,'GET'),expected,path);
+});

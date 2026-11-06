@@ -24,6 +24,11 @@ const pages = new Set([
   "studio/adventures",
   "studio/guides",
   "studio/earnings",
+  "studio/sessions",
+  "studio/sessions/new",
+  "studio/tier",
+  "studio/perks",
+  "studio/scan",
   "studio/inbox",
   "studio/missions",
   "studio/offers",
@@ -38,6 +43,7 @@ const pages = new Set([
   "ops/support",
   "ops/monitoring",
   "ops/merchants",
+  "ops/settlements",
   "me",
   "settings",
   "demo-lab",
@@ -97,6 +103,7 @@ export function isKnownRoute(path: string) {
   if (/^creators\/(mika|chloe|ines|you)$/.test(path)) return true;
   if (pages.has(path) || retained.has(path)) return true;
   if (path === 'studio/guides/new' || /^studio\/guides\/[0-9a-f-]{36}\/edit$/.test(path)) return true;
+  if (/^studio\/sessions\/[0-9a-f-]{36}\/edit$/.test(path)) return true;
   if (path.startsWith("legacy/")) return true;
   if (/^c\/[a-zA-Z0-9][a-zA-Z0-9_.-]{0,79}$/.test(path)) return true;
   if (

@@ -56,6 +56,9 @@ const CreatorWorkspace = dynamic(
 );
 const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspace').then(mod => mod.CreatorMissionsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
+const CreatorSessionsWorkspace = dynamic(() => import('./CreatorSessionsWorkspace').then(mod => mod.CreatorSessionsWorkspace), {loading: RoleWorkspaceLoading});
+const CreatorLadderWorkspace = dynamic(() => import('./CreatorLadderWorkspace').then(mod => mod.CreatorLadderWorkspace), {loading: RoleWorkspaceLoading});
+const GatedCapabilityWorkspace = dynamic(() => import('./GatedCapabilityWorkspace').then(mod => mod.GatedCapabilityWorkspace), {loading: RoleWorkspaceLoading});
 const MerchantOnboarding = dynamic(() => import('./MerchantOnboarding').then(mod => mod.MerchantOnboarding), {loading: RoleWorkspaceLoading});
 const MerchantProfile = dynamic(() => import('./MerchantProfile').then(mod => mod.MerchantProfile), {loading: RoleWorkspaceLoading});
 const MerchantApplicationReviewPage = dynamic(() => import('./MerchantApplicationReview').then(mod => mod.MerchantApplicationReviewPage), {loading: RoleWorkspaceLoading});
@@ -275,6 +278,7 @@ export function Workbench({
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
+    merchantSection=['post','missions','creators','offers','redeem','insights','profile','experiences','bookings','budget'].includes(query.get('section')??'')?query.get('section'):null,
     [store, setStore] = useState<m.Store>(m.blank),
     [ready, setReady] = useState(false),
     [notice, setNotice] = useState<{ message: string; error: boolean } | null>(
@@ -659,16 +663,21 @@ export function Workbench({
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} initialSnapshot={creatorMissionEntry?.actorId===workspaceActor?.id?creatorMissionEntry:null} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/earnings')content=<CreatorEarningsWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/sessions'||path==='studio/sessions/new'||/^studio\/sessions\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorSessionsWorkspace key={workspaceActor?.id+':'+path} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/tier'||path==='studio/perks')content=<CreatorLadderWorkspace key={workspaceActor?.id+':'+path} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
+    else if(path==='studio/offers')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="creator-offers"/>;
+    else if(path==='studio/scan')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="creator-scan"/>;
     else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.agent===true}/>;
     else if(path==='inbox'||path==='studio/inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/merchants')content=<MerchantApplicationReviewPage key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='ops/settlements')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="operations-settlements"/>;
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
     else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
-    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
+    else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id+':'+(merchantSection??'')} section={merchantSection} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
     else if(isPublicEntryPath(path))content=<PublicInformation path={path} creatorEnabled={features.creator===true} merchantEnabled={features.merchant===true} supportEnabled={features.notifications===true}/>;
     else content=<WorkspacePanel mode={mode} features={features}/>;

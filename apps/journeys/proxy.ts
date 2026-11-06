@@ -24,6 +24,7 @@ export async function proxy(request: NextRequest) {
   const entry=legacyEntry(request.nextUrl.pathname,request.method);
   if(entry){
     const destination=request.nextUrl.clone();destination.pathname=entry.pathname;
+    for(const [name,value] of Object.entries(entry.search??{}))destination.searchParams.set(name,value);
     const redirected=NextResponse.redirect(destination,307);
     for(const cookie of response.cookies.getAll())redirected.cookies.set(cookie);
     response=redirected;

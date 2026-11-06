@@ -31,7 +31,8 @@ function harness(ports,search='',actorId='actor-A'){
  const react={useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],value=>{states[i]=typeof value==='function'?value(states[i]):value;changed=true;}];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((x,j)=>!Object.is(x,old.deps[j])))effects[i]={deps,work,pending:true,cleanup:old?.cleanup};}};
  const jsx=(type,props)=>({type,props}),module={exports:{}};
  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,URLSearchParams,window:{location,history:{replaceState(_a,_b,path){history.push(path);location.search=path.includes('?')?'?'+path.split('?')[1]:'';}}},require:name=>{
-  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+  if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useSearchParams:()=>new URLSearchParams(location.search)};
+  if(name==='./OpsDashboardWorkspace')return{OpsDashboardWorkspace:()=>({type:'dashboard',props:{}})};
   if(name==='./ui')return{useApp:()=>({locale:'en',t:en=>en}),Modal:'modal'};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};
   if(name==='../../lib/ops/repository')return{ops:{routing:async()=>({ok:false,code:'UNAVAILABLE'}),...ports}};if(name==='../../lib/ops/queue-filters')return filters;
