@@ -48,7 +48,9 @@ def build_archive(root: Path):
             raise ValueError('Invalid or colliding repository SQL input')
         input_root = root if extracted else root.parents[1]
         name = destination if extracted else source
-        if not extracted and (root.parent.name != 'apps' or root.name != 'journeys' or not (input_root / '.git').exists()):
+        trusted_root = (input_root / '.git').exists() or os.environ.get('VERCEL') == '1'
+        if not extracted and (root.parent.name != 'apps' or root.name != 'journeys'
+                              or not trusted_root):
             raise ValueError('Repository SQL requires the Journeys Git checkout')
         candidate = input_root.joinpath(*PurePosixPath(name).parts)
         if (not candidate.resolve().is_relative_to(input_root) or not candidate.is_file() or

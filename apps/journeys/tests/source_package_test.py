@@ -166,6 +166,30 @@ class SourcePackageTests(unittest.TestCase):
         with ZipFile(extracted / 'public/source/kinnsoos-source.zip') as archive:
             self.assertEqual(archive.read(destination), sql, 'Ordinary initialized extraction keeps its own SQL')
 
+    def test_vercel_repository_sql_input_does_not_require_git_metadata(self):
+        repository = self.root
+        app = repository / 'apps/journeys'
+        app.mkdir(parents=True)
+        for name in ['LICENSE', 'package.json', 'scripts/package-source.py',
+                     'scripts/source-manifest.json']:
+            target = app / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(repository / name, target)
+        source = 'supabase/migrations/20261011004000_kinnso_merchant_insights.sql'
+        destination = 'tests/contracts/20261011004000_kinnso_merchant_insights.sql'
+        sql = b'-- Reviewed Vercel migration input, never executed here.\nselect 1;\n'
+        source_path = repository / source
+        source_path.parent.mkdir(parents=True)
+        source_path.write_bytes(sql)
+        self.root = app
+        manifest = json.loads((app / 'scripts/source-manifest.json').read_text())
+        manifest['repositoryFiles'] = {destination: source}
+        (app / 'scripts/source-manifest.json').write_text(json.dumps(manifest))
+        result = self.run_pack({'VERCEL': '1'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(app / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read(destination), sql)
+
     def test_initialized_distribution_keeps_internal_sql_in_another_repository(self):
         repository = self.root
         app = repository / 'apps/journeys'
