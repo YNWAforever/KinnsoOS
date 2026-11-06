@@ -5,9 +5,9 @@ import {parseMemberReason,parseOpsInvite,parseOpsReason,parseRoleChange,projectM
 function managerFailure(message=''){
  if(/forbidden/.test(message))return failure('FORBIDDEN',403);
  if(/self_(?:role_change|suspend)|last_owner/.test(message))return failure('FORBIDDEN',403);
- if(/already_ops_member/.test(message))return failure('CONFLICT',409);
- if(/not_found_or_not_(?:pending|active|suspended)/.test(message))return failure('NOT_FOUND',404);
- if(/bad_role|email_required|reason_required|reason_too_long|invalid/.test(message)||/invite_/.test(message))return failure('INVALID',400);
+ if(/already_ops_member|pending_invite_conflict/.test(message))return failure('CONFLICT',409);
+ if(/not_found|not_found_or_not_(?:pending|active|suspended)/.test(message))return failure('NOT_FOUND',404);
+ if(/bad_role|email_(?:required|too_long)|reason_(?:required|too_long)|invalid/.test(message)||/invite_/.test(message))return failure('INVALID',400);
  return failure('UNAVAILABLE',503);
 }
 async function owner(client:any){const result=await client.rpc('is_active_ops_role',{p_min:'owner'});return!result.error&&result.data===true;}
@@ -42,11 +42,6 @@ export async function POST(request:Request){
    started=true;
    const result=await ctx.client.rpc('admin_invite_ops_member',{p_email:input.email,p_role:input.role});
    if(!result.error)return reply({ok:true,data:{token:result.data}},201);
-   if(result.error.code==='23505'||/duplicate|pending_invite/.test(result.error.message??'')){
-    const pending=await ctx.client.from('kinnso_ops_invites').select('id,email,role,status,token,created_at,expires_at').eq('status','pending').eq('email',input.email).maybeSingle();
-    if(pending.error)return backendFailure(pending.error);
-    return pending.data?.token?reply({ok:true,data:{token:pending.data.token}}):failure('CONFLICT',409);
-   }
    return managerFailure(result.error.message);
   }
   if(body.action==='revoke'){

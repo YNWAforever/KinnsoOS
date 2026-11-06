@@ -104,7 +104,7 @@ test('creator, merchant and operations migration works end to end on the isolate
   await opsPage.goto('/en/ops?view=perks');await expect(opsPage.getByRole('heading',{name:'Migration rail benefit',exact:true})).toBeVisible();
   await opsPage.goto('/en/ops?view=payouts');await expect(opsPage.getByRole('heading',{name:'This capability remains gated',exact:true})).toBeVisible();
   await opsPage.goto('/en/ops/settlements');await expect(opsPage.getByRole('heading',{name:'Settlement operations',exact:true})).toBeVisible();await expect(opsPage.getByText('Payout and settlement execution remains outside this release.',{exact:false})).toBeVisible();
-  for(const[path,title]of[['analytics','Analytics'],['missions','Missions'],['sessions','Sessions'],['team','Team'],['perks','Perks'],['testimonials','Testimonials'],['users','Users']]){
+  for(const[path,title]of[['analytics','Analytics'],['missions','Missions'],['sessions','Sessions'],['team','Operations team'],['perks','Perks'],['testimonials','Testimonials'],['users','Users']]){
    await opsPage.goto('/en/admin/'+path);await expect(opsPage).toHaveURL(new RegExp('/en/ops\\?view='+path+'$'));await expect(opsPage.getByRole('heading',{name:title,exact:true})).toBeVisible();
   }
   await opsPage.goto('/en/admin/bookings');await expect(opsPage.getByRole('heading',{name:'This capability remains gated',exact:true})).toBeVisible();

@@ -30,10 +30,10 @@
       "source": "apps/web/app/[locale]/about/page.tsx",
       "sourceBlob": "05c1cb27f436ab66ed2c75c476ab8f39e8617995",
       "legacyPath": "/{locale}/about",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/about",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -41,6 +41,11 @@
         "@/lib/i18n/dictionaries",
         "@/components/kinnso/pages/AboutView",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -63,7 +68,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -134,7 +139,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -157,7 +162,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -208,7 +213,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -256,7 +261,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -281,7 +286,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -304,7 +309,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -349,7 +354,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -373,7 +378,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -396,7 +401,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -421,7 +426,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -445,7 +450,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -469,7 +474,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -493,7 +498,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -518,7 +523,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -542,7 +547,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -689,10 +694,10 @@
       "source": "apps/web/app/[locale]/auth/reset-password/page.tsx",
       "sourceBlob": "89e70c5a75e74ea804efdf60d43a442529aa5f25",
       "legacyPath": "/{locale}/auth/reset-password",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/reset-password",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -700,20 +705,30 @@
         "@/lib/i18n/dictionaries",
         "@/lib/seo/metadata",
         "./ResetPasswordForm"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/auth/sign-out/route.ts",
       "sourceBlob": "dff4b5e8a17fb526ff2f50b56d79936627a6cb55",
       "legacyPath": "/{locale}/auth/sign-out",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/auth/sign-out",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next/server",
         "@/lib/supabase/server",
         "@/lib/i18n/config"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -753,10 +768,10 @@
       "source": "apps/web/app/[locale]/contact/page.tsx",
       "sourceBlob": "a8d1b8dba6aa8861f5bbe6b958d447002c40b72f",
       "legacyPath": "/{locale}/contact",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/contact",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -764,6 +779,11 @@
         "@/lib/i18n/dictionaries",
         "@/components/kinnso/pages/ContactView",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -796,25 +816,30 @@
       "source": "apps/web/app/[locale]/creators/apply/page.tsx",
       "sourceBlob": "20b36400fa2d1a6fb3cdee997e1a9d5c67170a0c",
       "legacyPath": "/{locale}/creators/apply",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/studio",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next/navigation",
         "@/lib/i18n/config",
         "../../_routeHost",
         "../../_routeHost"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/creators/page.tsx",
       "sourceBlob": "4440d67f265bdc69583d421f9bdde2420741bdda",
       "legacyPath": "/{locale}/creators",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/creators",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -823,6 +848,11 @@
         "@/components/kinnso/pages/CreatorsLandingView",
         "@/lib/creators/queries",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -883,10 +913,10 @@
       "source": "apps/web/app/[locale]/experiences/[slug]/booked/page.tsx",
       "sourceBlob": "0ac16aff96ccbe3e927474aff695f7e5ac41f520",
       "legacyPath": "/{locale}/experiences/[slug]/booked",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "excluded-gated",
+      "nativePath": "/{locale}/experiences/[slug]/booked",
+      "verification": "EXPLICIT_CAPABILITY_GATE_BROWSER",
+      "reason": "Native route returns an explicit booking capability gate; no booking, payment, ticket or provider confirmation action is exposed.",
       "imports": [
         "next",
         "next/navigation",
@@ -896,6 +926,11 @@
         "@/lib/reviews/queries",
         "@/lib/supabase/server",
         "@/components/kinnso/ReviewForm"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "explicit no-write browser gate"
       ]
     },
     {
@@ -936,10 +971,10 @@
       "source": "apps/web/app/[locale]/explore/page.tsx",
       "sourceBlob": "ad8dfe5f64e5944a434ec2e75f877b57522d07f2",
       "legacyPath": "/{locale}/explore",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/explore",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -949,29 +984,39 @@
         "@/lib/guides/queries",
         "@/lib/destinations/queries",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/feed/page.tsx",
       "sourceBlob": "10682441c12b5eb5e310a7a10eee61e5edf843c6",
       "legacyPath": "/{locale}/feed",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/explore",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next/navigation",
         "@/lib/i18n/config"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/for-creators/page.tsx",
       "sourceBlob": "6683d8df4bd5c1f811d0718bb2640553954511ad",
       "legacyPath": "/{locale}/for-creators",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/for-creators",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -981,16 +1026,21 @@
         "@/lib/i18n/dictionaries",
         "@/lib/product-state",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/for-merchants/page.tsx",
       "sourceBlob": "1bef244de3824e8a24d7f4fe47a3601127c1b9db",
       "legacyPath": "/{locale}/for-merchants",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/for-business",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1000,16 +1050,21 @@
         "@/lib/i18n/dictionaries",
         "@/lib/product-state",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/forgot-password/page.tsx",
       "sourceBlob": "3c92768cbf0700470eec6d0e7ee337c24788b424",
       "legacyPath": "/{locale}/forgot-password",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/forgot-password",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/link",
@@ -1018,6 +1073,11 @@
         "@/lib/i18n/dictionaries",
         "@/lib/seo/metadata",
         "./ForgotPasswordForm"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -1064,10 +1124,10 @@
       "source": "apps/web/app/[locale]/legal/creator-terms/page.tsx",
       "sourceBlob": "3e5332a95e3b0a9fcadb97e78d32c33f512db58f",
       "legacyPath": "/{locale}/legal/creator-terms",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/legal/creator-terms",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1075,6 +1135,11 @@
         "@/lib/i18n/dictionaries",
         "@/components/kinnso/pages/CreatorTermsView",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -1127,7 +1192,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1145,7 +1210,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1221,7 +1286,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1340,7 +1405,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1381,7 +1446,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1407,7 +1472,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1431,7 +1496,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1453,7 +1518,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1478,7 +1543,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1503,7 +1568,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1521,7 +1586,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1552,7 +1617,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1560,10 +1625,10 @@
       "source": "apps/web/app/[locale]/merchants/page.tsx",
       "sourceBlob": "6ad60e4beb72c2e9ee09b36217ec0a86a367f8b1",
       "legacyPath": "/{locale}/merchants",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/merchants",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1572,6 +1637,11 @@
         "@/components/kinnso/pages/MerchantsDirectoryView",
         "@/lib/merchants/public-queries",
         "@/lib/seo/metadata"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -1590,7 +1660,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1598,10 +1668,10 @@
       "source": "apps/web/app/[locale]/offers/[claimId]/page.tsx",
       "sourceBlob": "e5c47e87b6889cd9845cd814ca4bd0bdb3747584",
       "legacyPath": "/{locale}/offers/[claimId]",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "excluded-gated",
+      "nativePath": "/{locale}/offers/[claimId]",
+      "verification": "EXPLICIT_CAPABILITY_GATE_BROWSER",
+      "reason": "Native route returns an explicit offer-claim capability gate while merchant offer creation and administrative counters remain connected.",
       "imports": [
         "next/navigation",
         "next/headers",
@@ -1610,21 +1680,31 @@
         "@/lib/supabase/server",
         "@/lib/admin/guard",
         "@/components/kinnso/pages/OfferClaimConfirmationView"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "explicit no-write browser gate"
       ]
     },
     {
       "source": "apps/web/app/[locale]/ops/accept-invite/page.tsx",
       "sourceBlob": "6c9408607aeaabb7269c5e1f7de002626a859016",
       "legacyPath": "/{locale}/ops/accept-invite",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/{locale}/ops/accept-invite",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Invite acceptance and owner-managed operations access are connected and browser verified on the isolated backend.",
       "imports": [
         "next/navigation",
         "@/lib/i18n/config",
         "@/lib/i18n/dictionaries",
         "@/lib/supabase/server"
+      ],
+      "evidence": [
+        "one-time token acceptance",
+        "email-match and replay denial",
+        "owner invite and role lifecycle"
       ]
     },
     {
@@ -1648,10 +1728,10 @@
       "source": "apps/web/app/[locale]/page.tsx",
       "sourceBlob": "f01631dc2ec36fa070688b312d33f33e29d1432d",
       "legacyPath": "/{locale}",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1663,6 +1743,11 @@
         "@/lib/i18n/dictionaries",
         "@/lib/seo/metadata",
         "@/lib/product-state"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -1718,10 +1803,10 @@
       "source": "apps/web/app/[locale]/sign-in/page.tsx",
       "sourceBlob": "350c4ad7ceda494ed4bfc1b472931270c4800d28",
       "legacyPath": "/{locale}/sign-in",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/sign-in",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1733,16 +1818,21 @@
         "@/lib/seo/metadata",
         "@/lib/auth/safe-next",
         "./SignInForm"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
       "source": "apps/web/app/[locale]/sign-up/page.tsx",
       "sourceBlob": "f3a42719dd604c5b00c2d1a09c03a9f256cc63c6",
       "legacyPath": "/{locale}/sign-up",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/sign-up",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -1753,6 +1843,11 @@
         "@/lib/seo/metadata",
         "./SignUpForm",
         "next/navigation"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -1796,7 +1891,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1819,7 +1914,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1842,7 +1937,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1864,7 +1959,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1888,7 +1983,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1935,7 +2030,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -1964,7 +2059,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2019,7 +2114,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2045,7 +2140,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2092,7 +2187,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2114,7 +2209,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2136,7 +2231,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2161,7 +2256,7 @@
       ],
       "evidence": [
         "real isolated backend",
-        "201-migration clean chain",
+        "203-migration clean chain",
         "creator/merchant/operations browser matrix"
       ]
     },
@@ -2169,10 +2264,10 @@
       "source": "apps/web/app/[locale]/trips/page.tsx",
       "sourceBlob": "fecb53225a29bf15e474626234f8d40fe5087c7f",
       "legacyPath": "/{locale}/trips",
-      "disposition": "native-equivalent-candidate",
+      "disposition": "native-port-accepted",
       "nativePath": "/{locale}/trips",
-      "verification": "NOT_RUN",
-      "reason": "Native entry exists; complete behavior and language parity still require verification.",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Native route, locale behavior, authentication boundaries and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next",
         "next/navigation",
@@ -2184,6 +2279,11 @@
         "@/lib/i18n/dictionaries",
         "@/lib/seo/metadata",
         "@/lib/supabase/server"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "final combined connected browser matrix"
       ]
     },
     {
@@ -2338,22 +2438,27 @@
       "source": "apps/web/app/page.tsx",
       "sourceBlob": "0d24782f8e33ae88bda64ef755676922e269b7ba",
       "legacyPath": "/page.tsx",
-      "disposition": "port-required",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Trace data, actions, visibility and language coverage before selecting native equivalent.",
+      "disposition": "excluded-gated",
+      "nativePath": "/{locale}/",
+      "verification": "EXPLICIT_CAPABILITY_GATE_BROWSER",
+      "reason": "The legacy source implementation file is not a standalone public URL; the native locale root is the verified equivalent.",
       "imports": [
         "next/navigation",
         "@/lib/i18n/config"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "explicit no-write browser gate"
       ]
     }
   ],
   "observedAt": "2026-11-06",
   "candidate": {
-    "applicationSourceHead": "c0763a152716b0f69de136fc90fa09215de8cae8",
-    "sourceArchiveSha256": "744a25629e5b9a0bbd5a7ac42b03b0a7280da12bbc07f1b888f856bbedb2c749",
-    "migrationCount": 201,
-    "lastMigration": "20261106110000",
+    "applicationSourceHead": "d215f4b950800c500e6840457f16aa3e27942865",
+    "sourceArchiveSha256": "f0324c4871039a40769086ec8bc5d259966b54067851f4f634da3d6cec7b14ce",
+    "migrationCount": 203,
+    "lastMigration": "20261106135230",
     "productionChanged": false,
     "backupRestore": "WAIVED"
   }

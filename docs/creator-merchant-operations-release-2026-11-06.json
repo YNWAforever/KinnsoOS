@@ -2,15 +2,18 @@
   "schemaVersion": 1,
   "status": "READY_FOR_USER_REVIEW",
   "launchRecommendation": "HOLD",
-  "applicationSourceHead": "c0763a152716b0f69de136fc90fa09215de8cae8",
+  "applicationSourceHead": "d215f4b950800c500e6840457f16aa3e27942865",
   "releaseCommits": {
     "feature": "6a495a26919c4e85398047217de627de1c796d91",
     "packaging": "5f9669d0fc80e8dd2faa7d20ae83881b28ecab50",
-    "finalAliasFix": "c0763a152716b0f69de136fc90fa09215de8cae8"
+    "finalAliasFix": "c0763a152716b0f69de136fc90fa09215de8cae8",
+    "operationsTeamFeature": "366dc65",
+    "operationsTeamRegression": "d215f4b950800c500e6840457f16aa3e27942865",
+    "finalApplication": "d215f4b950800c500e6840457f16aa3e27942865"
   },
   "sourceArchive": {
-    "sha256": "744a25629e5b9a0bbd5a7ac42b03b0a7280da12bbc07f1b888f856bbedb2c749",
-    "metadataRevision": "c0763a152716b0f69de136fc90fa09215de8cae8",
+    "sha256": "f0324c4871039a40769086ec8bc5d259966b54067851f4f634da3d6cec7b14ce",
+    "metadataRevision": "d215f4b950800c500e6840457f16aa3e27942865",
     "dirty": false
   },
   "database": {
@@ -18,8 +21,8 @@
     "apiOrigin": "http://127.0.0.1:59721",
     "databasePort": "59722",
     "cleanChainReset": true,
-    "migrationCount": 201,
-    "lastMigration": "20261106110000",
+    "migrationCount": 203,
+    "lastMigration": "20261106135230",
     "fixturesAfterCleanup": {
       "authUsers": 0,
       "guides": 0,
@@ -28,12 +31,14 @@
       "articles": 0,
       "merchantOffers": 0,
       "partnerPerks": 0,
-      "opsMembers": 0
+      "opsMembers": 0,
+      "opsInvites": 0,
+      "opsAudit": 0
     }
   },
   "tests": {
     "journeysUnit": {
-      "passed": 1453,
+      "passed": 1473,
       "skipped": 2,
       "failed": 0
     },
@@ -45,20 +50,31 @@
       "failed": 0
     },
     "connectedBrowser": {
-      "distinctPassedAcrossCandidateLine": 110,
+      "distinctPassedAcrossCandidateLine": 111,
       "finalHeadCoreJourneyPassed": 1,
-      "note": "Ninety creator/merchant/operations/recovery/SSR cases plus twenty creator publication cases passed on the candidate line. The core 90-case matrix includes the new migration journey; it was rerun at the final alias-only commit."
+      "finalHardenedRegressionPassed": 14,
+      "note": "The final hardened build reran the full migration journey, operations-team lifecycle, eight authentication cases and four legacy-route cases on the clean 203-migration database."
+    },
+    "operationsSecurity": {
+      "isolatedIntegrationPassed": 3,
+      "concurrentOwnerTransitions": "PASS",
+      "acceptRevokeRace": "PASS",
+      "revokedSessionDenied": "PASS",
+      "tokenDataApiDenied": "PASS",
+      "auditForgeryDenied": "PASS",
+      "expiredInviteReplacement": "PASS",
+      "idempotentAcceptance": "PASS"
     }
   },
   "routeMatrix": {
     "total": 104,
-    "nativePortAccepted": 53,
+    "nativePortAccepted": 71,
     "nativePortLocal": 6,
-    "excludedGated": 17,
-    "nativeEquivalentCandidate": 5,
+    "excludedGated": 20,
+    "nativeEquivalentCandidate": 0,
     "identifierResolution": 2,
     "operational": 5,
-    "portRequired": 16
+    "portRequired": 0
   },
   "verified": [
     "canonical user-facing navigation stays on kinnso-os.vercel.app",
@@ -69,19 +85,22 @@
     "merchant offers, creator discovery, scoped insights and exact aggregate export",
     "operations queue, assignments, immutable bulk review, merchant application review, monitoring, support and reconciliation",
     "operations creator, merchant, mission, session, team, perk, testimonial and user directories",
+    "operations owner invitations, one-time acceptance, role changes, suspension, reactivation and revocation",
+    "operations final-owner concurrency, revoked-session enforcement, invite secret isolation and audit integrity",
+    "legacy public, authentication, creator and merchant entry aliases resolve on the consolidated origin",
+    "legacy traveller-offer and booking confirmation links return explicit capability gates instead of 404",
     "mobile 320px, 200% text, keyboard and SSR role-isolation checks"
   ],
   "gated": [
     "paid AI and creator scan execution",
     "media upload and experience editing",
     "affiliate provider execution",
+    "traveller offer-claim retrieval and traveller redemption codes",
     "booking and payment",
     "payout and settlement execution"
   ],
   "remainingLaunchGates": [
-    "operations invitation acceptance and role administration",
     "remaining operations record mutations not covered by the read-directory port",
-    "complete remaining port-required and native-equivalent route matrix",
     "author-reviewed production content and lawful cover assets",
     "representative physical-device and assistive-technology acceptance",
     "exact production configuration, migration and rollback approval"

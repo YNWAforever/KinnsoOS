@@ -17,6 +17,17 @@ export function parseOpsReason(value:unknown){
 export function parseOpsToken(value:unknown){
  if(typeof value!=='string'||!token.test(value))return invalid();return value;
 }
+export function opsInviteHref(origin:string,locale:'en'|'zh-HK',value:string){
+ if(locale!=='en'&&locale!=='zh-HK')return invalid();
+ const parsed=new URL(origin);
+ if(!['http:','https:'].includes(parsed.protocol)||parsed.username||parsed.password||parsed.pathname!=='/'||parsed.search||parsed.hash||origin!==parsed.origin)return invalid();
+ return `${parsed.origin}/${locale}/ops/accept-invite#token=${parseOpsToken(value)}`;
+}
+export function parseOpsInviteHash(value:string){
+ const match=/^#token=([a-f0-9]{64})$/.exec(value);
+ if(!match)return invalid();
+ return parseOpsToken(match[1]);
+}
 export function parseRoleChange(value:unknown){
  if(!record(value)||Object.keys(value).some(key=>!['memberId','role','reason'].includes(key))||typeof value.memberId!=='string'||!uuid.test(value.memberId)||!OPS_ROLES.includes(value.role as OpsRole))return invalid();
  return{memberId:value.memberId,role:value.role as OpsRole,reason:parseOpsReason(value.reason)};

@@ -12,6 +12,13 @@ test('legacy creator entry maps to the native workspace',()=>{
  assert.deepEqual(legacyEntry('/en/creator','GET'),{pathname:'/en/studio'});
  assert.deepEqual(legacyEntry('/zh-hk/creator','HEAD'),{pathname:'/zh-HK/studio'});
 });
+test('legacy public and recovery entry aliases map only safe GET navigation',()=>{
+ assert.deepEqual(legacyEntry('/en/feed','GET'),{pathname:'/en/explore'});
+ assert.deepEqual(legacyEntry('/zh-hk/feed','HEAD'),{pathname:'/zh-HK/explore'});
+ assert.deepEqual(legacyEntry('/en/for-merchants','GET'),{pathname:'/en/for-business'});
+ assert.deepEqual(legacyEntry('/zh-hk/auth/reset-password','GET'),{pathname:'/zh-HK/reset-password'});
+ for(const method of ['POST','PUT','PATCH','DELETE'])assert.equal(legacyEntry('/en/auth/reset-password',method),null);
+});
 test('legacy campaign detail retains the requested campaign for authorized server resolution',()=>{
  for(const prefix of ['merchants/dashboard/missions','merchants/missions'])
  assert.deepEqual(legacyEntry(`/en/${prefix}/${id}`,'GET'),{pathname:`/en/merchant/campaigns/${id}`,campaignId:id});

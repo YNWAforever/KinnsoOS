@@ -1,7 +1,7 @@
 import { cache, Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { Workbench } from "../../travel/Workbench";
-import { isKnownRoute } from "../../travel/routes";
+import { gatedLegacyRoute, isKnownRoute } from "../../travel/routes";
 import { fixtures } from "../../travel/model";
 import type { Metadata } from "next";
 import {publicEntryMetadata} from "../../../lib/seo/public-entry";
@@ -52,7 +52,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return articlePageMetadata(article);
   }
   const publicRoute=parsePublicRoute(locale,route,new URLSearchParams());
-  if(!publicRoute&&isPublicRouteNamespace(locale,route))notFound();
+  const gatedRoute=gatedLegacyRoute(route.join('/'));
+  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute)notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();
@@ -122,7 +123,8 @@ export default async function Page({ params,searchParams }: Props) {
   const publicQuery=new URLSearchParams();
   for(const[key,value]of Object.entries(entryQuery)){if(Array.isArray(value))value.forEach(item=>publicQuery.append(key,item));else if(value!==undefined)publicQuery.append(key,value);}
   const publicRoute=parsePublicRoute(locale,route,publicQuery);
-  if(!publicRoute&&isPublicRouteNamespace(locale,route))notFound();
+  const gatedRoute=gatedLegacyRoute(route.join('/'));
+  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute)notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();

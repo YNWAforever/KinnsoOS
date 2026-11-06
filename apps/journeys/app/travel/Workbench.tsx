@@ -11,6 +11,8 @@ import { ConnectedHome } from './ConnectedHome';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
+import { LegacyCapabilityGate } from './LegacyCapabilityGate';
+import { gatedLegacyRoute } from './routes';
 import type { Actor } from '../../lib/auth/actor';
 import type{PrivateMerchantEntry}from '../../lib/merchants/private-entry';
 import type{PrivateCreatorMissionEntry}from '../../lib/creators/private-mission-entry';
@@ -629,6 +631,8 @@ export function Workbench({
   else if (path === "studio/opportunities")
     content = <ConnectedOpportunities />;
   else if (path === "studio/outcomes") content = <ConnectedOutcomes />;
+  else if (gatedLegacyRoute(path))
+    content = <LegacyCapabilityGate kind={gatedLegacyRoute(path)!} locale={locale} />;
   else if (path.startsWith("ops"))
     content = (
       <>
@@ -681,6 +685,7 @@ export function Workbench({
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id+':'+(merchantSection??'')} section={merchantSection} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;
+    else if(gatedLegacyRoute(path))content=<LegacyCapabilityGate kind={gatedLegacyRoute(path)!} locale={locale}/>;
     else if(isPublicEntryPath(path))content=<PublicInformation path={path} creatorEnabled={features.creator===true} merchantEnabled={features.merchant===true} supportEnabled={features.notifications===true}/>;
     else content=<WorkspacePanel mode={mode} features={features}/>;
     if(path.startsWith('studio')&&!path.endsWith('/edit')&&path!=='studio/guides/new'&&path!=='studio/adventures/new')content=<><nav className="k-collab-nav" aria-label={t('Creator workspace navigation','創作者工作區導航')}>{[['studio','Overview','總覽'],['studio/outcomes','My collaborations','我的合作'],['studio/opportunities','Find collaborations','尋找合作'],['studio/guides','Guides','攻略'],['studio/insights','Insights','成效'],['studio/earnings','Earnings records','收益紀錄'],['studio/inbox','Inbox','收件匣']].map(([p,en,zh])=><Link key={p} href={href(p)} aria-current={path===p?'page':undefined}>{t(en,zh)}</Link>)}</nav>{content}</>;

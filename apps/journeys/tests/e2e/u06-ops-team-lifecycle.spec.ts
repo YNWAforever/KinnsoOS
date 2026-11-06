@@ -28,14 +28,14 @@ test('operations owner invites, accepts, changes and revokes access with safe re
   await page.getByLabel('Email',{exact:true}).fill(invited.email);await page.getByRole('combobox',{name:'Role',exact:true}).selectOption('analyst');
   const firstInvite=page.waitForResponse(response=>new URL(response.url()).pathname==='/api/ops/team'&&response.request().method()==='POST');
   await page.getByRole('button',{name:'Generate invite link',exact:true}).click();expect((await firstInvite).status()).toBe(201);
-  const inviteInput=page.getByLabel('One-time invitation link',{exact:true});await expect(inviteInput).toBeVisible();const inviteUrl=await inviteInput.inputValue(),token=new URL(inviteUrl).searchParams.get('token');expect(token).toMatch(/^[a-f0-9]{64}$/);
+  const inviteInput=page.getByLabel('One-time invitation link',{exact:true});await expect(inviteInput).toBeVisible();const inviteUrl=await inviteInput.inputValue(),invite=new URL(inviteUrl),token=new URLSearchParams(invite.hash.slice(1)).get('token');expect(invite.search).toBe('');expect(invite.hash).toBe('#token='+token);expect(token).toMatch(/^[a-f0-9]{64}$/);
   const pendingFirst=await ok<Array<{id:string;token:string}>>(admin.from('kinnso_ops_invites').select('id,token').eq('email',invited.email).eq('status','pending'));expect(pendingFirst).toHaveLength(1);expect(pendingFirst[0].token).toBe(token);
 
   const invitedContext=await browser.newContext({baseURL});contexts.push(invitedContext);const invitedPage=await invitedContext.newPage();invitedPage.setDefaultTimeout(15_000);await invitedPage.goto(inviteUrl);
   await invitedPage.getByRole('link',{name:'Sign in to continue',exact:true}).click();await invitedPage.getByLabel('Email',{exact:true}).fill(invited.email);await invitedPage.getByLabel('Password',{exact:true}).fill(invited.password);await invitedPage.getByRole('button',{name:'Sign in',exact:true}).click();await invitedPage.waitForURL(url=>url.pathname==='/en/ops/accept-invite');
   await invitedPage.getByRole('button',{name:'Accept invitation',exact:true}).click();await expect(invitedPage.getByRole('status').filter({hasText:'Invitation accepted.'})).toBeVisible();
   const invitedMembership=await ok(admin.from('kinnso_ops_members').select('id,role,status').eq('user_id',invited.id).single());memberIds.push(invitedMembership.id);expect(invitedMembership).toMatchObject({role:'analyst',status:'active'});
-  const replay=await invitedPage.request.post('/api/ops/invitations/accept',{headers:{origin:baseURL!},data:{token}});expect(replay.status()).toBe(409);
+  const replay=await invitedPage.request.post('/api/ops/invitations/accept',{headers:{origin:baseURL!},data:{token}});expect(replay.status()).toBe(200);
 
   await page.goto('/en/ops?view=team');const invitedName=invited.email!.split('@')[0];let invitedCard=page.locator('article.k-team-member').filter({hasText:invitedName});await expect(invitedCard).toBeVisible();
   await page.getByLabel('Reason for access change',{exact:true}).fill('Promote invited operator for review coverage');await page.getByLabel(`New role for ${invitedName}`,{exact:true}).selectOption('moderator');await invitedCard.getByRole('button',{name:'Apply role',exact:true}).click();await expect.poll(async()=>(await ok(admin.from('kinnso_ops_members').select('role').eq('id',invitedMembership.id).single())).role).toBe('moderator');

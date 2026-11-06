@@ -1,7 +1,7 @@
 'use client';
 import {useEffect,useRef,useState} from 'react';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
-import {OPS_ROLES,type OpsRole} from '../../lib/ops/team';
+import {OPS_ROLES,opsInviteHref,type OpsRole} from '../../lib/ops/team';
 import {useApp} from './ui';
 
 type Member={id:string;displayName:string;userId:string;role:OpsRole;status:string;joinedAt:string};
@@ -17,7 +17,7 @@ export function OpsTeamWorkspace({actorId,enabled}:{actorId:string|null;enabled:
  async function send(action:Record<string,unknown>){
   if(busy||unknown)return;const signature=JSON.stringify(action);pending.current??={signature,body:action};if(pending.current.signature!==signature){setError('IDEMPOTENCY_CONFLICT');return;}
   setBusy(true);setError('');setUnknown(false);
-  try{const response=await fetch('/api/ops/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pending.current.body),cache:'no-store'}),body=await response.json();if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');if(action.action==='invite')setInviteUrl(`${window.location.origin}/${locale}/ops/accept-invite?token=${body.data.token}`);pending.current=null;setMessage(t('Operations team updated.','營運團隊已更新。'));await load();if(action.action!=='invite')setReason('');}catch(next){setError(next instanceof Error?next.message:'UNAVAILABLE');setUnknown(true);}finally{setBusy(false);}
+  try{const response=await fetch('/api/ops/team',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pending.current.body),cache:'no-store'}),body=await response.json();if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');if(action.action==='invite')setInviteUrl(opsInviteHref(window.location.origin,locale,body.data.token));pending.current=null;setMessage(t('Operations team updated.','營運團隊已更新。'));await load();if(action.action!=='invite')setReason('');}catch(next){setError(next instanceof Error?next.message:'UNAVAILABLE');setUnknown(true);}finally{setBusy(false);}
  }
  if(!enabled)return <section className="k-page"><h1>{t('Operations team','營運團隊')}</h1><p role="status">{t('Team management is not connected yet.','團隊管理尚未接通。')}</p></section>;
  if(!actorId||!valid)return <section className="k-page"><h1>{t('Operations team','營運團隊')}</h1><a href={`/${locale}/sign-in?next=${encodeURIComponent('/'+locale+'/ops?view=team')}`}>{t('Sign in to continue','登入後繼續')}</a></section>;

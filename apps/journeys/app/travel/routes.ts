@@ -88,7 +88,14 @@ const retained = new Set([
   "legal/payment-handling",
 ]);
 const publicIdentifier = /^[\p{L}\p{N}][\p{L}\p{M}\p{N}_.-]{0,199}$/u;
+export type GatedLegacyRoute='offer-claim'|'booking-confirmation';
+export function gatedLegacyRoute(path:string):GatedLegacyRoute|null{
+  if(/^offers\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return'offer-claim';
+  const booking=/^experiences\/([^/]+)\/booked$/.exec(path);
+  return booking&&publicIdentifier.test(booking[1])?'booking-confirmation':null;
+}
 export function isKnownRoute(path: string) {
+  if(gatedLegacyRoute(path))return true;
   if(/^studio\/missions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return true;
   if(path==='merchant/invitation')return true;
   if (/^articles\/[^/]+(?:\/[^/]+)?$/.test(path) && !path.split("/").includes(".."))

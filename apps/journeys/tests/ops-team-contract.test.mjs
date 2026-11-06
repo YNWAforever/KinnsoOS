@@ -28,3 +28,12 @@ test('team projections never expose invite tokens through member or pending-invi
  assert.deepEqual(subject.projectPendingInvite(row),{id:row.id,email:row.email,role:row.role,status:row.status,createdAt:row.created_at,expiresAt:row.expires_at});
  assert.equal(subject.projectPendingInvite(row).token,undefined);
 });
+
+test('invitation secrets travel in one exact fragment instead of query or path strings',()=>{
+ const token='a'.repeat(64);
+ assert.equal(subject.opsInviteHref('https://kinnso-os.vercel.app','en',token),'https://kinnso-os.vercel.app/en/ops/accept-invite#token='+token);
+ assert.equal(subject.parseOpsInviteHash('#token='+token),token);
+ for(const value of ['',`?token=${token}`,`#token=${token}&role=owner`,`#token=${token}&token=${token}`,'#token=short','#other='+token])assert.throws(()=>subject.parseOpsInviteHash(value),/INVALID_OPS_TEAM/,value);
+ assert.throws(()=>subject.opsInviteHref('https://kinnso-os.vercel.app/path','en',token),/INVALID_OPS_TEAM/);
+ assert.throws(()=>subject.opsInviteHref('https://kinnso-os.vercel.app','ja',token),/INVALID_OPS_TEAM/);
+});
