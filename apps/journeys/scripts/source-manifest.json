@@ -598,6 +598,7 @@
     "tests/preparation-source-binding.test.mjs",
     "tests/private-creator-mission-entry.test.mjs",
     "tests/private-merchant-entry.test.mjs",
+    "tests/production-rollout-envelope.test.mjs",
     "tests/public-article.test.mjs",
     "tests/public-attribution-pages.test.mjs",
     "tests/public-creator.test.mjs",
