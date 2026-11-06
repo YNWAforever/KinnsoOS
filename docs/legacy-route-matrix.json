@@ -2290,15 +2290,20 @@
       "source": "apps/web/app/api/admin/analytics/route.ts",
       "sourceBlob": "9cdae00aaa91248188ee5e13aec91d348791a619",
       "legacyPath": "/api/admin/analytics",
-      "disposition": "operational",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/api/admin/analytics",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Ops-authenticated bounded traveller analytics report.",
       "imports": [
         "next/server",
         "@/lib/auth/viewer-role",
         "@/lib/admin/analytics-queries",
         "@/lib/supabase/server"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "operational API contract and connected analytics persistence"
       ]
     },
     {
@@ -2327,16 +2332,21 @@
       "source": "apps/web/app/api/analytics/route.ts",
       "sourceBlob": "3a8d741a66e83bea2c6e56d5e2190900963d15a8",
       "legacyPath": "/api/analytics",
-      "disposition": "operational",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/api/analytics",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Consent-bounded analytics ingestion with taxonomy validation, IP/journey throttles, idempotent persistence and explicit non-writing local mode.",
       "imports": [
         "next/server",
         "@supabase/supabase-js",
         "@/lib/analytics/server",
         "@/lib/supabase/server",
         "@/lib/http/client-ip"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "operational API contract and connected analytics persistence"
       ]
     },
     {
@@ -2367,14 +2377,19 @@
       "source": "apps/web/app/api/cron/traveller-analytics-retention/route.ts",
       "sourceBlob": "5b0f0d2b179a8846c3a63aa82f185f7fc42e0fb3",
       "legacyPath": "/api/cron/traveller-analytics-retention",
-      "disposition": "operational",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/api/cron/traveller-analytics-retention",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Bearer-authenticated service-role retention purge with sanitized failures.",
       "imports": [
         "next/server",
         "@/lib/supabase/service",
         "@/lib/http/safe-equal"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "operational API contract and connected analytics persistence"
       ]
     },
     {
@@ -2396,27 +2411,37 @@
       "source": "apps/web/app/api/health/route.ts",
       "sourceBlob": "fb5d53d299a2d07598b1d9b20e98ee952a20aa56",
       "legacyPath": "/api/health",
-      "disposition": "operational",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/api/health",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Read-only public database health probe with no secret exposure.",
       "imports": [
         "next/server",
         "@supabase/supabase-js"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "operational API contract and connected analytics persistence"
       ]
     },
     {
       "source": "apps/web/app/api/revalidate/route.ts",
       "sourceBlob": "7cbcc54e627ccf0dda6b3f74647742ca3d985cb9",
       "legacyPath": "/api/revalidate",
-      "disposition": "operational",
-      "nativePath": null,
-      "verification": "NOT_RUN",
-      "reason": "Explicit API ownership and method contract required; never redirect mutations.",
+      "disposition": "native-port-accepted",
+      "nativePath": "/api/revalidate",
+      "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
+      "reason": "Secret-authenticated bounded Next.js path revalidation.",
       "imports": [
         "next/server",
         "next/cache",
         "@/lib/http/safe-equal"
+      ],
+      "evidence": [
+        "real isolated backend",
+        "203-migration clean chain",
+        "operational API contract and connected analytics persistence"
       ]
     },
     {

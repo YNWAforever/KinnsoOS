@@ -27,13 +27,18 @@ Status: **READY_FOR_USER_REVIEW**. Launch recommendation: **HOLD**.
 - Closed the legacy operations-suspension bypass and serialized concurrent owner changes so the final active owner cannot be removed.
 - Added current-session validation to operations RPCs and RLS, column-level protection for invite secrets, verified-email acceptance, locked accept/revoke transitions, idempotent acceptance and audited acceptance.
 - Closed the remaining public, authentication, creator and merchant route aliases; traveller offer claims and booking confirmations now return explicit capability gates instead of broken routes.
+- Ported native health, consented analytics ingestion/reporting, retention cron and secret-authenticated cache revalidation APIs.
+- Added operations creator suspension/reinstatement, verification, directory listing and private notes.
+- Added operations merchant pause/reactivation, tier changes and private notes.
 - Mapped legacy creator, merchant and `/admin/*` entry paths to native sections while preserving safe filters and rejecting malformed ids and mutation methods.
 - Added explicit gated states for paid AI/scan, affiliate execution, experience/media editing, booking, payments and settlements.
 - Repaired `redeem_perk`, whose unqualified columns previously failed every call with PostgreSQL `42702 ambiguous column`.
 
 ## Database evidence
 
-The disposable project `kinnsoos-public-it-20261106` was reset from an empty database. All **203 migrations** applied in order through `20261106135230_harden_ops_team_security`. After the final browser run, guides, experiences, sessions, articles, merchant offers, partner perks, operations members, pending invites, audit rows and Auth users were all zero.
+The disposable project `kinnsoos-public-it-20261106` was reset from an empty database. All **203 migrations** applied in order through `20261106135230_harden_ops_team_security`.
+
+The latest browser work intentionally retained clearly labeled synthetic records for review: **17 Auth users, 17 creator records, 8 merchant profiles, 8 operations members and 33 audit rows**. The latest successful moderation run is `5d77d43b-ea5d-4783-9667-0ef56561124f`; its creator is active/verified/listed and its merchant is active on the growth tier. Guides, experiences, sessions, offers, perks, analytics events and throttle rows remained zero.
 
 The repaired RPC was exercised directly from the clean chain and returned:
 
@@ -45,32 +50,33 @@ The temporary diagnostic rows were removed afterward.
 
 ## Verification
 
-- Full Journeys suite at the final application source: **1,473 passed, 2 skipped, 0 failed**.
+- Full Journeys suite at the final application source: **1,482 passed, 2 skipped, 0 failed**.
 - TypeScript: pass.
 - Clean source pack plus production-mode webpack build: pass.
 - Source-package acceptance: **9 passed, 1 Windows symlink test skipped, 0 failed**.
 - Connected browser coverage: **111 distinct creator, merchant, operations, inbox, recovery, publication, access-lifecycle and SSR cases passed across the candidate line**.
 - The hardened build passed **14 connected browser cases**: the complete creator-merchant-operations migration journey, operations-team lifecycle, authenticated recovery/sign-out behavior, legacy aliases and explicit no-write capability gates.
 - The operations security integration suite passed **3/3** on the clean 203-migration database, including simultaneous owner demotions, accept-versus-revoke, stale-session denial, invite token isolation, audit forgery denial, confirmed-email enforcement and expired-invite replacement.
+- The operational API contract suite passed **9/9**; safe browser mode passed; production-mode analytics persisted one consent-bounded event and suppressed an identical retry.
+- The focused creator/merchant moderation browser workflow verified suspension, reinstatement, verification, directory listing, tier changes and audited private notes.
 - Browser coverage includes 320px layouts, 200% text, keyboard controls, duplicate/interrupted commands, role revocation, cross-company denial, stale responses and SSR privacy isolation.
 
 ## Route matrix
 
 | Disposition | Count |
 | --- | ---: |
-| Native port accepted | 71 |
+| Native port accepted | 76 |
 | Native port local-only | 6 |
 | Excluded and gated | 20 |
 | Native-equivalent candidate | 0 |
 | Identifier resolution | 2 |
-| Operational API unresolved | 5 |
+| Operational API unresolved | 0 |
 | Port required | 0 |
 | **Total** | **104** |
 
 ## Remaining launch gates
 
-- Some operations record mutations are still read/browse only; the candidate does not claim complete administrative write parity.
-- Five operational API ownership rows remain unresolved by design and require an explicit deployment contract.
+- Session, perk, testimonial and enquiry administration mutations remain incomplete.
 - Real author-reviewed guides, lawful cover assets and the three-guide content pilot remain content gates.
 - Physical iOS/Android, VoiceOver and NVDA acceptance remains unverified.
 - Production deployment, production database changes and rollback promotion require separate scoped approval.

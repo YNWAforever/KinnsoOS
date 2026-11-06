@@ -25,22 +25,26 @@
     "cleanChainReset": true,
     "migrationCount": 203,
     "lastMigration": "20261106135230",
-    "fixturesAfterCleanup": {
-      "authUsers": 0,
+    "retainedSyntheticRecords": {
+      "policy": "Labeled records are intentionally retained for user review in the disposable candidate database.",
+      "authUsers": 17,
+      "creators": 17,
+      "merchantProfiles": 8,
+      "opsMembers": 8,
+      "opsInvites": 0,
+      "opsAudit": 33,
       "guides": 0,
       "experiences": 0,
       "sessions": 0,
-      "articles": 0,
       "merchantOffers": 0,
       "partnerPerks": 0,
-      "opsMembers": 0,
-      "opsInvites": 0,
-      "opsAudit": 0
+      "analyticsEvents": 0,
+      "latestModerationRun": "5d77d43b-ea5d-4783-9667-0ef56561124f"
     }
   },
   "tests": {
     "journeysUnit": {
-      "passed": 1473,
+      "passed": 1482,
       "skipped": 2,
       "failed": 0
     },
@@ -66,16 +70,32 @@
       "auditForgeryDenied": "PASS",
       "expiredInviteReplacement": "PASS",
       "idempotentAcceptance": "PASS"
+    },
+    "operationalApis": {
+      "contractAndUnitPassed": 9,
+      "connectedSafeModePassed": 1,
+      "connectedAnalyticsPersistencePassed": 1
+    },
+    "operationsModeration": {
+      "connectedPassed": 1,
+      "creatorStatus": "PASS",
+      "creatorVerification": "PASS",
+      "creatorListing": "PASS",
+      "creatorNote": "PASS",
+      "merchantStatus": "PASS",
+      "merchantTier": "PASS",
+      "merchantNote": "PASS",
+      "labeledRecordsRetained": true
     }
   },
   "routeMatrix": {
     "total": 104,
-    "nativePortAccepted": 71,
+    "nativePortAccepted": 76,
     "nativePortLocal": 6,
     "excludedGated": 20,
     "nativeEquivalentCandidate": 0,
     "identifierResolution": 2,
-    "operational": 5,
+    "operational": 0,
     "portRequired": 0
   },
   "verified": [
@@ -89,6 +109,8 @@
     "operations creator, merchant, mission, session, team, perk, testimonial and user directories",
     "operations owner invitations, one-time acceptance, role changes, suspension, reactivation and revocation",
     "operations final-owner concurrency, revoked-session enforcement, invite secret isolation and audit integrity",
+    "creator and merchant moderation status, verification, directory listing, tier and audited private notes",
+    "native health, consented analytics ingestion/reporting, retention cron and secret-authenticated revalidation APIs",
     "legacy public, authentication, creator and merchant entry aliases resolve on the consolidated origin",
     "legacy traveller-offer and booking confirmation links return explicit capability gates instead of 404",
     "mobile 320px, 200% text, keyboard and SSR role-isolation checks"
@@ -102,7 +124,7 @@
     "payout and settlement execution"
   ],
   "remainingLaunchGates": [
-    "remaining operations record mutations not covered by the read-directory port",
+    "remaining session, perk, testimonial and enquiry administration mutations",
     "author-reviewed production content and lawful cover assets",
     "representative physical-device and assistive-technology acceptance",
     "exact production configuration, migration and rollback approval"

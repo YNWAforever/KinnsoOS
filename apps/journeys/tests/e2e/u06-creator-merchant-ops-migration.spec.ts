@@ -98,6 +98,7 @@ test('creator, merchant and operations migration works end to end on the isolate
 
   const opsContext=await browser.newContext({baseURL});contexts.push(opsContext);const opsPage=await opsContext.newPage();
   await signIn(opsPage,operator,'ops?view=overview');await expect(opsPage.getByRole('heading',{name:'Overview',exact:true})).toBeVisible();
+  const analyticsResponse=await opsPage.request.get('/api/admin/analytics');expect(analyticsResponse.status()).toBe(200);const analyticsBody=await analyticsResponse.json();expect(analyticsBody).toMatchObject({timezone:'UTC',attributionWindowDays:7});expect(Array.isArray(analyticsBody.rows)).toBe(true);
   await opsPage.goto('/en/admin/creators');await expect(opsPage).toHaveURL(/\/en\/ops\?view=creators$/);await expect(opsPage.getByRole('heading',{name:`Synthetic migration creator ${runId}`,exact:true})).toBeVisible();
   await opsPage.goto('/en/admin/merchants');await expect(opsPage.getByRole('heading',{name:company,exact:true})).toBeVisible();
   await opsPage.goto('/en/ops?view=sessions');await expect(opsPage.getByRole('heading',{name:`Synthetic migration session ${runId}`,exact:true})).toBeVisible();
@@ -126,7 +127,7 @@ test('creator, merchant and operations migration works end to end on the isolate
   if(creatorId)await clean('contribution',()=>ok(admin.from('creator_contribution').delete().eq('creator_id',creatorId)));
   if(merchantId)await clean('merchant',()=>ok(admin.from('merchant_profiles').delete().eq('id',merchantId)));
   if(foreignMerchantId)await clean('foreign merchant',()=>ok(admin.from('merchant_profiles').delete().eq('id',foreignMerchantId)));
-  if(opsMemberId)await clean('ops member',()=>ok(admin.from('kinnso_ops_members').delete().eq('id',opsMemberId)));
+  if(opsMemberId){await clean('ops audit',()=>ok(admin.from('ops_audit_log').delete().eq('actor_ops_member_id',opsMemberId)));await clean('ops member',()=>ok(admin.from('kinnso_ops_members').delete().eq('id',opsMemberId)));}
   for(const id of userIds)await clean('user '+id,()=>ok(admin.auth.admin.deleteUser(id)));
   if(failures.length){testInfo.annotations.push({type:'fixture cleanup failures',description:failures.join(', ')});throw Error('Synthetic migration cleanup failed: '+failures.join(', '));}
  }

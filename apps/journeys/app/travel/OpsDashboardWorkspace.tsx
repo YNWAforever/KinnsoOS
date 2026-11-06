@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {useEffect,useRef,useState} from 'react';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {useApp} from './ui';
+import {OpsRecordActions} from './OpsRecordActions';
 
 const views=[
  ['overview','Overview','總覽'],['creators','Creators','創作者'],['merchants','Merchants','商戶'],['missions','Missions','活動'],
@@ -29,6 +30,6 @@ export function OpsDashboardWorkspace({actorId,enabled,view,id}:{actorId:string|
   {data?.status==='GATED'&&<div className="k-card" role="status"><h2>{t('This capability remains gated','此功能仍暫停啟用')}</h2><p>{data.reason==='PROVIDER_OR_FINANCIAL_ACTION_GATED'?t('Booking, payment and payout execution is outside this release. No zero totals are being shown.','訂位、付款及提款執行不在此版本內；此處不會以零值代替未讀取資料。'):t('The service is unavailable in this release.','此服務未在此版本啟用。')}</p></div>}
   {data?.counts&&<div className="k-card"><h2>{t('Operational counts','營運數量')}</h2><dl>{Object.entries(data.counts).map(([key,value])=><div key={key}><dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd></div>)}</dl></div>}
   {data?.items&&<div className="k-card-list">{data.items.length===0?<p>{t('No records returned.','未返回紀錄。')}</p>:data.items.map((item,index)=><article className="k-card" key={String(item.id??index)}><h2>{String(item.title??item.company_name??item.display_name??item.quote??item.id??t('Record','紀錄'))}</h2><dl>{Object.entries(item).filter(([key,value])=>key!=='id'&&scalar(value)).map(([key,value])=><div key={key}><dt>{key.replaceAll('_',' ')}</dt><dd>{String(value)}</dd></div>)}</dl>{Boolean(item.id)&&['creators','merchants','missions','sessions'].includes(view)&&<Link className="k-btn" href={href('ops?view='+view+'&id='+encodeURIComponent(String(item.id)))}>{t('Open record','開啟紀錄')}</Link>}</article>)}</div>}
-  {data?.detail!==undefined&&<div className="k-card"><h2>{t('Record detail','紀錄詳情')}</h2>{data.detail===null?<p>{t('The requested record was not found.','找不到要求的紀錄。')}</p>:<pre className="k-safe-json">{JSON.stringify(data.detail,null,2)}</pre>}</div>}
+  {data?.detail!==undefined&&<div className="k-card"><h2>{t('Record detail','紀錄詳情')}</h2>{data.detail===null?<p>{t('The requested record was not found.','找不到要求的紀錄。')}</p>:<><pre className="k-safe-json">{JSON.stringify(data.detail,null,2)}</pre>{actorId&&['creators','merchants'].includes(view)&&<OpsRecordActions actorId={actorId} view={view as 'creators'|'merchants'} detail={data.detail}/>}</>}</div>}
  </section>;
 }
