@@ -1,6 +1,7 @@
 """Package only the reviewed, explicit corresponding-source manifest."""
 import hashlib
 import json
+import os
 import re
 import subprocess
 from pathlib import Path, PurePosixPath
@@ -25,6 +26,9 @@ def build_archive(root: Path):
                 any(p.startswith('.env') and p != '.env.example' for p in path.parts)):
             raise ValueError(f'Unsafe manifest path: {name}')
         candidate = root.joinpath(*path.parts)
+        if (name == '.gitignore' and os.environ.get('VERCEL') == '1'
+                and not candidate.is_file()):
+            candidate = root / 'scripts/gitignore.pack'
         if any(parent.is_symlink() for parent in [candidate, *candidate.parents] if parent != root):
             raise ValueError(f'Symlink in source path: {name}')
         if not candidate.resolve().is_relative_to(root) or not candidate.is_file():

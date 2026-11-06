@@ -332,6 +332,7 @@
     "scripts/ci-browser-mirror.mjs",
     "scripts/ci-evidence.mjs",
     "scripts/ci-image-lock.json",
+    "scripts/gitignore.pack",
     "scripts/local-auth-mailbox.mjs",
     "scripts/owned-child-lifecycle.mjs",
     "scripts/package-source.py",

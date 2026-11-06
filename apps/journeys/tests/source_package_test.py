@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -25,9 +26,10 @@ class SourcePackageTests(unittest.TestCase):
     def manifest(self, files):
         (self.root / 'scripts/source-manifest.json').write_text(json.dumps({'version': 1, 'files': files}))
 
-    def run_pack(self):
+    def run_pack(self, env=None):
         return subprocess.run([sys.executable, str(self.root / 'scripts/package-source.py')],
-                              cwd=self.root, capture_output=True, text=True)
+                              cwd=self.root, capture_output=True, text=True,
+                              env={**os.environ, **(env or {})})
 
     def test_exact_manifest_excludes_unlisted_private_files(self):
         for name in ['private-note.txt', 'dump.sql', 'credential.json', '.env.local']:
@@ -39,6 +41,19 @@ class SourcePackageTests(unittest.TestCase):
                 'scripts/package-source.py', 'scripts/source-manifest.json', 'SOURCE_METADATA.json'})
             metadata = json.loads(archive.read('SOURCE_METADATA.json'))
             self.assertEqual(set(metadata['sha256']), set(archive.namelist()) - {'SOURCE_METADATA.json'})
+
+    def test_vercel_upload_fallback_preserves_missing_gitignore_bytes(self):
+        gitignore = b'node_modules/\n.next/\n'
+        (self.root / '.gitignore').write_bytes(gitignore)
+        (self.root / 'scripts/gitignore.pack').write_bytes(gitignore)
+        self.manifest(['LICENSE', 'package.json', 'scripts/package-source.py',
+                       'scripts/source-manifest.json', '.gitignore',
+                       'scripts/gitignore.pack'])
+        (self.root / '.gitignore').unlink()
+        result = self.run_pack({'VERCEL': '1'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(self.root / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read('.gitignore'), gitignore)
 
     def test_unsafe_paths_and_missing_files_fail(self):
         for name in ['../outside.txt', '/outside.txt', 'C:/secret.txt', '.env.local',
