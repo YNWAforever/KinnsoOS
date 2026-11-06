@@ -36,7 +36,7 @@ The temporary diagnostic rows were removed afterward.
 
 ## Verification
 
-- Full Journeys suite: **1,451 passed, 2 skipped, 0 failed**.
+- Full Journeys suite at the final evidence commit: **1,453 passed, 2 skipped, 0 failed**.
 - TypeScript: pass.
 - Clean source pack plus production-mode webpack build: pass.
 - Source-package acceptance: **9 passed, 1 Windows symlink test skipped, 0 failed**.
