@@ -85,10 +85,15 @@ test('creator, merchant and operations migration works end to end on the isolate
   await merchantPage.getByRole('button',{name:'Publish offer',exact:true}).click();await expect(merchantPage.getByRole('status').filter({hasText:'Offer status updated.'})).toBeVisible();
   const foreignResponse=await merchantPage.request.get('/api/merchant/offers?company='+foreignMerchantId);expect(foreignResponse.status()).toBe(403);
   await merchantPage.goto('/en/merchants/dashboard/offers');await expect(merchantPage).toHaveURL(/\/en\/merchant\?section=offers$/);
+  for(const[path,section]of[['merchants/creators','creators'],['merchants/insights','insights'],['merchants/missions','missions'],['merchants/post','post']]){
+   await merchantPage.goto('/en/'+path);await expect(merchantPage).toHaveURL(new RegExp('/en/merchant\\?section='+section+'$'));
+  }
+  await merchantPage.goto('/en/merchants/apply');await expect(merchantPage).toHaveURL(/\/en\/merchant$/);
   for(const[path,section]of[['creators','creators'],['insights','insights'],['profile','profile'],['redeem','redeem'],['missions','missions']]){
    await merchantPage.goto('/en/merchants/dashboard/'+path);await expect(merchantPage).toHaveURL(new RegExp('/en/merchant\\?section='+section+'$'));
   }
   await merchantPage.goto('/en/merchants/dashboard/experiences');await expect(merchantPage).toHaveURL(/\/en\/merchant\?section=experiences$/);await expect(merchantPage.getByText('Experience and media management is outside this release.',{exact:false})).toBeVisible();
+  await merchantPage.goto('/en/merchants/dashboard/experiences/new');await expect(merchantPage).toHaveURL(/\/en\/merchant\?section=experiences&mode=new$/);
   await expect(merchantPage.locator('a[href*="remix-kinnso-web.vercel.app"]')).toHaveCount(0);
 
   const opsContext=await browser.newContext({baseURL});contexts.push(opsContext);const opsPage=await opsContext.newPage();

@@ -30,6 +30,9 @@ export function legacyEntry(pathname:string,method:string):LegacyEntry|null {
   'merchants/dashboard/insights':'insights','merchants/dashboard/profile':'profile','merchants/dashboard/post':'post',
   'merchants/dashboard/experiences':'experiences','merchants/dashboard/bookings':'bookings','merchants/dashboard/budget':'budget',
  };
+ if(path==='merchants/dashboard/experiences/new')return{pathname:`/${locale}/merchant`,search:{section:'experiences',mode:'new'}};
+ const merchantExperience=path.match(/^merchants\/dashboard\/experiences\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\/(edit|availability)$/i);
+ if(merchantExperience)return{pathname:`/${locale}/merchant`,search:{section:'experiences',mode:merchantExperience[2].toLowerCase(),experience:merchantExperience[1]}};
  if(path==='merchants/apply'||path==='merchants/dashboard')return{pathname:`/${locale}/merchant`};
  const merchantSection=merchantSections[path];
  if(merchantSection)return{pathname:`/${locale}/merchant`,search:{section:merchantSection}};

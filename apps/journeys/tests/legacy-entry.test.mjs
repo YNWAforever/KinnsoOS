@@ -67,6 +67,11 @@ test('legacy creator and merchant entry routes map to native workspaces without 
   ['merchants/dashboard/insights',{pathname:'/en/merchant',search:{section:'insights'}}],
   ['merchants/dashboard/profile',{pathname:'/en/merchant',search:{section:'profile'}}],
   ['merchants/dashboard/post',{pathname:'/en/merchant',search:{section:'post'}}],
+  ['merchants/dashboard/experiences',{pathname:'/en/merchant',search:{section:'experiences'}}],
+  ['merchants/dashboard/experiences/new',{pathname:'/en/merchant',search:{section:'experiences',mode:'new'}}],
+  ['merchants/dashboard/experiences/11111111-1111-4111-8111-111111111111/edit',{pathname:'/en/merchant',search:{section:'experiences',mode:'edit',experience:'11111111-1111-4111-8111-111111111111'}}],
+  ['merchants/dashboard/experiences/11111111-1111-4111-8111-111111111111/availability',{pathname:'/en/merchant',search:{section:'experiences',mode:'availability',experience:'11111111-1111-4111-8111-111111111111'}}],
  ]);
  for(const [path,expected] of cases)assert.deepEqual(legacyEntry('/en/'+path,'GET'),expected,path);
+ assert.equal(legacyEntry('/en/merchants/dashboard/experiences/not-a-uuid/edit','GET'),null);
 });
