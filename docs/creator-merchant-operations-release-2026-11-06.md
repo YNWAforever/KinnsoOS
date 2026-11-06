@@ -4,7 +4,8 @@ Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Dep
 
 ## Candidate identity
 
-- Final application source: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
+- Final application source: `b049d310b3016eea78aa8754da0992e8bdd1e48b`.
+- Runtime application commit: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
 - Feature implementation: `6a495a26919c4e85398047217de627de1c796d91`.
 - Source-package repair: `5f9669d0fc80e8dd2faa7d20ae83881b28ecab50`.
 - Operations team implementation: `366dc65f388c3342d8ad018314009f36e14edb81`.
@@ -13,8 +14,9 @@ Status: **READY_FOR_USER_REVIEW**. Technical release verification: **PASS**. Dep
 - Operational APIs and moderation controls: `cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc`.
 - Operations content administration and audited migration: `76d881ba528856bfb719dd43cd6f36ad0e6f317f`.
 - Migration-journey and admin-heading fix: `9947e97fd0b9b8692e81628c2af7dcf90c1a5953`.
-- Corresponding-source SHA-256: `36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67`.
-- The source archive contains 676 hashed files and records final revision `9947e97`, `dirty=false`.
+- Final device and accessibility harness: `b049d310b3016eea78aa8754da0992e8bdd1e48b`.
+- Corresponding-source SHA-256: `a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c`.
+- The source archive contains 676 hashed files and records final revision `b049d31`, `dirty=false`.
 - Canonical user-facing project: `kinnso-os.vercel.app`.
 
 ## Implemented in this candidate
@@ -87,6 +89,31 @@ The temporary diagnostic rows were removed afterward.
 - Browser coverage includes 320px layouts, 200% text, keyboard controls, duplicate/interrupted commands, role revocation, cross-company denial, stale responses and SSR privacy isolation.
 - The complete authenticated creator-merchant-operations migration journey passed on the exact final build in **25.3 seconds**, including creator session creation, perk redemption, merchant offers, operations directories, role revocation, legacy enquiry routing and responsive width.
 - The shorter audited content-admin mutation flow also passed on the final build.
+- The final source built successfully under both Node.js 24.22.1 and Node.js 26.13.0, generating all 71 routes.
+- The device draft suite passed **13/13**, covering offline/device-style navigation, IndexedDB persistence, recovery, Back/Forward protection, import and cancellation.
+- Connected accessibility passed **1/1**, public accessibility passed **36/36**, component accessibility passed **50/50**, and the content workflow passed **5/5**.
+
+## Content readiness
+
+The production content check **FAILED**. Production currently displays nine published guide cards: one explicitly synthetic workflow fixture and eight non-synthetic summaries. Only the synthetic guide has a structured `guide_version`; the other eight have no version, no days or stops, no source references, no cover asset and no place-verification date. No named author-consent record, editorial approval or cover-rights record exists.
+
+The seven article rows are placeholder/seed fixtures with generated UUIDs, no publication dates and no source or validation references. They do not satisfy the three-guide real-content pilot.
+
+## Device and accessibility
+
+Automated Chromium coverage passes across EN/zh-HK, 320/640/1280px, 200% zoom-equivalent text, touch-style device navigation, keyboard-only operation, axe WCAG A/AA through 2.2, focus restoration and loading/error announcements.
+
+Physical iOS Safari, physical Android Chrome, actual VoiceOver and actual NVDA remain **NOT_RUN**. Automated browser emulation and axe results do not close those acceptance gates.
+
+## Production rollout
+
+Production is unchanged and remains on deployment `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`, source lineage `42be3ce4c7207b6ec11ec8c4bd85a5feaa6588ef`. The deployment is READY, no rollback is pending, and `/api/health` on the old production release returns 404.
+
+Production binds to Supabase project `scryfkefedzuetfdtrvl` with `trips,bookmarks,creator,merchant,ops,notifications` enabled. Its ledger has 204 entries but ends at `20261105123750`, while the candidate’s 204-entry clean chain ends at `20261107020000`. Production is missing the reviewed public-inventory suspension, redeem-perk repair, operations-lifecycle and security hardening, and audited content migration. It also retains the permissive operations write policies, permits authenticated audit-log appends and lacks the six audited content RPCs.
+
+The exact rollback target is recorded as `dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs`. The currently deployed app does not use the table-write paths revoked by migration 204, so the reviewed database delta can be applied before the new app, followed by application verification and capability checks. A database reversal must be a reviewed forward fix; historical migrations must not be replayed.
+
+No production error logs were found for the last 24 hours. The installed Vercel CLI does not expose the metrics command, and an external alert binding is not verified. Two hosted Preview attempts were rejected by Vercel packaging/CLI limitations before runtime: the directory upload omitted the required `.gitignore`, and local prebuilt packaging could not spawn `cmd.exe`. No Preview alias or production alias was changed.
 
 ## Route matrix
 
@@ -103,9 +130,10 @@ The temporary diagnostic rows were removed afterward.
 
 ## Remaining launch gates
 
-- Real author-reviewed guides, lawful cover assets and the three-guide content pilot remain content gates.
-- Physical iOS/Android, VoiceOver and NVDA acceptance remains unverified.
-- Production deployment, production database changes and rollback promotion require separate scoped approval.
+- No author-consented structured guide, source/verification record or lawful cover asset exists. Production has eight summary-only cards plus one synthetic test guide.
+- Physical iOS/Android, VoiceOver and NVDA remain unverified.
+- Production is missing five reviewed migrations and still has the pre-hardening schema/security behavior; the current app is 41 commits behind the runtime candidate.
+- Production deployment, database application, capability verification and rollout approval remain separate gates.
 
 ## Boundaries
 

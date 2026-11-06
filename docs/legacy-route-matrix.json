@@ -2484,8 +2484,8 @@
   ],
   "observedAt": "2026-11-07",
   "candidate": {
-    "applicationSourceHead": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
-    "sourceArchiveSha256": "36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67",
+    "applicationSourceHead": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+    "sourceArchiveSha256": "a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c",
     "migrationCount": 204,
     "lastMigration": "20261107020000",
     "combinedChainReset": "PASS_CLEAN_204",

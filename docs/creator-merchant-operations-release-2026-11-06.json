@@ -4,7 +4,8 @@
   "technicalReleaseStatus": "PASS",
   "deploymentReady": false,
   "launchRecommendation": "HOLD",
-  "applicationSourceHead": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
+  "applicationSourceHead": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+  "runtimeApplicationCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
   "releaseCommits": {
     "feature": "6a495a26919c4e85398047217de627de1c796d91",
     "packaging": "5f9669d0fc80e8dd2faa7d20ae83881b28ecab50",
@@ -16,12 +17,13 @@
     "operationsContentAdministration": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
     "auditedContentMigration": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
     "migrationJourneyAndHeadingFix": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
-    "finalSourcePackage": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
-    "finalApplication": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953"
+    "finalDeviceAndAccessibilityHarness": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+    "finalSourcePackage": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
+    "finalApplication": "b049d310b3016eea78aa8754da0992e8bdd1e48b"
   },
   "sourceArchive": {
-    "sha256": "36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67",
-    "metadataRevision": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
+    "sha256": "a2c80d60ea9198332d3bf4a918079aa3e283bc17b39448bb273c29254357687c",
+    "metadataRevision": "b049d310b3016eea78aa8754da0992e8bdd1e48b",
     "fileCount": 676,
     "dirty": false
   },
@@ -90,6 +92,11 @@
       "skipped": 1,
       "failed": 0
     },
+    "productionRuntimeBuilds": {
+      "node24": "PASS",
+      "node26": "PASS",
+      "routesGenerated": 71
+    },
     "connectedBrowser": {
       "distinctPassedAcrossCandidateLine": 111,
       "finalHeadCoreJourneyPassed": 1,
@@ -98,7 +105,15 @@
       "legacyEnquiryAliasPassed": 1,
       "fullMigrationJourneyPassed": 1,
       "longMigrationJourneyOnExactHead": "PASS",
-      "note": "The full authenticated creator-merchant-operations migration journey and the focused audited content-admin mutation flow both passed on the exact final build."
+      "deviceDraftNavigationPassed": 13,
+      "connectedAccessibilityPassed": 1,
+      "publicAccessibilityPassed": 36,
+      "componentAccessibilityPassed": 50,
+      "contentWorkflowPassed": 5,
+      "physicalDevices": "NOT_RUN",
+      "voiceOver": "NOT_RUN",
+      "nvda": "NOT_RUN",
+      "note": "The full authenticated migration journey, focused audited content mutations, touch/device recovery matrix, connected accessibility flow, public WCAG matrix and component WCAG matrix passed on the exact final build."
     },
     "operationsSecurity": {
       "isolatedIntegrationPassed": 3,
@@ -146,6 +161,24 @@
       "auditPrimitiveClientAccess": "DENIED",
       "directPartnerPerkWrites": "DENIED",
       "directTestimonialWrites": "DENIED"
+    },
+    "productionRollout": {
+      "status": "BLOCKED",
+      "currentProductionCommit": "42be3ce4c7207b6ec11ec8c4bd85a5feaa6588ef",
+      "currentDeployment": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs",
+      "currentDeploymentStatus": "READY",
+      "currentDatabaseLedgerHead": "20261105123750",
+      "candidateDatabaseLedgerHead": "20261107020000",
+      "pendingMigrationFiles": 5,
+      "legacyOperationsWritePoliciesPresent": true,
+      "authenticatedAuditAppendAllowed": true,
+      "missingContentRpcFunctions": 6,
+      "runtimeHealthEndpointOnCurrentProduction": 404,
+      "recentProductionErrorLogs24h": 0,
+      "rollbackTargetRecorded": true,
+      "pendingRollback": false,
+      "externalAlertBinding": "NOT_VERIFIED",
+      "hostedPreview": "BLOCKED_PACKAGING"
     }
   },
   "routeMatrix": {
@@ -177,6 +210,8 @@
     "legacy /admin/enquiries resolves to the native enquiry-administration view",
     "the complete 204-migration chain reset cleanly with zero application data and the expected audited function and policy boundaries",
     "the complete creator, merchant and operations migration journey passed on the exact final application build",
+    "the exact release built successfully under both Node 24 and Node 26 and generated all 71 routes",
+    "13 touch/device recovery, 36 public WCAG/reflow, 50 component WCAG/text-resize, one connected accessibility and five content browser cases passed",
     "native health, consented analytics ingestion/reporting, retention cron and secret-authenticated revalidation APIs",
     "legacy public, authentication, creator and merchant entry aliases resolve on the consolidated origin",
     "legacy traveller-offer and booking confirmation links return explicit capability gates instead of 404",
@@ -191,10 +226,12 @@
     "payout and settlement execution"
   ],
   "remainingLaunchGates": [
-    "author-reviewed production content and lawful cover assets",
-    "representative physical-device and assistive-technology acceptance",
-    "exact production configuration, migration and rollback approval"
+    "no author-consented structured real guide, source record, verification date or lawful cover asset exists; production has eight summary-only guide cards plus one explicit synthetic test guide",
+    "representative physical iOS/Android and actual VoiceOver/NVDA acceptance remain unperformed",
+    "production database ledger is divergent and five reviewed migrations are missing, including suspension, security and audited content mutations",
+    "production application currently serves older commit 42be3ce and returns 404 from /api/health"
   ],
+  "productionRolloutAudit": "docs/production-rollout-audit-2026-11-07.json",
   "productionChanged": false,
   "journeysDeploymentChanged": false,
   "backupRestore": "WAIVED"
