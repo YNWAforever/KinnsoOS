@@ -2480,8 +2480,8 @@
   ],
   "observedAt": "2026-11-06",
   "candidate": {
-    "applicationSourceHead": "202da454b3fff37588fdad37448bf3f0a5218bbc",
-    "sourceArchiveSha256": "05627f712886095e5d121eb319299ec0297ce9c06e6191c626e6aea70178fe0a",
+    "applicationSourceHead": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
+    "sourceArchiveSha256": "af0717302f05a3db6a6933f29bac1a152d366e7a0461f1195a074ada4323fbe7",
     "migrationCount": 203,
     "lastMigration": "20261106135230",
     "productionChanged": false,

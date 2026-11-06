@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "READY_FOR_USER_REVIEW",
   "launchRecommendation": "HOLD",
-  "applicationSourceHead": "202da454b3fff37588fdad37448bf3f0a5218bbc",
+  "applicationSourceHead": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
   "releaseCommits": {
     "feature": "6a495a26919c4e85398047217de627de1c796d91",
     "packaging": "5f9669d0fc80e8dd2faa7d20ae83881b28ecab50",
@@ -10,12 +10,13 @@
     "operationsTeamFeature": "366dc65f388c3342d8ad018314009f36e14edb81",
     "operationsTeamRegression": "d215f4b950800c500e6840457f16aa3e27942865",
     "operationsSecurity": "0eb3c55316c828484f8bf4d223a78a94df850f34",
-    "finalSourcePackage": "202da454b3fff37588fdad37448bf3f0a5218bbc",
-    "finalApplication": "202da454b3fff37588fdad37448bf3f0a5218bbc"
+    "operationalApisAndModeration": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
+    "finalSourcePackage": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
+    "finalApplication": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc"
   },
   "sourceArchive": {
-    "sha256": "05627f712886095e5d121eb319299ec0297ce9c06e6191c626e6aea70178fe0a",
-    "metadataRevision": "202da454b3fff37588fdad37448bf3f0a5218bbc",
+    "sha256": "af0717302f05a3db6a6933f29bac1a152d366e7a0461f1195a074ada4323fbe7",
+    "metadataRevision": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
     "dirty": false
   },
   "database": {
