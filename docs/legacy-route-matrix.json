@@ -2455,8 +2455,8 @@
   ],
   "observedAt": "2026-11-06",
   "candidate": {
-    "applicationSourceHead": "d215f4b950800c500e6840457f16aa3e27942865",
-    "sourceArchiveSha256": "f0324c4871039a40769086ec8bc5d259966b54067851f4f634da3d6cec7b14ce",
+    "applicationSourceHead": "0eb3c55316c828484f8bf4d223a78a94df850f34",
+    "sourceArchiveSha256": "2ff404fb654e2b4710db2df884985b93b1f97592fda283e16575e6b28123a3b7",
     "migrationCount": 203,
     "lastMigration": "20261106135230",
     "productionChanged": false,

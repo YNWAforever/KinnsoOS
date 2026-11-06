@@ -4,13 +4,14 @@ Status: **READY_FOR_USER_REVIEW**. Launch recommendation: **HOLD**.
 
 ## Candidate identity
 
-- Final application source: `d215f4b950800c500e6840457f16aa3e27942865`.
+- Final application source: `0eb3c55316c828484f8bf4d223a78a94df850f34`.
 - Feature implementation: `6a495a26919c4e85398047217de627de1c796d91`.
 - Source-package repair: `5f9669d0fc80e8dd2faa7d20ae83881b28ecab50`.
-- Operations team implementation: `366dc65`.
+- Operations team implementation: `366dc65f388c3342d8ad018314009f36e14edb81`.
 - Operations team regression coverage: `d215f4b950800c500e6840457f16aa3e27942865`.
-- Corresponding-source SHA-256: `f0324c4871039a40769086ec8bc5d259966b54067851f4f634da3d6cec7b14ce`.
-- The source archive records final revision `d215f4b`, `dirty=false`.
+- Operations security and legacy-route hardening: `0eb3c55316c828484f8bf4d223a78a94df850f34`.
+- Corresponding-source SHA-256: `2ff404fb654e2b4710db2df884985b93b1f97592fda283e16575e6b28123a3b7`.
+- The source archive records final revision `0eb3c55`, `dirty=false`.
 - Canonical user-facing project: `kinnso-os.vercel.app`.
 
 ## Implemented in this candidate
