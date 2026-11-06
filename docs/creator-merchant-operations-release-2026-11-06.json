@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "status": "READY_FOR_USER_REVIEW",
   "launchRecommendation": "HOLD",
-  "applicationSourceHead": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
+  "applicationSourceHead": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
   "releaseCommits": {
     "feature": "6a495a26919c4e85398047217de627de1c796d91",
     "packaging": "5f9669d0fc80e8dd2faa7d20ae83881b28ecab50",
@@ -11,12 +11,15 @@
     "operationsTeamRegression": "d215f4b950800c500e6840457f16aa3e27942865",
     "operationsSecurity": "0eb3c55316c828484f8bf4d223a78a94df850f34",
     "operationalApisAndModeration": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
-    "finalSourcePackage": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
-    "finalApplication": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc"
+    "operationsContentAdministration": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
+    "auditedContentMigration": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
+    "finalSourcePackage": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
+    "finalApplication": "76d881ba528856bfb719dd43cd6f36ad0e6f317f"
   },
   "sourceArchive": {
-    "sha256": "af0717302f05a3db6a6933f29bac1a152d366e7a0461f1195a074ada4323fbe7",
-    "metadataRevision": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
+    "sha256": "da80ead579488249a9585a105e41489352a158330c960c4a7251d3eb10d2e33f",
+    "metadataRevision": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
+    "fileCount": 676,
     "dirty": false
   },
   "database": {
@@ -24,35 +27,56 @@
     "apiOrigin": "http://127.0.0.1:59721",
     "databasePort": "59722",
     "cleanChainReset": true,
-    "migrationCount": 203,
-    "lastMigration": "20261106135230",
+    "combinedChainReset": "BLOCKED_RESOURCE_GATE_FREE_RAM_BELOW_4_GIB",
+    "resourceEvidence": {
+      "freeMemoryGiB": 0.97,
+      "requiredMemoryGiB": 4,
+      "observedAt": "2026-11-07",
+      "action": "Did not start another Supabase stack or disturb existing volumes."
+    },
+    "predecessorCleanChain": {
+      "migrationCount": 203,
+      "lastMigration": "20261106135230"
+    },
+    "migrationCount": 204,
+    "lastMigration": "20261107020000",
     "retainedSyntheticRecords": {
       "policy": "Labeled records are intentionally retained for user review in the disposable candidate database.",
-      "authUsers": 17,
-      "creators": 17,
+      "authUsers": 39,
+      "creators": 39,
       "merchantProfiles": 8,
-      "opsMembers": 8,
+      "opsMembers": 19,
       "opsInvites": 0,
-      "opsAudit": 33,
+      "opsAudit": 55,
       "guides": 0,
       "experiences": 0,
-      "sessions": 0,
+      "sessions": 8,
       "merchantOffers": 0,
-      "partnerPerks": 0,
+      "partnerPerks": 8,
+      "testimonials": 8,
+      "enquiries": 11,
       "analyticsEvents": 0,
-      "latestModerationRun": "5d77d43b-ea5d-4783-9667-0ef56561124f"
+      "latestModerationRun": "5d77d43b-ea5d-4783-9667-0ef56561124f",
+      "latestContentRun": {
+        "sessionId": "d1ec2717-b72f-4f2c-9fdf-f9bc42e08b2c",
+        "perkId": "dec2f0ac-90e5-4cb3-855e-e9198d525e33",
+        "testimonialId": "9aba8e72-4ed2-48e6-8f59-386e2936f9bd",
+        "enquiryId": "81f98460-b197-4af8-9a3b-0f2383e5cf18",
+        "opsMemberId": "7047dfbd-eb8c-4e06-bc48-241f01216bf3",
+        "auditActions": 10
+      }
     }
   },
   "tests": {
     "journeysUnit": {
-      "passed": 1482,
+      "passed": 1489,
       "skipped": 2,
       "failed": 0
     },
     "typecheck": "PASS",
     "productionModeWebpackBuild": "PASS",
     "sourcePackage": {
-      "passed": 9,
+      "passed": 10,
       "skipped": 1,
       "failed": 0
     },
@@ -60,7 +84,10 @@
       "distinctPassedAcrossCandidateLine": 111,
       "finalHeadCoreJourneyPassed": 1,
       "finalHardenedRegressionPassed": 14,
-      "note": "The final hardened build reran the full migration journey, operations-team lifecycle, eight authentication cases and four legacy-route cases on the clean 203-migration database."
+      "operationsContentAdministrationPassed": 1,
+      "legacyEnquiryAliasPassed": 1,
+      "longMigrationJourneyOnExactHead": "NOT_RUN_BROWSER_CLOSED_UNDER_RESOURCE_PRESSURE",
+      "note": "The shorter authenticated browser flow verifies session, perk, testimonial and enquiry mutations, all corresponding audit events, and the corrected legacy enquiry alias. A longer rerun closed its browser before completion under the documented memory gate."
     },
     "operationsSecurity": {
       "isolatedIntegrationPassed": 3,
@@ -87,6 +114,17 @@
       "merchantTier": "PASS",
       "merchantNote": "PASS",
       "labeledRecordsRetained": true
+    },
+    "operationsContent": {
+      "isolatedIntegrationPassed": 1,
+      "duplicateCreateReconciliation": "PASS",
+      "concurrentStatusAuditDeduplication": "PASS",
+      "moderatorMinimumRole": "PASS",
+      "directOperationsWritesDenied": "PASS",
+      "sessionCreateAudit": "PASS",
+      "perkCreateActivateAudit": "PASS",
+      "testimonialCreatePublishAudit": "PASS",
+      "enquiryStatusAudit": "PASS"
     }
   },
   "routeMatrix": {
@@ -111,6 +149,11 @@
     "operations owner invitations, one-time acceptance, role changes, suspension, reactivation and revocation",
     "operations final-owner concurrency, revoked-session enforcement, invite secret isolation and audit integrity",
     "creator and merchant moderation status, verification, directory listing, tier and audited private notes",
+    "operations session creation and live, end, cancel and concurrent status transitions with one audit per state change",
+    "operations partner-perk creation and activation with direct authenticated writes denied",
+    "operations testimonial draft publication with direct authenticated writes denied",
+    "operations enquiry status review and resolution through the existing audited RPC",
+    "legacy /admin/enquiries resolves to the native enquiry-administration view",
     "native health, consented analytics ingestion/reporting, retention cron and secret-authenticated revalidation APIs",
     "legacy public, authentication, creator and merchant entry aliases resolve on the consolidated origin",
     "legacy traveller-offer and booking confirmation links return explicit capability gates instead of 404",
@@ -125,7 +168,7 @@
     "payout and settlement execution"
   ],
   "remainingLaunchGates": [
-    "remaining session, perk, testimonial and enquiry administration mutations",
+    "fresh combined 204-migration reset blocked by free memory below the 4 GiB resource gate",
     "author-reviewed production content and lawful cover assets",
     "representative physical-device and assistive-technology acceptance",
     "exact production configuration, migration and rollback approval"

@@ -198,9 +198,9 @@
       "sourceBlob": "03774f849f635805ea558f1682e0514b5c34c2e4",
       "legacyPath": "/{locale}/admin/enquiries",
       "disposition": "native-port-accepted",
-      "nativePath": "/{locale}/ops/support",
+      "nativePath": "/{locale}/ops?view=enquiries",
       "verification": "CONNECTED_BACKEND_AND_FIXTURE_BROWSER",
-      "reason": "Native route, role/company scoping and connected browser behavior verified on the candidate-specific target.",
+      "reason": "Native route, role/company scoping, audited status review and connected browser behavior verified on the candidate-specific target.",
       "imports": [
         "next/navigation",
         "@/components/kinnso/admin/AdminEnquiriesView",
@@ -213,8 +213,9 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean chain",
-        "creator/merchant/operations browser matrix"
+        "203-migration clean reset plus reviewed 204th migration",
+        "authenticated content-admin browser workflow",
+        "legacy alias redirected to the native enquiry view"
       ]
     },
     {
@@ -426,8 +427,9 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean chain",
-        "creator/merchant/operations browser matrix"
+        "203-migration clean reset plus reviewed 204th migration",
+        "perk create and activation with audit evidence",
+        "direct authenticated operations writes denied"
       ]
     },
     {
@@ -450,8 +452,9 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean chain",
-        "creator/merchant/operations browser matrix"
+        "203-migration clean reset plus reviewed 204th migration",
+        "session create and status transitions with audit evidence",
+        "concurrent duplicate writes reconciled without duplicate audit"
       ]
     },
     {
@@ -523,8 +526,9 @@
       ],
       "evidence": [
         "real isolated backend",
-        "203-migration clean chain",
-        "creator/merchant/operations browser matrix"
+        "203-migration clean reset plus reviewed 204th migration",
+        "testimonial draft publication with audit evidence",
+        "direct authenticated operations writes denied"
       ]
     },
     {
@@ -2478,12 +2482,13 @@
       ]
     }
   ],
-  "observedAt": "2026-11-06",
+  "observedAt": "2026-11-07",
   "candidate": {
-    "applicationSourceHead": "cf16b82509d6cf67fdd6c56dfcf1a81ed55129cc",
-    "sourceArchiveSha256": "af0717302f05a3db6a6933f29bac1a152d366e7a0461f1195a074ada4323fbe7",
-    "migrationCount": 203,
-    "lastMigration": "20261106135230",
+    "applicationSourceHead": "76d881ba528856bfb719dd43cd6f36ad0e6f317f",
+    "sourceArchiveSha256": "da80ead579488249a9585a105e41489352a158330c960c4a7251d3eb10d2e33f",
+    "migrationCount": 204,
+    "lastMigration": "20261107020000",
+    "combinedChainReset": "BLOCKED_RESOURCE_GATE_FREE_RAM_BELOW_4_GIB",
     "productionChanged": false,
     "backupRestore": "WAIVED"
   }
