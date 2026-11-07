@@ -529,6 +529,7 @@
     "tests/integration/ops-routing.test.mjs",
     "tests/integration/ops-scale.test.mjs",
     "tests/integration/ops-team-lifecycle.test.mjs",
+    "tests/integration/pilot-control-room.test.mjs",
     "tests/integration/pilot-metrics.test.mjs",
     "tests/integration/reports-agent-quota.test.mjs",
     "tests/integration/share-receipts.test.mjs",
@@ -682,6 +683,7 @@
     "tests/contracts/20261106123312_harden_ops_team_lifecycle.sql": "supabase/migrations/20261106123312_harden_ops_team_lifecycle.sql",
     "tests/contracts/20261106135230_harden_ops_team_security.sql": "supabase/migrations/20261106135230_harden_ops_team_security.sql",
     "tests/contracts/20261107020000_kinnso_ops_content_audit.sql": "supabase/migrations/20261107020000_kinnso_ops_content_audit.sql",
-    "tests/contracts/20261107081531_kinnso_pilot_control_room_schema.sql": "supabase/migrations/20261107081531_kinnso_pilot_control_room_schema.sql"
+    "tests/contracts/20261107081531_kinnso_pilot_control_room_schema.sql": "supabase/migrations/20261107081531_kinnso_pilot_control_room_schema.sql",
+    "tests/contracts/20261107085017_kinnso_pilot_control_room_rpcs.sql": "supabase/migrations/20261107085017_kinnso_pilot_control_room_rpcs.sql"
   }
 }

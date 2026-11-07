@@ -5,6 +5,19 @@ import { readFileSync } from 'node:fs';
 const PILOT_SCHEMA_MIGRATION = '20261107081531_kinnso_pilot_control_room_schema.sql';
 const sql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_SCHEMA_MIGRATION, import.meta.url), 'utf8');
 const tables = ['runs', 'participants', 'invites', 'content_intakes', 'collaborations', 'checks', 'evidence'];
+const PILOT_RPC_MIGRATION = '20261107085017_kinnso_pilot_control_room_rpcs.sql';
+const rpcSql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_RPC_MIGRATION, import.meta.url), 'utf8');
+
+test('pilot RPC migration retains separate private participant attribution and protects delegates', () => {
+  assert.match(rpcSql, /create table kinnso_internal\.pilot_participant_audit/);
+  assert.match(rpcSql, /actor_user_id uuid not null references auth\.users/);
+  assert.match(rpcSql, /revoke all on kinnso_internal\.pilot_participant_audit from public,anon,authenticated,service_role/);
+  assert.doesNotMatch(rpcSql, /alter table public\.ops_audit_log|create or replace function public\.ops_audit_log_append/i);
+  assert.match(rpcSql, /revoke all on function kinnso_internal\.publish_kinnso_guide_draft/);
+  for (const name of ['get_kinnso_ops_pilot','admin_apply_kinnso_pilot_command','get_kinnso_pilot_self','apply_kinnso_pilot_participant_command','get_kinnso_pilot_publish_permission','publish_kinnso_pilot_guide_draft']) {
+    assert.match(rpcSql, new RegExp(`create function public\\.${name}[^$]+security definer set search_path=''`));
+  }
+});
 
 function table(name) {
   const body = sql.match(new RegExp(`create table kinnso_internal\\.pilot_${name} \\(([\\s\\S]*?)\\n\\);`, 'i'))?.[1];
