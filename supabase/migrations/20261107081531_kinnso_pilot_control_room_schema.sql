@@ -15,6 +15,7 @@ create table kinnso_internal.pilot_runs (
   privacy_owner_reference text check (char_length(btrim(privacy_owner_reference)) between 1 and 200),
   alert_owner_reference text check (char_length(btrim(alert_owner_reference)) between 1 and 200),
   private_channel_reference text check (char_length(btrim(private_channel_reference)) between 1 and 200),
+  -- Task 4 validates that the referenced synthetic rehearsal passed for the same release.
   synthetic_rehearsal_run_id uuid references kinnso_internal.pilot_runs(id),
   created_by_ops_member_id uuid not null references public.kinnso_ops_members(id),
   revision integer not null default 1 check (revision > 0),
@@ -115,16 +116,19 @@ create table kinnso_internal.pilot_content_intakes (
   constraint pilot_intakes_source_urls_check check (
     cardinality(source_urls) <= 20 and coalesce(array_ndims(source_urls), 1) = 1
     and array_to_string(source_urls, '', ' ') !~ '[[:space:]]'
+    and char_length(array_to_string(source_urls, '')) <= 20000
+    -- A match is 2049 consecutive characters within one URL (128 * 16 + 1).
+    and array_to_string(source_urls, E'\n') !~ E'([^\n]{128}){16}[^\n]'
     and (cardinality(source_urls) = 0 or array_to_string(source_urls, E'\n')
       ~ E'^https?://[^/@?#[:space:]]+([/?#][^[:space:]]*)?(\\nhttps?://[^/@?#[:space:]]+([/?#][^[:space:]]*)?)*$'
-      and array_to_string(source_urls, '') !~ '[[:space:]]')
+    )
   ),
   constraint pilot_intakes_cover_rights_check check (
     (cover_rights_confirmed is true and cover_rights_evidence_reference is not null)
     or (cover_rights_confirmed is not true and cover_rights_evidence_reference is null)
   ),
   -- Approval binds a review to a specific draft and exact digest. The publication RPC
-  -- must compare these with the authoritative guide and its published digest.
+  -- must verify the reviewed published version and exact digest against the authoritative guide.
   constraint pilot_intakes_approval_check check (
     status not in ('approved', 'published') or (
       guide_id is not null and guide_draft_revision is not null and content_digest is not null
@@ -132,9 +136,7 @@ create table kinnso_internal.pilot_content_intakes (
     )
   ),
   constraint pilot_intakes_publication_check check (
-    status <> 'published' or (
-      reviewed_guide_version is not null and reviewed_guide_version = guide_draft_revision
-    )
+    status <> 'published' or reviewed_guide_version is not null
   )
 );
 

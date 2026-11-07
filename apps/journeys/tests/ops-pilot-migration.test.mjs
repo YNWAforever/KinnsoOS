@@ -18,11 +18,12 @@ test('pilot tables are private with RLS and explicit privilege revocation', () =
     assert.match(sql, new RegExp(`alter table kinnso_internal\\.pilot_${name} enable row level security;`, 'i'));
     assert.match(sql, new RegExp(`revoke all on (?:table )?kinnso_internal\\.pilot_${name} from public, anon, authenticated, service_role;`, 'i'));
   }
-  assert.doesNotMatch(sql, /create\s+(?:policy|trigger|function)|\bgrant\b/i);
+  assert.doesNotMatch(sql, /\b(?:create\s+(?:policy|trigger|function)|grant)\b/i);
 });
 
 test('run and participant uniqueness preserves replacement after withdrawal', () => {
-  assert.match(sql, /create unique index[^;]+on kinnso_internal\.pilot_runs[^;]+where status in \('recruiting', 'paused', 'running'\)/i);
+  assert.match(sql, /create unique index[^;]+on kinnso_internal\.pilot_runs \(\(true\)\)\s+where status in \('recruiting', 'paused', 'running'\)/i);
+  assert.match(sql, /create unique index\s+\w+\s+on kinnso_internal\.pilot_participants \(run_id, user_id\)\s+where user_id is not null;/i);
   assert.match(table('participants'), /pilot_cohort_role in \('required_traveller', 'required_creator', 'required_merchant', 'observer'\)/);
   assert.match(sql, /create unique index[^;]+\(run_id, pilot_cohort_role\)\s+where pilot_cohort_role <> 'observer' and status <> 'withdrawn'/i);
 });
@@ -63,4 +64,19 @@ test('foreign keys have indexes with the referencing columns first', () => {
       assert.ok(indexes.some(s => new RegExp(`(?:unique |pilot_${name} )\\(${key}[,)]`, 'i').test(s)), `${name}: ${key}`);
     }
   }
+});
+test('published content requires a reviewed version independent of the draft revision', () => {
+  const body = table('content_intakes');
+  assert.match(body, /status <> 'published' or reviewed_guide_version is not null/);
+  assert.doesNotMatch(body, /reviewed_guide_version\s*=\s*guide_draft_revision/);
+});
+
+test('source URLs are bounded individually and in total', () => {
+  const body = table('content_intakes');
+  assert.match(body, /array_to_string\(source_urls, E'\\n'\) !~ E'\(\[\^\\n\]\{128\}\)\{16\}\[\^\\n\]'/);
+  assert.match(body, /char_length\(array_to_string\(source_urls, ''\)\) <= 20000/);
+});
+
+test('a real run can reference a persisted rehearsal for Task 4 validation', () => {
+  assert.match(table('runs'), /-- Task 4 validates[^\n]*same release[^\n]*\n\s*synthetic_rehearsal_run_id uuid references kinnso_internal\.pilot_runs\(id\)/);
 });
