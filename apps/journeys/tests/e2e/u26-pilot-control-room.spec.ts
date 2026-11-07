@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { runPilotCleanup } from '../../scripts/pilot-cleanup.mjs';
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
+import { cleanupPilotFixture } from '../../scripts/pilot-cleanup.mjs';
 import { loadEnvFile } from 'node:process';
 import { createClient } from '@supabase/supabase-js';
 import { verifiedConnectedArtifact } from '../../scripts/connected-build-identity.mjs';
@@ -11,7 +11,7 @@ import { verifyTestTarget } from '../../scripts/verify-test-target.mjs';
 const origin = 'http://127.0.0.1:3495';
 const suiteLabel = 'task10a-' + randomUUID();
 const runIds: string[] = [];
-const users: string[] = [];
+const users: Array<{ id: string; role: string }> = [];
 const guides: string[] = [];
 const missions: string[] = [];
 let target: ReturnType<typeof verifyTestTarget>;
@@ -35,7 +35,7 @@ async function signIn(page: Page, role: string, label: string) {
   const result = await admin.auth.admin.createUser({ email, password: passphrase, email_confirm: true });
   if (result.error || !result.data.user) throw Error('Synthetic Auth bootstrap failed: ' + role);
   const id = result.data.user.id;
-  users.push(id);
+  users.push({ id, role });
   await page.goto('/en/sign-in?next=%2Fen%2Ftrips');
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill(passphrase);
@@ -63,96 +63,26 @@ function participant(page: Page, command: object) {
 test.afterAll(async ({}, testInfo) => {
   testInfo.setTimeout(120_000);
   if (!users.length) return;
-  verifyTestTarget();
-  const ids = (values: string[]) => "array[" + values.map(value => {
-    if (!/^[0-9a-f-]{36}$/.test(value)) throw Error('Unsafe cleanup identifier');
-    return "'" + value + "'";
-  }).join(',') + "]::uuid[]";
-  const sql = (statement: string) => execFileSync('docker', ['exec', '-i', target.dbContainer, 'psql',
-    '-X', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq'],
-    { input: statement, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
-  const byRun = "run_id = any(" + ids(runIds) + ")";
-  const byUser = (column: string) => column + ' = any(' + ids(users) + ')';
-  const byGuide = (column: string) => column + ' = any(' + ids(guides) + ')';
-  const captureErrors: string[] = [];
   const journal = '.local-private/pilot-cleanup/' + suiteLabel + '.json';
-  const save = (value: object) => {
-    try {
+  const count = await cleanupPilotFixture({
+    known: { users, runIds, guides, missions },
+    save(value: object) {
       mkdirSync('.local-private/pilot-cleanup', { recursive: true });
-      writeFileSync(journal, JSON.stringify(value));
-    } catch { captureErrors.push('cleanup journal'); }
-  };
-  save({ users, runIds, guides, missions });
-  const inScope = (column: string, table: string, where: string) => {
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const found = sql('select id from ' + table + ' where ' + where);
-        return column + ' = any(' + ids(found ? found.split(/\r?\n/) : []) + ')';
-      } catch { /* Retry the exact lookup before any deletion. */ }
-    }
-    captureErrors.push(table);
-    return 'false';
-  };
-  const slot = inScope('participant_id', 'kinnso_internal.pilot_participants', byRun);
-    const mission = 'id = any(' + ids(missions) + ')';
-  const missionChild = 'mission_id = any(' + ids(missions) + ')';
-  const submission = inScope('mission_participant_id', 'public.mission_participants', missionChild);
-  const supportCase = inScope('case_id', 'kinnso_internal.support_cases', byUser('recipient_id'));
-  const tripChild = inScope('trip_id', 'public.trips', byUser('owner_user_id'));
-  const merchantChild = inScope('merchant_id', 'public.merchant_profiles', byUser('user_id'));
-  const filters = [
-    ['kinnso_internal.pilot_invites', slot],
-    ...['pilot_evidence', 'pilot_participant_audit', 'pilot_checks', 'pilot_collaborations',
-      'pilot_content_intakes', 'pilot_participants'].map(table => ['kinnso_internal.' + table, byRun]),
-    ['kinnso_internal.pilot_runs', "id = any(" + ids(runIds) + ")"],
-    ['public.ops_audit_log', inScope('actor_ops_member_id', 'public.kinnso_ops_members', byUser('user_id'))],
-    ['kinnso_internal.requests', byUser('actor_id')],
-    ['kinnso_internal.creator_requests', byUser('actor_id')],
-    ['kinnso_internal.workspace_requests', byUser('actor_id')],
-    ['kinnso_internal.trip_requests', byUser('actor_id')],
-    ['kinnso_internal.pilot_events', byGuide('guide_id')],
-    ['public.guide_saves', byUser('traveler_user_id')],
-    ['kinnso_internal.guide_drafts', byGuide('guide_id')],
-    ['public.guide_versions', byGuide('guide_id')],
-    ['public.trips', byUser('owner_user_id')],
-    ['public.guides', byGuide('id') + ' and ' + byUser('creator_id')],
-    ['kinnso_internal.inbox_events', byUser('recipient_id')],
-    ['kinnso_internal.support_messages', supportCase],
-    ['kinnso_internal.support_audit', supportCase],
-    ['kinnso_internal.support_cases', byUser('recipient_id')],
-    ['kinnso_internal.notification_outbox', byUser('recipient_id')],
-    ['public.notifications', byUser('creator_id')],
-    ['public.mission_verification_jobs', byUser('creator_id')],
-    ['public.mission_milestone_submissions', submission],
-    ['public.mission_participants', missionChild],
-    ['public.missions', mission],
-    ['kinnso_internal.merchant_audit', merchantChild],
-    ['kinnso_internal.merchant_members', merchantChild],
-    ['kinnso_internal.merchant_branches', merchantChild],
-    ['public.merchant_applications', byUser('user_id')],
-    ['public.merchant_profiles', byUser('user_id')],
-    ['public.kinnso_ops_members', byUser('user_id')],
-  ];
-  const checks = [...filters,
-    ...['trip_revisions', 'trip_stops', 'trip_days'].map(table => ['public.' + table, tripChild]),
-    ['public.mission_milestones', missionChild],
-    ...[['auth.users', 'id'], ['auth.sessions', 'user_id'], ['auth.identities', 'user_id'],
-      ['public.creators', 'id']].map(([table, key]) => [table, byUser(key)]),
-  ];
-  save({ users, runIds, guides, missions, filters, checks, captureErrors });
-  await runPilotCleanup([
-    ...filters.map(([table, where]) => ({ label: table, run: () => { sql('delete from ' + table + ' where ' + where); } })),
-    ...users.map((id, index) => ({ label: 'Auth user ' + index, async run() {
+      writeFileSync(journal + '.tmp', JSON.stringify(value));
+      renameSync(journal + '.tmp', journal);
+    },
+    verifyTarget: verifyTestTarget,
+    sql(statement: string) {
+      return execFileSync('docker', ['exec', '-i', target.dbContainer, 'psql',
+        '-X', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq'],
+      { input: statement, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    },
+    async deleteUser(id: string) {
       const result = await admin.auth.admin.deleteUser(id);
       if (result.error && result.error.status !== 404) throw Error('Synthetic Auth cleanup failed');
-    } })),
-  ], [
-    ...checks.map(([table, where]) => ({ label: table, run() {
-      if (sql('select count(*) from ' + table + ' where ' + where) !== '0') throw Error('Nonzero residue');
-    } })),
-    ...captureErrors.map(table => ({ label: 'uncaptured ' + table, run() { throw Error('Incomplete identifiers'); } })),
-  ]);
-    console.log('Task10A cleanup verified:', filters.length + 8, 'exact predicates');
+    },
+  });
+  console.log('Task10A cleanup verified:', count, 'exact predicates');
 });
 
 test('pilot rehearsal completes; real-classified replay retains the four manual gates', async ({ browser, request }) => {
