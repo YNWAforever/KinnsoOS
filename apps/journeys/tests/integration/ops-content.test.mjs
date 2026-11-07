@@ -1,7 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
+import {execFileSync} from 'node:child_process';
 import {fixture,admin} from './local-fixtures.mjs';
+import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
+
+const uuidValue=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+function purgeContentFixtures(ids){
+ const values=[...new Set(ids)].filter(id=>uuidValue.test(id));
+ if(!values.length)return;
+ const list=values.map(id=>`'${id}'`).join(',');
+ const {dbContainer}=verifyTestTarget();
+ execFileSync('docker',['exec',dbContainer,'psql','-X','-v','ON_ERROR_STOP=1','-U','postgres','-d','postgres','-c',
+  `delete from public.ops_audit_log where entity_id in (${list}) or actor_ops_member_id in (${list});
+   delete from public.community_sessions where id in (${list}) or host_creator_id in (${list});
+   delete from public.partner_perks where id in (${list});
+   delete from public.testimonials where id in (${list});
+   delete from public.kinnso_ops_members where id in (${list});`],
+ {stdio:'ignore',timeout:15000,windowsHide:true});
+}
 
 const ok=async promise=>{const result=await promise;assert.equal(result.error,null,JSON.stringify(result.error));return result.data;};
 
@@ -48,13 +65,7 @@ test('audited content RPCs are idempotent, concurrency-safe and not bypassable b
   const directTestimonial=await operator.client.from('testimonials').update({status:'draft'}).eq('id',testimonialId);
   assert.ok(directTestimonial.error,'operations direct testimonial writes must be denied');
  }finally{
-  if(entityIds.length){
-   await admin.from('ops_audit_log').delete().in('entity_id',entityIds);
-   await admin.from('community_sessions').delete().in('id',entityIds);
-   await admin.from('partner_perks').delete().in('id',entityIds);
-   await admin.from('testimonials').delete().in('id',entityIds);
-  }
-  if(memberIds.length){await admin.from('ops_audit_log').delete().in('actor_ops_member_id',memberIds);await admin.from('kinnso_ops_members').delete().in('id',memberIds);}
+  purgeContentFixtures([...entityIds,...memberIds,...f.actorIds()]);
   await f.cleanup();
  }
 });

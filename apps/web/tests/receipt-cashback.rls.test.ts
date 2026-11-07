@@ -37,7 +37,7 @@ const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url')
 function clientFor(userId: string) {
   const header = b64({ alg: 'HS256', typ: 'JWT' })
   const payload = b64({
-    sub: userId, role: 'authenticated', aud: 'authenticated',
+    sub: userId, role: 'authenticated', aud: 'authenticated', session_id: userId, is_anonymous: false,
     exp: Math.floor(Date.now() / 1000) + 3600,
   })
   const sig = createHmac('sha256', jwtSecret).update(`${header}.${payload}`).digest('base64url')
@@ -93,6 +93,10 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
       on conflict do nothing;
 
       update public.creators set status = 'active' where id = '${creatorUser}';
+      insert into auth.sessions(id,user_id,created_at,updated_at)
+      select id,id,now(),now() from auth.users
+      where id in ('${creatorUser}', '${merchantUser}', '${opsAdminUser}')
+      on conflict (id) do nothing;
     `)
 
     const s = svc()
