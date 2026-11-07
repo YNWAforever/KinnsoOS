@@ -8,9 +8,13 @@ import {pilotExecutionReadiness} from '../../lib/pilot/readiness.ts';
 // No credentials or remote target overrides: authenticate SQL sessions with local
 // synthetic Auth rows, then execute each public boundary as authenticated.
 const target=verifyTestTarget();
-assert.equal(target.projectRef,'kinnsoos-public-it-20261106');
-assert.equal(target.apiOrigin,'http://127.0.0.1:59721');
-assert.equal(target.dbContainer,'supabase_db_kinnsoos-public-it-20261106');
+const ci=process.env.CI==='true'&&process.env.GITHUB_ACTIONS==='true';
+const expected=ci
+ ?{projectRef:'kinnsoos-b1-20261002',apiOrigin:'http://127.0.0.1:58421',dbContainer:'supabase_db_kinnsoos-b1-20261002'}
+ :{projectRef:'kinnsoos-public-it-20261106',apiOrigin:'http://127.0.0.1:59721',dbContainer:'supabase_db_kinnsoos-public-it-20261106'};
+assert.equal(target.projectRef,expected.projectRef);
+assert.equal(target.apiOrigin,expected.apiOrigin);
+assert.equal(target.dbContainer,expected.dbContainer);
 const args=['exec','-i',target.dbContainer,'psql','-X','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-Atq'];
 const sql=text=>execFileSync('docker',args,{input:text,encoding:'utf8',windowsHide:true,stdio:['pipe','pipe','pipe']}).trim();
 const q=x=>`'${String(x).replaceAll("'","''")}'`;

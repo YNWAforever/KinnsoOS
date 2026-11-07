@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {migrationUrl} from './packaged-source.mjs';
 
 test('operations team migration enforces one pending invite and idempotent audited state changes', async () => {
-  const sql=await readFile(new URL('../../../supabase/migrations/20261106123312_harden_ops_team_lifecycle.sql',import.meta.url),'utf8');
+  const sql=await readFile(migrationUrl('20261106123312_harden_ops_team_lifecycle.sql',import.meta.url),'utf8');
   assert.match(sql,/create unique index if not exists kinnso_ops_invites_one_pending_email[\s\S]*lower\(email\)[\s\S]*where status = 'pending'/i);
   assert.match(sql,/grant select on public\.kinnso_ops_invites to authenticated/i);
   assert.match(sql,/raise exception 'already_ops_member'/i);

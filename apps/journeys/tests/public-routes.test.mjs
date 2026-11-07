@@ -104,6 +104,25 @@ test('public route parser rejects ambiguous queries, unsafe identifiers and unsu
   }
 });
 
+test('backend-disabled indexes stay on static public entries', () => {
+  const off = {};
+  const on = {
+    KINNSO_SUPABASE_URL: 'https://approved.supabase.co',
+    KINNSO_APPROVED_SUPABASE_ORIGIN: 'https://approved.supabase.co',
+    KINNSO_LEGACY_AUTH_ORIGIN: 'https://approved.supabase.co',
+    KINNSO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+  };
+  assert.equal(routes.readLiveArticles(['articles'], off), false);
+  assert.equal(routes.readLiveArticles(['articles', 'destinations'], off), false);
+  assert.equal(routes.readLiveArticles(['articles'], on), true);
+  assert.equal(routes.readLiveSessions(['sessions'], off), false);
+  assert.equal(routes.readLiveSessions(['sessions'], on), true);
+  assert.equal(routes.readLiveSessions(['sessions', 'briefing'], on), false);
+  assert.equal(routes.bareNamespaceIsPublicEntry('en', ['experiences'], empty()), true);
+  assert.equal(routes.bareNamespaceIsPublicEntry('en', ['experiences', 'not a slug'], empty()), false);
+  assert.equal(routes.bareNamespaceIsPublicEntry('en', ['sessions'], empty()), false);
+});
+
 test('known-route recognition accepts dynamic public content without hard-coded destination slugs', () => {
   assert.equal(typeof travelRoutes.isKnownRoute, 'function');
   for (const path of [

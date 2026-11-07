@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {freezeCandidate} from '../../../scripts/migration-release.mjs';
+import {migrationUrl,repositoryInputUrl} from './packaged-source.mjs';
 
-const envelopeUrl=new URL('../../../docs/implementation/PRODUCTION_DB_ENVELOPE_2026-11-07.json',import.meta.url);
-const planUrl=new URL('../../../docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md',import.meta.url);
-const migrationsRoot=new URL('../../../supabase/migrations/',import.meta.url);
+const {freezeCandidate}=await import(repositoryInputUrl('scripts/migration-release.mjs',import.meta.url));
+const envelopeUrl=repositoryInputUrl('docs/implementation/PRODUCTION_DB_ENVELOPE_2026-11-07.json',import.meta.url);
+const planUrl=repositoryInputUrl('docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md',import.meta.url);
 const envelope=JSON.parse(await readFile(envelopeUrl,'utf8'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
 
@@ -23,7 +23,7 @@ test('production envelope freezes exactly five reviewed migration files',async()
  assert.equal(envelope.migrationCandidate.files.length,5);
  const entries=[];for(const [index,file] of envelope.migrationCandidate.files.entries()){
   assert.equal(file.order,index+1);
-  const bytes=await readFile(new URL(file.name,migrationsRoot));
+  const bytes=await readFile(migrationUrl(file.name,import.meta.url));
   assert.equal(sha(bytes),file.sha256,file.name);
   entries.push({name:file.name,bytes});
  }

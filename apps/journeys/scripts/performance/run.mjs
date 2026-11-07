@@ -76,7 +76,7 @@ async function setup() {
   const email = `synthetic-lab-${randomUUID()}@example.test`, password = `Lab!${randomUUID()}`;
   const user = checked(await admin.auth.admin.createUser({email, password, email_confirm: true})).user;
   ownedActors.push(user.id);
-  checked(await admin.from('creators').update({status: 'active', display_name: 'Synthetic lab author'}).eq('id', user.id));
+  checked(await admin.from('creators').update({status: 'active', display_name: 'Synthetic lab author', handle: 'synthetic-lab-'+user.id, public_profile: {languages: ['en']}}).eq('id', user.id));
   actor = createClient(target.apiOrigin, process.env.SUPABASE_ANON_KEY, {auth: {persistSession: false, autoRefreshToken: false}});
   checked(await actor.auth.signInWithPassword({email, password}));
   const guide = checked(await actor.from('guides').insert({creator_id: user.id, creator_name: 'Synthetic lab author',

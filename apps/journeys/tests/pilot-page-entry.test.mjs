@@ -29,7 +29,7 @@ const pageDependencies = {
   '../../travel/routes': routes,
   '../../../lib/auth/actor': {currentActor: async () => null},
   '../../../lib/contracts/capabilities': {capabilities},
-  '../../../lib/seo/public-routes': {parsePublicRoute: () => null, isPublicRouteNamespace: () => false},
+  '../../../lib/seo/public-routes': {parsePublicRoute: () => null, isPublicRouteNamespace: () => false, readLiveArticles: () => false, readLiveSessions: () => false, bareNamespaceIsPublicEntry: () => false},
 };
 const {default: Page} = load('../app/[locale]/[[...route]]/page.tsx',pageDependencies);
 const render = (locale, route, searchParams = {}) =>

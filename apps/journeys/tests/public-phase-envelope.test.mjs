@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {repositoryInputUrl} from './packaged-source.mjs';
 let subject={};
 try{subject=await import('../lib/seo/public-phase-envelope.ts')}catch{}
 
@@ -27,10 +28,10 @@ test('fixture evidence cannot claim connected acceptance and SHA mismatch invali
 });
 
 test('reviewable envelope document and route matrix expose only this phase as accepted',async()=>{
- const document=await readFile(new URL('../../../docs/public-destination-phase-envelope-2026-11-06.md',import.meta.url),'utf8');
+ const document=await readFile(repositoryInputUrl('docs/public-destination-phase-envelope-2026-11-06.md',import.meta.url),'utf8');
  const block=document.match(/```json\s*([\s\S]*?)\s*```/);assert.ok(block);
  const envelope=JSON.parse(block[1]);assert.equal(subject.validatePublicPhaseEnvelope(envelope).status,'READY_FOR_USER_REVIEW');
- const matrix=JSON.parse(await readFile(new URL('../../../docs/legacy-route-matrix.json',import.meta.url),'utf8'));
+ const matrix=JSON.parse(await readFile(repositoryInputUrl('docs/legacy-route-matrix.json',import.meta.url),'utf8'));
  for(const route of envelope.routes){const row=matrix.routes.find(value=>value.legacyPath===route.legacyPath);assert.ok(row,route.legacyPath);assert.equal(row.disposition,'native-port-accepted',route.legacyPath);assert.equal(row.verification,'CONNECTED_BACKEND_AND_FIXTURE_BROWSER',route.legacyPath);}
  const booked=matrix.routes.find(value=>value.legacyPath==='/{locale}/experiences/[slug]/booked');assert.notEqual(booked.disposition,'native-port-accepted');
  assert.equal(/backup\/restore remains waived/i.test(document),true);

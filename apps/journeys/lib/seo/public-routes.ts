@@ -1,4 +1,6 @@
+import { backendTarget, type Environment } from '../contracts/capabilities.ts';
 import { publicLanguage } from './public-language.ts';
+import { isPublicEntryPath } from '../../app/integration/public-entry-registry.ts';
 
 export type PublicRoute =
   | { kind: 'destinations-index'; page: number }
@@ -93,4 +95,15 @@ export function publicRouteHref(locale: string, route: PublicRoute): string {
 
 export function isPublicRouteNamespace(locale:string,route:readonly string[]):boolean{
  return Boolean(publicLanguage(locale))&&['destinations','g','c','experiences','m','sessions'].includes(route[0]??'');
+}
+
+/** Backend-disabled public entries stay on their static notice instead of a live read. */
+export function readLiveArticles(route:readonly string[],env:Environment):boolean{
+ return backendTarget(env)!==null&&route[0]==='articles'&&route.length<=2;
+}
+export function readLiveSessions(route:readonly string[],env:Environment):boolean{
+ return backendTarget(env)!==null&&route.length===1&&route[0]==='sessions';
+}
+export function bareNamespaceIsPublicEntry(locale:string,route:readonly string[],query:URLSearchParams):boolean{
+ return !parsePublicRoute(locale,route,query)&&isPublicRouteNamespace(locale,route)&&isPublicEntryPath(route.join('/'));
 }

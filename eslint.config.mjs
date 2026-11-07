@@ -65,6 +65,22 @@ export default tseslint.config(
     },
   },
   {
+    // Root scripts are Node ESM. Browser identifiers inside page.evaluate stay
+    // property reads on globalThis so they are not declared as Node globals.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: {
+        AbortSignal: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+  },
+  {
     // typescript-eslint switches `no-undef` off for .ts (the compiler owns that check),
     // but plain CommonJS tooling files still need the Node globals declared or every
     // `module`/`process` reference reads as undefined.

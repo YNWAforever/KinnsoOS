@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {migrationUrl} from './packaged-source.mjs';
 import {readDestinationListing as listing,readPublicDestination as detail} from '../lib/seo/public-destinations.ts';
 const env={KINNSO_SUPABASE_URL:'https://approved.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://approved.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://approved.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test'};
 const row={slug:'tokyo',name:'Tokyo',description:null,hero_image_url:'https://cdn.kinnso.ai/a.jpg',match_terms:['Tokyo','東京'],guide_count:'2',experience_count:0,latest_published_at:'2026-01-01T00:00:00Z'};
@@ -30,7 +31,7 @@ test('destination pages reject unbounded offsets and omit private fields and uns
 });
 
 test('public destination policy excludes suspended source accounts from inventory counts',async()=>{
- const sql=await readFile(new URL('../../../supabase/migrations/20261106090000_kinnso_public_inventory_suspension.sql',import.meta.url),'utf8');
+ const sql=await readFile(migrationUrl('20261106090000_kinnso_public_inventory_suspension.sql',import.meta.url),'utf8');
  assert.match(sql,/from public\.creators c[\s\S]*c\.status = 'active'[\s\S]*c\.public_profile is not null/i);
  assert.match(sql,/from public\.merchant_public_profiles m[\s\S]*m\.id = e\.merchant_profile_id/i);
 });

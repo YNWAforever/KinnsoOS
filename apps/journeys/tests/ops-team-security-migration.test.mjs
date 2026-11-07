@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readdir,readFile} from 'node:fs/promises';
+import {migrationUrl,packagedSource} from './packaged-source.mjs';
 
 async function migration(){
+ if(packagedSource(import.meta.url))return readFile(migrationUrl('20261106135230_harden_ops_team_security.sql',import.meta.url),'utf8');
  const dir=new URL('../../../supabase/migrations/',import.meta.url);
  const names=(await readdir(dir)).filter(name=>name.endsWith('_harden_ops_team_security.sql'));
  assert.equal(names.length,1,'one reviewed operations security migration must exist');

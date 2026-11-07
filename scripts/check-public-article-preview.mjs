@@ -39,7 +39,7 @@ let logs='',browser;child.stdout.on('data',b=>logs+=b);child.stderr.on('data',b=
 const output=path.join(root,'.local-private/single-origin/articles-preview');await mkdir(output,{recursive:true});
 const checks=[];
 try{
- let ready=false;for(let i=0;i<80;i++){if(child.exitCode!==null)throw Error('Preview exited');try{const r=await fetch(appOrigin+'/robots.txt');if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,250));}assert.ok(ready,'Preview did not start');
+ let ready=false;for(let i=0;i<80;i++){if(child.exitCode!==null)throw Error('Preview exited');try{const r=await fetch(appOrigin+'/robots.txt');if(r.ok){ready=true;break;}}catch{/* preview not ready */ }await new Promise(r=>setTimeout(r,250));}assert.ok(ready,'Preview did not start');
  browser=await chromium.launch({headless:true});
  for(const viewport of [{width:390,height:844},{width:1280,height:900}])for(const javaScriptEnabled of [false,true]){
   const context=await browser.newContext({javaScriptEnabled,viewport}),page=await context.newPage();
@@ -48,13 +48,13 @@ try{
    await page.goto(`${appOrigin}/${locale}/articles`);assert.equal(await page.locator('html').getAttribute('lang'),locale);
    assert.equal(await page.locator(`a[href="/${locale}/articles/dining"]`).count(),2);assert.equal(await page.locator(`a[href="/${locale}/articles/shopping/published-0"]`).count(),0);
    await page.goto(`${appOrigin}/${locale}/articles/destinations?q=tea&region=tokyo`);
-   await expect(page.locator('main li')).toHaveCount(12);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);await page.getByRole('searchbox').focus();await expect(page.getByRole('searchbox')).toBeFocused();await page.locator('a[href*="page=2"]').focus();await page.keyboard.press('Enter');await expect(page.locator('main li')).toHaveCount(1);
+   await expect(page.locator('main li')).toHaveCount(12);assert.equal(await page.evaluate(()=>globalThis.document.documentElement.scrollWidth<=globalThis.innerWidth+1),true);await page.getByRole('searchbox').focus();await expect(page.getByRole('searchbox')).toBeFocused();await page.locator('a[href*="page=2"]').focus();await page.keyboard.press('Enter');await expect(page.locator('main li')).toHaveCount(1);
    assert.ok(page.url().includes('q=tea'));assert.ok(page.url().includes('region=tokyo'));
    await page.locator('main li a').click();try{await expect(page.locator('article h1')).toHaveText('Authored '+authored+' 12');}catch(error){await writeFile(path.join(output,'failure.json'),JSON.stringify({locale,javaScriptEnabled,url:page.url(),observed:observed.slice(-5),body:await page.locator('body').innerText(),html:await page.content()},null,2));throw error;}
    assert.equal(await page.locator('article strong').innerText(),'important');assert.equal(await page.locator(`a[href="/${locale}/c/fixture-author"]`).count(),0);assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'),`https://kinnso-os.vercel.app/${locale}/articles/destinations/${detailSlug}`);
    assert.ok((await page.locator('meta[name="robots"]').getAttribute('content')).includes('noindex'));
    assert.equal(await page.locator('a[href*="remix-kinnso-web"]').count(),0);
-   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true);
+   assert.equal(await page.evaluate(()=>globalThis.document.documentElement.scrollWidth<=globalThis.innerWidth+1),true);
    checks.push({locale,javaScriptEnabled,viewportWidth:viewport.width,hub:true,pagination:true,detail:true,canonical:true,mobileOverflow:false});
   }
   await page.goto(`${appOrigin}/ja/articles/destinations/missing`);assert.equal(await page.locator('article h1').count(),0);

@@ -34,32 +34,42 @@ def build_archive(root: Path):
         if not candidate.resolve().is_relative_to(root) or not candidate.is_file():
             raise ValueError(f'Missing or out-of-root source file: {name}')
         contents[name] = candidate.read_bytes()
-    repository_files = manifest.get('repositoryFiles', {})
-    if not isinstance(repository_files, dict):
-        raise ValueError('Invalid repository source manifest')
     extracted = (root / 'SOURCE_METADATA.json').is_file()
     prior = json.loads((root / 'SOURCE_METADATA.json').read_text(encoding='utf-8')) if extracted else None
-    for destination, source in repository_files.items():
-        # Only explicitly reviewed migration inputs for source-distributed tests.
-        # Never package arbitrary parent files or read a parent after extraction.
-        if (not isinstance(source, str) or not isinstance(destination, str) or
-                not re.fullmatch(r'supabase/migrations/[0-9]{14}_[a-z0-9_]+\.sql', source) or
-                destination != 'tests/contracts/' + PurePosixPath(source).name or destination in contents):
-            raise ValueError('Invalid or colliding repository SQL input')
-        input_root = root if extracted else root.parents[1]
-        name = destination if extracted else source
-        trusted_root = (input_root / '.git').exists() or os.environ.get('VERCEL') == '1'
-        if not extracted and (root.parent.name != 'apps' or root.name != 'journeys'
-                              or not trusted_root):
-            raise ValueError('Repository SQL requires the Journeys Git checkout')
-        candidate = input_root.joinpath(*PurePosixPath(name).parts)
-        if (not candidate.resolve().is_relative_to(input_root) or not candidate.is_file() or
-                any(parent.is_symlink() for parent in [candidate, *candidate.parents] if parent != input_root)):
-            raise ValueError('Missing or unsafe repository SQL input')
-        data = candidate.read_bytes()
-        if extracted and prior.get('sha256', {}).get(destination) != hashlib.sha256(data).hexdigest():
-            raise ValueError('Archived repository SQL hash mismatch')
-        contents[destination] = data
+    # Reviewed parent inputs only. Tests read tests/contracts after extraction.
+    # Never package arbitrary parent files or read a parent after extraction.
+    reviewed_inputs = (
+        ('repositoryFiles', r'supabase/migrations/[0-9]{14}_[a-z0-9_]+\.sql',
+         'Invalid or colliding repository SQL input', 'Repository SQL requires the Journeys Git checkout',
+         'Missing or unsafe repository SQL input', 'Archived repository SQL hash mismatch'),
+        ('repositoryDocuments',
+         r'(?:docs/(?:[A-Za-z0-9._-]+/)*[A-Za-z0-9._-]+\.(?:json|md)|scripts/[A-Za-z0-9._-]+\.mjs)',
+         'Invalid or colliding repository document input', 'Repository documents require the Journeys Git checkout',
+         'Missing or unsafe repository document input', 'Archived repository document hash mismatch'),
+    )
+    for key, pattern, invalid, checkout, missing, mismatch in reviewed_inputs:
+        mapping = manifest.get(key, {})
+        if not isinstance(mapping, dict):
+            raise ValueError(invalid)
+        for destination, source in mapping.items():
+            if (not isinstance(source, str) or not isinstance(destination, str) or
+                    not re.fullmatch(pattern, source) or
+                    destination != 'tests/contracts/' + PurePosixPath(source).name or destination in contents):
+                raise ValueError(invalid)
+            input_root = root if extracted else root.parents[1]
+            name = destination if extracted else source
+            trusted_root = (input_root / '.git').exists() or os.environ.get('VERCEL') == '1'
+            if not extracted and (root.parent.name != 'apps' or root.name != 'journeys'
+                                  or not trusted_root):
+                raise ValueError(checkout)
+            candidate = input_root.joinpath(*PurePosixPath(name).parts)
+            if (not candidate.resolve().is_relative_to(input_root) or not candidate.is_file() or
+                    any(parent.is_symlink() for parent in [candidate, *candidate.parents] if parent != input_root)):
+                raise ValueError(missing)
+            data = candidate.read_bytes()
+            if extracted and prior.get('sha256', {}).get(destination) != hashlib.sha256(data).hexdigest():
+                raise ValueError(mismatch)
+            contents[destination] = data
     revision = 'UNKNOWN'
     dirty = None
     if (root / 'SOURCE_METADATA.json').exists() and not (root / '.git').exists():

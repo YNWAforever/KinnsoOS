@@ -1,12 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { migrationUrl } from './packaged-source.mjs';
 
 const PILOT_SCHEMA_MIGRATION = '20261107081531_kinnso_pilot_control_room_schema.sql';
-const sql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_SCHEMA_MIGRATION, import.meta.url), 'utf8');
+const sql = readFileSync(migrationUrl(PILOT_SCHEMA_MIGRATION, import.meta.url), 'utf8');
 const tables = ['runs', 'participants', 'invites', 'content_intakes', 'collaborations', 'checks', 'evidence'];
 const PILOT_RPC_MIGRATION = '20261107085017_kinnso_pilot_control_room_rpcs.sql';
-const rpcSql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_RPC_MIGRATION, import.meta.url), 'utf8');
+const rpcSql = readFileSync(migrationUrl(PILOT_RPC_MIGRATION, import.meta.url), 'utf8');
 test('pilot RPC schema binds evidence to same-run slots and retains retired collaborations',()=>{
  assert.match(rpcSql,/alter table kinnso_internal\.pilot_evidence[\s\S]*?add column participant_id uuid/i);
  assert.match(rpcSql,/foreign key\s*\(run_id,\s*participant_id\)\s*references kinnso_internal\.pilot_participants\(run_id,\s*id\)/i);

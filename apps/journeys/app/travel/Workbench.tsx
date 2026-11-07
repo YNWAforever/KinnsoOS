@@ -671,7 +671,7 @@ export function Workbench({
     else if(path==='studio/earnings')content=<CreatorEarningsWorkspace key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/sessions'||path==='studio/sessions/new'||/^studio\/sessions\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorSessionsWorkspace key={workspaceActor?.id+':'+path} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/tier'||path==='studio/perks')content=<CreatorLadderWorkspace key={workspaceActor?.id+':'+path} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
-    else if(path==='studio/offers')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="creator-offers"/>;
+    else if(path==='studio/offers'&&features.creator===true)content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="creator-offers"/>;
     else if(path==='studio/scan')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="creator-scan"/>;
     else if(path==='agent'||path==='studio/copilot')content=<AgentPage actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.agent===true}/>;
     else if(path==='inbox'||path==='studio/inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
