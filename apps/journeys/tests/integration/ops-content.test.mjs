@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
+import {readFileSync} from 'node:fs';
 import {createClient} from '@supabase/supabase-js';
 import {fixture,admin} from './local-fixtures.mjs';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
@@ -22,6 +23,69 @@ function purgeContentFixtures(ids){
 }
 
 const ok=async promise=>{const result=await promise;assert.equal(result.error,null,JSON.stringify(result.error));return result.data;};
+
+function verifyReceiptUpgrade(host, operator, other) {
+ const root=new URL('../../../../supabase/migrations/',import.meta.url);
+ const legacy=readFileSync(new URL('20261107020000_kinnso_ops_content_audit.sql',root),'utf8');
+ const functions=['admin_create_partner_perk','admin_create_community_session'].map(name=>{
+  const start=legacy.indexOf('create or replace function public.'+name+'(');
+  return legacy.slice(start,legacy.indexOf('revoke all on function',start));
+ }).join('\n');
+ const receipt=readFileSync(new URL('20261108131500_ops_perk_create_receipts.sql',root),'utf8');
+ const upgrade=new URL('20261108133000_ops_content_receipt_upgrade.sql',root);
+ const perk=randomUUID(),session=randomUUID();
+ const claims=async actor=>{
+  const {session}=await ok(actor.client.auth.getSession());
+  const payload=Buffer.from(session.access_token.split('.')[1],'base64url').toString();
+  return "select set_config('request.jwt.claims', '"+payload.replaceAll("'","''")+"', true);";
+ };
+ return Promise.all([claims(operator),claims(other)]).then(([owner,foreign])=>{
+  const perkCall=(title='Legacy perk')=>"public.admin_create_partner_perk('"+perk+"','Partner','"+title+"','Summary','travel','10%',null,'code','LEGACY',0,false)";
+  const sessionCall=(title='Legacy session')=>"public.admin_create_community_session('"+session+"','"+host.id+"','"+title+"','Description','destination_briefing','2026-12-20T10:00:00Z',45,'https://www.youtube.com/watch?v=KinnsoSynthetic1')";
+  const conflict=(call,message)=>"begin perform "+call+"; raise exception 'expected conflict'; exception when unique_violation then if sqlerrm <> '"+message+"' then raise; end if; end;";
+  const script=`begin;
+${functions}
+${owner}
+set local role authenticated;
+select ${perkCall()}, ${sessionCall()};
+select public.admin_set_partner_perk_active('${perk}',true);
+select public.admin_set_community_session_status('${session}','live');
+reset role;
+do $$ begin
+ if exists (select from kinnso_internal.requests where request_id in ('${perk}','${session}'))
+ then raise exception 'legacy fixture unexpectedly has a receipt'; end if;
+end $$;
+${receipt}
+${readFileSync(upgrade,'utf8')}
+${foreign}
+set local role authenticated;
+do $$ begin
+ ${conflict(perkCall(),'perk_conflict')}
+ ${conflict(sessionCall(),'session_conflict')}
+end $$;
+${owner}
+do $$ begin
+ ${conflict(perkCall('Changed'),'perk_conflict')}
+ ${conflict(sessionCall('Changed'),'session_conflict')}
+ if ${perkCall()} is distinct from jsonb_build_object('id','${perk}'::uuid,'active',false) then raise exception 'wrong original perk result'; end if;
+ if ${sessionCall()} is distinct from jsonb_build_object('id','${session}'::uuid,'status','scheduled') then raise exception 'wrong original session result'; end if;
+ ${conflict(perkCall('Changed'),'request_id_reused')}
+ ${conflict(sessionCall('Changed'),'request_id_reused')}
+end $$;
+reset role;
+do $$ begin
+ if (select count(*) from kinnso_internal.requests where actor_id='${operator.id}' and request_id in ('${perk}','${session}')) <> 2
+ or (select count(*) from public.ops_audit_log where entity_id in ('${perk}','${session}') and action in ('perk.create','session.create')) <> 2
+ or (select count(*) from public.partner_perks where id='${perk}' and active) <> 1
+ or (select count(*) from public.community_sessions where id='${session}' and status='live') <> 1
+ then raise exception 'upgrade mutated history or missed receipts'; end if;
+end $$;
+rollback;`;
+  const {dbContainer}=verifyTestTarget();
+  execFileSync('docker',['exec','-i',dbContainer,'psql','-X','-q','-v','ON_ERROR_STOP=1','-U','postgres','-d','postgres'],
+   {input:script,stdio:['pipe','ignore','pipe'],timeout:30000,windowsHide:true});
+ });
+}
 
 test('audited content RPCs are idempotent, concurrency-safe and not bypassable by direct operations writes',async()=>{
  const f=await fixture(),memberIds=[],entityIds=[];
@@ -78,6 +142,7 @@ test('audited content RPCs are idempotent, concurrency-safe and not bypassable b
   assert.ok(directTestimonial.error,'operations direct testimonial writes must be denied');
 
   await ok(admin.from('kinnso_ops_members').update({role:'moderator'}).eq('user_id',analyst.id));
+  await verifyReceiptUpgrade(host,operator,analyst);
   const foreignReplay=await analyst.client.rpc('admin_create_partner_perk',perkArgs);
   assert.equal(foreignReplay.error?.message,'perk_conflict');
   assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('entity_id',perkId).eq('action','perk.create'))).length,1);
