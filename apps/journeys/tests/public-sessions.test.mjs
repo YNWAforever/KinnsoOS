@@ -274,7 +274,21 @@ test('session routes render before private actor and expose unavailable rather t
     }
     return require(name);
   }, pageModule, pageModule.exports);
-  const index = renderToStaticMarkup(
+  const previous = {
+    KINNSO_SUPABASE_URL: process.env.KINNSO_SUPABASE_URL,
+    KINNSO_APPROVED_SUPABASE_ORIGIN: process.env.KINNSO_APPROVED_SUPABASE_ORIGIN,
+    KINNSO_LEGACY_AUTH_ORIGIN: process.env.KINNSO_LEGACY_AUTH_ORIGIN,
+    KINNSO_SUPABASE_PUBLISHABLE_KEY: process.env.KINNSO_SUPABASE_PUBLISHABLE_KEY,
+  };
+  Object.assign(process.env, {
+    KINNSO_SUPABASE_URL: 'https://approved.supabase.co',
+    KINNSO_APPROVED_SUPABASE_ORIGIN: 'https://approved.supabase.co',
+    KINNSO_LEGACY_AUTH_ORIGIN: 'https://approved.supabase.co',
+    KINNSO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test',
+  });
+  let index;
+  try {
+  index = renderToStaticMarkup(
     await pageModule.exports.default({
       params: Promise.resolve({ locale: 'ja', route: ['sessions'] }),
     }),
@@ -293,4 +307,10 @@ test('session routes render before private actor and expose unavailable rather t
     meta.alternates.canonical,
     `https://kinnso-os.vercel.app/ja/sessions/${value.slug}`,
   );
+  } finally {
+    for (const [key, value] of Object.entries(previous)) {
+      if (value === undefined) delete process.env[key];
+      else process.env[key] = value;
+    }
+  }
 });

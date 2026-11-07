@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {migrationUrl} from './packaged-source.mjs';
 
-const migration=new URL('../../../supabase/migrations/20261107020000_kinnso_ops_content_audit.sql',import.meta.url);
+const migration=migrationUrl('20261107020000_kinnso_ops_content_audit.sql',import.meta.url);
 
 test('content administration mutations are definer RPCs with fresh operations-role checks',async()=>{
  const sql=await readFile(migration,'utf8');

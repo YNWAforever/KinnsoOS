@@ -19,7 +19,7 @@ import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArt
 import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
 import {PublicGuideContent} from '../../../lib/seo/PublicGuideContent';
-import {parsePublicRoute,isPublicRouteNamespace} from '../../../lib/seo/public-routes';
+import {parsePublicRoute,isPublicRouteNamespace,readLiveArticles,readLiveSessions,bareNamespaceIsPublicEntry} from '../../../lib/seo/public-routes';
 import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} from '../../../lib/seo/public-experiences';
 import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
 import {PublicExperienceContent} from '../../../lib/seo/PublicExperienceContent';
@@ -42,7 +42,7 @@ const publishedCreator=cache((handle:string,page=1)=>readPublicCreator(handle,pr
 const publishedArticle=cache((category:string,slug:string,locale:string)=>readPublicArticle(category,slug,locale,process.env));
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, route = [] } = await params;
-  if(route[0]==='articles'&&route.length<=2){
+  if(readLiveArticles(route,process.env)){
     const language=publicLanguage(locale);if(!language||(route.length===2&&!Object.hasOwn(articleCategories,route[1])))notFound();
     const labels=articleLabels[language];return{title:route.length===2?labels.categories[route[1] as ArticleCategory]:labels.title,robots:{index:false,follow:false},alternates:{canonical:`https://kinnso-os.vercel.app/${language}/${route.join('/')}`}};
   }
@@ -53,7 +53,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
   const publicRoute=parsePublicRoute(locale,route,new URLSearchParams());
   const gatedRoute=gatedLegacyRoute(route.join('/'));
-  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute)notFound();
+  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute&&!bareNamespaceIsPublicEntry(locale,route,new URLSearchParams()))notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if(!merchant)notFound();
     return merchantPageMetadata(merchant,locale);
   }
-  if(publicRoute?.kind==='sessions-index') return sessionIndexMetadata(locale);
+  if(readLiveSessions(route,process.env)) return sessionIndexMetadata(locale);
   if(publicRoute?.kind==='session') {
     const session=await readPublicSession(publicRoute.slug,process.env);
     if(!session)notFound();
@@ -101,7 +101,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function Page({ params,searchParams }: Props) {
   const { locale, route = [] } = await params;
-  if(route[0]==='articles'&&route.length<=2){
+  if(readLiveArticles(route,process.env)){
     const language=publicLanguage(locale);if(!language)notFound();
     if(route.length===1){
       const sections=await Promise.all((Object.keys(articleCategories) as ArticleCategory[]).map(async category=>{
@@ -124,7 +124,7 @@ export default async function Page({ params,searchParams }: Props) {
   for(const[key,value]of Object.entries(entryQuery)){if(Array.isArray(value))value.forEach(item=>publicQuery.append(key,item));else if(value!==undefined)publicQuery.append(key,value);}
   const publicRoute=parsePublicRoute(locale,route,publicQuery);
   const gatedRoute=gatedLegacyRoute(route.join('/'));
-  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute)notFound();
+  if(!publicRoute&&isPublicRouteNamespace(locale,route)&&!gatedRoute&&!bareNamespaceIsPublicEntry(locale,route,publicQuery))notFound();
   if(publicRoute?.kind==='experience') {
     const experience=await readPublicExperience(publicRoute.slug,process.env);
     if(!experience)notFound();
@@ -136,7 +136,7 @@ export default async function Page({ params,searchParams }: Props) {
     const experiences=await readMerchantExperiences(merchant.id,process.env);
     return <PublicMerchantContent locale={locale} merchant={merchant} experiences={experiences}/>;
   }
-  if(publicRoute?.kind==='sessions-index') {
+  if(readLiveSessions(route,process.env)) {
     const discovery=await readPublicSessionDiscovery(process.env);
     return <PublicSessionsContent locale={locale} discovery={discovery}/>;
   }

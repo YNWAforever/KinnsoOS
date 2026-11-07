@@ -371,6 +371,7 @@
     "scripts/accessibility/package-lock.json",
     "scripts/accessibility/package.json",
     "scripts/build-connected-local.mjs",
+    "scripts/check-public-destination-preview.mjs",
     "scripts/check-readiness.mjs",
     "scripts/check-url-parity.mjs",
     "scripts/ci-browser-mirror.mjs",
@@ -400,6 +401,7 @@
     "scripts/prepare-connected-ci.mjs",
     "scripts/read-contained-file.mjs",
     "scripts/real-integration-runner.mjs",
+    "scripts/real-public-content-runner.mjs",
     "scripts/real-suite-source.mjs",
     "scripts/source-manifest.json",
     "scripts/start-connected-local.mjs",
@@ -640,6 +642,7 @@
     "tests/ops-team-migration.test.mjs",
     "tests/ops-team-security-migration.test.mjs",
     "tests/owned-child-lifecycle.test.mjs",
+    "tests/packaged-source.mjs",
     "tests/performance-first-usable.test.mjs",
     "tests/performance-lab.test.mjs",
     "tests/performance-release-gate.test.mjs",
@@ -686,6 +689,8 @@
     "tests/real-integration/target.mjs",
     "tests/real-integration/today-slice.spec.ts",
     "tests/real-public-content-security.test.mjs",
+    "tests/real-public-content/result-summary.mjs",
+    "tests/real-public-content/target.mjs",
     "tests/real-suite-source.test.mjs",
     "tests/reminder-cleanup.test.mjs",
     "tests/reminder-context.test.mjs",
@@ -737,6 +742,7 @@
     "tests/contracts/20261023033353_kinnso_durable_share_receipts.sql": "supabase/migrations/20261023033353_kinnso_durable_share_receipts.sql",
     "tests/contracts/20261023114944_kinnso_unknown_tracked_profit.sql": "supabase/migrations/20261023114944_kinnso_unknown_tracked_profit.sql",
     "tests/contracts/20261024120000_kinnso_private_trip_progress.sql": "supabase/migrations/20261024120000_kinnso_private_trip_progress.sql",
+    "tests/contracts/20261106090000_kinnso_public_inventory_suspension.sql": "supabase/migrations/20261106090000_kinnso_public_inventory_suspension.sql",
     "tests/contracts/20261106110000_fix_redeem_perk_ambiguity.sql": "supabase/migrations/20261106110000_fix_redeem_perk_ambiguity.sql",
     "tests/contracts/20261106123312_harden_ops_team_lifecycle.sql": "supabase/migrations/20261106123312_harden_ops_team_lifecycle.sql",
     "tests/contracts/20261106135230_harden_ops_team_security.sql": "supabase/migrations/20261106135230_harden_ops_team_security.sql",
@@ -750,5 +756,14 @@
     "tests/contracts/20261107155000_kinnso_pilot_stored_intake_identity.sql": "supabase/migrations/20261107155000_kinnso_pilot_stored_intake_identity.sql",
     "tests/contracts/20261107165735_kinnso_pilot_final_review.sql": "supabase/migrations/20261107165735_kinnso_pilot_final_review.sql",
     "tests/contracts/20261108120000_kinnso_pilot_residual_races.sql": "supabase/migrations/20261108120000_kinnso_pilot_residual_races.sql"
+  },
+  "repositoryDocuments": {
+    "tests/contracts/creator-merchant-operations-release-2026-11-06.json": "docs/creator-merchant-operations-release-2026-11-06.json",
+    "tests/contracts/legacy-route-matrix.json": "docs/legacy-route-matrix.json",
+    "tests/contracts/public-destination-phase-envelope-2026-11-06.md": "docs/public-destination-phase-envelope-2026-11-06.md",
+    "tests/contracts/PRODUCTION_DB_ENVELOPE_2026-11-07.json": "docs/implementation/PRODUCTION_DB_ENVELOPE_2026-11-07.json",
+    "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
+    "tests/contracts/migration-release.mjs": "scripts/migration-release.mjs",
+    "tests/contracts/check-public-article-preview.mjs": "scripts/check-public-article-preview.mjs"
   }
 }

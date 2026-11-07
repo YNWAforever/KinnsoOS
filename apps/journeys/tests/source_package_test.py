@@ -88,10 +88,13 @@ class SourcePackageTests(unittest.TestCase):
             self.assertTrue(target.resolve().is_relative_to(self.root), name)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
-        # Mapped SQL is inside standalone distribution metadata. This fixture
-        # never reads a temporary parent's migration when it is repackaged.
+        # Mapped parent inputs are inside standalone distribution metadata.
+        # This fixture never reads a temporary parent's files when it is repackaged.
         hashes = {}
-        for destination, source in source_manifest.get('repositoryFiles', {}).items():
+        mapped = {}
+        mapped.update(source_manifest.get('repositoryFiles', {}))
+        mapped.update(source_manifest.get('repositoryDocuments', {}))
+        for destination, source in mapped.items():
             canonical = source_root / destination if (source_root / 'SOURCE_METADATA.json').is_file() else source_root.parents[1] / source
             target = self.root / destination
             target.parent.mkdir(parents=True, exist_ok=True)

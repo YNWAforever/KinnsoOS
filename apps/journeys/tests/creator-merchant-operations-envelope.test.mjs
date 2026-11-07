@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {repositoryInputUrl} from './packaged-source.mjs';
 
-const envelope=JSON.parse(await readFile(new URL('../../../docs/creator-merchant-operations-release-2026-11-06.json',import.meta.url),'utf8'));
-const matrix=JSON.parse(await readFile(new URL('../../../docs/legacy-route-matrix.json',import.meta.url),'utf8'));
+const envelope=JSON.parse(await readFile(repositoryInputUrl('docs/creator-merchant-operations-release-2026-11-06.json',import.meta.url),'utf8'));
+const matrix=JSON.parse(await readFile(repositoryInputUrl('docs/legacy-route-matrix.json',import.meta.url),'utf8'));
 
 test('combined creator-merchant-operations envelope binds the final application and clean database evidence',()=>{
  assert.equal(envelope.status,'DEPLOYED_VERIFIED_PUBLIC_LAUNCH_HOLD');assert.equal(envelope.launchRecommendation,'HOLD');assert.equal(envelope.deploymentReady,true);

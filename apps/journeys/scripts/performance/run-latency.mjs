@@ -113,7 +113,7 @@ try {
   }
   const email='synthetic-latency-'+randomUUID()+'@example.test',password='Lab!'+randomUUID();
   ownerId=checked(await admin.auth.admin.createUser({email,password,email_confirm:true})).user.id;
-  checked(await admin.from('creators').update({status:'active',display_name:'Synthetic latency author'}).eq('id',ownerId));
+  checked(await admin.from('creators').update({status:'active',display_name:'Synthetic latency author',handle:'synthetic-latency-'+ownerId,public_profile:{languages:['en']}}).eq('id',ownerId));
   actor=createServerClient(target.apiOrigin,process.env.SUPABASE_ANON_KEY,{cookies:{getAll:()=>[...jar].map(([name,value])=>({name,value})),
     setAll:values=>{for(const {name,value} of values)jar.set(name,value);}}});
   const session=checked(await actor.auth.signInWithPassword({email,password})).session;
