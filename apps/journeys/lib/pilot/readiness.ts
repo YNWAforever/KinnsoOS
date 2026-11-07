@@ -33,7 +33,13 @@ export type PilotExecutionFacts = {
     publishedVersion: number | null;
     publishedContentDigest: string | null;
   }>;
-  checks: Array<PilotEvidenceFact & { code: string; status: PilotCheckStatus; missionId?: string }>;
+  checks: Array<PilotEvidenceFact & {
+    code: string;
+    status: PilotCheckStatus;
+    missionId?: string;
+    /** Required for notification_acknowledged; the exact notification row acknowledged. */
+    notificationId?: string;
+  }>;
   /** Source submission history for the bound creator and mission. */
   submissions: Array<PilotEvidenceFact & { missionId: string; creatorUserId: string; status: string }>;
   notifications: Array<PilotEvidenceFact & {
@@ -115,7 +121,7 @@ export function pilotBeginReadiness(input: PilotBeginReadinessInput): PilotReadi
 
 const roles = ['traveller', 'creator', 'merchant'] as const;
 const collaborationSteps = [
-  'merchant_approved', 'mission_published', 'application_active', 'notification_acknowledged',
+  'merchant_approved', 'mission_published', 'application_active',
 ] as const;
 const travellerChecks = [
   'guide_discovered', 'guide_saved', 'trip_adopted', 'trip_revised', 'trip_recovered',
@@ -236,11 +242,23 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
     const approved = latest && submissions.every(eligible) && latest.status === 'approved' &&
       (!previous || Date.parse(latest.capturedAt) > Date.parse(previous.capturedAt));
     if (!approved) block(blockers, 'collaboration', 'submission_approved', collaboration.id);
-    const notified = approved && (facts?.notifications ?? []).some(fact =>
+    const notifications = approved ? (facts?.notifications ?? []).filter(fact =>
       eligible(fact) && fact.missionId === collaboration.missionId && fact.submissionId === latest.entityId &&
       fact.creatorUserId === creatorUserId && fact.entityType === 'mission' &&
-      fact.notificationType === 'submission.approved' && Date.parse(fact.capturedAt) >= Date.parse(latest.capturedAt));
-    if (!notified) block(blockers, 'collaboration', 'submission.approved', collaboration.id);
+      fact.notificationType === 'submission.approved' && Date.parse(fact.capturedAt) >= Date.parse(latest.capturedAt)) : [];
+    notifications.sort((a, b) => Date.parse(b.capturedAt) - Date.parse(a.capturedAt));
+    const [notification, previousNotification] = notifications;
+    const selected = notification && (!previousNotification ||
+      Date.parse(notification.capturedAt) > Date.parse(previousNotification.capturedAt)) ? notification : undefined;
+    if (!selected) block(blockers, 'collaboration', 'submission.approved', collaboration.id);
+
+    const acknowledgement = uniquePass(facts?.checks ?? [], 'notification_acknowledged');
+    if (!selected || !uniquePass(collaboration.steps, 'notification_acknowledged') ||
+        !acknowledgement || !eligible(acknowledgement) || acknowledgement.missionId !== collaboration.missionId ||
+        acknowledgement.notificationId !== selected.entityId ||
+        Date.parse(acknowledgement.capturedAt) < Date.parse(selected.capturedAt)) {
+      block(blockers, 'collaboration', 'notification_acknowledged', collaboration.id);
+    }
   }
   for (const code of travellerChecks) requireCheck('traveller', code);
   for (const code of manualChecks.slice(2)) requireCheck('manual', code);

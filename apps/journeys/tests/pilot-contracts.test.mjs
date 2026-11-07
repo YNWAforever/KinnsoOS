@@ -127,6 +127,7 @@ const facts = {
   })),
   checks: [...checks, ...collaboration.steps].map(c => ({
     ...fact, code: c.code, status: c.status, entityId: c.code + '-source', missionId: 'mission',
+    ...(c.code === 'notification_acknowledged' ? { notificationId: notification.entityId, capturedAt: '2026-11-07T00:00:04Z' } : {}),
   })),
   submissions: [approved],
   notifications: [notification],
@@ -196,4 +197,13 @@ test('export is deterministic and retains only opaque references and allowlisted
   assert.deepEqual(summary.checks.map(c => c.evidenceReference), ['ref:1', null, null, null, null]);
   assert.equal(JSON.stringify(summary).includes('PRIVATE'), false);
   assert.throws(() => pilotExportSummary(snapshot, 'invalid'), RangeError);
+});
+
+test('only acknowledgement of the exact final approval notification completes execution', () => {
+  const earlier = { ...notification, entityId: 'earlier-notification', capturedAt: approved.capturedAt };
+  const notifications = [earlier, notification];
+  const acknowledge = notificationId => facts.checks.map(check =>
+    check.code === 'notification_acknowledged' ? { ...check, notificationId } : check);
+  assert.equal(withFacts({ notifications, checks: acknowledge(earlier.entityId) }), false);
+  assert.equal(withFacts({ notifications, checks: acknowledge(notification.entityId) }), true);
 });
