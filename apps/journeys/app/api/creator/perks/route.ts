@@ -1,6 +1,6 @@
 import {apiContext,backendFailure,boundedBody,failure,reply} from '../../../../lib/api/server';
 import {object,uuid} from '../../../../lib/api/validation';
-import {projectPerk,TIERS,type Tier} from '../../../../lib/creators/ladder';
+import {parsePerkRedemption,projectPerk,TIERS,type Tier} from '../../../../lib/creators/ladder';
 
 export async function GET(request:Request){
  const ctx=await apiContext(request,'creator');if(ctx.response)return ctx.response;
@@ -29,7 +29,6 @@ export async function POST(request:Request){
   const result=await ctx.client.rpc('redeem_perk',{p_perk_id:body.perkId});
   if(result.error){if(/below_tier/.test(result.error.message??''))return failure('FORBIDDEN',403);if(/perk_not_found/.test(result.error.message??''))return failure('NOT_FOUND',404);return backendFailure(result.error);}
   const row=Array.isArray(result.data)?result.data[0]:result.data;
-  if(!row||!['code','link'].includes(row.redemption_type)||typeof row.redemption_value!=='string')return failure('CONFLICT',409);
-  return reply({ok:true,data:{redemptionType:row.redemption_type,value:row.redemption_value}});
+  try{return reply({ok:true,data:parsePerkRedemption(row)});}catch{return failure('CONFLICT',409);}
  }catch{return failure('UNAVAILABLE',503);}
 }

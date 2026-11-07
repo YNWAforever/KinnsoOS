@@ -37,3 +37,15 @@ test('ladder payload validation rejects malformed events and duplicate identitie
     ],
   ]) assert.throws(() => subject.validateContributionEvents(rows), /INVALID_LADDER/);
 });
+
+test('perk redemption parser preserves each code and safe link and rejects unsafe values',()=>{
+ const code={redemption_type:'code',redemption_value:'RAIL-CODE'};
+ const link={redemption_type:'link',redemption_value:'https://example.test/perk'};
+ assert.deepEqual([code,link,code].map(row=>subject.parsePerkRedemption(row)),[
+  {redemptionType:'code',value:'RAIL-CODE'},
+  {redemptionType:'link',value:'https://example.test/perk'},
+  {redemptionType:'code',value:'RAIL-CODE'},
+ ]);
+ for(const value of ['javascript:alert(1)','https://user@example.test/',''])assert.throws(
+  ()=>subject.parsePerkRedemption({...link,redemption_value:value}),/INVALID_LADDER/);
+});

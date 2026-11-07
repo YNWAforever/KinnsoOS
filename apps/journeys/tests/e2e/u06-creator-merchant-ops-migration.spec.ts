@@ -66,6 +66,12 @@ test('creator, merchant and operations migration works end to end on the isolate
   const redeemBody=await redeemed.json();
   expect(redeemed.status(),JSON.stringify(redeemBody)).toBe(200);expect(redeemBody.ok).toBe(true);
   await expect(creatorPage.getByText('MIGRATION-CODE',{exact:true})).toBeVisible();
+  await creatorPage.reload();
+  const railPerk=creatorPage.getByRole('article').filter({hasText:'Migration rail benefit'});
+  await expect(railPerk.getByText('MIGRATION-CODE',{exact:true})).toHaveCount(0);
+  await railPerk.getByRole('button',{name:'Reveal perk',exact:true}).click();
+  await expect(railPerk.getByText('MIGRATION-CODE',{exact:true})).toBeVisible();
+  expect(await ok(admin.from('perk_redemptions').select('perk_id').eq('creator_id',creatorId).eq('perk_id',perkId))).toHaveLength(1);
   await creatorPage.goto('/en/studio/offers');await expect(creatorPage.getByRole('heading',{name:'Affiliate offers',exact:true})).toBeVisible();await expect(creatorPage.getByText('Affiliate offer execution and partner tracking links remain disabled',{exact:false})).toBeVisible();
   await creatorPage.goto('/en/studio/scan');await expect(creatorPage.getByRole('heading',{name:'Creator scan and DNA',exact:true})).toBeVisible();await expect(creatorPage.getByText('Paid AI scanning and media analysis remain disabled',{exact:false})).toBeVisible();
 

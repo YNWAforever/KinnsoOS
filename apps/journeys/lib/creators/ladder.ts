@@ -38,3 +38,15 @@ export function nextTierPerks(progress:TierProgress,perks:ActivePerk[]){
  if(progress.nextTier===null)return[];
  return perks.filter(perk=>perk.minTier===progress.nextTier).map(perk=>({title:perk.title,partnerName:perk.partnerName}));
 }
+
+export type PerkRedemption={redemptionType:'code'|'link';value:string};
+export function parsePerkRedemption(value:unknown):PerkRedemption{
+ if(!value||typeof value!=='object')return invalid();
+ const {redemption_type:type,redemption_value:secret}=value as Record<string,unknown>;
+ if((type!=='code'&&type!=='link')||typeof secret!=='string'||!secret.trim())return invalid();
+ if(type==='link'){
+  let url:URL;try{url=new URL(secret);}catch{return invalid();}
+  if(!['http:','https:'].includes(url.protocol)||url.username||url.password)return invalid();
+ }
+ return {redemptionType:type,value:secret};
+}

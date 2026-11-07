@@ -8,11 +8,11 @@ import {build} from 'esbuild';
 const require=createRequire(import.meta.url),actor='00000000-0000-4000-8000-000000000001',perk='11111111-1111-4111-8111-111111111111',requestId='22222222-2222-4222-8222-222222222222';
 async function load(relative){const path=new URL(relative,import.meta.url);if(!existsSync(path))return{};const compiled=await build({entryPoints:[fileURLToPath(path)],bundle:true,write:false,platform:'node',format:'cjs',external:['next/server','next/headers'],plugins:[{name:'creator-ladder-session',setup(b){b.onResolve({filter:/supabase\/server$/},()=>({path:'session',namespace:'test'}));b.onLoad({filter:/.*/,namespace:'test'},()=>({contents:'export async function serverClient(){return globalThis.__creatorLadderClient}',loader:'js'}));}}]});const module={exports:{}};new Function('require','module','exports',compiled.outputFiles[0].text)(require,module,module.exports);return module.exports;}
 const ladderRoute=await load('../app/api/creator/ladder/route.ts'),perkRoute=await load('../app/api/creator/perks/route.ts');
-function setup(t,{roles=['creator'],revoked=false,contribution={contribution_points:75,tier:'rising'},events=[],perks=[],redeem={data:[{redemption_type:'code',redemption_value:'PARTNER-CODE'}],error:null}}={}){
+function setup(t,{roles=['creator'],revoked=false,contribution={contribution_points:75,tier:'rising'},events=[],perks=[],redemptions=[],redeem={data:[{redemption_type:'code',redemption_value:'PARTNER-CODE'}],error:null}}={}){
  const env={KINNSO_SUPABASE_URL:'https://test.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://test.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://test.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test',KINNSO_SITE_URL:'https://journeys.example',KINNSO_ENABLED_CAPABILITIES:'creator'};const old=Object.fromEntries(Object.keys(env).map(key=>[key,process.env[key]]));Object.assign(process.env,env);
  const state={queries:[],rpcCalls:[]};
- const query=table=>{const q={table,operation:'select',filters:[],orders:[],limit:null};state.queries.push(q);const builder={select(){return this;},eq(key,value){q.filters.push([key,value]);return this;},order(key,value){q.orders.push([key,value]);return this;},limit(value){q.limit=value;return this;},maybeSingle:async()=>({data:contribution,error:null}),then(resolve,reject){return Promise.resolve({data:events,error:null}).then(resolve,reject);}};return builder;};
- globalThis.__creatorLadderClient={auth:{getUser:async()=>({data:{user:{id:actor}},error:null})},rpc:async(name,args)=>{state.rpcCalls.push({name,args});if(name==='kinnso_actor')return{data:revoked?null:{id:actor,roles},error:revoked?{message:'unauthenticated'}:null};if(name==='list_active_perks')return{data:perks,error:null};if(name==='redeem_perk')return redeem;return{data:null,error:null};},from:query};
+ const query=table=>{const q={table,operation:'select',filters:[],orders:[],limit:null};state.queries.push(q);const builder={select(){return this;},eq(key,value){q.filters.push([key,value]);return this;},order(key,value){q.orders.push([key,value]);return this;},limit(value){q.limit=value;return this;},maybeSingle:async()=>({data:contribution,error:null}),then(resolve,reject){return Promise.resolve({data:table==='perk_redemptions'?redemptions:events,error:null}).then(resolve,reject);}};return builder;};
+ globalThis.__creatorLadderClient={auth:{getUser:async()=>({data:{user:{id:actor}},error:null})},rpc:async(name,args)=>{state.rpcCalls.push({name,args});if(name==='kinnso_actor')return{data:revoked?null:{id:actor,roles},error:revoked?{message:'unauthenticated'}:null};if(name==='list_active_perks')return{data:perks,error:null};if(name==='redeem_perk')return typeof redeem==='function'?redeem(args):redeem;return{data:null,error:null};},from:query};
  t.after(()=>{delete globalThis.__creatorLadderClient;for(const[key,value]of Object.entries(old))if(value===undefined)delete process.env[key];else process.env[key]=value;});return state;
 }
 const request=(path,body,method=body?'POST':'GET',origin='https://journeys.example')=>new Request('https://journeys.example'+path,{method,headers:{host:'journeys.example',origin,'content-type':'application/json'},body:body===undefined?undefined:JSON.stringify(body)});
@@ -42,4 +42,30 @@ test('perk redemption is an idempotent RPC and maps tier or missing-perk errors 
  let state=setup(t);let response=await perkRoute.POST(request('/api/creator/perks',{requestId,perkId:perk}));assert.equal(response.status,200);assert.deepEqual((await response.json()).data,{redemptionType:'code',value:'PARTNER-CODE'});assert.deepEqual(state.rpcCalls.find(x=>x.name==='redeem_perk').args,{p_perk_id:perk});
  for(const[error,status]of[[{message:'below_tier',code:'42501'},403],[{message:'perk_not_found',code:'P0002'},404],[{message:'private database detail',code:'XX000'},503]]){setup(t,{redeem:{data:null,error}});response=await perkRoute.POST(request('/api/creator/perks',{requestId,perkId:perk}));assert.equal(response.status,status);assert.equal(JSON.stringify(await response.json()).includes('private database'),false);}
  for(const body of [{requestId:'bad',perkId:perk},{requestId,perkId:'bad'},{requestId,perkId:perk,actorId:actor}])assert.equal((await perkRoute.POST(request('/api/creator/perks',body))).status,400);
+});
+
+test('catalog reload keeps two redeemed values private and POST reveals each independently',async t=>{
+ const another='33333333-3333-4333-8333-333333333333';
+ const row={id:perk,slug:'rail',partner_name:'Partner',title:'Rail',summary:'Benefit',category:'travel',discount_label:'10%',min_tier:'rising',redemption_type:'code',sort_order:1};
+ const state=setup(t,{perks:[row,{...row,id:another,slug:'hotel',redemption_type:'link'}],
+  redemptions:[{perk_id:perk},{perk_id:another}],
+  redeem:({p_perk_id})=>({data:[p_perk_id===perk?{redemption_type:'code',redemption_value:'RAIL-CODE'}:{redemption_type:'link',redemption_value:'https://example.test/hotel'}],error:null})});
+ const catalog=await (await perkRoute.GET(request('/api/creator/perks'))).json();
+ assert.deepEqual(catalog.data.items.map(({id,redeemed})=>[id,redeemed]),[[perk,true],[another,true]]);
+ assert.ok(catalog.data.items.every(item=>!('value' in item)));
+ assert.deepEqual(state.queries.find(q=>q.table==='perk_redemptions').filters,[['creator_id',actor]]);
+ for(const [perkId,type,value] of [[perk,'code','RAIL-CODE'],[another,'link','https://example.test/hotel'],[perk,'code','RAIL-CODE']]){
+  const response=await perkRoute.POST(request('/api/creator/perks',{requestId,perkId}));
+  assert.equal(response.status,200);
+  assert.match(response.headers.get('cache-control'),/no-store/);
+  assert.deepEqual((await response.json()).data,{redemptionType:type,value});
+ }
+ assert.deepEqual(state.rpcCalls.filter(call=>call.name==='redeem_perk').map(call=>call.args.p_perk_id),[perk,another,perk]);
+});
+
+test('perk redemption never returns an unsafe stored link',async t=>{
+ setup(t,{redeem:{data:[{redemption_type:'link',redemption_value:'javascript:alert(1)'}],error:null}});
+ const response=await perkRoute.POST(request('/api/creator/perks',{requestId,perkId:perk}));
+ assert.equal(response.status,409);
+ assert.equal((await response.json()).code,'CONFLICT');
 });
