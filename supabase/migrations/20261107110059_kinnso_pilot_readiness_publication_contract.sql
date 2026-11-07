@@ -314,6 +314,9 @@ end $$;
 do $$
 declare
  definition text:=replace(pg_get_functiondef('public.admin_apply_kinnso_pilot_command(uuid,jsonb)'::regprocedure),chr(13),'');
+ configure_fields_anchor text:=$old$'contentConsentVersion','coordinatorReference'$old$;
+ configure_set_anchor text:='set participation_notice_version=';
+ activation_anchor text:='p.consent_version<>r.participation_notice_version';
  fields_anchor text:=' if fields is null or p_request_id is null then';
  lock_anchor text:=$lock$    select * into d from kinnso_internal.guide_drafts where guide_id=i.guide_id for update;
     if not found then raise exception 'CONFLICT';end if;$lock$;
@@ -321,7 +324,10 @@ declare
 begin
  if cardinality(string_to_array(definition,fields_anchor))<>2 or
     cardinality(string_to_array(definition,lock_anchor))<>2 or
-    cardinality(string_to_array(definition,role_anchor))<>2 then
+    cardinality(string_to_array(definition,role_anchor))<>2 or
+    cardinality(string_to_array(definition,configure_fields_anchor))<>2 or
+    cardinality(string_to_array(definition,configure_set_anchor))<>2 or
+    cardinality(string_to_array(definition,activation_anchor))<>2 then
   raise exception 'Unexpected ops pilot approval source';
  end if;
  definition:=replace(definition,role_anchor,$role$ select id into m from public.kinnso_ops_members where user_id=a and status='active' and role in ('admin','owner') for share;
@@ -340,12 +346,12 @@ begin
      or coalesce(p_command->>'expectedContentDigest','') !~ '^[a-f0-9]{64}$' then raise exception 'INVALID';end if;
  end if;
 $fields$||fields_anchor);
- definition:=replace(definition,$old$'contentConsentVersion','coordinatorReference'$old$,
+ definition:=replace(definition,configure_fields_anchor,
   $new$'contentConsentVersion','participationNoticeDigest','privacyNoticeDigest','contentConsentDigest','coordinatorReference'$new$);
- definition:=replace(definition,'set participation_notice_version=',
+ definition:=replace(definition,configure_set_anchor,
   $new$set participation_notice_digest=p_command->>'participationNoticeDigest',
   privacy_notice_digest=p_command->>'privacyNoticeDigest',content_consent_digest=p_command->>'contentConsentDigest',participation_notice_version=$new$);
- definition:=replace(definition,$old$p.consent_version<>r.participation_notice_version$old$,
+ definition:=replace(definition,activation_anchor,
   $new$p.consent_version is distinct from r.participation_notice_version or p.consent_digest is null
   or p.consent_digest is distinct from kinnso_internal.pilot_consent_identity(r)$new$);
  execute replace(definition,lock_anchor,lock_anchor||$compare$

@@ -457,6 +457,8 @@ select pg_temp.ok((select value#>>'{intake,id}'=${q(i.intake)} and value#>>'{int
  and value#>>'{intake,editorHref}'='/en/studio/guides/'||${q(i.guide)}||'/edit' from owner_view),'owner intake and canonical editor');
 select pg_temp.ok(pg_temp.rpc(${q(i.traveller)},'select public.get_kinnso_pilot_self()')->'intake'='null'::jsonb,'cross-slot intake hidden');
 select pg_temp.denied(${q(i.creator)},${edit(3,{...content,authorConsentDigest:'d'.repeat(64)})},'CONFLICT');
+select pg_temp.denied(${q(i.creator)},${edit(3,{...content,authorConsentVersion:' content-v1 '})},'CONFLICT');
+select pg_temp.denied(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:{...content,authorConsentVersion:'content-v1 '}}))},'CONFLICT');
 select pg_temp.rpc(${q(i.creator)},${edit(3)});
 select pg_temp.ok((select status='submitted' and author_consent_digest=repeat('c',64) from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'exact accepted content notice');
 select pg_temp.denied(${q(i.creator)},${edit(4)},'CONFLICT');
@@ -466,12 +468,31 @@ select pg_temp.rpc(${q(i.ops)},${approval(i.guide,i.intake,5,'Review draft intak
 select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(randomUUID())})`)});
 select pg_temp.denied(${q(i.creator)},${edit(7)},'CONFLICT');
 `;});
+check('two active creators in one run cannot read or edit another creator intake',i=>{
+ const otherSlot=randomUUID();
+ const get='select public.get_kinnso_pilot_self()';
+ return `${contentSeed(i)}
+ update public.creators set status='active' where id=${q(i.other)};
+ insert into kinnso_internal.pilot_participants(id,run_id,role,pilot_cohort_role,display_label,user_id,status,consent_version,consent_digest,consented_at)
+ select ${q(otherSlot)},r.id,'creator','observer','Second creator',${q(i.other)},'active',r.participation_notice_version,
+   kinnso_internal.pilot_consent_identity(r),now() from kinnso_internal.pilot_runs r where id=${q(i.run)};
+ update kinnso_internal.pilot_content_intakes set status='rejected',updated_at=now()-interval '1 minute' where id=${q(i.intake)};
+ create temp table second_intake as select (pg_temp.rpc(${q(i.other)},${q(pc({type:'submitContentIntake',intake:{...content,title:'Second creator only'}}))})#>>'{snapshot,intake,id}')::uuid id;
+ update kinnso_internal.pilot_content_intakes set status='rejected' where id=(select id from second_intake);
+ select pg_temp.ok(pg_temp.rpc(${q(i.creator)},${q(get)})#>>'{intake,id}'=${q(i.intake)},'first creator reads own intake');
+ select pg_temp.ok(pg_temp.rpc(${q(i.other)},${q(get)})#>>'{intake,id}'=(select id::text from second_intake),'second creator reads own intake');
+ select pg_temp.denied(${q(i.other)},${q(pc({type:'updateOwnedContentIntake',id:i.intake,expectedRevision:3,intake:content}))},'NOT_FOUND');
+ select pg_temp.denied(${q(i.creator)},format('select public.apply_kinnso_pilot_participant_command(%L,%L::jsonb)',gen_random_uuid(),
+  jsonb_build_object('type','updateOwnedContentIntake','id',(select id from second_intake),'expectedRevision',1,'intake',${json(content)})),'NOT_FOUND');
+ `;
+});
 check('missing and stale notice digests fail without accepting consent',i=>{
  const command={type:'acceptConsent',noticeVersion:'participation-v1',privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64)};
  return `${seed(i)}
  update kinnso_internal.pilot_participants set consent_version=null,consent_digest=null,consented_at=null where id=${q(i.slot)};
  select pg_temp.denied(${q(i.traveller)},${q(pc(command))},'CONFLICT');
  select pg_temp.denied(${q(i.traveller)},${q(pc({...command,noticeDigest:'d'.repeat(64)}))},'CONFLICT');
+ ${['noticeVersion','privacyNoticeVersion'].map(key=>`select pg_temp.denied(${q(i.traveller)},${q(pc({...command,noticeDigest:'a'.repeat(64),[key]:' '+command[key]+' '}))},'CONFLICT');`).join(' ')}
  select pg_temp.ok((select consented_at is null from kinnso_internal.pilot_participants where id=${q(i.slot)}),'no consent on mismatch');
  select pg_temp.rpc(${q(i.traveller)},${q(pc({...command,noticeDigest:'a'.repeat(64)},i.request))});
  select pg_temp.denied(${q(i.traveller)},${q(pc({...command,noticeDigest:'a'.repeat(64),privacyNoticeDigest:'d'.repeat(64)},i.request))},'REQUEST_ID_REUSED');

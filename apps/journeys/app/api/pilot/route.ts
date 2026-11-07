@@ -39,9 +39,9 @@ function selfView({ run, participant, nextStep, readiness, contentConsent, intak
 
   return {
     run: run && { id: run.id, name: run.name, status: run.status,
-      participationNoticeVersion: typeof run.participationNoticeVersion === 'string' ? run.participationNoticeVersion : undefined,
+      participationNoticeVersion: (run.participationNoticeVersion === null || typeof run.participationNoticeVersion === 'string') ? run.participationNoticeVersion : undefined,
       participationNoticeDigest: run.participationNoticeDigest === undefined ? undefined : digest(run.participationNoticeDigest),
-      privacyNoticeVersion: typeof run.privacyNoticeVersion === 'string' ? run.privacyNoticeVersion : undefined,
+      privacyNoticeVersion: (run.privacyNoticeVersion === null || typeof run.privacyNoticeVersion === 'string') ? run.privacyNoticeVersion : undefined,
       privacyNoticeDigest: run.privacyNoticeDigest === undefined ? undefined : digest(run.privacyNoticeDigest),
     },
     participant: participant && {

@@ -91,6 +91,7 @@ type ParticipantIntent = {
   actorId: string;
   command: PilotParticipantCommand | null;
   controller: AbortController;
+  outcomeUnknown: boolean;
   attempt?: Promise<ApiResult<PilotParticipantMutationResult>>;
 };
 
@@ -138,7 +139,7 @@ function participantCommand(actorId: string, command?: PilotParticipantCommand):
     return fail('INVALID');
   }
   if (!participantIntent && parsed) {
-    participantIntent = {actorId, command: parsed, controller: new AbortController()};
+    participantIntent = {actorId, command: parsed, controller: new AbortController(), outcomeUnknown: false};
     listenForParticipantInvalidation();
   }
   const intent = participantIntent;
@@ -152,7 +153,10 @@ function participantCommand(actorId: string, command?: PilotParticipantCommand):
   }, intent.controller.signal, actorId).then(result => {
     delete intent.attempt;
     if (participantIntent !== intent) return fail('AUTH_REQUIRED', requestId);
-    if (result.ok || !result.retryable) clearParticipantIntent();
+    // A session failure on this attempt cannot resolve an earlier unknown write.
+    const authInterrupted = !result.ok && (result.code === 'AUTH_REQUIRED' || result.code === 'FORBIDDEN');
+    if (result.ok || !result.retryable && !(intent.outcomeUnknown && authInterrupted)) clearParticipantIntent();
+    else if (result.retryable) intent.outcomeUnknown = true;
     return result.ok ? result : {...result, requestId};
   });
   return intent.attempt;

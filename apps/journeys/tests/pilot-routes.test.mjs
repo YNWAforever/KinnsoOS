@@ -65,6 +65,7 @@ function load(code, fixture = {}) {
   const module = {exports: {}};
   const context = createContext({
     module, exports: module.exports, require, Request, Response, Headers, URL, URLSearchParams,
+    window: fixture.window, CustomEvent,
     Buffer, TextEncoder, AbortController, AbortSignal, crypto: globalThis.crypto, performance, fixture,
     process: {env: {KINNSO_SITE_URL: origin}}, fetch: (...args) => fixture.fetch(...args),
     console: {info: (...args) => {
@@ -802,4 +803,63 @@ test('recoverable invite retains created entity and request IDs and clears on ac
   assert.equal(opsPilot.pending(actorId),null);
   assert.equal((await opsPilot.recoverableCommand(participantId)).code,'CONFLICT');
   assert.equal(wire.length,3);
+});
+test('participant POST rejects padded notice versions before calling the RPC', async () => {
+  const {state} = setup({data:self});
+  const route = load(participantCode,state);
+  const consent = {type:'acceptConsent',requestId,noticeVersion:'v1',noticeDigest:'a'.repeat(64),
+    privacyNoticeVersion:'p1',privacyNoticeDigest:'b'.repeat(64)};
+  const intake = {title:'Title',destination:'Place',authoredLocale:'en',sourceSummary:'Summary',sourceUrls:[],
+    rightsBasis:'original',rightsEvidenceReference:'rights:1',authorConsentVersion:' c1 ',
+    authorConsentDigest:'c'.repeat(64),coverRightsConfirmed:null,coverRightsEvidenceReference:null};
+  for (const command of [{...consent,noticeVersion:' v1 '},{...consent,privacyNoticeVersion:'p1 '},
+    {type:'submitContentIntake',requestId,intake},
+    {type:'updateOwnedContentIntake',requestId,id:intakeId,expectedRevision:1,intake}]) {
+    await expectFailure(await route.POST(request({requestId,command})),400,'INVALID');
+  }
+  assert.deepEqual(state.calls,[]);
+});
+
+test('participant GET preserves explicit null notice versions and digests', async () => {
+  const run = {...self.run,participationNoticeVersion:null,participationNoticeDigest:null,
+    privacyNoticeVersion:null,privacyNoticeDigest:null};
+  const {state} = setup({data:{...self,run}});
+  const route = load(participantCode,state);
+  const result = await (await route.GET(new Request(origin+'/api/pilot'))).json();
+  assert.deepEqual(result.data.run,run);
+});
+
+test('an unknown claim survives temporary authentication failure with the exact body and ID', async () => {
+  const attempts = [];
+  const {pilot} = load(repositoryCode,{fetch:async (url, options) => {
+    attempts.push({url,body:options.body,actor:options.headers['X-Kinnso-Intent-Actor']});
+    if (attempts.length === 1) return Response.json({ok:false,code:'UNAVAILABLE',retryable:true},{status:503});
+    if (attempts.length === 2) return Response.json({ok:false,code:'AUTH_REQUIRED',retryable:false},{status:401});
+    return Response.json({ok:true,data:{snapshot:self}});
+  }});
+  assert.equal((await pilot.command(claim,actorId)).code,'UNAVAILABLE');
+  assert.equal((await pilot.retry(actorId)).code,'AUTH_REQUIRED');
+  assert.equal((await pilot.retry(actorId)).ok,true);
+  assert.equal(attempts.length,3);
+  assert.deepEqual(attempts,[attempts[0],attempts[0],attempts[0]]);
+  assert.equal(JSON.parse(attempts[0].body).requestId,claim.requestId);
+});
+
+test('sign-out event clears pending claim and discards late GET and POST responses', async () => {
+  const window = new EventTarget();
+  const lifecycle = load(await compile('../lib/trips/local-drafts.ts'),{window});
+  const pending = new Map();
+  const {pilot} = load(repositoryCode,{window,fetch:(_url,options) => new Promise(resolve => {
+    pending.set(options.method,{resolve,signal:options.signal});
+  })});
+  const read = pilot.get(actorId);
+  const write = pilot.command(claim,actorId);
+  lifecycle.invalidateAccountViews(null);
+  for (const method of ['GET','POST']) {
+    const {resolve,signal} = pending.get(method);
+    assert.equal(signal.aborted,true);
+    resolve(Response.json({ok:true,data:{snapshot:self}}));
+  }
+  for (const result of await Promise.all([read,write])) assert.equal(result.code,'AUTH_REQUIRED');
+  assert.equal((await pilot.retry(actorId)).code,'CONFLICT');
 });

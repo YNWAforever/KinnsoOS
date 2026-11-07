@@ -22,3 +22,14 @@ Base: 807ed7ff05d0d32cb70f27c6ff39604c45e14835. Worktree: single-origin-design-2
 ## Boundaries
 
 The production notice artifacts and their approved hashes are setup inputs. Tests use synthetic notices and synthetic accounts. No production migration, push, deployment, provider activation, real invitations, real accounts or nested agents. Task 8 remains separate.
+
+## Review fix round 1
+
+- Participant POST rejects padded participation, privacy and author notice versions without rewriting them. Direct authenticated SQL rejects the same variants with CONFLICT; both intake command variants are covered. Unconfigured self responses preserve explicit null versions and digests.
+- A retryable failure marks the actor's pending request as unresolved. A later 401 or 403 leaves its original request ID and body available for retry. The actual sign-out invalidation event still aborts the claim and self read, discards both late responses, and removes the claim from memory.
+- Tested two active creators in the same run with distinct intakes: each reads their own and receives NOT_FOUND when trying to edit the other. The three remaining SQL rewrite anchors now require exactly one match before any replacement.
+- Controller confirmed pilot tables were never deployed to production and no legacy version-only runs exist. The clean isolated reset is authoritative; no backfill or production change.
+
+**RED:** Three focused tests failed on the review base: padded POST returned 200, the JSON response omitted both null versions, and a 503 followed by a 401 lost the retry intent.
+
+**GREEN:** 68 focused route, contract and migration tests passed; typecheck and whitespace check passed. The verified isolated no-seed reset passed, with the same 13 security-advisor finding keys before and after. The first integration run had one duplicate synthetic-session fixture error; after removing the redundant insert, 48/48 pilot and creator integration tests passed. Full unit suite was not rerun for this focused fix.

@@ -35,6 +35,10 @@ export type OpsPilotContentIntakeView={currentDraftRevision?:number|null;current
 export type OpsPilotCollaborationView={id:string;merchantParticipantId:string;creatorParticipantId:string;missionId:string|null;steps:Array<{code:string;status:PilotCheckStatus}>};
 export type OpsPilotCheckView={id?:string;code:string;category:string;status:PilotCheckStatus;evidenceReference:string|null;observedSummary:string|null;revision:number;derived:boolean};
 export type PilotReadinessView={stage:PilotReadinessStage;readyToBegin:boolean;executionComplete:boolean;blockers:Array<{code:string;category:string;messageKey:string;recordId?:string}>};
+function exactNoticeVersion(value: unknown): string {
+ if (typeof value !== 'string' || value.length < 1 || value.length > 120 || value !== value.trim()) return fail();
+ return value;
+}
 function noticeDigest(value:unknown):string { if(typeof value !== 'string' || value.length !== 64 || !/^[0-9a-f]{64}$/.test(value)) return fail(); return value; }
 export type PilotSelfSnapshot={run:PilotSelfRunView|null;participant:PilotSelfParticipantView|null;nextStep:PilotParticipantNextStep|null;readiness:PilotReadinessView;
  contentConsent?:{version:string;digest:string}|null; intake?:PilotSelfIntake|null;
@@ -64,7 +68,7 @@ function intake(value:unknown):PilotContentIntakeInput {
  if(cover!==null&&typeof cover!=='boolean')throw new Error('INVALID');
  const coverRef=x.coverRightsEvidenceReference===null?null:str(x.coverRightsEvidenceReference,1,500);
  if(cover===true&&!coverRef||cover===false&&coverRef)fail();
- return {title:str(x.title,1,160),destination:str(x.destination,1,160),authoredLocale:str(x.authoredLocale,2,20),sourceSummary:str(x.sourceSummary,1,4000),sourceUrls,rightsBasis:choice(x.rightsBasis,['original','licence','permission']),rightsEvidenceReference:str(x.rightsEvidenceReference,1,500),authorConsentVersion:str(x.authorConsentVersion,1,120),authorConsentDigest:noticeDigest(x.authorConsentDigest),coverRightsConfirmed:cover as boolean|null,coverRightsEvidenceReference:coverRef};
+ return {title:str(x.title,1,160),destination:str(x.destination,1,160),authoredLocale:str(x.authoredLocale,2,20),sourceSummary:str(x.sourceSummary,1,4000),sourceUrls,rightsBasis:choice(x.rightsBasis,['original','licence','permission']),rightsEvidenceReference:str(x.rightsEvidenceReference,1,500),authorConsentVersion:exactNoticeVersion(x.authorConsentVersion),authorConsentDigest:noticeDigest(x.authorConsentDigest),coverRightsConfirmed:cover as boolean|null,coverRightsEvidenceReference:coverRef};
 }
 export function parseOpsPilotCommand(input:unknown):OpsPilotCommand {
  const type=(input&&typeof input==='object'&&!Array.isArray(input)?(input as Record<string,unknown>).type:undefined);
@@ -109,5 +113,5 @@ export function parsePilotParticipantCommand(input:unknown):PilotParticipantComm
  const type=input&&typeof input==='object'&&!Array.isArray(input)?(input as Record<string,unknown>).type:undefined;
  const fields:Record<string,string[]>={claimInvite:['type','requestId','code'],acceptConsent:['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest'],submitContentIntake:['type','requestId','intake'],updateOwnedContentIntake:['type','requestId','id','expectedRevision','intake'],acknowledgeNotification:['type','requestId'],acknowledgeSupportResponse:['type','requestId']};
  if(typeof type!=='string'||!Object.hasOwn(fields,type))fail();const o=object(input,fields[type as string]);
- switch(type){case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:str(o.noticeVersion,1,120),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:str(o.privacyNoticeVersion,1,120),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId)};default:return fail()}
+ switch(type){case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:exactNoticeVersion(o.noticeVersion),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:exactNoticeVersion(o.privacyNoticeVersion),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId)};default:return fail()}
 }
