@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
+import {createClient} from '@supabase/supabase-js';
 import {fixture,admin} from './local-fixtures.mjs';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
 
@@ -35,8 +36,14 @@ test('audited content RPCs are idempotent, concurrency-safe and not bypassable b
   assert.ok(sessions.every(result=>!result.error),JSON.stringify(sessions));assert.deepEqual(sessions[0].data,sessions[1].data);entityIds.push(sessionId);
 
   const perkId=randomUUID(),perkArgs={p_request_id:perkId,p_partner_name:'Synthetic Partner',p_title:`Synthetic perk ${runId}`,p_summary:'Synthetic isolated perk.',p_category:'travel',p_discount_label:'10%',p_min_tier:'rising',p_redemption_type:'code',p_redemption_value:'SYNTHETIC-RPC',p_sort_order:1,p_active:false};
-  const perks=await Promise.all([operator.client.rpc('admin_create_partner_perk',perkArgs),operator.client.rpc('admin_create_partner_perk',perkArgs)]);
-  assert.ok(perks.every(result=>!result.error),JSON.stringify(perks));assert.deepEqual(perks[0].data,perks[1].data);entityIds.push(perkId);
+  entityIds.push(perkId);
+  const {session:authSession}=await ok(operator.client.auth.getSession());
+  assert.ok(authSession?.access_token);
+  const secondConnection=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_ANON_KEY,{
+   auth:{persistSession:false},global:{headers:{Authorization:'Bearer '+authSession.access_token}},
+  });
+  const perks=await Promise.all([operator.client.rpc('admin_create_partner_perk',perkArgs),secondConnection.rpc('admin_create_partner_perk',{...perkArgs,p_title:' '+perkArgs.p_title+' '})]);
+  assert.ok(perks.every(result=>!result.error),JSON.stringify(perks));assert.deepEqual(perks[0].data,perks[1].data);assert.deepEqual(perks[0].data,{id:perkId,active:false});
 
   const testimonialId=randomUUID(),testimonialArgs={p_request_id:testimonialId,p_quote:`Synthetic testimonial ${runId}`,p_author_name:'Synthetic Author',p_author_role:'creator',p_content_locale:'en',p_sort_order:2};
   const testimonials=await Promise.all([operator.client.rpc('admin_create_testimonial',testimonialArgs),operator.client.rpc('admin_create_testimonial',testimonialArgs)]);
@@ -47,6 +54,11 @@ test('audited content RPCs are idempotent, concurrency-safe and not bypassable b
    [operator.client.rpc('admin_set_partner_perk_active',{p_id:perkId,p_active:true}),operator.client.rpc('admin_set_partner_perk_active',{p_id:perkId,p_active:true})],
    [operator.client.rpc('admin_set_testimonial_status',{p_id:testimonialId,p_status:'published'}),operator.client.rpc('admin_set_testimonial_status',{p_id:testimonialId,p_status:'published'})],
   ]){const results=await Promise.all(call);assert.ok(results.every(result=>!result.error),JSON.stringify(results));assert.deepEqual(results[0].data,results[1].data);}
+
+  assert.deepEqual(await ok(secondConnection.rpc('admin_create_partner_perk',perkArgs)),{id:perkId,active:false});
+  const changed=await secondConnection.rpc('admin_create_partner_perk',{...perkArgs,p_title:'Changed title'});
+  assert.equal(changed.error?.message,'request_id_reused');
+  assert.equal((await ok(admin.from('partner_perks').select('id,active').eq('id',perkId))).length,1);
 
   const audit=await ok(admin.from('ops_audit_log').select('entity_id,action').in('entity_id',entityIds));
   assert.deepEqual(audit.filter(row=>row.entity_id===sessionId).map(row=>row.action).sort(),['session.create','session.status.live']);
@@ -64,6 +76,11 @@ test('audited content RPCs are idempotent, concurrency-safe and not bypassable b
   assert.ok(directPerk.error,'operations direct perk writes must be denied');
   const directTestimonial=await operator.client.from('testimonials').update({status:'draft'}).eq('id',testimonialId);
   assert.ok(directTestimonial.error,'operations direct testimonial writes must be denied');
+
+  await ok(admin.from('kinnso_ops_members').update({role:'moderator'}).eq('user_id',analyst.id));
+  const foreignReplay=await analyst.client.rpc('admin_create_partner_perk',perkArgs);
+  assert.equal(foreignReplay.error?.message,'perk_conflict');
+  assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('entity_id',perkId).eq('action','perk.create'))).length,1);
  }finally{
   purgeContentFixtures([...entityIds,...memberIds,...f.actorIds()]);
   await f.cleanup();

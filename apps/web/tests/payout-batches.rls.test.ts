@@ -1,8 +1,9 @@
 // @vitest-environment node
-import { describe, expect, it, beforeAll } from 'vitest'
+import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { createHmac, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
+import { verifyTestTarget } from '../../journeys/scripts/verify-test-target.mjs'
 
 const url = process.env.SUPABASE_URL
 const anonKey = process.env.SUPABASE_ANON_KEY
@@ -49,24 +50,7 @@ function clientFor(userId: string) {
 
 const svc = () => createClient(url!, svcKey!, { auth: { persistSession: false, autoRefreshToken: false } })
 
-// Unlike the sibling RLS suites, these ids are generated fresh per process rather than
-// hardcoded distinctive constants. That is a deliberate consequence of what this migration
-// set actually does (verified against the live stack with a throwaway ROLLBACK'd transaction
-// before writing this file, not assumed): creator_payout_decisions carries unconditional
-// BEFORE UPDATE / BEFORE DELETE triggers that raise 'decision_immutable' for every caller,
-// including service_role and postgres itself (20260816090000_r10_2_payout_batches_and_decisions.sql).
-// Every payout batch created via admin_create_payout_batch always gets a decision row
-// alongside it, and creator_payout_decisions.payout_batch_id -> creator_payout_batches(id)
-// carries no ON DELETE clause (default NO ACTION), so once a decision exists its batch can
-// never be deleted either. That lock cascades further: creator_payout_batches.creator_id and
-// .created_by_ops_member_id are also plain NO ACTION foreign keys, so the seeded creators and
-// kinnso_ops_members rows below -- and therefore their auth.users rows, since
-// creators.id / kinnso_ops_members.user_id -> auth.users is ON DELETE CASCADE and a cascade
-// that reaches a NO ACTION-blocked child fails the whole statement -- are permanently
-// undeletable too, by design, once any test below runs to completion. There is therefore no
-// afterAll cleanup in this file (see the comment below the describe block); every id must be
-// unique per process so a second run never collides with the previous run's permanently
-// orphaned rows.
+// Fresh fixture IDs scope cleanup to this suite's own rows.
 const creatorA = randomUUID()
 const creatorB = randomUUID()
 const opsAdminUser = randomUUID()
@@ -112,10 +96,6 @@ d('r10.2 payout batch lifecycle, idempotency, and RLS isolation', () => {
 
     const s = svc()
 
-    // Neither ops member's internal kinnso_ops_members.id is needed anywhere below -- every
-    // RPC call authenticates as the auth.users id via clientFor(), and there is no afterAll
-    // cleanup to scope by internal id (see the comment above this describe block) -- so only
-    // the insert's success is checked, not its returned row.
     const admin = await s.from('kinnso_ops_members').insert({
       user_id: opsAdminUser,
       display_name: `Payout RLS Admin ${runId}`,
@@ -133,14 +113,36 @@ d('r10.2 payout batch lifecycle, idempotency, and RLS isolation', () => {
     if (analyst.error) throw analyst.error
   }, hookTimeout)
 
-  // No afterAll here -- deliberately. Every row this suite creates (creator_payout_batches,
-  // creator_payout_decisions, the seeded kinnso_ops_members rows, and even the seeded
-  // auth.users/creators rows once a batch references them) is permanently undeletable by the
-  // schema's own design; see the long comment above the id constants for the exact mechanism,
-  // confirmed empirically against this stack rather than assumed. Attempting deletes here
-  // would only add statements that are guaranteed to fail on every run. The per-process
-  // randomUUID() ids above are what make repeated runs of this file safe instead: each run
-  // seeds entities no previous run has ever touched, so there is nothing to collide with.
+  afterAll(async () => {
+    // The append-only decision trigger has no application bypass. Temporarily
+    // disable only that delete trigger inside a transaction on the attested
+    // local stack. PostgreSQL holds the table lock until it is enabled again.
+    verifyTestTarget({
+      ...process.env, KINNSO_TEST_API_ORIGIN: url, KINNSO_TEST_DB_CONTAINER: dbContainer,
+    }, undefined, { allowCanonicalCi: true })
+    await runPsql(`
+      begin;
+      create temporary table fixture_payout_batches on commit drop as
+        select b.id from public.creator_payout_batches b
+        join public.kinnso_ops_members m on m.id=b.created_by_ops_member_id
+        where b.creator_id in ('${creatorA}', '${creatorB}')
+          and m.user_id in ('${opsAdminUser}', '${opsAnalystUser}');
+      alter table public.creator_payout_decisions disable trigger creator_payout_decisions_no_delete_trg;
+      delete from public.creator_payout_decisions d
+       where d.payout_batch_id in (select id from fixture_payout_batches)
+         and d.actor_ops_member_id in (
+           select id from public.kinnso_ops_members where user_id in ('${opsAdminUser}', '${opsAnalystUser}')
+         );
+      alter table public.creator_payout_decisions enable trigger creator_payout_decisions_no_delete_trg;
+      delete from public.creator_payout_batches where id in (select id from fixture_payout_batches);
+      delete from public.ops_audit_log where actor_ops_member_id in (
+        select id from public.kinnso_ops_members where user_id in ('${opsAdminUser}', '${opsAnalystUser}')
+      );
+      delete from public.kinnso_ops_members where user_id in ('${opsAdminUser}', '${opsAnalystUser}');
+      delete from auth.users where id in ('${creatorA}', '${creatorB}', '${opsAdminUser}', '${opsAnalystUser}');
+      commit;
+    `)
+  }, hookTimeout)
 
   it('creates a batch, replays an identical call, and rejects a conflicting replay', async () => {
     const admin = clientFor(opsAdminUser)

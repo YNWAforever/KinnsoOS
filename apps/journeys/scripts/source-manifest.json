@@ -760,7 +760,8 @@
     "tests/contracts/20261108120000_kinnso_pilot_residual_races.sql": "supabase/migrations/20261108120000_kinnso_pilot_residual_races.sql",
     "tests/contracts/20261108123000_kinnso_ops_team_mutation_receipts.sql": "supabase/migrations/20261108123000_kinnso_ops_team_mutation_receipts.sql",
     "tests/contracts/20261108124500_protect_ops_invite_history.sql": "supabase/migrations/20261108124500_protect_ops_invite_history.sql",
-    "tests/contracts/20261108130000_restore_redeemed_perk_entitlement.sql": "supabase/migrations/20261108130000_restore_redeemed_perk_entitlement.sql"
+    "tests/contracts/20261108130000_restore_redeemed_perk_entitlement.sql": "supabase/migrations/20261108130000_restore_redeemed_perk_entitlement.sql",
+    "tests/contracts/20261108131500_ops_perk_create_receipts.sql": "supabase/migrations/20261108131500_ops_perk_create_receipts.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/creator-merchant-operations-release-2026-11-06.json": "docs/creator-merchant-operations-release-2026-11-06.json",

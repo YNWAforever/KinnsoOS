@@ -230,18 +230,19 @@ d('r11.2 merchant budgets: funding gate, ledger idempotency, ops RPCs, and RLS',
     // first, THEN let the auth.users delete cascade through merchant_profiles -> missions ->
     // mission_participants -> mission_milestones -> mission_milestone_submissions ->
     // mission_settlements as usual.
-    //
-    // opsAdminUser is deliberately NOT deleted -- once either write RPC writes an
-    // ops_audit_log row for it, its kinnso_ops_members row (and therefore its auth.users row)
-    // becomes permanently undeletable, the same immutability shape as R10.2's payout ledger.
-    // The upsert-ignore in beforeAll makes this safe to leave behind across runs.
     const s = svc()
     if (merchantBudgetId) {
       await s.from('merchant_budget_transactions').delete().eq('merchant_budget_id', merchantBudgetId)
       await s.from('merchant_budgets').delete().eq('id', merchantBudgetId)
     }
     await runPsql(`
-      delete from auth.users where id in ('${creatorUser}', '${merchantUser}', '${otherMerchantUser}', '${nonAdminOpsUser}');
+      begin;
+      delete from public.ops_audit_log where actor_ops_member_id in (
+        select id from public.kinnso_ops_members where user_id='${opsAdminUser}'
+      );
+      delete from public.kinnso_ops_members where user_id='${opsAdminUser}';
+      delete from auth.users where id in ('${creatorUser}', '${merchantUser}', '${otherMerchantUser}', '${nonAdminOpsUser}', '${opsAdminUser}');
+      commit;
     `)
   }, hookTimeout)
 
