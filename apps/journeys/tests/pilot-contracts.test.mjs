@@ -75,7 +75,7 @@ test('manual evidence requires a valid capture strictly after acceptance start a
 test('publication requires exact approval, active creator and a non-withdrawn guide', () => {
   const input = {
     pilotLinked: true, runStatus: 'running', intakeStatus: 'approved',
-    approvedDraftRevision: 2, approvedContentDigest: 'digest',
+    approvedDraftRevision: 2, approvedContentDigest: 'digest', reviewedGuideVersion: null,
     currentDraftRevision: 2, currentContentDigest: 'digest', publishedVersion: null,
     creatorIsActive: true, guideIsWithdrawn: false,
   };
@@ -90,6 +90,22 @@ test('publication requires exact approval, active creator and a non-withdrawn gu
     [{ runStatus: 'paused' }, 'run_not_running'],
   ]) assert.deepEqual(pilotCanPublish({ ...input, ...patch }), { allowed: false, reason });
   assert.deepEqual(pilotCanPublish({ ...input, pilotLinked: false, runStatus: 'paused' }), { allowed: true });
+});
+
+test('publication eligibility checks draft revision and reviewed guide version independently', () => {
+  const input = {
+    pilotLinked: true, runStatus: 'running', intakeStatus: 'approved',
+    approvedDraftRevision: 2, approvedContentDigest: 'digest', reviewedGuideVersion: 7,
+    currentDraftRevision: 2, currentContentDigest: 'digest', publishedVersion: 7,
+    creatorIsActive: true, guideIsWithdrawn: false,
+  };
+  assert.deepEqual(pilotCanPublish(input), { allowed: true });
+  for (const patch of [
+    { publishedVersion: 8 }, { publishedVersion: 2 }, { publishedVersion: null },
+    { currentDraftRevision: 3 }, { reviewedGuideVersion: null },
+  ]) {
+    assert.deepEqual(pilotCanPublish({ ...input, ...patch }), { allowed: false, reason: 'revision_changed' });
+  }
 });
 
 const participants = ['traveller', 'creator', 'merchant'].map(role => ({
@@ -162,6 +178,25 @@ test('publication facts must match each reviewed guide, creator, version and dig
   for (const patch of [{ creatorParticipantId: 'other' }, { status: 'withdrawn' }, { reviewedGuideVersion: 99 }]) {
     assert.equal(complete({ contentIntakes: [{ ...contentIntakes[0], ...patch }, ...contentIntakes.slice(1)] }), false);
   }
+});
+
+test('execution accepts a reviewed publication version independent of the approved draft revision', () => {
+  const intake = { ...contentIntakes[0], guideDraftRevision: 2, reviewedGuideVersion: 7 };
+  const publication = { ...facts.publications[0], publishedVersion: 7 };
+  const evaluate = (reviewedIntake, publishedFact) => pilotExecutionReadiness({
+    ...execution,
+    contentIntakes: [reviewedIntake, ...contentIntakes.slice(1)],
+    facts: { ...facts, publications: [publishedFact, ...facts.publications.slice(1)] },
+  });
+  assert.equal(evaluate(intake, publication).executionComplete, true);
+  for (const publishedVersion of [8, 2]) {
+    const readiness = evaluate(intake, { ...publication, publishedVersion });
+    assert.equal(readiness.executionComplete, false);
+    assert.ok(readiness.blockers.some(blocker => blocker.code === 'guide_not_exact' && blocker.recordId === intake.id));
+  }
+  assert.equal(evaluate(
+    { ...intake, reviewedGuideVersion: null }, { ...publication, publishedVersion: null },
+  ).executionComplete, false);
 });
 
 test('revision requested must be followed by source approval and its exact mission notification', () => {

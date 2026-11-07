@@ -59,6 +59,7 @@ export type PilotPublishEligibilityInput = {
   intakeStatus: OpsPilotContentIntakeView['status'] | null;
   approvedDraftRevision: number | null;
   approvedContentDigest: string | null;
+  reviewedGuideVersion: OpsPilotContentIntakeView['reviewedGuideVersion'];
   currentDraftRevision: number | null;
   currentContentDigest: string | null;
   publishedVersion: number | null;
@@ -213,7 +214,7 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
       publication.publishedContentDigest === intake.contentDigest;
     const exact = exactPublication && !!creatorId && intake.creatorParticipantId === creatorId && present(intake.guideId) &&
       intake.status === 'published' && positiveInteger(intake.guideDraftRevision) &&
-      intake.reviewedGuideVersion === intake.guideDraftRevision && present(intake.contentDigest);
+      positiveInteger(intake.reviewedGuideVersion) && present(intake.contentDigest);
     if (exact && intake.guideId) validGuides.add(intake.guideId);
     else if (present(intake.guideId) || intake.status === 'approved' || intake.status === 'published' || intake.status === 'withdrawn') {
       block(blockers, 'content', 'guide_not_exact', intake.id);
@@ -276,7 +277,8 @@ export function pilotCanPublish(
   if (input.runStatus !== 'running') return { allowed: false, reason: 'run_not_running' };
   if (input.pilotLinked !== true || input.intakeStatus !== 'approved') return { allowed: false, reason: 'intake_not_approved' };
   if (!positiveInteger(input.approvedDraftRevision) || input.currentDraftRevision !== input.approvedDraftRevision ||
-      (input.publishedVersion !== null && input.publishedVersion !== input.approvedDraftRevision)) {
+      (input.reviewedGuideVersion !== null && !positiveInteger(input.reviewedGuideVersion)) ||
+      input.publishedVersion !== input.reviewedGuideVersion) {
     return { allowed: false, reason: 'revision_changed' };
   }
   if (!present(input.approvedContentDigest) || input.approvedContentDigest !== input.currentContentDigest) {
