@@ -66,11 +66,13 @@ export function Modal({
   children,
   onClose,
   returnFocus,
+  closeDisabled = false,
 }: {
   title: string;
   children: ReactNode;
   onClose: () => void;
   returnFocus?: HTMLElement|null;
+  closeDisabled?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -83,10 +85,11 @@ export function Modal({
     <dialog
       className="k-modal"
       ref={ref}
-      onCancel={event=>{event.preventDefault();onClose();}}
+      onCancel={event=>{event.preventDefault();if(!closeDisabled)onClose();}}
       onKeyDown={event=>{
         if(event.key!=='Tab')return;
         const controls=[...event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])')].filter(el=>el.getClientRects().length>0);
+        if(controls.length===0){event.preventDefault();return;}
         const first=controls[0],last=controls.at(-1);
         if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
         else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
@@ -98,6 +101,7 @@ export function Modal({
         <button
           className="k-icon-btn"
           aria-label="Close / 關閉"
+          disabled={closeDisabled}
           onClick={onClose}
         >
           <Icon name="close" />

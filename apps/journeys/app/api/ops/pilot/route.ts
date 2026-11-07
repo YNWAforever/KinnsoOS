@@ -17,6 +17,12 @@ function project<Value extends object, Key extends keyof Value>(value: Value, ke
   return Object.fromEntries(keys.map(key => [key, value[key]])) as Pick<Value, Key>;
 }
 
+function safeActiveInvite(invite: OpsPilotSnapshot['participants'][number]['activeInvite']) {
+  return invite?.status === 'active' && uuid(invite.id) && typeof invite.expiresAt === 'string' &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(invite.expiresAt) && Number.isFinite(Date.parse(invite.expiresAt))
+    ? project(invite, ['id', 'status', 'expiresAt']) : null;
+}
+
 function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
   const { run, participants, contentIntakes, collaboration, checks, facts, beginFacts } = input;
   const readiness = run && (run.status === 'draft' || run.status === 'recruiting')
@@ -27,6 +33,15 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
       syntheticRehearsalPassed: beginFacts?.syntheticRehearsalPassed === true,
     })
     : pilotExecutionReadiness({ run, participants, contentIntakes, collaboration, checks, facts });
+  function reviewTarget(intake: OpsPilotSnapshot['contentIntakes'][number]) {
+    const match = facts?.publications?.find(row => !!run && row.runId === run.id && row.intakeId === intake.id && row.entityId === intake.guideId);
+    const revision = match?.currentDraftRevision;
+    const digest = match?.currentContentDigest;
+    return typeof revision === 'number' && Number.isSafeInteger(revision) && revision > 0 && revision <= 999999999 &&
+      typeof digest === 'string' && /^[a-f0-9]{64}$/.test(digest)
+      ? { currentDraftRevision: revision, currentContentDigest: digest }
+      : { currentDraftRevision: null, currentContentDigest: null };
+  }
   function manualCheckIdentity(check: OpsPilotSnapshot['checks'][number]) {
     const id = !check.derived && facts?.checks?.find(row => row.runId === run?.id && row.code === check.code)?.entityId;
     return uuid(id) ? { id } : {};
@@ -37,13 +52,13 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
       'acceptanceStartedAt', 'minimumPublishedGuides', 'participationNoticeVersion',
       'privacyNoticeVersion', 'contentConsentVersion',
     ]) : null,
-    participants: participants.map(participant => project(participant, [
+    participants: participants.map(participant => ({ ...project(participant, [
       'id', 'role', 'cohortRole', 'displayLabel', 'status', 'userLinked', 'consentAccepted', 'revision',
-    ])),
-    contentIntakes: contentIntakes.map(intake => project(intake, [
+    ]), activeInvite: safeActiveInvite(participant.activeInvite) })),
+    contentIntakes: contentIntakes.map(intake => ({ ...project(intake, [
       'id', 'creatorParticipantId', 'guideId', 'status', 'guideDraftRevision', 'reviewedGuideVersion',
       'contentDigest', 'title', 'destination', 'authoredLocale', 'revision',
-    ])),
+    ]), ...reviewTarget(intake) })),
     collaboration: collaboration ? {
       ...project(collaboration, ['id', 'merchantParticipantId', 'creatorParticipantId', 'missionId']),
       steps: collaboration.steps.map(step => project(step, ['code', 'status'])),

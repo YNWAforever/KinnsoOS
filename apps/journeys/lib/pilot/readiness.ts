@@ -1,3 +1,4 @@
+import { pilotBlockerCopy } from './blockers.ts';
 import type {
   OpsPilotContentIntakeView,
   OpsPilotRunView,
@@ -320,13 +321,13 @@ export function pilotExportSummary(snapshot: OpsPilotSnapshot, exportedAt: strin
     exportedAt,
     run: run ? {
       id: run.id, status: run.status, dataClassification: run.dataClassification,
-      candidateReleaseSha: run.candidateReleaseSha,
     } : null,
     readiness: {
       stage: readiness.stage, readyToBegin: readiness.readyToBegin, executionComplete: readiness.executionComplete,
-      blockers: readiness.blockers.map(({ code, category, messageKey }) => ({
-        code, category, messageKey,
-      })),
+      blockers: readiness.blockers.flatMap(blocker => {
+        const safe = pilotBlockerCopy(blocker);
+        return safe ? [safe.exportBlocker] : [];
+      }),
     },
     checks: checks.map(({ code, status, derived, evidenceReference }) => ({
       code, status, derived,

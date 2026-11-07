@@ -207,7 +207,7 @@ end $$;
 -- to the return value, after its authorization and idempotency checks.
 do $$
 declare
- definition text:=pg_get_functiondef('public.admin_apply_kinnso_pilot_command(uuid,jsonb)'::regprocedure);
+ definition text:=replace(pg_get_functiondef('public.admin_apply_kinnso_pilot_command(uuid,jsonb)'::regprocedure),chr(13),'');
  replay_source text:='return prior.result;end if;';
  first_source text:='return case when raw_code is null then result else result||jsonb_build_object(''inviteCode'',raw_code) end;';
 begin
@@ -219,4 +219,51 @@ begin
   replace(definition,replay_source,'return prior.result||jsonb_build_object(''_pilotReplay'',true);end if;'),
   first_source,'return (case when raw_code is null then result else result||jsonb_build_object(''inviteCode'',raw_code) end)||jsonb_build_object(''_pilotReplay'',false);'
  );
+end $$;
+
+-- Add the review preconditions inside the existing transaction and draft lock.
+do $$
+declare
+ definition text:=replace(pg_get_functiondef('public.admin_apply_kinnso_pilot_command(uuid,jsonb)'::regprocedure),chr(13),'');
+ fields_anchor text:=' if fields is null or p_request_id is null then';
+ lock_anchor text:=$lock$    select * into d from kinnso_internal.guide_drafts where guide_id=i.guide_id for update;
+    if not found then raise exception 'CONFLICT';end if;$lock$;
+ role_anchor text:=$role$ select id into m from public.kinnso_ops_members where user_id=a and status='active' for share;$role$;
+begin
+ if cardinality(string_to_array(definition,fields_anchor))<>2 or
+    cardinality(string_to_array(definition,lock_anchor))<>2 or
+    cardinality(string_to_array(definition,role_anchor))<>2 then
+  raise exception 'Unexpected ops pilot approval source';
+ end if;
+ definition:=replace(definition,role_anchor,$role$ select id into m from public.kinnso_ops_members where user_id=a and status='active' and role in ('admin','owner') for share;
+ if not found then raise exception 'FORBIDDEN';end if;$role$);
+ definition:=replace(definition,fields_anchor,$fields$ if kind='reviewContentIntake' and p_command->>'decision'='approve' then
+  fields:=fields||array['expectedDraftRevision','expectedContentDigest'];
+  if jsonb_typeof(p_command->'expectedDraftRevision') is distinct from 'number'
+     or coalesce(p_command->>'expectedDraftRevision','') !~ '^[1-9][0-9]{0,8}$'
+     or jsonb_typeof(p_command->'expectedContentDigest') is distinct from 'string'
+     or coalesce(p_command->>'expectedContentDigest','') !~ '^[a-f0-9]{64}$' then raise exception 'INVALID';end if;
+ end if;
+$fields$||fields_anchor);
+ execute replace(definition,lock_anchor,lock_anchor||$compare$
+    if d.revision is distinct from (p_command->>'expectedDraftRevision')::integer
+       or kinnso_internal.pilot_digest(d.payload) is distinct from p_command->>'expectedContentDigest' then
+     raise exception 'CONFLICT';
+    end if;$compare$);
+end $$;
+
+-- The ops snapshot may disclose invitation record metadata, never the code or hash.
+do $$
+declare
+ definition text:=pg_get_functiondef('kinnso_internal.pilot_snapshot(uuid)'::regprocedure);
+ anchor text:=$anchor$'revision',p.revision) order by p.id)$anchor$;
+begin
+ if cardinality(string_to_array(definition,anchor))<>2 then
+  raise exception 'Unexpected ops pilot participant snapshot source';
+ end if;
+ execute replace(definition,anchor,$invite$'revision',p.revision,'activeInvite',(
+  select jsonb_build_object('id',inv.id,'status',inv.status,'expiresAt',inv.expires_at)
+  from kinnso_internal.pilot_invites inv
+  where inv.participant_id=p.id and inv.status='active' and inv.expires_at>now()
+  order by inv.created_at desc,inv.id limit 1)) order by p.id)$invite$);
 end $$;

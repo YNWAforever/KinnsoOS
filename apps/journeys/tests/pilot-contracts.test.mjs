@@ -10,7 +10,7 @@ const ops=[
 {type:'setParticipantStatus',id,expectedRevision:1,status:'active',reason:'Verified'},
 {type:'createInvite',id,participantId:id,expectedRevision:1,expiresInHours:168},
 {type:'revokeInvite',id,participantId:id,expectedRevision:2,reason:'Rotate'},
-{type:'reviewContentIntake',id,expectedRevision:1,decision:'approve',reason:'Rights verified'},
+{type:'reviewContentIntake',id,expectedRevision:1,decision:'approve',expectedDraftRevision:1,expectedContentDigest:'a'.repeat(64),reason:'Rights verified'},
 {type:'bindGuide',intakeId:id,guideId:other,expectedRevision:1},
 {type:'bindCollaboration',id,runId:id,merchantParticipantId:id,creatorParticipantId:other,missionId:id},
 {type:'setManualCheck',id,expectedRevision:1,status:'pass',evidenceReference:'private:evidence',observedSummary:'Observed'},

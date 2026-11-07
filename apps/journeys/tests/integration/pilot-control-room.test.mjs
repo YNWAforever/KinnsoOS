@@ -204,12 +204,15 @@ select pg_temp.denied(${q(i.ops)},format('select public.admin_apply_kinnso_pilot
 `);
 const content={title:'Synthetic guide',destination:'Kyoto',authoredLocale:'en',sourceSummary:'Synthetic original work',sourceUrls:[],rightsBasis:'original',rightsEvidenceReference:'ref:1',authorConsentVersion:'content-v1',coverRightsConfirmed:null,coverRightsEvidenceReference:null};
 const draft={title:'Synthetic guide',city:'Kyoto',summary:'Synthetic summary',content:{days:[{offset:0,title:'Day one',stops:[{title:'Stop',description:'Synthetic',placeId:null,startMinuteOfDay:600,durationMinutes:60}]}]}};
+const approval=(guide, id, revision, reason, overrides='{}')=>
+ `format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',gen_random_uuid(),${json({type:'reviewContentIntake',id,expectedRevision:revision,decision:'approve',reason})}||
+  (select jsonb_build_object('expectedDraftRevision',revision,'expectedContentDigest',kinnso_internal.pilot_digest(payload)) from kinnso_internal.guide_drafts where guide_id=${q(guide)})||${q(overrides)}::jsonb)`;
 function contentSeed(i,initialize=true){return `${initialize?seed(i):''}
 select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(i.guide)},0,${q(randomUUID())},${json(draft)})`)});
 select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
 update kinnso_internal.pilot_content_intakes set id=${q(i.intake)} where run_id=${q(i.run)} and creator_participant_id=${q(i.creatorSlot)} and guide_id is null;
 ${invoke(i,{type:'bindGuide',intakeId:i.intake,guideId:i.guide,expectedRevision:1})}
-${invoke(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:2,decision:'approve',reason:'Rights and content reviewed'})}
+select pg_temp.rpc(${q(i.ops)},${approval(i.guide,i.intake,2,'Rights and content reviewed')});
 `;}
 check('approval pins revision/digest; edits invalidate publish; paused publish and legacy bypass fail',i=>`
 ${contentSeed(i)}
@@ -314,7 +317,8 @@ test('publication cannot reuse approval after a concurrent identical-content reb
   set local role authenticated;
   select set_config('request.jwt.claims',${json({sub:i.ops,role:'authenticated',session_id:i.ops})}::text,true);
   ${call(i,{type:'bindGuide',intakeId:i.intake,guideId:otherGuide,expectedRevision:3})};
-  ${call(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:4,decision:'approve',reason:'Reviewed replacement guide'})};
+  reset role;
+  do $$declare statement text:=${approval(otherGuide,i.intake,4,'Reviewed replacement guide')}; begin set local role authenticated; execute statement; end$$;
   commit;`);
   let locked=false;
   for(let attempt=0;attempt<50&&!locked;attempt++){
@@ -357,7 +361,7 @@ function executionSeed(i,initialize=true){
  select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(guide)},0,${q(randomUUID())},${json(draft)})`)});
  select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
  select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','bindGuide','intakeId',(select id from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)} and guide_id is null),'guideId',${q(guide)},'expectedRevision',1)));
- select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','reviewContentIntake','id',(select id from kinnso_internal.pilot_content_intakes where guide_id=${q(guide)}),'expectedRevision',2,'decision','approve','reason','Reviewed')));
+ select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','reviewContentIntake','id',(select id from kinnso_internal.pilot_content_intakes where guide_id=${q(guide)}),'expectedRevision',2,'decision','approve','reason','Reviewed','expectedDraftRevision',(select revision from kinnso_internal.guide_drafts where guide_id=${q(guide)}),'expectedContentDigest',(select kinnso_internal.pilot_digest(payload) from kinnso_internal.guide_drafts where guide_id=${q(guide)}))));
  select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(guide)},1,${q(randomUUID())})`)});`;}).join('\n')}
  insert into public.merchant_profiles(id,user_id,company_name,contact_email,status) values(${q(merchant)},${q(i.merchant)},'Synthetic merchant','merchant@pilot.test','active') on conflict(user_id) do nothing;
  insert into public.merchant_applications(user_id,company_name,contact_email,status,decided_at) values(${q(i.merchant)},'Synthetic merchant','merchant@pilot.test','approved',now());
@@ -421,7 +425,7 @@ select pg_temp.denied(${q(i.creator)},${q(pc({type:'acknowledgeNotification'}))}
 check('draft edits and publication counters remain independent with exact canonical digests',i=>`
 ${contentSeed(i)}
 select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(i.guide)},1,${q(randomUUID())},${json({...draft,title:'Revised title'})})`)});
-${invoke(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:3,decision:'approve',reason:'Reviewed changed title'})}
+select pg_temp.rpc(${q(i.ops)},${approval(i.guide,i.intake,3,'Reviewed changed title')});
 select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},2,${q(randomUUID())})`)});
 select pg_temp.ok((select guide_draft_revision=2 and reviewed_guide_version=1 from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'independent counters');
 select pg_temp.ok((select kinnso_internal.pilot_digest(d.payload)=i.content_digest and d.revision=i.guide_draft_revision from kinnso_internal.guide_drafts d join kinnso_internal.pilot_content_intakes i on i.guide_id=d.guide_id where i.id=${q(i.intake)}),'reviewed content unchanged by publication');
@@ -430,7 +434,7 @@ check('published draft drift can be explicitly re-reviewed and published again',
 ${contentSeed(i)}
 select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(randomUUID())})`)});
 select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(i.guide)},1,${q(randomUUID())},${json({...draft,title:'Reviewed correction'})})`)});
-${invoke(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:4,decision:'approve',reason:'Review correction against exact draft'})}
+select pg_temp.rpc(${q(i.ops)},${approval(i.guide,i.intake,4,'Review correction against exact draft')});
 select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},2,${q(randomUUID())})`)});
 select pg_temp.ok((select status='published' and reviewed_guide_version=2 and guide_draft_revision=2 from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'reviewed correction');
 `);
@@ -603,4 +607,64 @@ check('invite revoke is revision guarded and replay does not advance the slot tw
  select pg_temp.ok((select revision=3 from kinnso_internal.pilot_participants where id=${q(i.slot)}),'revoke and replay advance once');
  select pg_temp.ok((select status='revoked' from kinnso_internal.pilot_invites where id=${q(i.invite)}),'invite revoked');
  `;
+});
+
+check('ops snapshot exposes only active invitation metadata, and approval rejects either stale value',i=>`
+${contentSeed(i)}
+select pg_temp.denied(${q(i.ops)},${approval(i.guide,i.intake,3,'Stale revision','{"expectedDraftRevision":2}')},'CONFLICT');
+select pg_temp.denied(${q(i.ops)},${approval(i.guide,i.intake,3,'Wrong digest',JSON.stringify({expectedContentDigest:'0'.repeat(64)}))},'CONFLICT');
+select pg_temp.ok((select revision=3 from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'no stale approval');
+update kinnso_internal.pilot_participants set user_id=null,status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};
+create temp table issued as select pg_temp.rpc(${q(i.ops)},${q(call(i,{type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1}))}) value;
+create temp table readback as select pg_temp.rpc(${q(i.mod)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)}) value;
+select pg_temp.ok((select p->'activeInvite' = jsonb_build_object('id',inv.id,'status','active','expiresAt',inv.expires_at)
+ from readback cross join lateral jsonb_array_elements(value->'participants') p
+ join kinnso_internal.pilot_invites inv on inv.participant_id=(p->>'id')::uuid where inv.id=${q(i.invite)}),'authorized active metadata');
+select pg_temp.ok((select position((select value->>'inviteCode' from issued) in value::text)=0 from readback),'no code on later reads');
+${invoke(i,{type:'revokeInvite',id:i.invite,participantId:i.slot,expectedRevision:2,reason:'Revoke synthetic invite'})}
+select pg_temp.ok((select status='revoked' from kinnso_internal.pilot_invites where id=${q(i.invite)}),'revoked by snapshot ID');
+`);
+
+test('approval waiting on a concurrent draft update rejects the reviewed snapshot',async()=>{
+ const i=ids(), writer='pilot-writer-'+i.request, approver='pilot-approver-'+i.request;
+ const users=['ops','owner','mod','traveller','creator','merchant','other'].map(k=>q(i[k])).join(',');
+ let seeded=false, change, review;
+ try {
+  sql(`begin;${setup(i)}${contentSeed(i)}commit;`);
+  seeded=true;
+  const reviewed=JSON.parse(sql(`select jsonb_build_object('expectedDraftRevision',revision,'expectedContentDigest',kinnso_internal.pilot_digest(payload)) from kinnso_internal.guide_drafts where guide_id=${q(i.guide)}`));
+  change=asyncSql(`set application_name=${q(writer)};begin;
+    update kinnso_internal.guide_drafts set revision=revision+1,payload=jsonb_set(payload,'{title}','"Concurrent revision"') where guide_id=${q(i.guide)};
+    select pg_advisory_xact_lock(hashtextextended(${q(writer)},0));
+    do $race$begin for attempt in 1..240 loop
+      perform pg_stat_clear_snapshot();
+      if exists(select 1 from pg_stat_activity where application_name=${q(approver)} and pg_backend_pid()=any(pg_blocking_pids(pid))) then return; end if;
+      perform pg_sleep(0.05);
+    end loop; raise exception 'approval never waited for draft lock'; end$race$;commit;`);
+  let locked=false;
+  for(let attempt=0;attempt<50&&!locked;attempt++){
+   await new Promise(resolve=>setTimeout(resolve,30));
+   locked=sql(`select not pg_try_advisory_xact_lock(hashtextextended(${q(writer)},0))`)==='t';
+  }
+  if(!locked) assert.fail((await change).err || "draft writer did not acquire its lock");
+  review=asyncSql(`set application_name=${q(approver)};begin;set local role authenticated;
+    select set_config('request.jwt.claims',${json({sub:i.ops,role:'authenticated',session_id:i.ops})}::text,true);
+    ${call(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:3,decision:'approve',reason:'Reviewed before update',...reviewed})};commit;`);
+  const [update, approvalResult]=await Promise.all([change,review]);
+  assert.equal(update.status,0,update.err);
+  assert.equal(approvalResult.status,3);
+  assert.match(approvalResult.err,/ERROR:\s+CONFLICT/);
+  assert.equal(sql(`select revision from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}`),'3');
+ } finally {
+  await Promise.allSettled([change,review].filter(Boolean));
+  if(seeded) sql(`begin;
+    delete from kinnso_internal.pilot_participant_audit where run_id=${q(i.run)};
+    delete from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)};
+    delete from kinnso_internal.pilot_checks where run_id=${q(i.run)};
+    delete from kinnso_internal.pilot_participants where run_id=${q(i.run)};
+    delete from kinnso_internal.pilot_runs where id=${q(i.run)};
+    delete from public.ops_audit_log where actor_ops_member_id=${q(i.ops)};
+    delete from public.guides where id=${q(i.guide)};
+    delete from auth.users where id in (${users});commit;`);
+ }
 });

@@ -6,6 +6,7 @@ import type { ErrorCode } from '../../../lib/contracts/capabilities';
 import type { OpsPilotCommand, OpsPilotSnapshot } from '../../../lib/contracts/pilot';
 import { parseOpsPilotCommand } from '../../../lib/contracts/pilot';
 import { ops } from '../../../lib/ops/repository';
+import { pilotBlockerCopy } from '../../../lib/pilot/blockers';
 import { pilotExportSummary } from '../../../lib/pilot/readiness';
 import { opsPilot } from '../../../lib/pilot/repository';
 import { subscribeAccountInvalidation } from '../../../lib/trips/local-drafts';
@@ -29,23 +30,25 @@ function PilotSession({ actorId, enabled, runId }: Props) {
   const [invalid, setInvalid] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [unknown, setUnknown] = useState(false);
+  const [unknown, setUnknown] = useState(() => !!opsPilot.pending(actorId));
   const [notice, setNotice] = useState('');
   const [confirmation, setConfirmation] = useState<Intent | null>(null);
   const [invite, setInvite] = useState<{ code: string; id: string; opener: HTMLElement } | null>(null);
   const [copied, setCopied] = useState('');
   const active = useRef(false);
   const sending = useRef(false);
-  const pending = useRef<Intent | null>(null);
+  const savingStatus = useRef<HTMLParagraphElement>(null);
+  const retryButton = useRef<HTMLButtonElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const selectedRun = useRef(runId);
 
   useEffect(() => {
+    opsPilot.selectActor(actorId);
     active.current = true;
     const unsubscribe = subscribeAccountInvalidation(next => {
       if (next === actorId) return;
       active.current = false;
-      pending.current = null;
+      opsPilot.selectActor(next);
       setInvalid(true);
       setSnapshot(null);
       setConfirmation(null);
@@ -69,8 +72,13 @@ function PilotSession({ actorId, enabled, runId }: Props) {
     return () => { current = false; };
   }, [actorId, enabled, invalid, refresh]);
 
+  useEffect(() => {
+    if (busy) savingStatus.current?.focus();
+    else if (unknown && confirmation) retryButton.current?.focus();
+  }, [busy, unknown, confirmation]);
+
   const confirm: PilotActions['confirm'] = (command, label, opener) => {
-    if (!canWrite || pending.current || confirmation || invite || !active.current) return;
+    if (!canWrite || opsPilot.pending(actorId) || confirmation || invite || !active.current) return;
     try {
       setConfirmation({ command: parseOpsPilotCommand(command), label, opener });
       setNotice('');
@@ -79,13 +87,12 @@ function PilotSession({ actorId, enabled, runId }: Props) {
     }
   };
 
-  async function send(intent: Intent) {
+  async function send(intent: Intent, recovering = false) {
     if (!actorId || !canWrite || !active.current || sending.current) return;
     sending.current = true;
-    pending.current = intent;
     setBusy(true);
     setNotice('');
-    const result = await opsPilot.command(intent.command, actorId);
+    const result = await opsPilot.recoverableCommand(actorId, recovering ? undefined : intent.command);
     sending.current = false;
     if (!active.current) return;
     setBusy(false);
@@ -99,10 +106,10 @@ function PilotSession({ actorId, enabled, runId }: Props) {
     }
     if (!result.ok && result.retryable) {
       setUnknown(true);
+      if (!confirmation) restoreFocus(intent.opener);
       return;
     }
     setUnknown(false);
-    pending.current = null;
     setConfirmation(null);
     if (!result.ok) {
       setCanWrite(false);
@@ -110,8 +117,12 @@ function PilotSession({ actorId, enabled, runId }: Props) {
       restoreFocus(intent.opener);
       return;
     }
-    setSnapshot(result.data.snapshot);
-    selectedRun.current = result.data.snapshot.run?.id ?? selectedRun.current;
+    if (recovering || result.data.snapshot.run?.id !== selectedRun.current && intent.command.type !== 'createRun') {
+      setRefresh(x => x + 1);
+    } else {
+      setSnapshot(result.data.snapshot);
+      selectedRun.current = result.data.snapshot.run?.id ?? selectedRun.current;
+    }
     if (intent.command.type === 'createInvite' && result.data.inviteCode) {
       setCopied('');
       setInvite({ code: result.data.inviteCode, id: intent.command.id, opener: intent.opener });
@@ -141,9 +152,10 @@ function PilotSession({ actorId, enabled, runId }: Props) {
     setNotice(t('Acceptance summary exported.', '已匯出驗收摘要。'));
   }
 
-  const actions = { canWrite, confirm };
+  const writable = canWrite && !unknown;
+  const actions = { canWrite: writable, confirm };
   const run = snapshot?.run;
-  const mutable = canWrite && !!run && !['completed', 'cancelled'].includes(run.status);
+  const mutable = writable && !!run && !['completed', 'cancelled'].includes(run.status);
   const regular = mutable && run?.status !== 'paused';
   const signIn = !actorId || invalid || error === 'AUTH_REQUIRED';
   const path = 'ops?view=pilot' + (runId ? '&id=' + encodeURIComponent(runId) : '');
@@ -159,15 +171,27 @@ function PilotSession({ actorId, enabled, runId }: Props) {
       : <>
         {error && <p role="alert">{error === 'NOT_FOUND' ? t('Pilot run record not found.', '找不到試行計劃紀錄。') : t('The pilot could not be loaded. It may be disconnected.', '未能載入試行計劃，服務可能尚未接通。')}</p>}
         {!snapshot && !error && <p role="status">{t('Loading pilot…', '正在載入試行計劃…')}</p>}
-        <button type="button" className="k-btn" disabled={!!confirmation || !!invite || !!pending.current} onClick={() => setRefresh(x => x + 1)}>{t('Refresh pilot', '重新載入試行計劃')}</button>
+        <button type="button" className="k-btn" disabled={!!confirmation || !!invite || busy} onClick={() => setRefresh(x => x + 1)}>{t('Refresh pilot', '重新載入試行計劃')}</button>
         {snapshot && <>
+          {unknown && !confirmation && <div className="k-card" role="status">
+            <p>{t('A previous pilot change is unresolved. Retry it before making another change.', '先前的變更結果未明。請先重試，才可進行其他變更。')}</p>
+            {canWrite && <button type="button" className="k-btn" disabled={busy} onClick={event => {
+              const command = opsPilot.pending(actorId);
+              if (command) void send({command, opener:event.currentTarget, label:''}, true);
+              else { setUnknown(false); setRefresh(x => x + 1); restoreFocus(event.currentTarget); }
+            }}>{t('Retry previous request', '重試先前請求')}</button>}
+          </div>}
           {!canWrite && <p role="status">{t('Read only. Changes require an operations admin or owner.', '唯讀。變更需要營運管理員或擁有者。')}</p>}
           <section className="k-card">
             <h2>{t(...stageLabels[snapshot.readiness.stage])}</h2>
             {snapshot.readiness.blockers.length > 0 && <ul aria-label={t('Readiness blockers', '就緒障礙')}>
-              {snapshot.readiness.blockers.map(({ category, code, recordId }) => <li key={JSON.stringify([category, code, recordId])}>
-                {category}: {code.replace(/[_.]/g, ' ')}{recordId && <> · {t('Record', '紀錄')} {recordId}</>}
-              </li>)}
+              {snapshot.readiness.blockers.map(blocker => {
+                const copy = pilotBlockerCopy(blocker);
+                const record = blocker.recordId && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(blocker.recordId) ? blocker.recordId : null;
+                return <li key={JSON.stringify([blocker.messageKey, record])}>{copy
+                  ? t(copy.categoryLabel[0], copy.categoryLabel[1]) + ': ' + t(...copy.explanation)
+                  : t('A required record could not be verified.', '未能核實必要紀錄。')}{record && <> · {t('Record', '紀錄')} {record}</>}</li>;
+              })}
             </ul>}
             {run && <button type="button" className="k-btn" onClick={() => download(snapshot)}>{t('Export acceptance summary', '匯出驗收摘要')}</button>}
           </section>
@@ -180,12 +204,16 @@ function PilotSession({ actorId, enabled, runId }: Props) {
         </>}
         <p role="status">{notice}</p>
       </>}
-    {confirmation && <Modal title={confirmation.label} returnFocus={confirmation.opener} onClose={() => {
-      if (!pending.current && !sending.current) setConfirmation(null);
+    {confirmation && <Modal title={confirmation.label} closeDisabled={busy} returnFocus={confirmation.opener} onClose={() => {
+      if (!sending.current) { setConfirmation(null); restoreFocus(confirmation.opener); }
     }}>
       <p>{t('Confirm this change to the pilot record.', '確認變更試行計劃紀錄。')}</p>
-      {unknown && <p role="alert">{t('Outcome unknown. Retry the same request.', '結果未明。請重試相同請求。')}</p>}
-      <button type="button" className="k-btn primary" disabled={busy} onClick={() => void send(pending.current ?? confirmation)}>
+      {confirmation.command.type === 'reviewContentIntake' && confirmation.command.decision === 'approve' && <p>
+        {t('Draft revision', '草稿版本')} {confirmation.command.expectedDraftRevision} · {t('Digest', '摘要碼')} <code style={{overflowWrap:'anywhere'}}>{confirmation.command.expectedContentDigest}</code>
+      </p>}
+      {busy && <p ref={savingStatus} tabIndex={-1} role="status">{t('Saving. You can close this dialog after the request returns.', '正在儲存。請求返回後可關閉此視窗。')}</p>}
+      {unknown && <p role="alert">{t('Outcome unknown. Retry this request, or close and resume it later.', '結果未明。請重試此請求，或關閉後再繼續。')}</p>}
+      <button ref={retryButton} type="button" className="k-btn primary" disabled={busy} onClick={() => void send(confirmation, unknown)}>
         {unknown ? t('Retry same request', '重試相同請求') : t('Confirm', '確認')}
       </button>
     </Modal>}

@@ -25,7 +25,7 @@ export function submitData(event: FormEvent<HTMLFormElement>) {
   const opener = (event.nativeEvent as SubmitEvent).submitter as HTMLElement | null;
   return { value: (key: string) => String(form.get(key) ?? '').trim(), opener: opener ?? event.currentTarget };
 }
-export const formStyle = { display: 'grid', gap: '0.75rem', minWidth: 0 };
+export const formStyle = { display: 'grid', gridTemplateColumns: 'minmax(0, 1fr)', gap: '0.75rem', minWidth: 0 };
 export const inputStyle = { display: 'block', maxWidth: '100%', boxSizing: 'border-box' } as const;
 export const uuidPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 

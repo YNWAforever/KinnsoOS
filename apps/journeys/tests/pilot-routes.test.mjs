@@ -374,7 +374,7 @@ test('each confirmed operations command emits exactly one matching allowlisted e
     [{type: 'setParticipantStatus', id: participantId, expectedRevision: 1, status: 'withdrawn', reason: 'PRIVATE'}, 'pilot.participant.status_changed'],
     [{type: 'createInvite', id: otherId, participantId, expectedRevision: 1, expiresInHours: 24}, 'pilot.invite.created'],
     [{type: 'revokeInvite', id: otherId, participantId, expectedRevision: 1, reason: 'PRIVATE'}, 'pilot.participant.status_changed'],
-    [{type: 'reviewContentIntake', id: intakeId, expectedRevision: 1, decision: 'approve', reason: 'PRIVATE'}, 'pilot.content.reviewed'],
+    [{type: 'reviewContentIntake', id: intakeId, expectedRevision: 1, decision: 'approve', expectedDraftRevision: 1, expectedContentDigest: 'a'.repeat(64), reason: 'PRIVATE'}, 'pilot.content.reviewed'],
     [{type: 'bindGuide', intakeId, guideId: otherId, expectedRevision: 1}, 'pilot.guide.bound'],
     [{type: 'bindCollaboration', id: otherId, runId, merchantParticipantId: otherId, creatorParticipantId: participantId, missionId: intakeId}, 'pilot.collaboration.bound'],
     [{type: 'addEvidenceReference', runId, checkCode: 'physical_ios', entityType: 'manual', entityId: runId, evidenceReference: 'PRIVATE'}, 'pilot.evidence.added'],
@@ -707,4 +707,54 @@ test('ops replay returns the receipt without the marker or another event', async
   state.mutation = {snapshot: state.data, _pilotReplay: true};
   assert.deepEqual(await (await route.POST(request(envelope))).json(), first);
   assert.equal(state.events.length, 1);
+});
+
+test('ops exposes current review identity and only nonsecret invitation metadata', async () => {
+  const data = snapshot('running');
+  const digest = 'a'.repeat(64);
+  const invite = {id:otherId,status:'active',expiresAt:'2026-11-08T00:00:00+00:00',codeHash:'PRIVATE_AUTH_SOURCE'};
+  data.participants = [{id:participantId,activeInvite:invite}];
+  data.contentIntakes = [{id:intakeId,guideId:otherId,revision:4,guideDraftRevision:2,contentDigest:'b'.repeat(64)}];
+  data.facts.publications = [{runId,intakeId,entityId:otherId,currentDraftRevision:7,currentContentDigest:digest}];
+  const {route,state} = setup({data});
+  const reply = await (await route.GET(request())).json();
+  assertRedacted(reply);
+  assert.deepEqual(reply.data.participants[0].activeInvite, {id:otherId,status:'active',expiresAt:invite.expiresAt});
+  assert.equal(reply.data.contentIntakes[0].guideDraftRevision, 2);
+  assert.equal(reply.data.contentIntakes[0].currentDraftRevision, 7);
+  assert.equal(reply.data.contentIntakes[0].currentContentDigest, digest);
+
+  const command={type:'reviewContentIntake',id:intakeId,expectedRevision:4,decision:'approve',reason:'Reviewed fixture'};
+  await expectFailure(await route.POST(request({requestId,command})),400,'INVALID');
+  const exact={...command,expectedDraftRevision:7,expectedContentDigest:digest};
+  const response=await route.POST(request({requestId,command:exact}));
+  assert.equal(response.status,200);
+  assert.deepEqual({...state.calls.find(call => call.name==='admin_apply_kinnso_pilot_command')?.args?.p_command}, exact);
+  data.facts.publications[0].currentContentDigest='PRIVATE_AUTH_SOURCE';
+  const redacted=await (await route.GET(request())).json();
+  assert.equal(redacted.data.contentIntakes[0].currentDraftRevision,null);
+  assert.equal(redacted.data.contentIntakes[0].currentContentDigest,null);
+});
+
+test('recoverable invite retains created entity and request IDs and clears on account change', async () => {
+  const wire=[];
+  const {opsPilot}=load(repositoryCode,{fetch:async (_url,init)=>{
+    wire.push(JSON.parse(init.body));
+    if(wire.length===1 || wire.length===3) throw Error('lost response');
+    return Response.json({ok:true,data:{snapshot:snapshot()}});
+  }});
+  const create={type:'createInvite',id:otherId,participantId,expectedRevision:1,expiresInHours:24};
+  await opsPilot.recoverableCommand(actorId,create);
+  assert.equal(opsPilot.pending(actorId).id,otherId);
+  assert.equal(opsPilot.pending(participantId),null);
+  const other={...create,id:runId};
+  assert.equal((await opsPilot.recoverableCommand(actorId,other)).code,'CONFLICT');
+  await opsPilot.recoverableCommand(actorId);
+  assert.deepEqual(wire[1],wire[0]);
+  assert.equal(opsPilot.pending(actorId),null);
+  await opsPilot.recoverableCommand(actorId,create);
+  opsPilot.selectActor(participantId);
+  assert.equal(opsPilot.pending(actorId),null);
+  assert.equal((await opsPilot.recoverableCommand(participantId)).code,'CONFLICT');
+  assert.equal(wire.length,3);
 });

@@ -81,12 +81,13 @@ function SlotActions({ slot, regular, confirm }: { slot: OpsPilotParticipantView
       <label>{t('Written reason','書面原因')}<textarea style={inputStyle} name="reason" maxLength={1000} required/></label>
       <button className="k-btn">{t('Change slot status','變更名額狀態')}</button>
     </form>
-    {!slot.userLinked && <form style={formStyle} onSubmit={event => {
+    {slot.activeInvite && <form style={formStyle} onSubmit={event => {
       const { value, opener } = submitData(event);
-      confirm({type:'revokeInvite', id:value('invite'), participantId:slot.id, expectedRevision:slot.revision,
+      if (!slot.activeInvite) return;
+      confirm({type:'revokeInvite', id:slot.activeInvite.id, participantId:slot.id, expectedRevision:slot.revision,
         reason:value('reason')}, t('Revoke invitation','撤銷邀請'), opener);
     }}>
-      <label>{t('Invitation record ID (not the code)','邀請紀錄 ID（並非邀請碼）')}<input style={inputStyle} name="invite" pattern={uuidPattern} required/></label>
+      <p>{t('Active invitation','有效邀請')} <code>{slot.activeInvite.id}</code> · {t('Expires','到期')} <time dateTime={slot.activeInvite.expiresAt}>{slot.activeInvite.expiresAt}</time></p>
       <label>{t('Written reason','書面原因')}<textarea style={inputStyle} name="reason" maxLength={1000} required/></label>
       <button className="k-btn">{t('Revoke invitation','撤銷邀請')}</button>
     </form>}

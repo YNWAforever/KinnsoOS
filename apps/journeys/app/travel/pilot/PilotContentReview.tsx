@@ -6,7 +6,10 @@ export function PilotContentReview({ snapshot, canWrite, confirm }: PilotSection
   return <section className="k-card">
     <h2>{t('Content intake review','內容提交審核')}</h2>
     {!snapshot.contentIntakes.length && <p>{t('Content intake records are missing.','缺少內容提交紀錄。')}</p>}
-    {snapshot.contentIntakes.map(intake => <article key={intake.id} className="k-card">
+    {snapshot.contentIntakes.map(intake => {
+      const {currentDraftRevision, currentContentDigest} = intake;
+      const reviewable = !!currentDraftRevision && !!currentContentDigest;
+      return <article key={intake.id} className="k-card">
       <h3>{t('Intake record','提交紀錄')} <code>{intake.id}</code></h3>
       <p>{intake.status} · {intake.authoredLocale}</p>
       <p>{t('Guide record','指南紀錄')}：{intake.guideId ?? t('Missing guide binding','缺少指南連結')}</p>
@@ -21,7 +24,19 @@ export function PilotContentReview({ snapshot, canWrite, confirm }: PilotSection
         <button className="k-btn">{t('Bind guide record','連結指南紀錄')}</button>
       </form>}
       {canWrite && ['submitted','rejected','approved','published'].includes(intake.status) && <>
-        <p role="status">{t('Approval is blocked until the service can verify the exact reviewed draft revision and digest with a written reason.', '服務必須核實已審核的確切草稿版本、摘要碼及書面原因，才可批准。')}</p>
+        {reviewable ? <form key={currentDraftRevision + ':' + currentContentDigest} style={formStyle} onSubmit={event => {
+          const { value, opener } = submitData(event);
+          if (!currentDraftRevision || !currentContentDigest || !value('verified')) return;
+          confirm({type:'reviewContentIntake', id:intake.id, expectedRevision:intake.revision, decision:'approve',
+            expectedDraftRevision:currentDraftRevision, expectedContentDigest:currentContentDigest, reason:value('reason')},
+            t('Approve exact draft','批准此草稿版本'), opener);
+        }}>
+          <p>{t('Current draft revision','目前草稿版本')}：{currentDraftRevision}</p>
+          <p>{t('Current content digest','目前內容摘要碼')}：<code>{currentContentDigest}</code></p>
+          <label><input name="verified" type="checkbox" required/> {t('I reviewed this exact draft revision and digest.','我已審核此確切草稿版本和摘要碼。')}</label>
+          <label>{t('Written approval reason','書面批准原因')}<textarea style={inputStyle} name="reason" required maxLength={1000}/></label>
+          <button className="k-btn">{t('Approve exact draft','批准此草稿版本')}</button>
+        </form> : <p role="status">{t('Current draft revision or digest is missing.','缺少目前草稿版本或摘要碼。')}</p>}
         <form style={formStyle} onSubmit={event => {
           const { value, opener } = submitData(event);
           confirm({type:'reviewContentIntake', id:intake.id, expectedRevision:intake.revision, decision:'reject', reason:value('reason')},
@@ -31,6 +46,6 @@ export function PilotContentReview({ snapshot, canWrite, confirm }: PilotSection
           <button className="k-btn">{t('Reject intake','拒絕內容提交')}</button>
         </form>
       </>}
-    </article>)}
+    </article>; })}
   </section>;
 }
