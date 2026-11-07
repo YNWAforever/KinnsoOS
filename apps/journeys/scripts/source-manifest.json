@@ -488,6 +488,7 @@
     "tests/e2e/u23-share-receipt-recovery.spec.ts",
     "tests/e2e/u24-pd15-accessibility.spec.ts",
     "tests/e2e/u25-public-accessibility.spec.ts",
+    "tests/e2e/u26-pilot-control-room.spec.ts",
     "tests/evidence-timeline.test.mjs",
     "tests/feasibility.test.mjs",
     "tests/finance-explanations.test.mjs",
@@ -706,6 +707,7 @@
     "tests/contracts/20261107020000_kinnso_ops_content_audit.sql": "supabase/migrations/20261107020000_kinnso_ops_content_audit.sql",
     "tests/contracts/20261107081531_kinnso_pilot_control_room_schema.sql": "supabase/migrations/20261107081531_kinnso_pilot_control_room_schema.sql",
     "tests/contracts/20261107085017_kinnso_pilot_control_room_rpcs.sql": "supabase/migrations/20261107085017_kinnso_pilot_control_room_rpcs.sql",
-    "tests/contracts/20261107110059_kinnso_pilot_readiness_publication_contract.sql": "supabase/migrations/20261107110059_kinnso_pilot_readiness_publication_contract.sql"
+    "tests/contracts/20261107110059_kinnso_pilot_readiness_publication_contract.sql": "supabase/migrations/20261107110059_kinnso_pilot_readiness_publication_contract.sql",
+    "tests/contracts/20261107135337_kinnso_pilot_traveller_support_context.sql": "supabase/migrations/20261107135337_kinnso_pilot_traveller_support_context.sql"
   }
 }
