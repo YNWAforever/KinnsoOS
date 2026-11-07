@@ -94,7 +94,7 @@ function setup(options = {}) {
       if (state.error) return {data: null, error: state.error};
       return {
         data: name.startsWith('get_kinnso_') ? state.data
-          : state.mutation ?? {snapshot: state.data}, error: null,
+          : state.mutation ?? {snapshot: state.data, _pilotReplay: false}, error: null,
       };
     },
   };
@@ -252,7 +252,7 @@ test('RPC failures preserve the failure vocabulary and original mutation request
 test('mutations recompute readiness and strip internal facts while preserving the one-time invite result', async () => {
   const data = snapshot('running');
   const {state, route} = setup({
-    mutation: {snapshot: data, inviteCode: 'ONE_TIME_PRIVATE_CODE', facts: {secret: true}, beginFacts: {secret: true}},
+    mutation: {_pilotReplay: false, snapshot: data, inviteCode: 'ONE_TIME_PRIVATE_CODE', facts: {secret: true}, beginFacts: {secret: true}},
   });
   const command = {type: 'createInvite', id: otherId, participantId, expectedRevision: 1, expiresInHours: 24};
   const body = await (await route.POST(request({requestId, command}))).json();
@@ -262,7 +262,7 @@ test('mutations recompute readiness and strip internal facts while preserving th
   assertRedacted(body);
   assert.equal(state.events.length, 1);
   assert.equal(JSON.stringify(state.events).includes('ONE_TIME_PRIVATE_CODE'), false);
-  state.mutation = {snapshot: snapshot()};
+  state.mutation = {snapshot: snapshot(), _pilotReplay: false};
   const configured = await (await route.POST(request({requestId, command: createRun}))).json();
   assert.equal(configured.data.snapshot.readiness.stage, 'ready_to_begin');
   assertRedacted(configured);
@@ -609,7 +609,7 @@ test('participant route accepts only self requests and projects RPC readiness un
 });
 
 test('participant claim denials are indistinguishable and success uses only the command snapshot', async () => {
-  const {state} = setup({data: self, mutation: {snapshot: {...self, run: {...self.run, id: otherId}}, private: 'hidden'}});
+  const {state} = setup({data: self, mutation: {snapshot: {...self, run: {...self.run, id: otherId}}, private: 'hidden', _pilotReplay: false}});
   const route = load(participantCode, state);
   const envelope = {requestId, command: claim};
   for (const details of ['wrong', 'expired', 'claimed', 'revoked']) {
@@ -658,12 +658,53 @@ test('publish trusts the atomic RPC for review and emits only confirmed pilot pu
   state.mutation = ordinary;
   assert.deepEqual(await (await post(1)).json(), {ok: true, data: ordinary});
   assert.deepEqual(state.events, []);
-  state.mutation = {...ordinary, runId, contentIntakeId: intakeId};
-  assert.equal((await post(1)).status, 200);
+  const publication = {...ordinary, runId, contentIntakeId: intakeId};
+  for (const replay of [false, true]) {
+    state.mutation = {...publication, _pilotReplay: replay};
+    assert.deepEqual(await (await post(1)).json(), {ok: true, data: publication});
+  }
+  assert.deepEqual(state.calls.at(-1), state.calls.at(-2));
   assert.deepEqual(JSON.parse(JSON.stringify(state.events)),
     [[{action: 'pilot.content.published', runId, contentIntakeId: intakeId}]]);
   state.throws = true;
   await expectFailure(await post(1), 503, 'UNAVAILABLE');
   assert.equal(state.events.length, 1);
   assert.ok(state.calls.every(call => call.name === 'publish_kinnso_pilot_guide_draft'));
+});
+
+test('all participant command metrics use exact allowed fields and skip receipt replay', async () => {
+  const intake = {
+    title: 'Private title', destination: 'Private destination', authoredLocale: 'en',
+    sourceSummary: 'Private free text', sourceUrls: [], rightsBasis: 'original',
+    rightsEvidenceReference: 'Private reference', authorConsentVersion: 'v1',
+    coverRightsConfirmed: null, coverRightsEvidenceReference: null,
+  };
+  for (const [command, action, fields] of [
+    [claim, 'pilot.participant.joined', {}],
+    [{type: 'acceptConsent', noticeVersion: 'v1'}, 'pilot.consent.accepted', {}],
+    [{type: 'submitContentIntake', intake}, 'pilot.content.submitted', {}],
+    [{type: 'updateOwnedContentIntake', intake, id: intakeId, expectedRevision: 1}, 'pilot.content.submitted', {contentIntakeId: intakeId}],
+    [{type: 'acknowledgeNotification'}, 'pilot.notification.acknowledged', {}],
+    [{type: 'acknowledgeSupportResponse'}, 'pilot.support.acknowledged', {}],
+  ]) {
+    const {state} = setup();
+    const route = load(participantCode, state);
+    const envelope = {requestId, command: {...command, requestId}};
+    for (const replay of [false, true]) {
+      const current = replay ? {...self, nextStep: null} : self;
+      state.mutation = {snapshot: current, _pilotReplay: replay};
+      assert.deepEqual(await (await route.POST(request(envelope))).json(), {ok: true, data: {snapshot: current}});
+    }
+    assert.deepEqual(JSON.parse(JSON.stringify(state.calls[0])), JSON.parse(JSON.stringify(state.calls[1])));
+    assert.deepEqual(JSON.parse(JSON.stringify(state.events)), [[{action, runId, participantId, ...fields}]]);
+  }
+});
+
+test('ops replay returns the receipt without the marker or another event', async () => {
+  const {state, route} = setup();
+  const envelope = {requestId, command: createRun};
+  const first = await (await route.POST(request(envelope))).json();
+  state.mutation = {snapshot: state.data, _pilotReplay: true};
+  assert.deepEqual(await (await route.POST(request(envelope))).json(), first);
+  assert.equal(state.events.length, 1);
 });

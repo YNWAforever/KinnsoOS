@@ -79,7 +79,7 @@ begin
    and run_id=(prior.result#>>'{snapshot,run,id}')::uuid and user_id=a;
   if not found then raise exception 'FORBIDDEN';end if;
   select * into r from kinnso_internal.pilot_runs where id=p.run_id;
-  return jsonb_build_object('snapshot',kinnso_internal.pilot_self_snapshot(r,p));
+  return jsonb_build_object('snapshot',kinnso_internal.pilot_self_snapshot(r,p),'_pilotReplay',true);
  end if;
  if kind='claimInvite' then
   raw_code:=kinnso_internal.pilot_text(p_command,'code',32,512);
@@ -156,7 +156,7 @@ begin
  perform kinnso_internal.pilot_audit(p.id,kind,entity_type,entity);
  result:=jsonb_build_object('snapshot',kinnso_internal.pilot_self_snapshot(r,p));
  insert into kinnso_internal.requests(actor_id,request_id,digest,result) values(a,p_request_id,dg,result);
- return result;
+ return result||jsonb_build_object('_pilotReplay',false);
 exception when invalid_text_representation or numeric_value_out_of_range or check_violation or not_null_violation then raise exception 'INVALID';
  when unique_violation then raise exception 'CONFLICT';
 end $$;
@@ -170,7 +170,7 @@ declare a uuid:=kinnso_internal.pilot_actor(); i kinnso_internal.pilot_content_i
  perform pg_advisory_xact_lock(hashtextextended(a::text||p_request_id::text,0));
  dg:=kinnso_internal.request_digest(jsonb_build_array('pilot.publish',p_draft_id,p_expected_revision)::text);
  select * into prior from kinnso_internal.requests where actor_id=a and request_id=p_request_id;
- if found then if prior.digest<>dg then raise exception 'REQUEST_ID_REUSED';end if;return prior.result;end if;
+ if found then if prior.digest<>dg then raise exception 'REQUEST_ID_REUSED';end if;return prior.result||jsonb_build_object('_pilotReplay',true);end if;
  select * into i from kinnso_internal.pilot_content_intakes where guide_id=p_draft_id;
  if i.id is null then
   perform 1 from public.guides where id=p_draft_id for update;
@@ -200,5 +200,23 @@ declare a uuid:=kinnso_internal.pilot_actor(); i kinnso_internal.pilot_content_i
  update kinnso_internal.pilot_content_intakes set status='published',reviewed_guide_version=v.version,revision=revision+1,updated_at=clock_timestamp() where id=i.id;
  result:=result||jsonb_build_object('runId',r.id,'contentIntakeId',i.id);
  insert into kinnso_internal.requests(actor_id,request_id,digest,result) values(a,p_request_id,dg,result);
- return result;
+ return result||jsonb_build_object('_pilotReplay',false);
+end $$;
+
+-- Keep the existing ops function, grants and receipt shape. Add the marker only
+-- to the return value, after its authorization and idempotency checks.
+do $$
+declare
+ definition text:=pg_get_functiondef('public.admin_apply_kinnso_pilot_command(uuid,jsonb)'::regprocedure);
+ replay_source text:='return prior.result;end if;';
+ first_source text:='return case when raw_code is null then result else result||jsonb_build_object(''inviteCode'',raw_code) end;';
+begin
+ if cardinality(string_to_array(definition,replay_source))<>2 or
+    cardinality(string_to_array(definition,first_source))<>2 then
+  raise exception 'Unexpected ops pilot receipt source';
+ end if;
+ execute replace(
+  replace(definition,replay_source,'return prior.result||jsonb_build_object(''_pilotReplay'',true);end if;'),
+  first_source,'return (case when raw_code is null then result else result||jsonb_build_object(''inviteCode'',raw_code) end)||jsonb_build_object(''_pilotReplay'',false);'
+ );
 end $$;

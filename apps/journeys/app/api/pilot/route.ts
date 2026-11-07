@@ -82,7 +82,7 @@ export async function POST(request: Request): Promise<Response> {
     if (!uuid(runId) || !uuid(participantId))
       return withRequestId(failure('UNAVAILABLE', 503), requestId);
 
-    await emitPilotMetric(metrics[command.type], {
+    if (result.data._pilotReplay === false) await emitPilotMetric(metrics[command.type], {
       runId, participantId,
       ...(command.type === 'updateOwnedContentIntake' ? { contentIntakeId: command.id } : {}),
     });

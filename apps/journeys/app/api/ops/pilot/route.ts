@@ -145,7 +145,7 @@ export async function POST(request: Request): Promise<Response> {
     const data: OpsPilotMutationResult = { snapshot: publicSnapshot(result.data.snapshot as RpcSnapshot) };
     if (!data.snapshot.run) throw new Error('UNAVAILABLE');
     if (typeof result.data.inviteCode === 'string') data.inviteCode = result.data.inviteCode;
-    await commandMetric(command, data.snapshot);
+    if (result.data._pilotReplay === false) await commandMetric(command, data.snapshot);
     return reply({ ok: true, data });
   } catch {
     return withRequestId(failure('UNAVAILABLE', 503), requestId);

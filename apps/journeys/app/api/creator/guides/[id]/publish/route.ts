@@ -25,9 +25,11 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
       default: return backendFailure(result.error);
     }
   }
-  await successEvent(ctx.actor, 'guide_published', requestId);
-  const { runId, contentIntakeId } = result.data ?? {};
-  if (uuid(runId) && uuid(contentIntakeId)) await emitPilotMetric('pilot.content.published', { runId, contentIntakeId });
-  return reply({ ok: true, data: result.data });
+  const { _pilotReplay, ...data } = result.data ?? {};
+  const { runId, contentIntakeId } = data;
+  if (_pilotReplay === false && uuid(runId) && uuid(contentIntakeId))
+    await emitPilotMetric('pilot.content.published', { runId, contentIntakeId });
+  if (_pilotReplay !== true) await successEvent(ctx.actor, 'guide_published', requestId);
+  return reply({ ok: true, data });
  } catch { return failure('UNAVAILABLE', 503); }
 }

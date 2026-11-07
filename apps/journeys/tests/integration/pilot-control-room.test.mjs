@@ -67,7 +67,7 @@ select pg_temp.denied(${q(i.ops)},${q(`select public.get_kinnso_ops_pilot(${q(i.
 `);
 check('request replay preserves result, rejects changed digest and appends exactly one ops event',i=>`
 create temp table receipt as select pg_temp.rpc(${q(i.ops)},${q(call(i,run(i),'ops',i.request))}) value;
-select pg_temp.ok((select value from receipt)=pg_temp.rpc(${q(i.ops)},${q(call(i,run(i),'ops',i.request))}),'same receipt');
+select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from receipt) and (select value||'{"_pilotReplay":true}'::jsonb from receipt)=pg_temp.rpc(${q(i.ops)},${q(call(i,run(i),'ops',i.request))}),'same receipt');
 select pg_temp.denied(${q(i.ops)},${q(call(i,{...run(i),name:'Different'},'ops',i.request))},'REQUEST_ID_REUSED');
 select pg_temp.ok((select count(*)=1 from public.ops_audit_log where entity_id=${q(i.run)}),'one audit');
 select pg_temp.ok((select count(*)>=18 from kinnso_internal.pilot_checks where run_id=${q(i.run)}),'default checks');
@@ -181,7 +181,7 @@ check('claim response and replay stay scoped to the locked run and slot',i=>{
  values(${q(i.invite)},${q(i.slot)},extensions.digest(${q(code)},'sha256'),now()+interval '1 hour',${q(i.ops)});
  create temp table claimed as select pg_temp.rpc(${q(i.traveller)},${q(command)}) value;
  select pg_temp.ok((select value#>>'{snapshot,run,id}'=${q(i.run)} and value#>>'{snapshot,participant,id}'=${q(i.slot)} from claimed),'claim is scoped to command run');
- select pg_temp.ok((select value from claimed)=pg_temp.rpc(${q(i.traveller)},${q(command)}),'scoped claim replay');
+ select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from claimed) and (select value||'{"_pilotReplay":true}'::jsonb from claimed)=pg_temp.rpc(${q(i.traveller)},${q(command)}),'scoped claim replay');
  select pg_temp.ok(pg_temp.rpc(${q(i.traveller)},'select public.get_kinnso_pilot_self()')#>>'{run,id}'=${q(newer)},'unscoped read still selects newer run');
  `;
 });
@@ -230,7 +230,7 @@ check('publishing delegates non-pilot and binds exact pilot version/digest with 
 ${contentSeed(i)}
 create temp table published as select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(i.request)})`)}) value;
 select pg_temp.ok((select value->>'runId'=${q(i.run)} and value->>'contentIntakeId'=${q(i.intake)} from published),'confirmed pilot binding');
-select pg_temp.ok((select value from published)=pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(i.request)})`)}),'publish replay');
+select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from published) and (select value||'{"_pilotReplay":true}'::jsonb from published)=pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(i.request)})`)}),'publish replay');
 select pg_temp.ok((select status='published' and reviewed_guide_version=1 from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'publication link');
 select pg_temp.ok(pg_temp.rpc(${q(i.ops)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)})->'facts'->'publications'->0 ?& array['publishedContentDigest','publishedVersion','currentDraftRevision','currentContentDigest'],'publication facts');
 select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(i.other)},0,${q(randomUUID())},${json(draft)})`)});
@@ -238,7 +238,7 @@ select pg_temp.ok((select value ?& array['draft','snapshot'] from published),'de
 select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where entity_id=${q(i.guide)} and command_type='publishGuide'),'one publication audit across replay');
 select pg_temp.denied(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.other)},2,${q(randomUUID())})`)},'revision_conflict');
 create temp table ordinary as select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.other)},1,${q(i.check)})`)}) value;
-select pg_temp.ok((select value ?& array['draft','snapshot'] and not(value ?| array['runId','contentIntakeId']) from ordinary),'ordinary delegate shape');
+select pg_temp.ok((select value ?& array['draft','snapshot'] and not(value ?| array['runId','contentIntakeId','_pilotReplay']) from ordinary),'ordinary delegate shape');
 select pg_temp.ok((select value from ordinary)=pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.other)},1,${q(i.check)})`)}),'ordinary replay');
 `);
 check('manual pass requires in-window evidence and derived checks cannot be set',i=>`
@@ -454,7 +454,7 @@ check('recruitment starts the consent window and participant commands preserve r
  update kinnso_internal.pilot_participants set user_id=${q(i.traveller)},status='joined' where id=${q(i.slot)};
  create temp table consent_receipt as select pg_temp.rpc(${q(i.traveller)},${q(pc({type:'acceptConsent',noticeVersion:'participation-v1'},i.request))}) value;
  select pg_temp.ok((select not ((value->'snapshot') ?| array['facts','beginFacts','participants','checks']) from consent_receipt),'mutation contains only the safe snapshot');
- select pg_temp.ok((select value from consent_receipt)=pg_temp.rpc(${q(i.traveller)},${q(pc({type:'acceptConsent',noticeVersion:'participation-v1'},i.request))}),'consent replay');
+ select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from consent_receipt) and (select value||'{"_pilotReplay":true}'::jsonb from consent_receipt)=pg_temp.rpc(${q(i.traveller)},${q(pc({type:'acceptConsent',noticeVersion:'participation-v1'},i.request))}),'consent replay');
  select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where participant_id=${q(i.slot)}),'one consent audit');
  select pg_temp.ok((select p.consented_at>r.acceptance_started_at from kinnso_internal.pilot_participants p join kinnso_internal.pilot_runs r on r.id=p.run_id where p.id=${q(i.slot)}),'consent in acceptance window');
  ${invoke(i,{type:'setRunStatus',id:i.run,expectedRevision:3,status:'running',reason:'Begin synthetic execution'})}
