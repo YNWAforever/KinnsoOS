@@ -61,8 +61,9 @@ test('begin readiness separates setup from execution and orders setup blockers',
   assert.equal(pilotBeginReadiness({ ...setup, run: { ...setup.run, privacyNoticeVersion: null } }).readyToBegin, false);
 });
 
-test('manual evidence requires a valid capture at or after acceptance start and a running run', () => {
-  assert.equal(pilotEvidenceEligible(started, started, 'running'), true);
+test('manual evidence requires a valid capture strictly after acceptance start and a running run', () => {
+  assert.equal(pilotEvidenceEligible(started, started, 'running'), false);
+  assert.equal(pilotEvidenceEligible('2026-11-07T00:00:01Z', started, 'running'), true);
   assert.equal(pilotEvidenceEligible('2026-11-06T23:59:59Z', started, 'running'), false);
   assert.equal(pilotEvidenceEligible('invalid', started, 'running'), false);
   assert.equal(pilotEvidenceEligible(started, null, 'running'), false);
@@ -110,38 +111,89 @@ const checks = [
   ...['guide_discovered', 'trip_recovered', 'privacy_support', 'alert_owner',
     'physical_ios', 'physical_android', 'voiceover', 'nvda'].map(code => ({ code, derived: false })),
 ].map(check => ({ ...check, category: 'test', status: 'pass', evidenceReference: 'ref:1', observedSummary: 'PRIVATE' }));
-const execution = { run, participants, contentIntakes, collaboration, checks };
+const later = '2026-11-07T00:00:01Z';
+const latest = '2026-11-07T00:00:02Z';
+const fact = { runId: id, dataClassification: 'real', capturedAt: later };
+const approved = { ...fact, capturedAt: latest, entityId: 'submission', missionId: 'mission', creatorUserId: 'creator-auth', status: 'approved' };
+const notification = {
+  ...fact, capturedAt: '2026-11-07T00:00:03Z', entityId: 'notification', entityType: 'mission',
+  missionId: 'mission', submissionId: 'submission', creatorUserId: 'creator-auth', notificationType: 'submission.approved',
+};
+const facts = {
+  participants: participants.map(p => ({ ...fact, entityId: p.id, userId: p.id + '-auth' })),
+  publications: contentIntakes.map(i => ({
+    ...fact, entityId: i.guideId, intakeId: i.id, creatorUserId: 'creator-auth',
+    status: 'published', publishedVersion: i.reviewedGuideVersion, publishedContentDigest: i.contentDigest,
+  })),
+  checks: [...checks, ...collaboration.steps].map(c => ({
+    ...fact, code: c.code, status: c.status, entityId: c.code + '-source', missionId: 'mission',
+  })),
+  submissions: [approved],
+  notifications: [notification],
+};
+const execution = { run, participants, contentIntakes, collaboration, checks, facts };
+const complete = (patch = {}) => pilotExecutionReadiness({ ...execution, ...patch }).executionComplete;
+const withFacts = patch => complete({ facts: { ...facts, ...patch } });
 
-test('execution requires each role, distinct Auth users and exact guide bindings', () => {
-  const ready = pilotExecutionReadiness(execution);
-  assert.equal(ready.stage, 'execution_complete');
-  assert.equal(ready.readyToBegin, false);
+test('execution requires all slots and distinct source Auth identities', () => {
+  assert.equal(pilotExecutionReadiness(execution).stage, 'execution_complete');
+  assert.equal(pilotExecutionReadiness(execution).readyToBegin, false);
+  assert.equal(complete({ participants: participants.slice(1) }), false);
+  assert.equal(withFacts({ participants: facts.participants.map(p => ({ ...p, userId: 'same-auth' })) }), false);
+  assert.equal(withFacts({ participants: facts.participants.slice(1) }), false);
+});
+
+test('passing projections require source facts scoped to this run, classification and acceptance window', () => {
+  assert.equal(complete({ facts: undefined }), false);
   for (const patch of [
-    { participants: participants.slice(1) },
-    { checks: checks.map(x => x.code === 'distinct_auth_users' ? { ...x, status: 'fail' } : x) },
-    { checks: checks.filter(x => x.code !== 'guide_publication_exact') },
-    ...[{ creatorParticipantId: 'other' }, { status: 'withdrawn' }, { reviewedGuideVersion: 99 }].map(change =>
-      ({ contentIntakes: [{ ...contentIntakes[0], ...change }, ...contentIntakes.slice(1)] })),
-  ]) assert.equal(pilotExecutionReadiness({ ...execution, ...patch }).executionComplete, false);
+    { runId: 'different-run' }, { dataClassification: 'synthetic' }, { capturedAt: started },
+    { capturedAt: '2026-11-06T23:59:59Z' }, { capturedAt: 'invalid' }, { entityId: '' }, { status: 'fail' },
+  ]) {
+    assert.equal(withFacts({ checks: facts.checks.map(c => c.code === 'guide_saved' ? { ...c, ...patch } : c) }), false);
+  }
 });
 
-test('revision requested and an unrelated notification cannot satisfy collaboration', () => {
-  for (const steps of [
-    collaboration.steps.map(x => x.code === 'submission_approved' ? { ...x, status: 'fail' } : x),
-    collaboration.steps.map(x => x.code === 'submission.approved' ? { ...x, code: 'submission.revised' } : x),
-  ]) assert.equal(pilotExecutionReadiness({ ...execution, collaboration: { ...collaboration, steps } }).executionComplete, false);
-  assert.equal(pilotExecutionReadiness(execution).executionComplete, true);
+test('publication facts must match each reviewed guide, creator, version and digest', () => {
+  for (const patch of [
+    { publishedVersion: 99 }, { publishedContentDigest: 'changed' }, { creatorUserId: 'other-auth' },
+    { entityId: 'unbound-guide' }, { status: 'withdrawn' }, { capturedAt: started },
+  ]) assert.equal(withFacts({ publications: [{ ...facts.publications[0], ...patch }, ...facts.publications.slice(1)] }), false);
+  for (const patch of [{ creatorParticipantId: 'other' }, { status: 'withdrawn' }, { reviewedGuideVersion: 99 }]) {
+    assert.equal(complete({ contentIntakes: [{ ...contentIntakes[0], ...patch }, ...contentIntakes.slice(1)] }), false);
+  }
 });
 
-test('export only includes allowlisted fields, including nested records', () => {
-  const summary = pilotExportSummary({
+test('revision requested must be followed by source approval and its exact mission notification', () => {
+  const requested = { ...approved, capturedAt: later, entityId: 'initial-submission', status: 'revision_requested' };
+  const sequence = [requested];
+  assert.equal(withFacts({ submissions: sequence }), false);
+  sequence.push(approved);
+  assert.equal(withFacts({ submissions: sequence }), true);
+  assert.equal(withFacts({ submissions: [...sequence, { ...requested, capturedAt: '2026-11-07T00:00:04Z' }] }), false);
+  for (const patch of [{ missionId: 'other' }, { creatorUserId: 'other' }, { capturedAt: started }]) {
+    assert.equal(withFacts({ submissions: [requested, { ...approved, ...patch }] }), false);
+  }
+  for (const patch of [
+    { missionId: 'other' }, { submissionId: requested.entityId }, { notificationType: 'submission.revised' },
+    { entityType: 'guide' }, { creatorUserId: 'other' }, { capturedAt: later },
+  ]) assert.equal(withFacts({ submissions: sequence, notifications: [{ ...notification, ...patch }] }), false);
+});
+
+test('export is deterministic and retains only opaque references and allowlisted fields', () => {
+  const snapshot = {
     ...execution, run: { ...run, contactEmail: 'PRIVATE' }, inviteCode: 'PRIVATE',
     tripTitle: 'PRIVATE', supportMessage: 'PRIVATE', privateEvidenceBody: 'PRIVATE',
+    checks: [{ ...checks[0], evidenceReference: 'ref:1' },
+      ...[' PRIVATE ', 'PRIVATE support sentence', 'PRIVATE@example.com', 'https://private.example'].map(evidenceReference =>
+        ({ ...checks[0], evidenceReference }))],
     readiness: { ...pilotExecutionReadiness(execution), privateEvidenceBody: 'PRIVATE',
       blockers: [{ code: 'test', category: 'test', messageKey: 'pilot.test', privateEvidenceBody: 'PRIVATE' }] },
-  });
+  };
+  const summary = pilotExportSummary(snapshot, latest);
   assert.equal(summary.schemaVersion, 1);
-  assert.equal(Number.isFinite(Date.parse(summary.exportedAt)), true);
-  assert.equal(summary.checks[0].evidenceReference, 'ref:1');
+  assert.equal(summary.exportedAt, latest);
+  assert.deepEqual(summary, pilotExportSummary(snapshot, latest));
+  assert.deepEqual(summary.checks.map(c => c.evidenceReference), ['ref:1', null, null, null, null]);
   assert.equal(JSON.stringify(summary).includes('PRIVATE'), false);
+  assert.throws(() => pilotExportSummary(snapshot, 'invalid'), RangeError);
 });

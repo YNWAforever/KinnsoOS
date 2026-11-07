@@ -2,6 +2,7 @@ import type {
   OpsPilotContentIntakeView,
   OpsPilotRunView,
   OpsPilotSnapshot,
+  PilotCheckStatus,
   PilotExportSummary,
   PilotReadinessView,
   PilotRunStatus,
@@ -15,7 +16,36 @@ export type PilotBeginReadinessInput = {
   syntheticRehearsalPassed: boolean;
 };
 
-export type PilotExecutionReadinessInput = Omit<OpsPilotSnapshot, 'readiness'>;
+/** Internal RPC facts, separate from the display snapshot and acceptance export. */
+export type PilotEvidenceFact = {
+  runId: string;
+  dataClassification: OpsPilotRunView['dataClassification'];
+  capturedAt: string;
+  entityId: string;
+};
+
+export type PilotExecutionFacts = {
+  participants: Array<PilotEvidenceFact & { userId: string }>;
+  publications: Array<PilotEvidenceFact & {
+    intakeId: string;
+    creatorUserId: string;
+    status: string;
+    publishedVersion: number | null;
+    publishedContentDigest: string | null;
+  }>;
+  checks: Array<PilotEvidenceFact & { code: string; status: PilotCheckStatus; missionId?: string }>;
+  /** Source submission history for the bound creator and mission. */
+  submissions: Array<PilotEvidenceFact & { missionId: string; creatorUserId: string; status: string }>;
+  notifications: Array<PilotEvidenceFact & {
+    missionId: string;
+    submissionId: string;
+    creatorUserId: string;
+    entityType: string;
+    notificationType: string;
+  }>;
+};
+
+export type PilotExecutionReadinessInput = Omit<OpsPilotSnapshot, 'readiness'> & { facts: PilotExecutionFacts };
 
 export type PilotPublishEligibilityInput = {
   pilotLinked: boolean;
@@ -85,8 +115,7 @@ export function pilotBeginReadiness(input: PilotBeginReadinessInput): PilotReadi
 
 const roles = ['traveller', 'creator', 'merchant'] as const;
 const collaborationSteps = [
-  'merchant_approved', 'mission_published', 'application_active', 'submission_approved',
-  'submission.approved', 'notification_acknowledged',
+  'merchant_approved', 'mission_published', 'application_active', 'notification_acknowledged',
 ] as const;
 const travellerChecks = [
   'guide_discovered', 'guide_saved', 'trip_adopted', 'trip_revised', 'trip_recovered',
@@ -103,7 +132,7 @@ function uniquePass<T extends { code: string; status: string }>(records: T[], co
 }
 
 export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): PilotReadinessView {
-  const { run, participants, contentIntakes, collaboration, checks } = input;
+  const { run, participants, contentIntakes, collaboration, checks, facts } = input;
   const blockers: Blockers = [];
   if (!run) {
     block(blockers, 'setup', 'run_missing');
@@ -132,20 +161,36 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
   });
   const [, creatorId, merchantId] = slots;
 
-  // These projections must be scoped to the run, required actors and bound records.
-  // Task 1 deliberately omits Auth IDs, raw evidence rows and their timestamps.
+  const eligible = (fact: PilotEvidenceFact) =>
+    fact.runId === run.id && fact.dataClassification === run.dataClassification &&
+    present(fact.entityId) && afterAcceptanceStart(fact.capturedAt, run.acceptanceStartedAt);
+
+  function checkFactPasses(code: string, missionId?: string): boolean {
+    const fact = uniquePass(facts?.checks ?? [], code);
+    return !!fact && eligible(fact) && (missionId === undefined || fact.missionId === missionId);
+  }
+
   function requireCheck(category: string, code: string) {
     const check = uniquePass(checks, code);
     const manual = manualChecks.some(required => required === code);
-    if (!check || check.derived !== !manual ||
+    if (!check || !checkFactPasses(code) || check.derived !== !manual ||
         (manual && (!present(check.evidenceReference) || !present(check.observedSummary)))) {
       block(blockers, category, code);
     }
   }
-  if (new Set(slots.filter(present)).size !== slots.filter(present).length) {
-    block(blockers, 'cohort', 'participant_slots_not_distinct');
+
+  const userIds = slots.map(slot => {
+    if (!slot) return undefined;
+    const matches = (facts?.participants ?? []).filter(fact => fact.entityId === slot);
+    const fact = matches.length === 1 ? matches[0] : undefined;
+    return fact && eligible(fact) && present(fact.userId) ? fact.userId : undefined;
+  });
+  const [, creatorUserId] = userIds;
+  if (!userIds.every(present) ||
+      new Set(userIds.map(userId => userId?.toLowerCase())).size !== roles.length ||
+      new Set(slots).size !== roles.length) {
+    block(blockers, 'cohort', 'distinct_auth_users');
   }
-  requireCheck('cohort', 'distinct_auth_users');
   requireCheck('content', 'creator_public');
 
   const validGuides = new Set<string>();
@@ -154,7 +199,13 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
     if (present(intake.guideId)) {
       linkedGuideCounts.set(intake.guideId, (linkedGuideCounts.get(intake.guideId) ?? 0) + 1);
     }
-    const exact = !!creatorId && intake.creatorParticipantId === creatorId && present(intake.guideId) &&
+    const publications = (facts?.publications ?? []).filter(fact => fact.intakeId === intake.id);
+    const publication = publications.length === 1 ? publications[0] : undefined;
+    const exactPublication = publication && eligible(publication) && !!creatorUserId &&
+      publication.entityId === intake.guideId && publication.creatorUserId === creatorUserId &&
+      publication.status === 'published' && publication.publishedVersion === intake.reviewedGuideVersion &&
+      publication.publishedContentDigest === intake.contentDigest;
+    const exact = exactPublication && !!creatorId && intake.creatorParticipantId === creatorId && present(intake.guideId) &&
       intake.status === 'published' && positiveInteger(intake.guideDraftRevision) &&
       intake.reviewedGuideVersion === intake.guideDraftRevision && present(intake.contentDigest);
     if (exact && intake.guideId) validGuides.add(intake.guideId);
@@ -167,15 +218,29 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
       validGuides.size < Math.max(run.dataClassification === 'real' ? 3 : 1, run.minimumPublishedGuides)) {
     block(blockers, 'content', 'published_guides_missing');
   }
-  requireCheck('content', 'guide_publication_exact');
 
   if (!collaboration || !present(collaboration.missionId) || !creatorId || !merchantId ||
       collaboration.creatorParticipantId !== creatorId || collaboration.merchantParticipantId !== merchantId) {
     block(blockers, 'collaboration', 'mission_binding_missing', collaboration?.id);
   } else {
     for (const code of collaborationSteps) {
-      if (!uniquePass(collaboration.steps, code)) block(blockers, 'collaboration', code, collaboration.id);
+      if (!uniquePass(collaboration.steps, code) || !checkFactPasses(code, collaboration.missionId)) {
+        block(blockers, 'collaboration', code, collaboration.id);
+      }
     }
+    const submissions = (facts?.submissions ?? [])
+      .filter(fact => fact.missionId === collaboration.missionId && !!creatorUserId && fact.creatorUserId === creatorUserId);
+    // Pick the latest source event; a tie cannot prove which status is final.
+    const ordered = [...submissions].sort((a, b) => Date.parse(b.capturedAt) - Date.parse(a.capturedAt));
+    const [latest, previous] = ordered;
+    const approved = latest && submissions.every(eligible) && latest.status === 'approved' &&
+      (!previous || Date.parse(latest.capturedAt) > Date.parse(previous.capturedAt));
+    if (!approved) block(blockers, 'collaboration', 'submission_approved', collaboration.id);
+    const notified = approved && (facts?.notifications ?? []).some(fact =>
+      eligible(fact) && fact.missionId === collaboration.missionId && fact.submissionId === latest.entityId &&
+      fact.creatorUserId === creatorUserId && fact.entityType === 'mission' &&
+      fact.notificationType === 'submission.approved' && Date.parse(fact.capturedAt) >= Date.parse(latest.capturedAt));
+    if (!notified) block(blockers, 'collaboration', 'submission.approved', collaboration.id);
   }
   for (const code of travellerChecks) requireCheck('traveller', code);
   for (const code of manualChecks.slice(2)) requireCheck('manual', code);
@@ -207,17 +272,28 @@ export function pilotCanPublish(
 export function pilotEvidenceEligible(
   capturedAt: string, acceptanceStartedAt: string | null, runStatus: PilotRunStatus,
 ): boolean {
-  if (runStatus !== 'running' || !present(capturedAt) || !present(acceptanceStartedAt)) return false;
-  const captured = Date.parse(capturedAt);
-  const started = Date.parse(acceptanceStartedAt);
-  return Number.isFinite(captured) && Number.isFinite(started) && captured >= started;
+  return runStatus === 'running' && afterAcceptanceStart(capturedAt, acceptanceStartedAt);
 }
 
-export function pilotExportSummary(snapshot: OpsPilotSnapshot): PilotExportSummary {
+function afterAcceptanceStart(capturedAt: string, acceptanceStartedAt: string | null): boolean {
+  if (!present(capturedAt) || !present(acceptanceStartedAt)) return false;
+  const captured = Date.parse(capturedAt);
+  const started = Date.parse(acceptanceStartedAt);
+  return Number.isFinite(captured) && Number.isFinite(started) && captured > started;
+}
+
+// An opaque reference is a ref: prefix followed by a decimal ID or UUID.
+const opaqueReference = /^ref:(?:[0-9]{1,20}|[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$/iu;
+
+export function pilotExportSummary(snapshot: OpsPilotSnapshot, exportedAt: string): PilotExportSummary {
+  if (!present(exportedAt) || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(exportedAt) ||
+      !Number.isFinite(Date.parse(exportedAt))) {
+    throw new RangeError('Invalid pilot export timestamp');
+  }
   const { run, readiness, checks } = snapshot;
   return {
     schemaVersion: 1,
-    exportedAt: new Date().toISOString(),
+    exportedAt,
     run: run ? {
       id: run.id, status: run.status, dataClassification: run.dataClassification,
       candidateReleaseSha: run.candidateReleaseSha,
@@ -228,6 +304,10 @@ export function pilotExportSummary(snapshot: OpsPilotSnapshot): PilotExportSumma
         code, category, messageKey, ...(recordId ? { recordId } : {}),
       })),
     },
-    checks: checks.map(({ code, status, derived, evidenceReference }) => ({ code, status, derived, evidenceReference })),
+    checks: checks.map(({ code, status, derived, evidenceReference }) => ({
+      code, status, derived,
+      evidenceReference: present(evidenceReference) && evidenceReference === evidenceReference.trim() &&
+        opaqueReference.test(evidenceReference) ? evidenceReference : null,
+    })),
   };
 }
