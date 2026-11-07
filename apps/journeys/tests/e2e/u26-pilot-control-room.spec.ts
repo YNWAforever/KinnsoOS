@@ -28,6 +28,11 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
     const label = suiteLabel + '-' + classification;
     const firstGuide = guides.length;
     const contexts = await Promise.all([0, 1, 2, 3].map(() => browser.newContext()));
+    for (const context of contexts) {
+      context.setDefaultTimeout(30_000);
+      context.setDefaultNavigationTimeout(30_000);
+    }
+    let workflowFailed = false;
     try {
       const [operator, ...members] = await Promise.all(contexts.map(context => context.newPage()));
       const operatorId = await signIn(operator, 'operator', label);
@@ -113,8 +118,8 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         await creator.getByLabel('Title',{exact:true}).fill(input.title);
         await creator.getByLabel('Destination',{exact:true}).fill(input.destination);
         await creator.getByLabel('Content language code',{exact:true}).fill(input.authoredLocale);
-        await creator.getByLabel('Source summary',{exact:true}).fill(input.sourceSummary);
-        await creator.getByLabel('Source URLs (one per line, up to 20)',{exact:true}).fill(input.sourceUrls.join('\n'));
+        await creator.getByRole('textbox',{name:'Source summary',exact:true}).fill(input.sourceSummary);
+        await creator.getByRole('textbox',{name:'Source URLs (one per line, up to 20)',exact:true}).fill(input.sourceUrls.join('\n'));
         await creator.getByRole('combobox',{name:'Rights basis',exact:true}).selectOption(input.rightsBasis);
         await creator.getByLabel('Rights evidence reference',{exact:true}).fill(input.rightsEvidenceReference);
         await creator.getByRole('combobox',{name:'Cover rights',exact:true}).selectOption(input.coverRightsConfirmed===null?'':String(input.coverRightsConfirmed));
@@ -478,8 +483,16 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         expect((await api(traveller,'/api/pilot')).participant.status).toBe('withdrawn');
         expect((await api(traveller,'/api/trips/'+trip.id)).id).toBe(trip.id);
       }
+    } catch (error) {
+      workflowFailed = true;
+      throw error;
     } finally {
-      await Promise.all(contexts.map(context => context.close()));
+      const closed = await Promise.allSettled(contexts.map(context => context.close()));
+      // Preserve the workflow error if timeout teardown has already closed a page.
+      if (!workflowFailed) {
+        const failure = closed.find(result => result.status === 'rejected');
+        if (failure?.status === 'rejected') throw failure.reason;
+      }
     }
   }
 });
