@@ -210,3 +210,41 @@ test('creator session pagination reaches older owned rows across a timestamp tie
   await ok(admin.auth.admin.deleteUser(other.id));
  }
 });
+
+test('merchant offer pagination spans tied creation dates and survives validity rescheduling',async({browser,baseURL})=>{
+ test.setTimeout(90_000);
+ const owner=await user('offer-pagination-owner'),context=await browser.newContext({baseURL});
+ let company:string|undefined;
+ try{
+  company=(await ok(admin.from('merchant_profiles').insert({user_id:owner.id,company_name:'Offer pagination '+owner.id,contact_name:'Owner',contact_email:owner.email,website_url:'https://example.test',status:'active'}).select('id').single())).id;
+  const rows=Array.from({length:28},(_,i)=>({id:randomUUID(),merchant_profile_id:company,title:'Pagination offer '+i,terms:'Synthetic pagination fixture',discount_kind:'percent',discount_value:10,commission_kind:'flat',commission_value:5,valid_from:'2026-12-01T00:00:00Z',valid_to:'2026-12-31T00:00:00Z',created_at:'2026-11-01T00:00:00.123456Z',claimed_count:2,redeemed_count:1}));
+  await ok(admin.from('merchant_offers').insert(rows));
+  const ordered=[...rows].sort((a,b)=>b.id.localeCompare(a.id));
+  const page=await context.newPage();
+  await signIn(page,owner,'merchant?section=offers');
+  const card=page.locator('.k-card').filter({has:page.getByRole('heading',{name:'Offers and visits',exact:true})});
+  await expect(card.getByRole('article')).toHaveCount(25);
+  await expect(card.getByText('56 claimed · 28 redeemed',{exact:true})).toBeVisible();
+  const path='/api/merchant/offers?company='+company;
+  const first=await page.request.get(path);
+  expect(first.status()).toBe(200);
+  const firstData=(await first.json()).data;
+  expect(firstData.items.map((row:{id:string})=>row.id)).toEqual(ordered.slice(0,25).map(row=>row.id));
+  expect(firstData.nextCursor).toBeTruthy();
+  await ok(admin.from('merchant_offers').update({valid_from:'2026-12-03T00:00:00Z'}).eq('id',ordered[24].id));
+  const second=await page.request.get(path+'&cursor='+encodeURIComponent(firstData.nextCursor));
+  expect(second.status()).toBe(200);
+  const secondData=(await second.json()).data;
+  expect(secondData.items.map((row:{id:string})=>row.id)).toEqual(ordered.slice(25).map(row=>row.id));
+  expect(secondData.summary).toEqual({claimed:56,redeemed:28});
+  expect(secondData.nextCursor).toBeNull();
+  await card.getByRole('button',{name:'Load more offers'}).click();
+  await expect(card.getByRole('article')).toHaveCount(28);
+  await expect(card.getByRole('article').getByRole('heading')).toHaveText(ordered.map(row=>row.title));
+  await expect(card.getByText('56 claimed · 28 redeemed',{exact:true})).toBeVisible();
+ }finally{
+  await context.close();
+  if(company){await ok(admin.from('merchant_offers').delete().eq('merchant_profile_id',company));await ok(admin.from('merchant_profiles').delete().eq('id',company));}
+  await ok(admin.auth.admin.deleteUser(owner.id));
+ }
+});

@@ -16,6 +16,7 @@ test.beforeAll(async()=>{
   import {MerchantOffersWorkspace} from './app/travel/MerchantOffersWorkspace';
   import {CreatorLadderWorkspace} from './app/travel/CreatorLadderWorkspace';
   import {AppContext} from './app/travel/ui';
+  import {OpsContentAdmin} from './app/travel/OpsContentAdmin';
   import {OpsRecordActions} from './app/travel/OpsRecordActions';
   import {OpsTeamWorkspace} from './app/travel/OpsTeamWorkspace';
   import {CreatorSessionsWorkspace} from './app/travel/CreatorSessionsWorkspace';
@@ -26,6 +27,7 @@ test.beforeAll(async()=>{
   createRoot(document.getElementById('fixture')).render(
    <AppContext.Provider value={{locale:'en',t:en=>en,href:path=>'/en/'+path}}>
     {location.pathname==='/team' ? <OpsTeamWorkspace actorId="${actorId}" enabled/>
+      : location.pathname.startsWith('/content/') ? <OpsContentAdmin actorId="${actorId}" view={location.pathname.split('/').at(-1)} items={[{id:"${id}",name:"Enquiry",status:"new"}]} onChanged={()=>{}}/>
       : location.pathname==='/offers' ? <Offers/>
       : location.pathname==='/perks' ? <CreatorLadderWorkspace actorId="${actorId}" enabled path="studio/perks"/>
       : location.pathname==='/records' ? <OpsRecordActions actorId="${actorId}" view="creators" detail={{creator:{id:"${id}",status:'active'}}}/>
@@ -304,4 +306,65 @@ test('ambiguous moderation retry replays exact bytes and account invalidation cl
  await page.evaluate(()=>window.dispatchEvent(new CustomEvent('kinnso:account-invalidated',{detail:{ownerId:null}})));
  await expect(page.getByRole('region',{name:'Moderation controls'})).toHaveCount(0,{timeout:3000});
  expect(wire).toHaveLength(3);
+});
+
+for(const [view,fields,button,correction] of [
+ ['sessions',{'Host creator ID':id,'Session title':'Original','Description':'Details','Starts at':'2026-12-20T10:00'},'Create session','Session title'],
+ ['perks',{'Partner name':'Partner','Perk title':'Original','Summary':'Details','Category':'Travel','Discount label':'10%','Redemption value':'CODE'},'Create perk','Perk title'],
+ ['testimonials',{'Quote':'Original','Author name':'Author'},'Create testimonial','Quote'],
+ ['enquiries',{'Status reason':'Original'},'Update enquiry','Status reason'],
+] as const)test('Ops '+view+' can correct a definitive rejection',async({page})=>{
+ const bodies:Record<string,unknown>[]=[];
+ await mount(page,'/content/'+view,async route=>{
+  bodies.push(route.request().postDataJSON());
+  return bodies.length===1?route.fulfill({status:400,json:{ok:false,code:'INVALID',retryable:false}}):
+   route.fulfill({json:{ok:true,data:{}}});
+ });
+ for(const [label,value] of Object.entries(fields))await page.getByLabel(label,{exact:true}).fill(value);
+ await page.getByRole('button',{name:button,exact:true}).click();
+ await expect(page.getByRole('alert')).toContainText('INVALID');
+ await expect(page.getByRole('button',{name:'Retry the same request'})).toHaveCount(0);
+ await page.getByRole('textbox',{name:correction,exact:true}).fill('Corrected');
+ await page.getByRole('button',{name:button,exact:true}).click();
+ await expect(page.getByText('Operations content updated.')).toBeVisible();
+ expect(bodies).toHaveLength(2);
+ expect(JSON.stringify(bodies[1])).toContain('Corrected');
+ if(view!=='enquiries')expect(bodies[1].requestId).not.toBe(bodies[0].requestId);
+});
+
+test('Ops ambiguous retry resends exact bytes and account invalidation discards pending work',async({page})=>{
+ const bodies:string[]=[];
+ await mount(page,'/content/testimonials',async route=>{
+  bodies.push(route.request().postData()??'');
+  return route.abort('failed');
+ });
+ await page.getByLabel('Quote').fill('Original');
+ await page.getByLabel('Author name').fill('Author');
+ await page.getByRole('button',{name:'Create testimonial'}).click();
+ const retry=page.getByRole('button',{name:'Retry the same request'});
+ await retry.click();
+ await expect.poll(()=>bodies.length).toBe(2);
+ expect(bodies[1]).toBe(bodies[0]);
+ await expect(retry).toBeVisible();
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('kinnso:account-invalidated',{detail:{ownerId:null}})));
+ await expect(retry).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'Create testimonial'})).toBeDisabled();
+});
+
+test('merchant load more reaches older offers and keeps company totals',async({page})=>{
+ const rows=Array.from({length:28},(_,i)=>({id:String(i),title:'Offer '+i,status:'live',claimedCount:2,redeemedCount:1,createdAt:'2026-11-01T00:00:00Z'}));
+ const requests:(string|null)[]=[];
+ await mount(page,'/offers',async route=>{
+  const cursor=new URL(route.request().url()).searchParams.get('cursor');
+  requests.push(cursor);
+  return route.fulfill({json:{ok:true,data:{items:cursor?rows.slice(25):rows.slice(0,25),nextCursor:cursor?null:'next-page',summary:{claimed:56,redeemed:28}}}});
+ });
+ await expect(page.getByText('56 claimed · 28 redeemed')).toBeVisible();
+ await expect(page.getByRole('article')).toHaveCount(25);
+ await page.getByRole('button',{name:'Load more offers'}).click();
+ await expect(page.getByRole('article')).toHaveCount(28);
+ await expect(page.getByRole('heading',{name:'Offer 27'})).toBeVisible();
+ await expect(page.getByText('56 claimed · 28 redeemed')).toBeVisible();
+ await expect(page.getByRole('button',{name:'Load more offers'})).toHaveCount(0);
+ expect(requests).toEqual([null,'next-page']);
 });

@@ -7,16 +7,36 @@ type Offer={id:string;title:string;terms:string;discountKind:string;discountValu
 const empty={title:'',terms:'',discountKind:'percent',discountValue:'',commissionKind:'flat',commissionValue:'',validFrom:'',validTo:'',perVisitorLimit:'1',totalCap:'',missionId:null};
 
 export function MerchantOffersWorkspace({actorId,merchantId,onLockChange}:{actorId:string|null;merchantId:string;onLockChange?:(locked:boolean)=>void}){
- const{locale,t}=useApp(),[valid,setValid]=useState(true),[items,setItems]=useState<Offer[]|null>(null),[summary,setSummary]=useState({claimed:0,redeemed:0}),[draft,setDraft]=useState(empty),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
- const generation=useRef(0),intent=useRef<string|null>(null);
+ const{locale,t}=useApp(),[valid,setValid]=useState(true),[items,setItems]=useState<Offer[]|null>(null),[nextCursor,setNextCursor]=useState<string|null>(null),[loadingMore,setLoadingMore]=useState(false),[listError,setListError]=useState(''),[summary,setSummary]=useState({claimed:0,redeemed:0}),[draft,setDraft]=useState(empty),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
+ const generation=useRef(0),intent=useRef<string|null>(null),listVersion=useRef(0),paging=useRef(false);
  const locked=busy||unknown;
  useEffect(()=>{onLockChange?.(locked);},[locked,onLockChange]);
  useEffect(()=>()=>onLockChange?.(false),[onLockChange]);
  function clearScope(){
-  intent.current=null;setItems(null);setSummary({claimed:0,redeemed:0});setDraft(empty);
+  intent.current=null;listVersion.current++;paging.current=false;setNextCursor(null);setLoadingMore(false);setListError('');setItems(null);setSummary({claimed:0,redeemed:0});setDraft(empty);
   setError('');setMessage('');setBusy(false);setUnknown(false);
  }
- async function load(own:number){if(!actorId||!merchantId)return;try{const response=await fetch('/api/merchant/offers?company='+encodeURIComponent(merchantId),{cache:'no-store'}),body=await response.json();if(own!==generation.current)return;if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');setItems(body.data.items);setSummary(body.data.summary);}catch(next){if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');}}
+ async function load(own:number,cursor:string|null=null){
+  if(!actorId||!merchantId||(cursor&&paging.current))return;
+  const version=++listVersion.current;
+  paging.current=true;setLoadingMore(Boolean(cursor));setListError('');
+  if(!cursor)setNextCursor(null);
+  const params=new URLSearchParams({company:merchantId});if(cursor)params.set('cursor',cursor);
+  const current=()=>own===generation.current&&version===listVersion.current;
+  try{
+   const response=await fetch('/api/merchant/offers?'+params,{cache:'no-store'}),body=await response.json();
+   if(!current())return;
+   if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');
+   const rows:Offer[]=body.data.items;
+   setItems(previous=>{
+    if(!cursor||!previous)return rows;
+    const seen=new Set(previous.map(row=>row.id));
+    return [...previous,...rows.filter(row=>!seen.has(row.id)&&seen.add(row.id))];
+   });
+   setNextCursor(body.data.nextCursor??null);setSummary(body.data.summary);
+  }catch(next){if(current())setListError(next instanceof Error?next.message:'UNAVAILABLE');}
+  finally{if(current()){paging.current=false;setLoadingMore(false);}}
+ }
  useEffect(()=>{
   const own=++generation.current;setValid(true);clearScope();void load(own);
   const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){generation.current++;setValid(false);clearScope();}});
@@ -74,6 +94,7 @@ export function MerchantOffersWorkspace({actorId,merchantId,onLockChange}:{actor
    {unknown&&<p role="alert">{t('The result is unknown. Retry the same request.','結果未明，請重試相同請求。')}</p>}
    <button className="k-btn primary" disabled={busy||(unknown&&!intent.current)}>{unknown?t('Retry the same save','重試相同儲存'):t('Save offer','儲存優惠')}</button>
   </form>
-  {items===null&&!error&&<p role="status">{t('Loading offers…','正在載入優惠…')}</p>}{items?.length===0&&<p>{t('No offers yet.','暫未建立優惠。')}</p>}{items?.map(offer=><article key={offer.id}><h3>{offer.title}</h3><p>{offer.status} · {offer.claimedCount} {t('claimed','已領取')} · {offer.redeemedCount} {t('redeemed','已核銷')}</p><p>{offer.terms}</p><div className="k-actions">{offer.status!=='live'&&<button className="k-btn" disabled={locked} onClick={()=>void setStatus(offer,'live')}>{t('Publish offer','發布優惠')}</button>}{offer.status==='live'&&<button className="k-btn" disabled={locked} onClick={()=>void setStatus(offer,'paused')}>{t('Pause offer','暫停優惠')}</button>}{offer.status!=='ended'&&<button className="k-btn danger" disabled={locked} onClick={()=>void setStatus(offer,'ended')}>{t('End offer','結束優惠')}</button>}</div></article>)}
+  {listError&&<p role="alert">{t('Could not load offers: ','無法載入優惠：')}{listError}</p>}{items===null&&!listError&&<p role="status">{t('Loading offers…','正在載入優惠…')}</p>}{items?.length===0&&<p>{t('No offers yet.','暫未建立優惠。')}</p>}{items?.map(offer=><article key={offer.id}><h3>{offer.title}</h3><p>{offer.status} · {offer.claimedCount} {t('claimed','已領取')} · {offer.redeemedCount} {t('redeemed','已核銷')}</p><p>{offer.terms}</p><div className="k-actions">{offer.status!=='live'&&<button className="k-btn" disabled={locked} onClick={()=>void setStatus(offer,'live')}>{t('Publish offer','發布優惠')}</button>}{offer.status==='live'&&<button className="k-btn" disabled={locked} onClick={()=>void setStatus(offer,'paused')}>{t('Pause offer','暫停優惠')}</button>}{offer.status!=='ended'&&<button className="k-btn danger" disabled={locked} onClick={()=>void setStatus(offer,'ended')}>{t('End offer','結束優惠')}</button>}</div></article>)}
+  {nextCursor&&<button type="button" className="k-btn" disabled={loadingMore||busy} onClick={()=>void load(generation.current,nextCursor)}>{loadingMore?t('Loading offers…','正在載入優惠…'):t('Load more offers','載入更多優惠')}</button>}
  </div>;
 }
