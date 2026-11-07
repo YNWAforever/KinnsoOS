@@ -45,7 +45,7 @@ function selfView({ run, participant, nextStep, readiness, contentConsent, intak
       privacyNoticeDigest: run.privacyNoticeDigest === undefined ? undefined : digest(run.privacyNoticeDigest),
     },
     participant: participant && {
-      id: participant.id, role: participant.role, status: participant.status, consentVersion: participant.consentVersion,
+      id: participant.id, revision: Number.isSafeInteger(participant.revision) ? participant.revision : undefined, role: participant.role, status: participant.status, consentVersion: participant.consentVersion,
       consentDigest: participant.consentDigest === undefined ? undefined : digest(participant.consentDigest),
     },
     contentConsent: contentConsent === undefined ? undefined :

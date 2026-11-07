@@ -25,3 +25,12 @@ test('approval requires both exact review values and rejection cannot carry them
     {...base, expectedDraftRevision:3, expectedContentDigest:'a'.repeat(64)});
   assert.throws(() => parseOpsPilotCommand({...base, decision:'reject', expectedDraftRevision:3, expectedContentDigest:'a'.repeat(64)}), /INVALID/);
 });
+
+import {parsePilotParticipantCommand} from '../lib/contracts/pilot.ts';
+
+test('withdrawal requires the exact displayed participant and revision',()=>{
+ const id='11111111-1111-4111-8111-111111111111';
+ const command={type:'withdrawParticipation',requestId:id,runId:id,participantId:id,expectedRevision:2};
+ assert.deepEqual(parsePilotParticipantCommand(command),command);
+ assert.throws(()=>parsePilotParticipantCommand({type:command.type,requestId:id}));
+});

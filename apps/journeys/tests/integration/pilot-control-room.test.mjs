@@ -99,7 +99,7 @@ select pg_temp.ok(pg_temp.rpc(${q(i.traveller)},'select public.get_kinnso_pilot_
  'participationNoticeVersion','participation-v1','participationNoticeDigest',repeat('a',64),
  'privacyNoticeVersion','privacy-v1','privacyNoticeDigest',repeat('b',64)),
  'contentConsent',null,'intake',null,'intakes','[]'::jsonb,'acknowledgements',jsonb_build_object('notificationId',null,'supportCaseId',null),'workflowLinks',jsonb_build_object('merchant',null,'trip',null,'supportCaseId',null,'supportMissionId',null),
- 'participant',jsonb_build_object('id',${q(i.slot)}::uuid,'role','traveller','status','active','consentVersion','participation-v1','consentDigest',
+ 'participant',jsonb_build_object('id',${q(i.slot)}::uuid,'revision',1,'role','traveller','status','active','consentVersion','participation-v1','consentDigest',
  (select consent_digest from kinnso_internal.pilot_participants where id=${q(i.slot)})),
  'nextStep',jsonb_build_object('code','open_workflow','href','/en/trips','messageKey','pilot.next.open_workflow'),
  'readiness',jsonb_build_object('stage','executing','readyToBegin',true,'executionComplete',false,'blockers','[]'::jsonb)),'strict self-only snapshot');
@@ -415,7 +415,7 @@ test('authoritative facts satisfy the readiness evaluator and permit explicit co
  const self=JSON.parse(output.split(/\r?\n/).find(x=>x.startsWith('SELF:')).slice(5));
  assert.deepEqual(Object.keys(self).sort(),['acknowledgements','contentConsent','intake','intakes','nextStep','participant','readiness','run','workflowLinks']);
  assert.deepEqual(Object.keys(self.run).sort(),['id','name','participationNoticeDigest','participationNoticeVersion','privacyNoticeDigest','privacyNoticeVersion','status']);
- assert.deepEqual(Object.keys(self.participant).sort(),['consentDigest','consentVersion','id','role','status']);
+ assert.deepEqual(Object.keys(self.participant).sort(),['consentDigest','consentVersion','id','revision','role','status']);
  assert.equal(snap.facts.notifications.length,1);
  assert.equal(snap.facts.notifications[0].submissionId,snap.facts.submissions[0].entityId);
  assert.equal(snap.facts.checks.find(x=>x.code==='notification_acknowledged').notificationId,snap.facts.notifications[0].entityId);
@@ -853,7 +853,9 @@ check('FINAL all owned intakes are selectable and operator review contains subst
 check('FINAL premature participant completion denied and self withdrawal retires only pilot',i=>`
  ${contentSeed(i)}
  select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setParticipantStatus',id:i.creatorSlot,expectedRevision:1,status:'completed',reason:'Too early'}))},'CONFLICT');
- select pg_temp.rpc(${q(i.creator)},${q(pc({type:'withdrawParticipation'}))});
+ select pg_temp.denied(${q(i.creator)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:2}))},'CONFLICT');
+ select pg_temp.denied(${q(i.traveller)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:1}))},'CONFLICT');
+ select pg_temp.rpc(${q(i.creator)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:1}))});
  select pg_temp.ok((select status='withdrawn' from kinnso_internal.pilot_participants where id=${q(i.creatorSlot)}),'withdrawn');
  select pg_temp.ok((select status='withdrawn' from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'intake retired');
  select pg_temp.ok((select status='active' from public.creators where id=${q(i.creator)}),'ordinary account unchanged');
@@ -921,4 +923,51 @@ test('FINAL owner waiting for lock loses authority after demotion',async()=>{
   await Promise.allSettled([hold,change].filter(Boolean));
   sql(`begin;delete from public.ops_audit_log where actor_ops_member_id in(${q(i.ops)},${q(i.owner)},${q(i.mod)});delete from auth.users where id in(${['ops','owner','mod','traveller','creator','merchant','other'].map(k=>q(i[k])).join(',')});commit;`);
  }
+});
+check('unconfirmed creator can publish ordinary content but cannot publish pilot content',i=>`
+${contentSeed(i)}
+select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(i.other)},0,${q(randomUUID())},${json(draft)})`)});
+update auth.users set email_confirmed_at=null where id=${q(i.creator)};
+select pg_temp.denied(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(randomUUID())})`)},'FORBIDDEN');
+select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.other)},1,${q(randomUUID())})`)});
+select pg_temp.ok((select status='published' from public.guides where id=${q(i.other)}),'ordinary guide published');
+`);
+
+check('lost edit response replays the original result after a newer edit',i=>{
+ const edit=(req,rev,title)=>`select public.edit_kinnso_creator_session(${q(i.slot)},${q(req)},${rev},${json({title,description:'Synthetic',type:'ask_a_creator',starts_at:'2026-11-21T10:00:00Z',duration_minutes:60,destination_tags:[]})})`;
+ return `
+ insert into public.community_sessions(id,slug,host_creator_id,title,description,type,starts_at,duration_minutes)
+ values(${q(i.slot)},${q('synthetic-'+i.slot)},${q(i.creator)},'Synthetic initial','Synthetic','ask_a_creator',now(),60);
+ create temp table edit_a as select pg_temp.rpc(${q(i.creator)},${q(edit(i.request,1,'Synthetic A'))}) value;
+ select pg_temp.rpc(${q(i.creator)},${q(edit(i.check,2,'Synthetic B'))});
+ select pg_temp.ok((select value from edit_a)=pg_temp.rpc(${q(i.creator)},${q(edit(i.request,1,'Synthetic A'))}),'exact receipt');
+ select pg_temp.denied(${q(i.creator)},${q(edit(i.request,1,'Synthetic changed'))},'REQUEST_ID_REUSED');
+ select pg_temp.denied(${q(i.creator)},${q(edit(randomUUID(),1,'Synthetic stale'))},'CONFLICT');
+ select pg_temp.ok((select title='Synthetic B' and edit_revision=3 from public.community_sessions where id=${q(i.slot)}),'newer edit preserved');
+ `;
+});
+
+check('stale withdrawal from one Auth session cannot withdraw either run after another session joins',i=>{
+ const newer=randomUUID(),slot=randomUUID(),session=randomUUID(),req=randomUUID(),code='w'.repeat(64);
+ return `
+ ${seed(i)}
+ create temp table displayed as select pg_temp.rpc(${q(i.creator)},'select public.get_kinnso_pilot_self()') value;
+ update kinnso_internal.pilot_runs set status='cancelled' where id=${q(i.run)};
+ ${invoke(i,{...run(i),id:newer})}
+ update kinnso_internal.pilot_runs set status='recruiting' where id=${q(newer)};
+ insert into kinnso_internal.pilot_participants(id,run_id,role,pilot_cohort_role,display_label,created_at,status)
+ values(${q(slot)},${q(newer)},'creator','required_creator','Synthetic newer',clock_timestamp()+interval '1 second','invited');
+ insert into kinnso_internal.pilot_invites(id,participant_id,code_hash,expires_at,created_by_ops_member_id)
+ values(${q(i.invite)},${q(slot)},extensions.digest(${q(code)},'sha256'),now()+interval '1 hour',${q(i.ops)});
+ insert into auth.sessions(id,user_id,created_at,updated_at) values(${q(session)},${q(i.creator)},now(),now());
+ select set_config('request.jwt.claims',jsonb_build_object('sub',${q(i.creator)},'role','authenticated','session_id',${q(session)})::text,true);
+ set local role authenticated;
+ ${pc({type:'claimInvite',code})};
+ reset role;
+ select pg_temp.denied(${q(i.creator)},format('select public.apply_kinnso_pilot_participant_command(%L,%L::jsonb)',${q(req)},
+ (select jsonb_build_object('type','withdrawParticipation','requestId',${q(req)},'runId',value#>>'{run,id}','participantId',value#>>'{participant,id}','expectedRevision',1) from displayed)),'CONFLICT');
+ select pg_temp.ok((select status='joined' and revision=2 from kinnso_internal.pilot_participants where id=${q(slot)}),'new slot unchanged');
+ select pg_temp.ok((select status='active' and revision=1 from kinnso_internal.pilot_participants where id=${q(i.creatorSlot)}),'old slot unchanged');
+ select pg_temp.ok(not exists(select 1 from kinnso_internal.requests where actor_id=${q(i.creator)} and request_id=${q(req)}) and not exists(select 1 from kinnso_internal.pilot_participant_audit where participant_id in (${q(slot)},${q(i.creatorSlot)}) and command_type='withdrawParticipation'),'no withdrawal effects');
+ `;
 });

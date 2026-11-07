@@ -24,6 +24,8 @@ function ParticipantSession({ actorId, enabled }: Props) {
   const [busy, setBusy] = useState(false);
   const [selectedIntake, setSelectedIntake] = useState<string | null>(null);
   const withdrawal = useRef<HTMLDialogElement>(null);
+  const withdrawalTrigger = useRef<HTMLButtonElement>(null);
+  const withdrawalIntent = useRef<Extract<PilotParticipantCommand,{type:'withdrawParticipation'}> | null>(null);
   const [code, setCode] = useState('');
   const [feedback, setFeedback] = useState('');
   const active = useRef(false);
@@ -203,10 +205,10 @@ function ParticipantSession({ actorId, enabled }: Props) {
         {canWork && snapshot?.acknowledgements?.notificationId && <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'acknowledgeNotification',requestId:crypto.randomUUID(),notificationId:snapshot.acknowledgements!.notificationId!},event.currentTarget)}>{t('Acknowledge pilot notification','確認試行通知')}</button>}
         {canWork && snapshot?.acknowledgements?.supportCaseId && <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'acknowledgeSupportResponse',requestId:crypto.randomUUID(),supportCaseId:snapshot.acknowledgements!.supportCaseId!},event.currentTarget)}>{t('Acknowledge support response','確認支援回覆')}</button>}
         {participant && ['joined','active','paused'].includes(participant.status) && run && ['recruiting','running','paused'].includes(run.status) && <>
-          <button className="k-btn" disabled={blocked} onClick={()=>withdrawal.current?.showModal()}>{t('Withdraw from pilot','退出試行計劃')}</button>
-          <dialog ref={withdrawal} aria-label={t('Withdraw from pilot','退出試行計劃')}>
+          <button ref={withdrawalTrigger} className="k-btn" disabled={blocked||!run||participant.revision===undefined} onClick={()=>{if(!run || participant.revision===undefined)return;withdrawalIntent.current={type:'withdrawParticipation',requestId:crypto.randomUUID(),runId:run.id,participantId:participant.id,expectedRevision:participant.revision};withdrawal.current?.showModal();}}>{t('Withdraw from pilot','退出試行計劃')}</button>
+          <dialog ref={withdrawal} onClose={()=>{withdrawalIntent.current=null;}} aria-label={t('Withdraw from pilot','退出試行計劃')}>
             <p>{t('Withdraw your pilot participation? Your ordinary account remains available. Pilot links and intake history are retained as withdrawn.','退出試行計劃？一般帳戶仍可使用。試行連結及提交紀錄將保留為已退出。')}</p>
-            <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'withdrawParticipation',requestId:crypto.randomUUID()},event.currentTarget)}>{t('Confirm withdrawal','確認退出')}</button>
+            <button className="k-btn" disabled={blocked} onClick={()=>{const command=withdrawalIntent.current;withdrawal.current?.close();if(command)void send(command,withdrawalTrigger.current);}}>{t('Confirm withdrawal','確認退出')}</button>
             <button className="k-btn" onClick={()=>withdrawal.current?.close()}>{t('Cancel','取消')}</button>
           </dialog>
         </>}

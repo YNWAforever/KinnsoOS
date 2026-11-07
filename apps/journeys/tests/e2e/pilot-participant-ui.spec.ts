@@ -13,7 +13,7 @@ const empty: PilotSelfSnapshot = { run: null, participant: null, nextStep: null,
   readiness: {stage:'setup_incomplete',readyToBegin:false,executionComplete:false,blockers:[]} };
 const run = {id:actor,name:'Synthetic pilot',status:'running' as const,participationNoticeVersion:'Participation.V1',
   participationNoticeDigest:digest,privacyNoticeVersion:'Privacy.v2',privacyNoticeDigest:code};
-const creator = {id:second,role:'creator' as const,status:'active' as const,consentVersion:run.participationNoticeVersion,consentDigest:digest};
+const creator = {id:second,revision:1,role:'creator' as const,status:'active' as const,consentVersion:run.participationNoticeVersion,consentDigest:digest};
 const consent: PilotSelfSnapshot = {...empty, run, participant:{...creator,status:'joined',consentVersion:null,consentDigest:null},
   nextStep:{code:'accept_consent',href:null,messageKey:'pilot.next.accept_consent'}};
 const intake = {id:second,status:'rejected' as const,revision:3,title:'Owned guide intake',destination:'Hong Kong',
@@ -35,7 +35,7 @@ test.beforeAll(async () => {
     import {invalidateAccountViews} from './lib/trips/local-drafts';
     const root=createRoot(document.getElementById('fixture'));
     window.invalidatePilot=invalidateAccountViews;
-    window.renderSessions=()=>root.render(<AppContext.Provider value={{locale:'en',t:en=>en,href:path=>'/en/'+path}}><CreatorSessionsWorkspace actorId='11111111-1111-4111-8111-111111111111' enabled path='studio/sessions/new'/></AppContext.Provider>);
+    window.renderSessions=(path='studio/sessions/new')=>root.render(<AppContext.Provider value={{locale:'en',t:en=>en,href:path=>'/en/'+path}}><CreatorSessionsWorkspace actorId='11111111-1111-4111-8111-111111111111' enabled path={path}/></AppContext.Provider>);
     window.renderPilot=(actorId,locale)=>root.render(
       <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:path=>'/'+locale+'/'+path}}>
         <PilotWorkspace actorId={actorId} enabled/>
@@ -309,7 +309,7 @@ test('FINAL acknowledgement controls use server identities and withdrawal confir
  await page.getByRole('button',{name:'Withdraw from pilot',exact:true}).click();
  await expect(page.getByRole('dialog')).toBeVisible();
  await page.getByRole('button',{name:'Confirm withdrawal',exact:true}).click();
- await expect.poll(()=>wire.length).toBe(2);expect(wire[1].command.type).toBe('withdrawParticipation');
+ await expect.poll(()=>wire.length).toBe(2);expect(wire[1].command).toMatchObject({type:'withdrawParticipation',runId:run.id,participantId:creator.id,expectedRevision:1});
 });
 test('FINAL creator session lost success retries identical request and rejection remains editable',async({page})=>{
  await mount(page);
@@ -335,4 +335,27 @@ test('FINAL creator session lost success retries identical request and rejection
  await page.getByRole('button',{name:'Save session',exact:true}).click();
  await expect(page.getByText('Session request failed: INVALID')).toBeVisible();
  await expect(page.getByLabel('Session title',{exact:true})).toBeEnabled();
+});
+
+test('lost edit response retries exact revision and reconciles the newer record',async({page})=>{
+ await mount(page);
+ const bodies:string[]=[];
+ const initial={id:actor,title:'Synthetic initial',description:'Synthetic',type:'ask_a_creator',startsAt:'2026-12-01T10:00:00Z',durationMinutes:60,status:'scheduled',destinationTags:[],revision:1};
+ await page.route(origin+'/api/creator/sessions/'+actor,async route=>{
+  if(route.request().method()==='GET')return route.fulfill({json:{ok:true,data:bodies.length?{...initial,title:'Synthetic B',revision:3}:initial}});
+  bodies.push(route.request().postData()!);
+  if(bodies.length===1)return route.abort('failed');
+  return route.fulfill({json:{ok:true,data:{id:actor,revision:2}}});
+ });
+ await page.evaluate(id=>(window as any).renderSessions('studio/sessions/'+id+'/edit'),actor);
+ const title=page.getByLabel('Session title',{exact:true});
+ await expect(title).toHaveValue('Synthetic initial');
+ await title.fill('Synthetic A');
+ await page.getByRole('button',{name:'Save session',exact:true}).click();
+ await page.getByRole('button',{name:'Retry the same save',exact:true}).click();
+ await expect(page.getByText('Session saved on the server.',{exact:true})).toBeVisible();
+ expect(bodies).toHaveLength(2);
+ expect(bodies[1]).toBe(bodies[0]);
+ expect(JSON.parse(bodies[0])).toMatchObject({expectedRevision:1,input:{title:'Synthetic A'}});
+ await expect(title).toHaveValue('Synthetic B');
 });

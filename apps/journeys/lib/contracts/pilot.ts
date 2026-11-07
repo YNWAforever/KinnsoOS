@@ -22,7 +22,7 @@ export type OpsPilotCommand =
  | {type:'setManualCheck';id:string;expectedRevision:number;status:PilotCheckStatus;evidenceReference:string|null;observedSummary:string|null}
  | {type:'addEvidenceReference';runId:string;checkCode:string;entityType:PilotEvidenceEntityType;entityId:string;participantId?:string|null;evidenceReference:string|null};
 export type PilotParticipantCommand =
- | {type:'withdrawParticipation';requestId:string}
+ | {type:'withdrawParticipation';requestId:string;runId:string;participantId:string;expectedRevision:number}
  | {type:'claimInvite';requestId:string;code:string}
  | {type:'acceptConsent';requestId:string;noticeVersion:string;noticeDigest:string;privacyNoticeVersion:string;privacyNoticeDigest:string}
  | {type:'submitContentIntake';requestId:string;intake:PilotContentIntakeInput}
@@ -50,7 +50,7 @@ export type PilotSelfIntake=Omit<PilotContentIntakeInput,'authorConsentVersion'|
  guideId:string|null;currentDraftRevision:number|null;editorHref:string|null;
 };
 export type PilotSelfRunView={id:string;name:string;status:PilotRunStatus;participationNoticeVersion?:string|null;participationNoticeDigest?:string|null;privacyNoticeVersion?:string|null;privacyNoticeDigest?:string|null};
-export type PilotSelfParticipantView={id:string;role:PilotRole;status:'invited'|'joined'|'active'|'paused'|'withdrawn'|'completed';consentVersion:string|null;consentDigest?:string|null};
+export type PilotSelfParticipantView={id:string;revision?:number;role:PilotRole;status:'invited'|'joined'|'active'|'paused'|'withdrawn'|'completed';consentVersion:string|null;consentDigest?:string|null};
 export type PilotParticipantNextStep={code:string;href:string|null;messageKey:string};
 export type OpsPilotMutationResult={snapshot:OpsPilotSnapshot;inviteCode?:string};
 export type PilotParticipantMutationResult={snapshot:PilotSelfSnapshot};
@@ -113,7 +113,7 @@ export function parseOpsPilotCommand(input:unknown):OpsPilotCommand {
 }
 export function parsePilotParticipantCommand(input:unknown):PilotParticipantCommand {
  const type=input&&typeof input==='object'&&!Array.isArray(input)?(input as Record<string,unknown>).type:undefined;
- const fields:Record<string,string[]>={withdrawParticipation:['type','requestId'],claimInvite:['type','requestId','code'],acceptConsent:['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest'],submitContentIntake:['type','requestId','intake'],updateOwnedContentIntake:['type','requestId','id','expectedRevision','intake'],acknowledgeNotification:['type','requestId','notificationId'],acknowledgeSupportResponse:['type','requestId','supportCaseId']};
+ const fields:Record<string,string[]>={withdrawParticipation:['type','requestId','runId','participantId','expectedRevision'],claimInvite:['type','requestId','code'],acceptConsent:['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest'],submitContentIntake:['type','requestId','intake'],updateOwnedContentIntake:['type','requestId','id','expectedRevision','intake'],acknowledgeNotification:['type','requestId','notificationId'],acknowledgeSupportResponse:['type','requestId','supportCaseId']};
  if(typeof type!=='string'||!Object.hasOwn(fields,type))fail();const o=object(input,fields[type as string]);
- switch(type){case'withdrawParticipation':return{type,requestId:ident(o.requestId)};case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:exactNoticeVersion(o.noticeVersion),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:exactNoticeVersion(o.privacyNoticeVersion),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':return{type,requestId:ident(o.requestId),...(o.notificationId===undefined?{}:{notificationId:ident(o.notificationId)})};case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId),...(o.supportCaseId===undefined?{}:{supportCaseId:ident(o.supportCaseId)})};default:return fail()}
+ switch(type){case'withdrawParticipation':return{type,requestId:ident(o.requestId),runId:ident(o.runId),participantId:ident(o.participantId),expectedRevision:rev(o.expectedRevision)};case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:exactNoticeVersion(o.noticeVersion),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:exactNoticeVersion(o.privacyNoticeVersion),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':return{type,requestId:ident(o.requestId),...(o.notificationId===undefined?{}:{notificationId:ident(o.notificationId)})};case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId),...(o.supportCaseId===undefined?{}:{supportCaseId:ident(o.supportCaseId)})};default:return fail()}
 }

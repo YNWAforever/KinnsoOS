@@ -22,9 +22,9 @@ const input={title:'Updated session',description:'Updated synthetic session.',ty
 function setup(t,{roles=['creator'],current={embed_url:null,status:'scheduled'},write=null,writeError=null,readError=null}={}){
  const env={KINNSO_SUPABASE_URL:'https://test.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://test.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://test.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test',KINNSO_SITE_URL:'https://journeys.example',KINNSO_ENABLED_CAPABILITIES:'creator'};
  const old=Object.fromEntries(Object.keys(env).map(key=>[key,process.env[key]]));Object.assign(process.env,env);
- const state={queries:[],current,write};
+ const state={queries:[],current,write,rpcs:[]};
  const query=table=>{const q={table,operation:'select',filters:[],payload:null};state.queries.push(q);const builder={select(){return this;},eq(key,value){q.filters.push([key,value]);return this;},update(payload){q.operation='update';q.payload=payload;state.write=payload;return this;},maybeSingle:async()=>({data:q.operation==='update'?(writeError?null:{id:session,...write}):state.current,error:q.operation==='update'?writeError:readError})};return builder;};
- globalThis.__creatorSessionMutationClient={auth:{getUser:async()=>({data:{user:{id:actor}},error:null})},rpc:async name=>({data:name==='kinnso_actor'?{id:actor,roles}:null,error:null}),from:query};
+ globalThis.__creatorSessionMutationClient={auth:{getUser:async()=>({data:{user:{id:actor}},error:null})},rpc:async (name,args)=>{if(name==='kinnso_actor')return {data:{id:actor,roles},error:null};state.rpcs.push({name,args});return {data:write,error:writeError};},from:query};
  t.after(()=>{delete globalThis.__creatorSessionMutationClient;for(const[key,value]of Object.entries(old))if(value===undefined)delete process.env[key];else process.env[key]=value;});return state;
 }
 const request=(path,body,origin='https://journeys.example',method='PUT')=>new Request('https://journeys.example'+path,{method,headers:{host:'journeys.example',origin,'content-type':'application/json'},body:JSON.stringify(body)});
@@ -45,9 +45,28 @@ test('session detail is owner-scoped and hides a foreign or missing record',asyn
  state.current=null;assert.equal((await updateRoute.GET(request('/api/creator/sessions/'+session,undefined,undefined,'GET'),context)).status,404);
 });
 
-test('session update scopes the write to the current creator id',async t=>{
- const state=setup(t,{write:{id:session}});const response=await updateRoute.PUT(request('/api/creator/sessions/'+session,{requestId:session,input}),context);assert.equal(response.status,200);
- assert.deepEqual(state.queries[0].filters,[['id',session],['host_creator_id',actor]]);assert.equal(state.write.title,'Updated session');assert.equal(state.write.embed_url,null);assert.equal(state.write.host_creator_id,undefined);
+test('session edit forwards the request identity and revision to the atomic owner command',async t=>{
+ const state=setup(t,{write:{id:session,revision:2}});
+ const response=await updateRoute.PUT(request('/api/creator/sessions/'+session,{requestId:session,expectedRevision:1,input}),context);
+ assert.equal(response.status,200);
+ assert.equal(state.queries.length,0);
+ const [{name,args}]=state.rpcs;
+ assert.equal(name,'edit_kinnso_creator_session');
+ assert.equal(args.p_session_id,session);
+ assert.equal(args.p_request_id,session);
+ assert.equal(args.p_expected_revision,1);
+ assert.equal(args.p_input.title,'Updated session');
+ assert.equal(args.p_input.embed_url,null);
+ assert.equal(args.p_input.host_creator_id,undefined);
+});
+
+test('session edit conflicts are definite failures',async t=>{
+ for(const message of ['CONFLICT','REQUEST_ID_REUSED']){
+  setup(t,{writeError:{message}});
+  const response=await updateRoute.PUT(request('/api/creator/sessions/'+session,{requestId:session,expectedRevision:1,input}),context);
+  assert.equal(response.status,409);
+  assert.equal((await response.json()).retryable,false);
+ }
 });
 
 test('going live without an embed link fails before update while ended and cancelled remain allowed',async t=>{
@@ -59,4 +78,8 @@ test('going live without an embed link fails before update while ended and cance
  assert.deepEqual(state.queries.filter(q=>q.operation==='update')[0].filters,[['id',session],['host_creator_id',actor]]);
  state=setup(t,{current:{embed_url:null,status:'live'},write:{status:'ended'}});
  assert.equal((await statusRoute.POST(request('/api/creator/sessions/'+session+'/status',{requestId:session,status:'ended'},undefined,'POST'),context)).status,200);
+});
+test('session edit requires a revision from the loaded record',async t=>{
+ setup(t);
+ assert.equal((await updateRoute.PUT(request('/api/creator/sessions/'+session,{requestId:session,input}),context)).status,400);
 });
