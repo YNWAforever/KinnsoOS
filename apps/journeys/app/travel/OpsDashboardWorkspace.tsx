@@ -7,7 +7,7 @@ import {OpsRecordActions} from './OpsRecordActions';
 import {OpsContentAdmin} from './OpsContentAdmin';
 
 const views=[
- ['overview','Overview','總覽'],['creators','Creators','創作者'],['merchants','Merchants','商戶'],['missions','Missions','活動'],
+ ['overview','Overview','總覽'],['pilot','Pilot control room','試行計劃控制室'],['creators','Creators','創作者'],['merchants','Merchants','商戶'],['missions','Missions','活動'],
  ['sessions','Sessions','活動及分享會'],['team','Team','團隊'],['perks','Perks','禮遇'],['testimonials','Testimonials','見證'],
  ['users','Users','用戶'],['enquiries','Enquiries','查詢'],['analytics','Analytics','分析'],
 ] as const;

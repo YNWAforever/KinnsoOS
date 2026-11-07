@@ -16,19 +16,19 @@ function commandRepository<Command, Result>(
   initialId: (command: Command) => string = () => crypto.randomUUID(),
 ) {
   const pending = new Map<string, PendingIntent>();
-  return async (command: Command): Promise<ApiResult<Result>> => {
+  return async (command: Command, actorId?: string): Promise<ApiResult<Result>> => {
     let parsed: Command;
     try {
       parsed = parse(command);
     } catch {
       return { ok: false, code: 'INVALID', retryable: false, requestId: crypto.randomUUID() };
     }
-    const payload = JSON.stringify(payloadOf(parsed));
+    const payload = JSON.stringify([actorId ?? null, payloadOf(parsed)]);
     const intent = pending.get(payload) ?? { requestId: initialId(parsed), active: 0 };
     intent.active += 1;
     pending.set(payload, intent);
     const { requestId } = intent;
-    const result = await request<Result>(url, 'POST', envelopeOf(parsed, requestId));
+    const result = await request<Result>(url, 'POST', envelopeOf(parsed, requestId), undefined, actorId);
     intent.active -= 1;
     const authorizationInterrupted = !result.ok && (result.code === 'AUTH_REQUIRED' || result.code === 'FORBIDDEN');
     if (intent.active === 0 && (result.ok || !result.retryable && !authorizationInterrupted)) pending.delete(payload);
@@ -37,8 +37,8 @@ function commandRepository<Command, Result>(
 }
 
 export const opsPilot = {
-  get: (runId?: string): Promise<ApiResult<OpsPilotSnapshot>> =>
-    request<OpsPilotSnapshot>('/api/ops/pilot' + (runId === undefined ? '' : '?runId=' + encodeURIComponent(runId))),
+  get: (runId?: string, actorId?: string): Promise<ApiResult<OpsPilotSnapshot>> =>
+    request<OpsPilotSnapshot>('/api/ops/pilot' + (runId === undefined ? '' : '?runId=' + encodeURIComponent(runId)), 'GET', undefined, undefined, actorId),
   command: commandRepository<OpsPilotCommand, OpsPilotMutationResult>(
     '/api/ops/pilot', parseOpsPilotCommand, command => command, (command, requestId) => ({ requestId, command }),
   ),

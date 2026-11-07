@@ -33,6 +33,7 @@ function harness(ports,search='',actorId='actor-A'){
  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,URLSearchParams,window:{location,history:{replaceState(_a,_b,path){history.push(path);location.search=path.includes('?')?'?'+path.split('?')[1]:'';}}},require:name=>{
   if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useSearchParams:()=>new URLSearchParams(location.search)};
   if(name==='./OpsDashboardWorkspace')return{OpsDashboardWorkspace:()=>({type:'dashboard',props:{}})};
+  if(name==='./pilot/PilotControlRoom')return{PilotControlRoom:'pilot-control-room'};
   if(name==='./OpsTeamWorkspace')return{OpsTeamWorkspace:()=>({type:'team',props:{}})};
   if(name==='./ui')return{useApp:()=>({locale:'en',t:en=>en}),Modal:'modal'};
   if(name==='../../lib/trips/local-drafts')return{subscribeAccountInvalidation:fn=>{invalidator=fn;return()=>{};}};

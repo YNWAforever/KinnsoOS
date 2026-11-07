@@ -27,6 +27,10 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
       syntheticRehearsalPassed: beginFacts?.syntheticRehearsalPassed === true,
     })
     : pilotExecutionReadiness({ run, participants, contentIntakes, collaboration, checks, facts });
+  function manualCheckIdentity(check: OpsPilotSnapshot['checks'][number]) {
+    const id = !check.derived && facts?.checks?.find(row => row.runId === run?.id && row.code === check.code)?.entityId;
+    return uuid(id) ? { id } : {};
+  }
   return {
     run: run ? project(run, [
       'id', 'name', 'status', 'revision', 'dataClassification', 'candidateReleaseSha', 'environmentOrigin',
@@ -44,9 +48,9 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
       ...project(collaboration, ['id', 'merchantParticipantId', 'creatorParticipantId', 'missionId']),
       steps: collaboration.steps.map(step => project(step, ['code', 'status'])),
     } : null,
-    checks: checks.map(check => project(check, [
+    checks: checks.map(check => ({ ...project(check, [
       'code', 'category', 'status', 'evidenceReference', 'observedSummary', 'revision', 'derived',
-    ])),
+    ]), ...manualCheckIdentity(check) })),
     readiness,
   };
 }

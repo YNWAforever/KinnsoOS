@@ -324,8 +324,8 @@ export function pilotExportSummary(snapshot: OpsPilotSnapshot, exportedAt: strin
     } : null,
     readiness: {
       stage: readiness.stage, readyToBegin: readiness.readyToBegin, executionComplete: readiness.executionComplete,
-      blockers: readiness.blockers.map(({ code, category, messageKey, recordId }) => ({
-        code, category, messageKey, ...(recordId ? { recordId } : {}),
+      blockers: readiness.blockers.map(({ code, category, messageKey }) => ({
+        code, category, messageKey,
       })),
     },
     checks: checks.map(({ code, status, derived, evidenceReference }) => ({
