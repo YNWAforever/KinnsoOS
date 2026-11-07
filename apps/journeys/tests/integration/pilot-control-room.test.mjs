@@ -728,3 +728,78 @@ test('approval waiting on a concurrent draft update rejects the reviewed snapsho
     delete from auth.users where id in (${users});commit;`);
  }
 });
+
+function supportRaceSeed(i) {
+ return `
+ ${setup(i)}${seed(i)}
+ update public.creators set status='onboarding' where id=${q(i.traveller)};
+ insert into public.merchant_profiles(id,user_id,company_name,contact_email,status)
+ values(${q(i.other)},${q(i.merchant)},'Synthetic merchant','merchant@pilot.test','active');
+ insert into public.missions(id,merchant_profile_id,title,summary,mission_type,status)
+ values(${q(i.guide)},${q(i.other)},'Synthetic mission','Synthetic','paid','draft');
+ ${invoke(i,{type:'bindCollaboration',id:i.intake,runId:i.run,merchantParticipantId:i.merchantSlot,creatorParticipantId:i.creatorSlot,missionId:i.guide})}
+ `;
+}
+const supportCommand=(i,request,id)=>`select public.apply_kinnso_support_command(${q(request)},${json({
+ type:'create',id,subject:'Synthetic support',message:'Synthetic fixture',context:{type:'mission',id:i.guide},
+})})`;
+const supportActor=(i,statement)=>`set local role authenticated;
+ select set_config('request.jwt.claims',${json({sub:i.traveller,role:'authenticated',session_id:i.traveller})}::text,true);
+ ${statement};`;
+
+test('a pilot traveller who owns the merchant still sees the legacy merchant context',()=>{
+ const i=ids();
+ sql(`begin;${supportRaceSeed(i)}
+ update public.merchant_profiles set user_id=${q(i.traveller)} where id=${q(i.other)};
+ select pg_temp.ok(pg_temp.rpc(${q(i.traveller)},${q(`select public.get_kinnso_support_context(${q(i.guide)})`)})
+  =jsonb_build_object('type','mission','id',${q(i.guide)},'title','Synthetic mission','workspace','merchant'),'legacy merchant context');
+ rollback;`);
+});
+
+for(const change of ['pause','revoke','unbind']) test('support create waits for pilot '+change+'; exact receipt still replays',async()=>{
+ const i=ids(), original=randomUUID(), fresh=randomUUID(), request=randomUUID();
+ const writer='pilot-scope-writer-'+i.request, reader='pilot-support-reader-'+i.request;
+ const users=['ops','owner','mod','traveller','creator','merchant','other'].map(k=>q(i[k])).join(',');
+ let initialized=false, write, read;
+ try {
+  sql(`begin;${supportRaceSeed(i)}
+   select pg_temp.rpc(${q(i.traveller)},${q(supportCommand(i,request,original))});commit;`);
+  initialized=true;
+  const mutation=change==='pause'?`update kinnso_internal.pilot_runs set status='paused' where id=${q(i.run)}`
+   :change==='revoke'?`update kinnso_internal.pilot_participants set status='paused' where id=${q(i.slot)}`
+   :`update kinnso_internal.pilot_collaborations set status='retired' where id=${q(i.intake)}`;
+  write=asyncSql(`set application_name=${q(writer)};begin;
+   select id from kinnso_internal.pilot_runs where id=${q(i.run)} for update;
+   ${mutation};
+   do $$begin for attempt in 1..120 loop
+    perform pg_stat_clear_snapshot();
+    if exists(select 1 from pg_stat_activity where application_name=${q(reader)} and wait_event_type='Lock') then return;end if;
+    perform pg_sleep(0.05);
+   end loop;raise exception 'support never waited for scope lock';end$$;commit;`);
+  let locked=false;
+  for(let attempt=0;attempt<20&&!locked;attempt++) {
+   await new Promise(resolve=>setTimeout(resolve,25));
+   locked=sql(`select exists(select 1 from pg_stat_activity where application_name=${q(writer)} and wait_event='PgSleep')`)==='t';
+  }
+  if (!locked) assert.fail('Writer did not acquire scope lock: ' + (await write).err);
+  read=asyncSql(`set application_name=${q(reader)};begin;${supportActor(i,supportCommand(i,randomUUID(),fresh))}commit;`);
+  const [changed,attempt]=await Promise.all([write,read]);
+  assert.equal(changed.status,0,changed.err);
+  assert.equal(attempt.status,3,attempt.err);
+  assert.match(attempt.err,/ERROR:\s+forbidden/i);
+  const replay=sql(`begin;${supportActor(i,supportCommand(i,request,original))}rollback;`).split(/\r?\n/).at(-1);
+  assert.deepEqual(JSON.parse(replay),{id:original,revision:1,status:'open'});
+  assert.equal(sql(`select count(*) from kinnso_internal.support_cases where id in (${q(original)},${q(fresh)})`),'1');
+ } finally {
+  await Promise.allSettled([write,read].filter(Boolean));
+  if(initialized) sql(`begin;
+   delete from kinnso_internal.support_cases where id in (${q(original)},${q(fresh)});
+   delete from kinnso_internal.pilot_collaborations where run_id=${q(i.run)};
+   delete from kinnso_internal.pilot_checks where run_id=${q(i.run)};
+   delete from kinnso_internal.pilot_participants where run_id=${q(i.run)};
+   delete from kinnso_internal.pilot_runs where id=${q(i.run)};
+   delete from public.ops_audit_log where actor_ops_member_id in (${users});
+   delete from public.merchant_profiles where id=${q(i.other)};
+   delete from auth.users where id in (${users});commit;`);
+ }
+});
