@@ -17,8 +17,10 @@ export type ParsedCreatorSession = Omit<CreatorSessionInput,'embedUrl'|'replayUr
 const invalid=():never=>{throw Error('INVALID_SESSION')};
 const record=(value:unknown):value is Record<string,unknown>=>Boolean(value)&&typeof value==='object'&&!Array.isArray(value);
 const youtube=(value:string)=>{
- if(!value.trim())return null;
- let url:URL;try{url=new URL(value.trim())}catch{return invalid()}
+ const input=value.trim();
+ if(!input)return null;
+ if(/^https:\/\/www\.youtube-nocookie\.com\/embed\/[A-Za-z0-9_-]{6,32}$/.test(input))return input;
+ let url:URL;try{url=new URL(input)}catch{return invalid()}
  if(url.username||url.password||url.searchParams.size>0&&url.hostname.replace(/^(?:www|m)\./i,'').toLowerCase()==='youtu.be')return invalid();
  const host=url.hostname.replace(/^(?:www|m)\./i,'').toLowerCase(),parts=url.pathname.split('/').filter(Boolean);
  let id:string|null=null;

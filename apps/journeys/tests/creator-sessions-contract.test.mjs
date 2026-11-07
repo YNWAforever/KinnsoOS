@@ -57,3 +57,24 @@ test('going live requires a valid embed while ended and cancelled do not', () =>
   assert.equal(subject.canSetSessionStatus('scheduled', { embedUrl: null }, 'cancelled'), true);
   assert.equal(subject.canSetSessionStatus('cancelled', { embedUrl: null }, 'live'), false);
 });
+
+test('stored live and replay embeds round-trip through the edit parser', () => {
+  const stored = subject.parseCreatorSessionInput({...valid,replayUrl:'https://youtu.be/replay_123'});
+  assert.deepEqual(subject.parseCreatorSessionInput({...stored,title:'Edited title'}),{...stored,title:'Edited title'});
+});
+
+test('nocookie input accepts only the canonical HTTPS embed shape', () => {
+  for (const url of [
+    'http://www.youtube-nocookie.com/embed/abc123',
+    'https://youtube-nocookie.com/embed/abc123',
+    'https://www.youtube-nocookie.com:443/embed/abc123',
+    'https://user@www.youtube-nocookie.com/embed/abc123',
+    'https://www.youtube-nocookie.com.evil.test/embed/abc123',
+    'https://www.youtube-nocookie.com/embed/abc123/',
+    'https://www.youtube-nocookie.com/watch?v=abc123',
+    'https://www.youtube-nocookie.com/embed/abc123?autoplay=1',
+    'https://www.youtube-nocookie.com/embed/abc123#fragment',
+    'https://www.youtube-nocookie.com/embed/%61bc123',
+    'https://www.youtube-nocookie.com/other/../embed/abc123',
+  ]) assert.throws(() => subject.parseCreatorSessionInput({...valid,embedUrl:url}), /INVALID_SESSION/, url);
+});

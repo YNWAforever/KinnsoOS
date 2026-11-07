@@ -473,6 +473,7 @@
     "tests/e2e/inbox-support-workspace.spec.ts",
     "tests/e2e/performance.spec.ts",
     "tests/e2e/pilot-control-room-ui.spec.ts",
+    "tests/e2e/pr115-review-ui.spec.ts",
     "tests/e2e/pilot-participant-ui.spec.ts",
     "tests/e2e/private-trip-pilot.spec.ts",
     "tests/e2e/public-article.spec.ts",

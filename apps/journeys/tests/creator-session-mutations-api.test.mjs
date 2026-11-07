@@ -94,3 +94,19 @@ test('PUT rejects a missing or malformed lifetime token before reaching the edit
  }
  assert.equal(state.rpcs.length,0);
 });
+
+test('editing with stored live and replay embeds preserves both links and the request identity',async t=>{
+ const state=setup(t,{write:{id:session,revision:2}});
+ const embedUrl='https://www.youtube-nocookie.com/embed/live_123';
+ const replayUrl='https://www.youtube-nocookie.com/embed/replay_123';
+ const response=await updateRoute.PUT(request('/api/creator/sessions/'+session,{
+  requestId:session,expectedToken:token,expectedRevision:1,input:{...input,embedUrl,replayUrl},
+ }),context);
+ assert.equal(response.status,200);
+ const [{args}]=state.rpcs;
+ assert.equal(args.p_input.embed_url,embedUrl);
+ assert.equal(args.p_input.replay_url,replayUrl);
+ assert.equal(args.p_request_id,session);
+ assert.equal(args.p_expected_token,token);
+ assert.equal(args.p_expected_revision,1);
+});
