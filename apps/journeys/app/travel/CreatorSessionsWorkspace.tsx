@@ -14,9 +14,9 @@ export function CreatorSessionsWorkspace({actorId,enabled,path}:{actorId:string|
  const{locale,t,href}=useApp(),match=path.match(/^studio\/sessions\/([^/]+)\/edit$/),editId=match&&uuid.test(match[1])?match[1]:null;
  const creating=path==='studio/sessions/new',listMode=!creating&&!editId;
  const[valid,setValid]=useState(true),[items,setItems]=useState<SessionItem[]|null>(null),[current,setCurrent]=useState<SessionItem|null>(null),[draft,setDraft]=useState<Draft>(empty),[message,setMessage]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
- const generation=useRef(0),intent=useRef<{signature:string;requestId:string}|null>(null);
+ const generation=useRef(0),intent=useRef<{signature:string;requestId:string;body:string;url:string;method:string}|null>(null);
  const returnPath='/'+locale+'/studio/sessions';
- useEffect(()=>{setValid(true);const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){generation.current++;setValid(false);setItems(null);setCurrent(null);setDraft(empty);setMessage('');setError('');setBusy(false);unknown&&setUnknown(false);intent.current=null;}});
+ useEffect(()=>{setValid(true);const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){generation.current++;setValid(false);setItems(null);setCurrent(null);setDraft(empty);setMessage('');setError('');setBusy(false);setUnknown(false);intent.current=null;}});
   return()=>{generation.current++;unsubscribe();};
  },[actorId]);
  useEffect(()=>{const own=++generation.current;setError('');setMessage('');
@@ -30,16 +30,19 @@ export function CreatorSessionsWorkspace({actorId,enabled,path}:{actorId:string|
  if((!listMode&&!creating&&!editId))return <section className="k-page"><h1>{t('Session not found','找不到活動')}</h1><Link href={href('studio/sessions')}>{t('Back to sessions','返回活動')}</Link></section>;
  function field(key:keyof Draft,value:string){setDraft(previous=>({...previous,[key]:value}));setMessage('');setError('');}
  async function save(event:React.FormEvent){
-  event.preventDefault();if(busy||unknown)return;
+  event.preventDefault();if(busy)return;
+  const own=generation.current;
   const payload={...draft,durationMinutes:Number(draft.durationMinutes),startsAt:draft.startsAt&&!draft.startsAt.endsWith('Z')?draft.startsAt+':00.000Z':draft.startsAt,destinationTags:draft.destinationTags.split(',').map(tag=>tag.trim()).filter(Boolean)};
-  const signature=JSON.stringify(payload);intent.current??={signature,requestId:crypto.randomUUID()};
+  const signature=JSON.stringify(payload);
+  if(!intent.current){const requestId=crypto.randomUUID();intent.current={signature,requestId,body:JSON.stringify({requestId,input:payload}),url:editId?'/api/creator/sessions/'+editId:'/api/creator/sessions',method:editId?'PUT':'POST'};}
   if(intent.current.signature!==signature){setError('IDEMPOTENCY_CONFLICT');return;}
   setBusy(true);setError('');setUnknown(false);
   try{
-   const response=await fetch(editId?'/api/creator/sessions/'+editId:'/api/creator/sessions',{method:editId?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:intent.current.requestId,input:payload}),cache:'no-store'});
-   const body=await response.json();if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');intent.current=null;setMessage(t('Session saved on the server.','活動已儲存至伺服器。'));if(!editId)setDraft(empty);else setCurrent(body.data??current);
-  }catch(next){setError(next instanceof Error?next.message:'UNAVAILABLE');setUnknown(true);}
-  finally{setBusy(false);}
+   const response=await fetch(intent.current.url,{method:intent.current.method,headers:{'Content-Type':'application/json'},body:intent.current.body,cache:'no-store'});
+   const body=await response.json();if(own!==generation.current)return;
+   if(!response.ok||!body.ok){if(response.status>=400&&response.status<500&&!body.retryable){intent.current=null;setError(body.code??'INVALID');return;}throw Error(body.code??'UNAVAILABLE');}intent.current=null;setMessage(t('Session saved on the server.','活動已儲存至伺服器。'));if(!editId)setDraft(empty);else setCurrent(body.data??current);
+  }catch(next){if(own!==generation.current)return;setError(next instanceof Error?next.message:'UNAVAILABLE');setUnknown(true);}
+  finally{if(own===generation.current)setBusy(false);}
  }
  async function changeStatus(status:'live'|'ended'|'cancelled'){
   if(!current||busy||unknown)return;setBusy(true);setError('');try{const response=await fetch('/api/creator/sessions/'+current.id+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:crypto.randomUUID(),status}),cache:'no-store'}),body=await response.json();if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');setCurrent({...current,status:body.data.status});setMessage(t('Session status updated.','活動狀態已更新。'));}catch(next){setError(next instanceof Error?next.message:'UNAVAILABLE');}finally{setBusy(false);}

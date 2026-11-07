@@ -15,6 +15,7 @@ export type PilotBeginReadinessInput = {
   ownersConfigured: boolean;
   noticesPinned: boolean;
   syntheticRehearsalPassed: boolean;
+  requiredRoles?: string[];
 };
 
 /** Internal RPC facts, separate from the display snapshot and acceptance export. */
@@ -114,6 +115,9 @@ export function pilotBeginReadiness(input: PilotBeginReadinessInput): PilotReadi
   ].every(present)) add('notices_unpinned');
   // Synthetic rehearsals bootstrap this gate; real runs require the persisted verdict.
   if (real && input.syntheticRehearsalPassed !== true) add('rehearsal_missing');
+  for (const role of ['traveller','creator','merchant']) {
+    if (!Array.isArray(input.requiredRoles) || input.requiredRoles.filter(value => value === role).length !== 1) block(blockers, 'cohort', 'required_' + role + '_missing');
+  }
   const canBegin = run.status === 'draft' || run.status === 'recruiting';
   if (!canBegin) add('run_not_beginable');
   const readyToBegin = blockers.length === 0;
@@ -164,7 +168,7 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
       block(blockers, 'cohort', 'required_' + role + '_missing');
       return undefined;
     }
-    if (participant.status !== 'active' || participant.userLinked !== true || participant.consentAccepted !== true) {
+    if ((participant.status !== 'active' && !(run.status === 'completed' && participant.status === 'completed')) || participant.userLinked !== true || participant.consentAccepted !== true) {
       block(blockers, 'cohort', 'required_' + role + '_not_ready', participant.id);
     }
     return participant.id;

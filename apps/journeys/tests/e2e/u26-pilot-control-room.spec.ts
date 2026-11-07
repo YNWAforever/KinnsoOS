@@ -8,7 +8,7 @@ const fixture = connectedPilotFixture('task10a');
 const { origin, suiteLabel, runIds, guides, missions, signIn, api, ops, participant } = fixture;
 
 test('pilot rehearsal completes; real-classified replay retains the four manual gates', async ({ browser, request }) => {
-  test.setTimeout(240_000);
+  test.setTimeout(420_000);
   const expectedBuild = verifiedConnectedArtifact(process.cwd());
   const health = await request.get(origin + '/api/health', { maxRedirects: 0 });
   const served = health.headers()['x-kinnso-local-build'];
@@ -106,6 +106,43 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       await creator.getByLabel('I have reviewed this profile and confirm publication.', { exact: true }).check();
       await confirm.click();
       await expect(creator.getByRole('link', { name: 'Create guide', exact: true })).toBeVisible();
+      async function submitIntakeUI(input: any, existing?: string) {
+        await creator.goto('/en/pilot');
+        if (existing) await creator.getByLabel('Your content intakes',{exact:true}).selectOption(existing);
+        else await creator.getByRole('button',{name:'New content intake',exact:true}).click();
+        await creator.getByLabel('Title',{exact:true}).fill(input.title);
+        await creator.getByLabel('Destination',{exact:true}).fill(input.destination);
+        await creator.getByLabel('Content language code',{exact:true}).fill(input.authoredLocale);
+        await creator.getByLabel('Source summary',{exact:true}).fill(input.sourceSummary);
+        await creator.getByLabel('Source URLs (one per line, up to 20)',{exact:true}).fill(input.sourceUrls.join('\n'));
+        await creator.getByLabel('Rights basis',{exact:true}).selectOption(input.rightsBasis);
+        await creator.getByLabel('Rights evidence reference',{exact:true}).fill(input.rightsEvidenceReference);
+        await creator.getByLabel('Cover rights',{exact:true}).selectOption(input.coverRightsConfirmed===null?'':String(input.coverRightsConfirmed));
+        if(input.coverRightsConfirmed)await creator.getByLabel('Cover rights evidence reference',{exact:true}).fill(input.coverRightsEvidenceReference);
+        await creator.getByLabel('I agree to this content consent notice.',{exact:true}).check();
+        const result=creator.waitForResponse(r=>r.url().endsWith('/api/pilot')&&r.request().method()==='POST');
+        await creator.getByRole('button',{name:existing?'Resubmit intake':'Submit intake',exact:true}).click();
+        const response=await result;expect(response.status()).toBe(200);
+        const self=(await response.json()).data.snapshot;
+        expect(self.intakes.some((i:any)=>i.title===input.title)).toBe(true);
+        return self.intake;
+      }
+      async function reviewUI(id:string,decision:'approve'|'reject',reason:string) {
+        await operator.goto('/en/ops?view=pilot&id='+runId);
+        const card=operator.locator('article').filter({has:operator.getByRole('heading',{name:'Intake record '+id,exact:true})});
+        await expect(card.getByRole('region',{name:'Exact draft review',exact:true})).toBeVisible();
+        await card.getByText('Read bound draft preview',{exact:true}).click();
+        await expect(card.locator('pre')).toContainText('Synthetic');
+        if(decision==='approve'){
+          await card.getByLabel('I reviewed this exact draft revision and digest.',{exact:true}).check();
+          await card.getByLabel('Written approval reason',{exact:true}).fill(reason);
+        } else await card.getByLabel('Written review reason',{exact:true}).fill(reason);
+        await card.getByRole('button',{name:decision==='approve'?'Approve exact draft':'Reject intake',exact:true}).click();
+        const response=operator.waitForResponse(r=>r.url().endsWith('/api/ops/pilot')&&r.request().method()==='POST');
+        await operator.getByRole('dialog').getByRole('button',{name:'Confirm',exact:true}).click();
+        expect((await response).status()).toBe(200);
+        await expect(operator.getByRole('dialog')).toHaveCount(0);
+      }
       for (let index = 1; index <= 3; index++) {
         const guideId = randomUUID();
         guides.push(guideId);
@@ -116,7 +153,8 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
           authorConsentVersion: notices.contentConsentVersion, authorConsentDigest: notices.contentConsentDigest,
           coverRightsConfirmed: null, coverRightsEvidenceReference: null,
         };
-        const intake = (await participant(creator, { type: 'submitContentIntake', intake: intakeInput })).snapshot.intake;
+        const intake = await submitIntakeUI(intakeInput);
+        await expect(creator.getByLabel('Title',{exact:true})).toBeDisabled();
         if (classification === 'synthetic' && index === 1) {
           const duplicate = randomUUID();
           const before = fixture.sql(`select count(*) from kinnso_internal.pilot_content_intakes where run_id='${runId}'`);
@@ -144,9 +182,7 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         const bound = (await ops(operator, { type: 'bindGuide', intakeId: intake.id, guideId,
           expectedRevision: intake.revision })).snapshot.contentIntakes.find((item: { id: string }) => item.id === intake.id);
         expect(bound.currentDraftRevision).toBe(draft.revision);
-        await ops(operator, { type: 'reviewContentIntake', id: intake.id, expectedRevision: bound.revision,
-          decision: 'approve', expectedDraftRevision: bound.currentDraftRevision,
-          expectedContentDigest: bound.currentContentDigest, reason: 'Reviewed synthetic original work' });
+        await reviewUI(intake.id,'approve','Reviewed synthetic original work');
         if (classification === 'synthetic' && index === 1) {
           await forbid(members[0], path + '/publish', 'POST', { expectedRevision: draft.revision }, [403, 404],
             `select count(*) from public.guide_versions where guide_id='${guideId}'`);
@@ -172,12 +208,10 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
             expect(prior.contentDigest).toMatch(/^[a-f0-9]{64}$/);
             expect(prior.reviewer && prior.reviewedAt && prior.reviewReason).toBeTruthy();
             for (const [field, value] of Object.entries(change)) expect(prior[field]).not.toEqual(value);
-            await ops(operator, { type: 'reviewContentIntake', id: intake.id,
-              expectedRevision: approved.revision, decision: 'reject', reason: 'Synthetic rights change' });
+            await reviewUI(intake.id,'reject','Synthetic rights change');
             const rejected = await current();
             nextInput = { ...nextInput, ...change };
-            await participant(creator, { type: 'updateOwnedContentIntake', id: intake.id,
-              expectedRevision: rejected.revision, intake: nextInput });
+            await submitIntakeUI(nextInput,intake.id);
             const revised = await current();
             expect(revised.status).toBe('submitted');
             const persisted = stored();
@@ -190,9 +224,7 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
             expect(deniedPublication.status()).toBe(409);
             expect((await deniedPublication.json()).code).toBe('PILOT_REVIEW_REQUIRED');
             expect(fixture.sql(`select count(*) from public.guide_versions where guide_id='${guideId}'`)).toBe('0');
-            await ops(operator, { type: 'reviewContentIntake', id: intake.id, expectedRevision: revised.revision,
-              decision: 'approve', expectedDraftRevision: revised.currentDraftRevision,
-              expectedContentDigest: revised.currentContentDigest, reason: 'Reviewed changed synthetic rights' });
+            await reviewUI(intake.id,'approve','Reviewed changed synthetic rights');
             expect(stored()).toMatchObject({ draftRevision: draft.revision, contentDigest: revised.currentContentDigest,
               reviewReason: 'Reviewed changed synthetic rights', consentDigest: persisted.consentDigest });
           }
@@ -294,7 +326,10 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       expect(inbox.items).toEqual(expect.arrayContaining([
         expect.objectContaining({ type: 'submission.approved', entityId: missionId }),
       ]));
-      await participant(creator, { type: 'acknowledgeNotification' });
+      await creator.goto('/en/pilot');
+      const acknowledged=creator.waitForResponse(r=>r.url().endsWith('/api/pilot')&&r.request().method()==='POST');
+      await creator.getByRole('button',{name:'Acknowledge pilot notification',exact:true}).click();
+      expect((await acknowledged).status()).toBe(200);
       const guideId = guides[firstGuide];
       const guide = await api(traveller, '/api/guides/' + guideId);
       await api(traveller, '/api/bookmarks', 'POST', { requestId: randomUUID(), guideId, desiredState: true });
@@ -324,12 +359,20 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       expect(await api(traveller, '/api/support/context?mission=' + missionId)).toEqual({
         type: 'mission', id: missionId, title: 'Pilot support', workspace: 'pilot',
       });
-      await traveller.goto('/en/support?mission=' + missionId);
+      await traveller.goto('/en/pilot');
+      await expect(traveller.getByRole('link',{name:'Open support',exact:true})).toHaveAttribute('href','/en/support?mission='+missionId);
+      await traveller.getByRole('link',{name:'Open support',exact:true}).click();
       await expect(traveller.getByLabel('Case subject', { exact: true })).toHaveValue('Collaboration: Pilot support');
-            const support = (page: Page, command: object) => api(page, '/api/support', 'POST', { requestId: randomUUID(), command });
-      const supportId = randomUUID();
-      const opened = await support(traveller, { type: 'create', id: supportId, subject: label + '-private-subject',
-        message: label + '-private-message', context: { type: 'mission', id: missionId } });
+      const supportSubject = label + '-private-subject';
+      await traveller.getByLabel('Case subject', { exact: true }).fill(supportSubject);
+      await traveller.getByLabel('Message to support', { exact: true }).fill(label + '-private-message');
+      const creation = traveller.waitForResponse(r => r.url().endsWith('/api/support') && r.request().method() === 'POST');
+      await traveller.getByRole('button', { name: 'Create support case', exact: true }).click();
+      const createdCase = await creation;
+      expect(createdCase.status()).toBe(200);
+      const opened = (await createdCase.json()).data;
+      const supportId = opened.id;
+      await expect(traveller.getByRole('article').filter({ has: traveller.getByRole('heading', { name: supportSubject, exact: true }) })).toContainText(label + '-private-message');
       if (classification === 'synthetic') {
         await forbid(creator, '/api/support', 'POST', { command: { type: 'reply', id: supportId,
           expectedRevision: opened.revision, message: 'Synthetic scope probe' } }, [403, 404],
@@ -337,15 +380,36 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
             from kinnso_internal.support_messages where case_id='${supportId}'`);
       }
       const responseText = label + '-private-response';
-      await support(operator, { type: 'review', id: supportId, expectedRevision: opened.revision,
-        ownerId: operatorId, status: 'resolved', reason: 'Synthetic support review', message: responseText });
+      await operator.goto('/en/ops/support');
+      const supportCard = operator.getByRole('article').filter({ has: operator.getByRole('heading', { name: supportSubject, exact: true }) });
+      await supportCard.getByLabel('Case decision', { exact: true }).selectOption('resolved');
+      await supportCard.getByLabel('Internal decision reason', { exact: true }).fill('Synthetic support review');
+      await supportCard.getByLabel('Response visible to the customer', { exact: true }).fill(responseText);
+      const reviewedCase = operator.waitForResponse(r => r.url().endsWith('/api/support') && r.request().method() === 'POST');
+      await supportCard.getByRole('button', { name: 'Assign to me and apply decision', exact: true }).click();
+      expect((await reviewedCase).status()).toBe(200);
+      await expect(supportCard).toContainText(responseText);
       expect((await api(traveller, '/api/support/' + supportId + '/messages')).items).toEqual(
         expect.arrayContaining([expect.objectContaining({ message: responseText })]));
       const evidence = (checkCode: string, entityType: string, entityId: string, participantId: string | null) =>
         ops(operator, { type: 'addEvidenceReference', runId, checkCode, entityType, entityId,
           participantId, evidenceReference: 'ref:' + entityId });
-      await evidence('support_resolved', 'support_case', supportId, null);
-      await participant(traveller, { type: 'acknowledgeSupportResponse' });
+      await operator.goto('/en/ops?view=pilot&id='+runId);
+      const supportCheck=operator.locator('article').filter({has:operator.getByRole('heading',{name:'support resolved',exact:true})});
+      await supportCheck.getByLabel('Support case ID',{exact:true}).fill(supportId);
+      await supportCheck.getByLabel('Opaque evidence reference (ref: followed by an ID)',{exact:true}).fill('ref:'+supportId);
+      await supportCheck.getByRole('button',{name:'Attach evidence reference',exact:true}).click();
+      const evidenceResponse=operator.waitForResponse(r=>r.url().endsWith('/api/ops/pilot')&&r.request().method()==='POST');
+      await operator.getByRole('dialog').getByRole('button',{name:'Confirm',exact:true}).click();
+      expect((await evidenceResponse).status()).toBe(200);
+      await traveller.goto('/en/pilot');
+      const supportAck=traveller.waitForResponse(r=>r.url().endsWith('/api/pilot')&&r.request().method()==='POST');
+      await traveller.getByRole('button',{name:'Acknowledge support response',exact:true}).click();
+      expect((await supportAck).status()).toBe(200);
+      await traveller.getByRole('button',{name:'Withdraw from pilot',exact:true}).click();
+      await expect(traveller.getByRole('dialog')).toBeVisible();
+      await traveller.getByRole('dialog').getByRole('button',{name:'Cancel',exact:true}).click();
+      await expect(traveller.getByRole('dialog')).not.toBeVisible();
       const deviceChecks = ['physical_ios', 'physical_android', 'voiceover', 'nvda'];
       const checks: Array<[string, string, string, string | null]> = [
         ['guide_discovered', 'guide', guideId, slots[0]], ['trip_recovered', 'trip', trip.id, slots[0]],
@@ -403,6 +467,16 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       }
       for (const privateValue of [label, 'Synthetic original work', 'Synthetic merchant', responseText, ...inviteCodes]) {
         expect(raw.includes(privateValue), 'export contains private fixture content').toBe(false);
+      }
+      if(classification==='real'){
+        await traveller.goto('/en/pilot');
+        await traveller.getByRole('button',{name:'Withdraw from pilot',exact:true}).click();
+        const withdrawn=traveller.waitForResponse(r=>r.url().endsWith('/api/pilot')&&r.request().method()==='POST');
+        await traveller.getByRole('button',{name:'Confirm withdrawal',exact:true}).click();
+        expect((await withdrawn).status()).toBe(200);
+        await expect(traveller.getByRole('button',{name:'Withdraw from pilot',exact:true})).toHaveCount(0);
+        expect((await api(traveller,'/api/pilot')).participant.status).toBe('withdrawn');
+        expect((await api(traveller,'/api/trips/'+trip.id)).id).toBe(trip.id);
       }
     } finally {
       await Promise.all(contexts.map(context => context.close()));

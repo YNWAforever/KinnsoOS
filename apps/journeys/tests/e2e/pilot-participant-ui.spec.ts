@@ -31,9 +31,11 @@ test.beforeAll(async () => {
     import {createRoot} from 'react-dom/client';
     import {AppContext} from './app/travel/ui';
     import {PilotWorkspace} from './app/travel/pilot/PilotWorkspace';
+    import {CreatorSessionsWorkspace} from './app/travel/CreatorSessionsWorkspace';
     import {invalidateAccountViews} from './lib/trips/local-drafts';
     const root=createRoot(document.getElementById('fixture'));
     window.invalidatePilot=invalidateAccountViews;
+    window.renderSessions=()=>root.render(<AppContext.Provider value={{locale:'en',t:en=>en,href:path=>'/en/'+path}}><CreatorSessionsWorkspace actorId='11111111-1111-4111-8111-111111111111' enabled path='studio/sessions/new'/></AppContext.Provider>);
     window.renderPilot=(actorId,locale)=>root.render(
       <AppContext.Provider value={{locale,t:(en,zh)=>locale==='en'?en:zh,href:path=>'/'+locale+'/'+path}}>
         <PilotWorkspace actorId={actorId} enabled/>
@@ -288,4 +290,49 @@ test('wrong, expired, claimed and revoked responses show the same safe denial',a
     await expect(input).toHaveValue('');
     await expect(page.getByText('Fixture reason: '+reason)).toHaveCount(0);
   }
+});
+
+test('FINAL owned intake selector permits new and existing records',async({page})=>{
+ await mount(page,{snapshot:{...ready,intakes:[intake,{...intake,id:actor,title:'Second intake',status:'approved'}]} as any});
+ await page.getByLabel('Your content intakes',{exact:true}).selectOption(actor);
+ await expect(page.getByLabel('Title',{exact:true})).toHaveValue('Second intake');
+ await expect(page.getByLabel('Title',{exact:true})).toBeDisabled();
+ await page.getByRole('button',{name:'New content intake',exact:true}).click();
+ await expect(page.getByLabel('Title',{exact:true})).toHaveValue('');
+ await expect(page.getByLabel('Title',{exact:true})).toBeEnabled();
+});
+test('FINAL acknowledgement controls use server identities and withdrawal confirms',async({page})=>{
+ const {wire}=await mount(page,{snapshot:{...ready,acknowledgements:{notificationId:actor,supportCaseId:second},workflowLinks:{merchant:null,trip:null,supportCaseId:second,supportMissionId:actor}} as any});
+ await expect(page.getByRole('link',{name:'Open support',exact:true})).toHaveAttribute('href','/en/support?mission='+actor);
+ await page.getByRole('button',{name:'Acknowledge pilot notification',exact:true}).click();
+ await expect.poll(()=>wire.length).toBe(1);expect(wire[0].command).toMatchObject({type:'acknowledgeNotification',notificationId:actor});
+ await page.getByRole('button',{name:'Withdraw from pilot',exact:true}).click();
+ await expect(page.getByRole('dialog')).toBeVisible();
+ await page.getByRole('button',{name:'Confirm withdrawal',exact:true}).click();
+ await expect.poll(()=>wire.length).toBe(2);expect(wire[1].command.type).toBe('withdrawParticipation');
+});
+test('FINAL creator session lost success retries identical request and rejection remains editable',async({page})=>{
+ await mount(page);
+ const bodies:string[]=[];
+ await page.route(origin+'/api/creator/sessions',async route=>{
+  bodies.push(route.request().postData()!);
+  if(bodies.length===1)return route.abort('failed');
+  return route.fulfill({json:{ok:true,data:{id:actor}}});
+ });
+ await page.evaluate(()=>(window as any).renderSessions());
+ await page.getByLabel('Session title',{exact:true}).fill('Synthetic session');
+ await page.getByLabel('Description',{exact:true}).fill('Synthetic');
+ await page.getByLabel('Starts at (UTC)',{exact:true}).fill('2026-12-01T10:00');
+ await page.getByRole('button',{name:'Save session',exact:true}).click();
+ await page.getByRole('button',{name:'Retry the same save',exact:true}).click();
+ await expect(page.getByText('Session saved on the server.',{exact:true})).toBeVisible();
+ expect(bodies).toHaveLength(2);expect(bodies[1]).toBe(bodies[0]);
+ await page.unroute(origin+'/api/creator/sessions');
+ await page.route(origin+'/api/creator/sessions',route=>route.fulfill({status:400,json:{ok:false,code:'INVALID'}}));
+ await page.getByLabel('Session title',{exact:true}).fill('Rejected session');
+ await page.getByLabel('Description',{exact:true}).fill('Synthetic');
+ await page.getByLabel('Starts at (UTC)',{exact:true}).fill('2026-12-01T10:00');
+ await page.getByRole('button',{name:'Save session',exact:true}).click();
+ await expect(page.getByText('Session request failed: INVALID')).toBeVisible();
+ await expect(page.getByLabel('Session title',{exact:true})).toBeEnabled();
 });

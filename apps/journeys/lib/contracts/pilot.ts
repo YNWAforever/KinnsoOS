@@ -22,16 +22,18 @@ export type OpsPilotCommand =
  | {type:'setManualCheck';id:string;expectedRevision:number;status:PilotCheckStatus;evidenceReference:string|null;observedSummary:string|null}
  | {type:'addEvidenceReference';runId:string;checkCode:string;entityType:PilotEvidenceEntityType;entityId:string;participantId?:string|null;evidenceReference:string|null};
 export type PilotParticipantCommand =
+ | {type:'withdrawParticipation';requestId:string}
  | {type:'claimInvite';requestId:string;code:string}
  | {type:'acceptConsent';requestId:string;noticeVersion:string;noticeDigest:string;privacyNoticeVersion:string;privacyNoticeDigest:string}
  | {type:'submitContentIntake';requestId:string;intake:PilotContentIntakeInput}
  | {type:'updateOwnedContentIntake';requestId:string;id:string;expectedRevision:number;intake:PilotContentIntakeInput}
- | {type:'acknowledgeNotification';requestId:string}
- | {type:'acknowledgeSupportResponse';requestId:string};
+ | {type:'acknowledgeNotification';requestId:string;notificationId?:string}
+ | {type:'acknowledgeSupportResponse';requestId:string;supportCaseId?:string};
 export type OpsPilotSnapshot={run:OpsPilotRunView|null;participants:OpsPilotParticipantView[];contentIntakes:OpsPilotContentIntakeView[];collaboration:OpsPilotCollaborationView|null;checks:OpsPilotCheckView[];readiness:PilotReadinessView};
 export type OpsPilotRunView={id:string;name:string;status:PilotRunStatus;revision:number;dataClassification:'synthetic'|'real';candidateReleaseSha:string;environmentOrigin:string;acceptanceStartedAt:string|null;minimumPublishedGuides:number;participationNoticeVersion:string|null;participationNoticeDigest?:string|null;privacyNoticeVersion:string|null;privacyNoticeDigest?:string|null;contentConsentVersion:string|null;contentConsentDigest?:string|null};
 export type OpsPilotParticipantView={activeInvite?:{id:string;status:'active';expiresAt:string}|null;id:string;role:PilotRole;cohortRole:PilotCohortRole;displayLabel:string;status:'invited'|'joined'|'active'|'paused'|'withdrawn'|'completed';userLinked:boolean;consentAccepted:boolean;revision:number};
-export type OpsPilotContentIntakeView={currentDraftRevision?:number|null;currentContentDigest?:string|null;id:string;creatorParticipantId:string;guideId:string|null;status:'draft'|'submitted'|'approved'|'rejected'|'published'|'withdrawn';guideDraftRevision:number|null;reviewedGuideVersion:number|null;contentDigest:string|null;title:string;destination:string;authoredLocale:string;revision:number};
+export type PilotReview={sourceSummary:string;sourceUrls:string[];rightsBasis:string;rightsEvidenceReference:string;coverRightsConfirmed:boolean|null;coverRightsEvidenceReference:string|null;coverUrl:string|null;draftPreview:unknown};
+export type OpsPilotContentIntakeView={review?:PilotReview|null;currentDraftRevision?:number|null;currentContentDigest?:string|null;id:string;creatorParticipantId:string;guideId:string|null;status:'draft'|'submitted'|'approved'|'rejected'|'published'|'withdrawn';guideDraftRevision:number|null;reviewedGuideVersion:number|null;contentDigest:string|null;title:string;destination:string;authoredLocale:string;revision:number};
 export type OpsPilotCollaborationView={id:string;merchantParticipantId:string;creatorParticipantId:string;missionId:string|null;steps:Array<{code:string;status:PilotCheckStatus}>};
 export type OpsPilotCheckView={id?:string;code:string;category:string;status:PilotCheckStatus;evidenceReference:string|null;observedSummary:string|null;revision:number;derived:boolean};
 export type PilotReadinessView={stage:PilotReadinessStage;readyToBegin:boolean;executionComplete:boolean;blockers:Array<{code:string;category:string;messageKey:string;recordId?:string}>};
@@ -41,8 +43,8 @@ function exactNoticeVersion(value: unknown): string {
 }
 function noticeDigest(value:unknown):string { if(typeof value !== 'string' || value.length !== 64 || !/^[0-9a-f]{64}$/.test(value)) return fail(); return value; }
 export type PilotSelfSnapshot={run:PilotSelfRunView|null;participant:PilotSelfParticipantView|null;nextStep:PilotParticipantNextStep|null;readiness:PilotReadinessView;
- contentConsent?:{version:string;digest:string}|null; intake?:PilotSelfIntake|null;
- workflowLinks?:{merchant:string|null;trip:string|null;supportCaseId:string|null}|null};
+ contentConsent?:{version:string;digest:string}|null; intake?:PilotSelfIntake|null; intakes?:PilotSelfIntake[]; acknowledgements?:{notificationId:string|null;supportCaseId:string|null;supportMissionId?:string|null}|null;
+ workflowLinks?:{merchant:string|null;trip:string|null;supportCaseId:string|null;supportMissionId?:string|null}|null};
 export type PilotSelfIntake=Omit<PilotContentIntakeInput,'authorConsentVersion'|'authorConsentDigest'> & {
  id:string;status:OpsPilotContentIntakeView['status'];revision:number;reviewReason:string|null;
  guideId:string|null;currentDraftRevision:number|null;editorHref:string|null;
@@ -111,7 +113,7 @@ export function parseOpsPilotCommand(input:unknown):OpsPilotCommand {
 }
 export function parsePilotParticipantCommand(input:unknown):PilotParticipantCommand {
  const type=input&&typeof input==='object'&&!Array.isArray(input)?(input as Record<string,unknown>).type:undefined;
- const fields:Record<string,string[]>={claimInvite:['type','requestId','code'],acceptConsent:['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest'],submitContentIntake:['type','requestId','intake'],updateOwnedContentIntake:['type','requestId','id','expectedRevision','intake'],acknowledgeNotification:['type','requestId'],acknowledgeSupportResponse:['type','requestId']};
+ const fields:Record<string,string[]>={withdrawParticipation:['type','requestId'],claimInvite:['type','requestId','code'],acceptConsent:['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest'],submitContentIntake:['type','requestId','intake'],updateOwnedContentIntake:['type','requestId','id','expectedRevision','intake'],acknowledgeNotification:['type','requestId','notificationId'],acknowledgeSupportResponse:['type','requestId','supportCaseId']};
  if(typeof type!=='string'||!Object.hasOwn(fields,type))fail();const o=object(input,fields[type as string]);
- switch(type){case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:exactNoticeVersion(o.noticeVersion),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:exactNoticeVersion(o.privacyNoticeVersion),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId)};default:return fail()}
+ switch(type){case'withdrawParticipation':return{type,requestId:ident(o.requestId)};case'claimInvite':return{type,requestId:ident(o.requestId),code:str(o.code,32,512)};case'acceptConsent':return{type,requestId:ident(o.requestId),noticeVersion:exactNoticeVersion(o.noticeVersion),noticeDigest:noticeDigest(o.noticeDigest),privacyNoticeVersion:exactNoticeVersion(o.privacyNoticeVersion),privacyNoticeDigest:noticeDigest(o.privacyNoticeDigest)};case'submitContentIntake':return{type,requestId:ident(o.requestId),intake:intake(o.intake)};case'updateOwnedContentIntake':return{type,requestId:ident(o.requestId),id:ident(o.id),expectedRevision:rev(o.expectedRevision),intake:intake(o.intake)};case'acknowledgeNotification':return{type,requestId:ident(o.requestId),...(o.notificationId===undefined?{}:{notificationId:ident(o.notificationId)})};case'acknowledgeSupportResponse':return{type,requestId:ident(o.requestId),...(o.supportCaseId===undefined?{}:{supportCaseId:ident(o.supportCaseId)})};default:return fail()}
 }

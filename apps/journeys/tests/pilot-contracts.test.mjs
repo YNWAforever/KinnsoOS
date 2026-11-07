@@ -60,7 +60,7 @@ const run = {
 };
 const setup = {
   run: { ...run, status: 'recruiting', acceptanceStartedAt: null },
-  capabilityConnected: true, ownersConfigured: true, noticesPinned: true, syntheticRehearsalPassed: true,
+  requiredRoles: ['traveller','creator','merchant'], capabilityConnected: true, ownersConfigured: true, noticesPinned: true, syntheticRehearsalPassed: true,
 };
 
 test('begin readiness separates setup from execution and orders setup blockers', () => {

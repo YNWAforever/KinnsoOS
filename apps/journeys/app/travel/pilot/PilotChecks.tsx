@@ -18,15 +18,15 @@ export function PilotChecks({ snapshot, canWrite, confirm }: PilotSectionProps) 
       <p>{t(statusLabels[check.status][0], statusLabels[check.status][1])} · {check.derived ? t('Evaluated from source records','依來源紀錄評估') : t('Manual evidence required','需要人工證據')}</p>
       {check.evidenceReference && /^ref:(?:[0-9]{1,20}|[0-9a-f-]{36})$/i.test(check.evidenceReference) && <p>{t('Evidence reference','證據參照')} <code>{check.evidenceReference}</code></p>}
       {canWrite && !check.derived && <ManualCheck check={check} runId={run.id} confirm={confirm}/>}
-      {canWrite && (check.code === 'guide_discovered' || check.code === 'trip_recovered') && <form style={formStyle} onSubmit={event => {
+      {canWrite && (check.code === 'guide_discovered' || check.code === 'trip_recovered' || check.code === 'support_resolved') && <form style={formStyle} onSubmit={event => {
         const { value, opener } = submitData(event);
         confirm({type:'addEvidenceReference', runId:run.id, checkCode:check.code,
-          entityType:check.code === 'guide_discovered' ? 'guide' : 'trip', entityId:value('record'),
-          participantId:value('participant'), evidenceReference:value('reference')}, t('Attach evidence reference','附加證據參照'), opener);
+          entityType:check.code === 'support_resolved' ? 'support_case' : check.code === 'guide_discovered' ? 'guide' : 'trip', entityId:value('record'),
+          ...(check.code === 'support_resolved' ? {} : {participantId:value('participant')}), evidenceReference:value('reference')}, t('Attach evidence reference','附加證據參照'), opener);
       }}>
-        <label>{check.code === 'guide_discovered' ? t('Guide ID','指南 ID') : t('Trip ID','行程 ID')}<input style={inputStyle} name="record" pattern={uuidPattern} required/></label>
-        <label>{t('Traveller slot','旅客名額')}<select style={inputStyle} name="participant" required defaultValue=""><option value="" disabled>{t('Select a slot','選擇名額')}</option>
-          {snapshot.participants.filter(slot => slot.role === 'traveller' && slot.status === 'active').map(slot => <option key={slot.id} value={slot.id}>{slot.id}</option>)}</select></label>
+        <label>{check.code === 'support_resolved' ? t('Support case ID','支援個案 ID') : check.code === 'guide_discovered' ? t('Guide ID','指南 ID') : t('Trip ID','行程 ID')}<input style={inputStyle} name="record" pattern={uuidPattern} required/></label>
+        {check.code !== 'support_resolved' && <label>{t('Traveller slot','旅客名額')}<select style={inputStyle} name="participant" required defaultValue=""><option value="" disabled>{t('Select a slot','選擇名額')}</option>
+          {snapshot.participants.filter(slot => slot.role === 'traveller' && slot.status === 'active').map(slot => <option key={slot.id} value={slot.id}>{slot.id}</option>)}</select></label>}
         <EvidenceField required/>
         <button className="k-btn">{t('Attach evidence reference','附加證據參照')}</button>
       </form>}

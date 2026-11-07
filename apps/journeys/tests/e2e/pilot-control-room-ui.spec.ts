@@ -37,7 +37,7 @@ function snapshot(id: string, stage = 'executing') {
     run:{id,status:'running',revision:1,dataClassification:'synthetic',candidateReleaseSha:'synthetic',environmentOrigin:origin,acceptanceStartedAt:null},
     participants:[{id:slot,role:'traveller',cohortRole:'required_traveller',status:'invited',userLinked:false,consentAccepted:false,revision:2,
       activeInvite:{id:invite,status:'active',expiresAt:'2026-11-08T00:00:00Z'}}],
-    contentIntakes:[{id:intake,guideId:slot,status:'submitted',revision:3,authoredLocale:'en',currentDraftRevision:7,currentContentDigest:digest}],
+    contentIntakes:[{id:intake,guideId:slot,status:'submitted',revision:3,authoredLocale:'en',currentDraftRevision:7,currentContentDigest:digest,title:'Authored title',destination:'Kyoto',review:{sourceSummary:'Reviewable source',sourceUrls:['https://example.test/source'],rightsBasis:'permission',rightsEvidenceReference:'ref:1',coverRightsConfirmed:true,coverRightsEvidenceReference:'ref:2',coverUrl:'https://example.test/cover.jpg',draftPreview:{title:'Authored title',summary:'Authored preview'}}}],
     checks:[{id:slot,code:'physical_ios',status:'not_run',derived:false,revision:1},
       {code:'guide_saved',status:'not_run',derived:true,revision:1,observedSummary:'PRIVATE SUPPORT BODY'}],
     collaboration:null,
@@ -224,4 +224,12 @@ test('first FORBIDDEN retains the exact request through an authorized refresh of
   expect(wire[0].body.requestId).toMatch(/^[a-f0-9-]{36}$/);
   expect(wire[0].body.command).toMatchObject({type:'createInvite',participantId:slot,expectedRevision:2});
   expect(errors).toEqual([]);
+});
+
+test('FINAL operator reads source cover rights and draft before approval and can attach support evidence',async({page})=>{
+ await mount(page);
+ await expect(page.getByText('Reviewable source',{exact:true})).toBeVisible();
+ await expect(page.getByText('true · ref:2',{exact:true})).toBeVisible();
+ await page.getByText('Read bound draft preview',{exact:true}).click();
+ await expect(page.getByText(/Authored preview/)).toBeVisible();
 });

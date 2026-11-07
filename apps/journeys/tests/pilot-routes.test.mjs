@@ -25,7 +25,7 @@ const snapshot = (status = 'draft') => ({
   },
   participants: [], contentIntakes: [], collaboration: null, checks: [],
   facts: {...emptyFacts(), privateMarker: 'PRIVATE_AUTH_SOURCE'},
-  beginFacts: {rpcAvailable: true, ownersConfigured: true, noticesPinned: true, syntheticRehearsalPassed: true},
+  beginFacts: {requiredRoles:['traveller','creator','merchant'],rpcAvailable: true, ownersConfigured: true, noticesPinned: true, syntheticRehearsalPassed: true},
   readiness: {stage: 'execution_complete', readyToBegin: true, executionComplete: true, blockers: []},
 });
 const createRun = {
@@ -585,6 +585,7 @@ test('overlapping identical commands retain their request identity if either res
 const participantCode = await compile('../app/api/pilot/route.ts');
 const publishCode = await compile('../app/api/creator/guides/[id]/publish/route.ts');
 const self = {
+  intakes: [], acknowledgements: null,
   run: {id: runId, name: 'Pilot', status: 'running'},
   participant: {id: participantId, role: 'creator', status: 'active', consentVersion: 'v1'},
   nextStep: {code: 'open_workflow', href: '/en/studio/guides', messageKey: 'pilot.next.open_workflow'},
@@ -862,4 +863,26 @@ test('sign-out event clears pending claim and discards late GET and POST respons
   }
   for (const result of await Promise.all([read,write])) assert.equal(result.code,'AUTH_REQUIRED');
   assert.equal((await pilot.retry(actorId)).code,'CONFLICT');
+});
+
+test('FINAL begin readiness rejects missing authoritative required roles',async()=>{
+ const {state,route}=setup();state.data.beginFacts.requiredRoles=[];
+ const body=await(await route.GET(request())).json();
+ assert.equal(body.data.readiness.readyToBegin,false);
+ for(const role of ['traveller','creator','merchant'])assert.ok(body.data.readiness.blockers.some(b=>b.code==='required_'+role+'_missing'));
+});
+
+test('FINAL substantive operator review projects exact source rights cover and safe draft',async()=>{
+ const {state,route}=setup();const review={sourceSummary:'Authored source',sourceUrls:['https://example.test/source'],rightsBasis:'permission',rightsEvidenceReference:'ref:1',coverRightsConfirmed:true,coverRightsEvidenceReference:'ref:2',coverUrl:'https://example.test/cover.jpg',draftPreview:{title:'Draft title',city:'Kyoto',summary:'Authored summary',content:{days:[{offset:0,title:'Day one',stops:[{title:'Temple',description:'Authored stop',privateSecret:'HIDDEN'}]}]},privateSecret:'HIDDEN'},privateSecret:'HIDDEN'};
+ state.data.contentIntakes=[{id:intakeId,guideId:otherId,creatorParticipantId:participantId,status:'submitted',revision:2,title:'Draft title',destination:'Kyoto',authoredLocale:'en',review}];
+ state.data.facts.publications=[{runId,intakeId,entityId:otherId,currentDraftRevision:3,currentContentDigest:'a'.repeat(64)}];
+ const body=await(await route.GET(request())).json();const projected=body.data.contentIntakes[0];
+ assert.equal(projected.review?.sourceSummary,'Authored source');assert.equal(projected.review.coverRightsEvidenceReference,'ref:2');assert.equal(projected.review.draftPreview.content.days[0].stops[0].description,'Authored stop');assert.equal(projected.currentContentDigest,'a'.repeat(64));assert.equal(JSON.stringify(body).includes('HIDDEN'),false);
+});
+test('FINAL self list strips internal fields and exact acknowledgement targets survive',async()=>{
+ const owned={id:intakeId,status:'submitted',revision:1,title:'Owned',destination:'Kyoto',authoredLocale:'en',sourceSummary:'Source',sourceUrls:[],rightsBasis:'original',rightsEvidenceReference:'ref:1',guideId:null,currentDraftRevision:null,editorHref:null,reviewReason:null,coverRightsConfirmed:null,coverRightsEvidenceReference:null,otherParticipant:'HIDDEN'};
+ const {state}=setup({data:{...self,intakes:[owned,{...owned,id:otherId,title:'Second'}],acknowledgements:{notificationId:otherId,supportCaseId:null,private:'HIDDEN'}}});
+ const route=load(participantCode,state),body=await(await route.GET(request())).json();
+ assert.equal(body.data.intakes.length,2);assert.equal(body.data.acknowledgements.notificationId,otherId);assert.equal(JSON.stringify(body).includes('HIDDEN'),false);
+ state.data.participant.role='traveller';const other=await(await route.GET(request())).json();assert.deepEqual(other.data.intakes,[]);
 });

@@ -59,9 +59,8 @@ export function PilotParticipants({ snapshot, canWrite, regular, confirm }: Pilo
 function SlotActions({ slot, regular, confirm }: { slot: OpsPilotParticipantView; regular: boolean; confirm: PilotSectionProps['confirm'] }) {
   const { t } = useApp();
   if (slot.status === 'withdrawn' || slot.status === 'completed') return null;
-  const next = (['active','paused','withdrawn','completed'] as const).filter(status =>
-    status !== slot.status && (status !== 'active' || slot.userLinked && slot.consentAccepted) &&
-    (status !== 'completed' || slot.status === 'active'));
+  const next = (['active','paused','withdrawn'] as const).filter(status =>
+    status !== slot.status && (status !== 'active' || slot.userLinked && slot.consentAccepted));
   return <>
     {regular && slot.status === 'invited' && !slot.userLinked && <>
       <p>{t('A previous code cannot be retrieved; rotate it to get a new code.','無法取回舊邀請碼，請更換以取得新碼。')}</p>

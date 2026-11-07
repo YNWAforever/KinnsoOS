@@ -11,7 +11,7 @@
     "check:public-destination": "node scripts/check-public-destination-preview.mjs",
     "test:integration": "node scripts/test-integration.mjs",
     "dev": "next dev --hostname 0.0.0.0",
-    "build": "npm run source:pack && next build",
+    "build": "npm run source:pack && next build --webpack",
     "start": "next start --hostname 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",

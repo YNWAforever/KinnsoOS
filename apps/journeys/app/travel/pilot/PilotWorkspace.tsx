@@ -22,6 +22,8 @@ function ParticipantSession({ actorId, enabled }: Props) {
   const [readFailed, setReadFailed] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [selectedIntake, setSelectedIntake] = useState<string | null>(null);
+  const withdrawal = useRef<HTMLDialogElement>(null);
   const [code, setCode] = useState('');
   const [feedback, setFeedback] = useState('');
   const active = useRef(false);
@@ -88,6 +90,8 @@ function ParticipantSession({ actorId, enabled }: Props) {
     setBusy(false);
     if (result.ok) {
       setSnapshot(result.data.snapshot);
+      if (parsed?.type === 'submitContentIntake') setSelectedIntake(result.data.snapshot.intake?.id ?? null);
+      withdrawal.current?.close();
       setAccessLost(false);
       setReadFailed(false);
       setFeedback(t('Saved.', '已儲存。'));
@@ -117,7 +121,8 @@ function ParticipantSession({ actorId, enabled }: Props) {
   const run = snapshot?.run;
   const participant = snapshot?.participant;
   const step = snapshot?.nextStep;
-  const intake = snapshot?.intake;
+  const intakes = snapshot?.intakes ?? (snapshot?.intake ? [snapshot.intake] : []);
+  const intake = selectedIntake === '' ? null : intakes.find(i => i.id === selectedIntake) ?? snapshot?.intake;
   const canWork = step?.code === 'open_workflow' && participant?.status === 'active';
   const claimable = snapshot && (!participant || participant.status === 'invited' && run &&
     (run.status === 'recruiting' || run.status === 'running'));
@@ -178,6 +183,11 @@ function ParticipantSession({ actorId, enabled }: Props) {
             }, event.currentTarget)}>{t('Accept these notices', '同意這些通知')}</button>
           </section>}
         {participant?.consentDigest && <p>{t('Accepted consent digest:', '已同意的通知摘要碼：')} <code>{participant.consentDigest}</code></p>}
+        {canWork && participant.role === 'creator' && <div>
+          <label>{t('Your content intakes','你的內容提交')} <select aria-label={t('Your content intakes','你的內容提交')} style={{maxWidth:'100%'}} value={intake?.id ?? ''} disabled={blocked} onChange={e=>setSelectedIntake(e.target.value)}>
+            <option value="">{t('New intake','新增提交')}</option>{intakes.map(i=><option key={i.id} value={i.id}>{i.title} · {i.status}</option>)}
+          </select></label>{' '}<button type="button" className="k-btn" disabled={blocked} onClick={()=>setSelectedIntake('')}>{t('New content intake','新增內容提交')}</button>
+        </div>}
         {canWork && participant.role === 'creator' && (intake || snapshot?.contentConsent) &&
           <PilotContentIntakeForm key={JSON.stringify([run?.id, participant.id, intake?.id, intake?.revision, intake?.status, snapshot?.contentConsent])}
             intake={intake} consent={snapshot?.contentConsent} disabled={blocked} send={send}/>}
@@ -187,9 +197,19 @@ function ParticipantSession({ actorId, enabled }: Props) {
               {participant.role === 'creator' ? t('Open Creator Studio', '開啟創作者工作室')
                 : participant.role === 'merchant' ? t('Open merchant workspace', '開啟商戶工作區') : t('Open trips', '開啟行程')}
             </Link></li>}
-            <li><Link href={href('support')}>{t('Open support', '開啟支援')}</Link></li>
+            <li><Link href={href('support' + (snapshot?.workflowLinks?.supportMissionId ? '?mission=' + snapshot.workflowLinks.supportMissionId : ''))}>{t('Open support', '開啟支援')}</Link></li>
           </ul>
         </nav>}
+        {canWork && snapshot?.acknowledgements?.notificationId && <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'acknowledgeNotification',requestId:crypto.randomUUID(),notificationId:snapshot.acknowledgements!.notificationId!},event.currentTarget)}>{t('Acknowledge pilot notification','確認試行通知')}</button>}
+        {canWork && snapshot?.acknowledgements?.supportCaseId && <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'acknowledgeSupportResponse',requestId:crypto.randomUUID(),supportCaseId:snapshot.acknowledgements!.supportCaseId!},event.currentTarget)}>{t('Acknowledge support response','確認支援回覆')}</button>}
+        {participant && ['joined','active','paused'].includes(participant.status) && run && ['recruiting','running','paused'].includes(run.status) && <>
+          <button className="k-btn" disabled={blocked} onClick={()=>withdrawal.current?.showModal()}>{t('Withdraw from pilot','退出試行計劃')}</button>
+          <dialog ref={withdrawal} aria-label={t('Withdraw from pilot','退出試行計劃')}>
+            <p>{t('Withdraw your pilot participation? Your ordinary account remains available. Pilot links and intake history are retained as withdrawn.','退出試行計劃？一般帳戶仍可使用。試行連結及提交紀錄將保留為已退出。')}</p>
+            <button className="k-btn" disabled={blocked} onClick={event=>void send({type:'withdrawParticipation',requestId:crypto.randomUUID()},event.currentTarget)}>{t('Confirm withdrawal','確認退出')}</button>
+            <button className="k-btn" onClick={()=>withdrawal.current?.close()}>{t('Cancel','取消')}</button>
+          </dialog>
+        </>}
         {participant && !step && !claimable && <p>{t('There is no pilot task available right now.', '目前沒有可用的試行計劃任務。')}</p>}
       </>}
     {enabled && actorId && !invalid && <>

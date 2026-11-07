@@ -23,6 +23,12 @@ function safeActiveInvite(invite: OpsPilotSnapshot['participants'][number]['acti
     ? project(invite, ['id', 'status', 'expiresAt']) : null;
 }
 
+function safePreview(value: unknown) {
+  if (!value || typeof value !== 'object') return null;
+  const v = value as {title?:string;city?:string;summary?:string;content?:{days?:Array<{offset?:number;title?:string;stops?:Array<{title?:string;description?:string;placeId?:string;startMinuteOfDay?:number;durationMinutes?:number}>}>}};
+  return {title:v.title,city:v.city,summary:v.summary,content:{days:(v.content?.days ?? []).map(d=>({offset:d.offset,title:d.title,stops:(d.stops ?? []).map(s=>({title:s.title,description:s.description,placeId:s.placeId,startMinuteOfDay:s.startMinuteOfDay,durationMinutes:s.durationMinutes}))}))}};
+}
+
 function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
   const { run, participants, contentIntakes, collaboration, checks, facts, beginFacts } = input;
   const readiness = run && (run.status === 'draft' || run.status === 'recruiting')
@@ -30,6 +36,7 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
       run, capabilityConnected: beginFacts?.rpcAvailable === true,
       ownersConfigured: beginFacts?.ownersConfigured === true,
       noticesPinned: beginFacts?.noticesPinned === true,
+      requiredRoles: beginFacts?.requiredRoles,
       syntheticRehearsalPassed: beginFacts?.syntheticRehearsalPassed === true,
     })
     : pilotExecutionReadiness({ run, participants, contentIntakes, collaboration, checks, facts });
@@ -58,7 +65,10 @@ function publicSnapshot(input: RpcSnapshot): OpsPilotSnapshot {
     contentIntakes: contentIntakes.map(intake => ({ ...project(intake, [
       'id', 'creatorParticipantId', 'guideId', 'status', 'guideDraftRevision', 'reviewedGuideVersion',
       'contentDigest', 'title', 'destination', 'authoredLocale', 'revision',
-    ]), ...reviewTarget(intake) })),
+    ]), ...reviewTarget(intake), review: intake.review ? {
+      ...project(intake.review,['sourceSummary','sourceUrls','rightsBasis','rightsEvidenceReference','coverRightsConfirmed','coverRightsEvidenceReference','coverUrl']),
+      draftPreview: safePreview(intake.review.draftPreview),
+    } : null })),
     collaboration: collaboration ? {
       ...project(collaboration, ['id', 'merchantParticipantId', 'creatorParticipantId', 'missionId']),
       steps: collaboration.steps.map(step => project(step, ['code', 'status'])),

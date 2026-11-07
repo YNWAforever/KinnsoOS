@@ -32,7 +32,7 @@ function intakeView(i: PilotSelfIntake | null | undefined): PilotSelfIntake | nu
   };
 }
 
-function selfView({ run, participant, nextStep, readiness, contentConsent, intake, workflowLinks }: PilotSelfSnapshot): PilotSelfSnapshot {
+function selfView({ run, participant, nextStep, readiness, contentConsent, intake, intakes, acknowledgements, workflowLinks }: PilotSelfSnapshot): PilotSelfSnapshot {
   const active = participant?.status === 'active';
   const creator = active && participant.role === 'creator';
   const contentDigest = creator && digest(contentConsent?.digest);
@@ -50,10 +50,13 @@ function selfView({ run, participant, nextStep, readiness, contentConsent, intak
     },
     contentConsent: contentConsent === undefined ? undefined :
       contentDigest && typeof contentConsent?.version === 'string' ? {version:contentConsent.version,digest:contentDigest} : null,
+    intakes: creator && Array.isArray(intakes) ? intakes.map(intakeView).filter((i): i is PilotSelfIntake => i !== null) : [],
+    acknowledgements: active && acknowledgements ? {notificationId:uuid(acknowledgements.notificationId)?acknowledgements.notificationId:null,supportCaseId:uuid(acknowledgements.supportCaseId)?acknowledgements.supportCaseId:null} : null,
     intake: intake === undefined ? undefined : creator ? intakeView(intake) : null,
     workflowLinks: workflowLinks === undefined ? undefined : active && workflowLinks ? {
       merchant: participant.role === 'merchant' ? canonicalLink(workflowLinks.merchant, '/en/merchant/campaigns/') : null,
       trip: participant.role === 'traveller' ? canonicalLink(workflowLinks.trip, '/en/trips/') : null,
+      supportMissionId: uuid(workflowLinks.supportMissionId) ? workflowLinks.supportMissionId : null,
       supportCaseId: uuid(workflowLinks.supportCaseId) ? workflowLinks.supportCaseId : null,
     } : null,
     nextStep: nextStep && { code: nextStep.code, href: nextStep.href, messageKey: nextStep.messageKey },
@@ -82,6 +85,7 @@ async function withRequestId(response: Response, requestId: string): Promise<Res
 }
 
 const metrics: Record<PilotParticipantCommand['type'], PilotMetricAction> = {
+  withdrawParticipation: 'pilot.participant.status_changed',
   claimInvite: 'pilot.participant.joined',
   acceptConsent: 'pilot.consent.accepted',
   submitContentIntake: 'pilot.content.submitted',
