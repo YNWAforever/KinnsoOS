@@ -803,3 +803,13 @@ for(const change of ['pause','revoke','unbind']) test('support create waits for 
    delete from auth.users where id in (${users});commit;`);
  }
 });
+
+check('external URL cannot be recorded as an opaque pilot evidence reference',i=>`
+ ${seed(i)}
+ select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'https://untrusted.example.test/private'}))},'INVALID');
+ select pg_temp.ok(not exists(select 1 from kinnso_internal.pilot_evidence where run_id=${q(i.run)}),'no evidence write');
+ select pg_temp.ok(not exists(select 1 from public.ops_audit_log where actor_ops_member_id=${q(i.ops)} and action='pilot.addEvidenceReference'),'no evidence audit write');
+ ${invoke(i,{type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'ref:1'})}
+ ${manualPass(i,'physical_ios','ref:1')}
+ select pg_temp.ok((select status='pass' from kinnso_internal.pilot_check_rows(${q(i.run)}) where code='physical_ios'),'opaque evidence still works');
+`);

@@ -93,6 +93,7 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
     const evidence = { type: 'addEvidenceReference', runId: id, checkCode: 'physical_ios',
       entityType: 'manual', entityId: id, evidenceReference: 'https://untrusted.example.test/private' };
     await denied(await postOps(operator, { ...evidence, private: { label: suiteLabel } }), 400, 'INVALID', sensitive);
+    await denied(await postOps(operator, evidence), 400, 'INVALID', [...sensitive, evidence.evidenceReference]);
 
     const { inviteCode } = await invite('traveller');
     const requestId = randomUUID();
