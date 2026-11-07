@@ -154,3 +154,67 @@ Production unchanged; deployment UNVERIFIED; Journeys UNCHANGED; real participat
 - Final build and canonical archives plus preserved failed-matrix runtime: `.local-private/final-fix/`.
 - Exact log hashes: `.local-private/final-fix/evidence-manifest.json`; migration/source receipts, aggregate cleanup and advisor comparison alongside it.
 - Private synthetic fixture journals remain local and excluded from source/public artifacts.
+
+
+# Continuation: connected acceptance completed (2026-11-08)
+
+**Latest status: READY_FOR_USER_REVIEW for isolated connected acceptance. This appendix supersedes the earlier BLOCKED_CONNECTED_ACCEPTANCE verdict. Production remains unchanged/deployment UNVERIFIED; Journeys UNCHANGED; real participation BLOCKED; public launch HOLD.**
+
+User authorized continuation, diagnosis of the two failures, and one complete fresh all-green matrix without retries/reuse. No subagents or production actions.
+
+## Changes and diagnosis
+
+Harness commit `18c6596d59e500b461963fe93f4394aa6cd674a1` changes only `apps/journeys/tests/e2e/u26-pilot-control-room.spec.ts`: use exact textbox-role selectors for populated Source summary and Source URLs, bound action/navigation waits to 30 seconds, preserve the original workflow failure when context closure also fails. All 81 assertion lines are byte-equivalent after whitespace normalization, SHA-256 `c7f7b2654d93ea82b4b99712718d23f1228de80ae1d4a73fb33f334a2c509007`. Application and SQL inputs are unchanged. No product assertion was weakened.
+
+Task10B's full connected capability list, including agent and pilot, was restored only in the process: `trips,bookmarks,media,sharing,creator,ops,merchant,notifications,agent,telemetry,pilot`. `.env.test` remained unchanged. The unchanged role-bundle case verified both signed-out and same-identity reauthentication states, including HTTP401/200 and private-control visibility. No provider action was invoked.
+
+The diagnostic trace showed first-intake submission and review/rejection succeeding, then a pending Source summary fill before another update request. Static checks gave 0 exact-label matches and 1 textbox-role match for both populated textareas. Live pilot API observations were 16 ops POST200, 7 ops GET200, 7 participant POST200, 2 participant GET200 and the expected duplicate POST409. No failed request caused the stall, so there was no failed server request to correlate at that action. The timeout cause was the test harness; the subsequent broad-run infrastructure failure is documented below.
+
+Global trace finalization also timed out during the first diagnostic under observed host memory exhaustion. The first diagnostic is **0 passed / 4 failed**, retained as failed evidence. Original partial traces, recovered complete members, aggregate network observations and server logs remain private. The diagnostic reset then replayed all SQL but returned a storage-health timeout; storage recovered, the ledger was checked, and testing continued only after memory headroom returned. Unrelated memory-heavy processes were not touched. No test/server was restarted mid-run and retries remained zero.
+
+The first complete continuation matrix was **72 passed / 1 failed** on build `d2MGeLofu18nfajGcJKZl`, source `18c6596d59e500b461963fe93f4394aa6cd674a1`. The second foreign-merchant ownership probe returned401 instead of the unchanged403/404 assertion. At that time, local GoTrue v2.190.0 logged **173 GET /user failures** with `cannot assign requested address`; startup confirmed zero reusable idle connections. This matches the [upstream Auth pooling defect](https://github.com/supabase/auth/issues/2831). This is isolated infrastructure evidence; no product authorization assertion was relaxed. The failed trace archive is partial (only two complete source members), so exact per-request browser/provider correlation is not claimed. The failure stack, run timing, Auth/server logs and build identity are retained. Both pilot cleanups and the exact operations cleanup completed; 44-table residue was zero before another reset.
+
+Before the new fresh acceptance run, only `supabase_auth_kinnsoos-public-it-20261106` received a temporary `/.env` containing `GOTRUE_DB_MAX_IDLE_POOL_SIZE=20` and `GOTRUE_DB_MAX_POOL_SIZE=20`; the file did not previously exist. The container restarted **before** the final build/server/test, and startup confirmed20/20. It was not restarted during the matrix. The final green run used this recorded infrastructure configuration. After final cleanup, the exact temporary file was removed and the original zero-idle setting restored. Reproduction requires the same isolated prerequisite or an upstream-fixed Auth version. No tracked env/config, application, SQL, production capability, or provider integration changed.
+
+## Green verification and exact identities
+
+- Corrected diagnostic: **4/4** (role-bundle 3, pilot 1); not added to the final matrix count.
+- Fresh final default build: source `18c6596d59e500b461963fe93f4394aa6cd674a1`, tree `645fef5cc556c9712d35b2b88ffb9c7b63fc39ed`, build `h3ZJub5F0iuwSjosXHbFI`. `npm run build` and TypeScript PASS, Next 16.3.8 Webpack, 73 generated entries.
+- Fresh final unseeded reset: **212** exact Git-blob migrations; readback head **20261107165735**; reset command completed successfully.
+- Final complete Chromium matrix: **73/73**, 11 suites, one invocation, one worker, retries0, reuse false. Served HEAD/tree/build matched the expected identity.
+- Actual UI-operated three-intake/review/acknowledgement/support/evidence/withdrawal workflow passed in the full matrix. Real-classified synthetic replay retained the four manual device/AT blockers.
+- Exact cleanup: **43 predicates per pilot scope, 7 operations predicates; 44-table aggregate residue 0**. No reset was used to conceal residue.
+- Prior unchanged GREEN evidence was retained without rerun as requested: focused151; full unit1,587 pass/2 skip; integration59; presentation53; source-package11 pass/1 skip; advisors67 existing warnings. These remain attributed to their original source/logs; the continuation only changes the E2E harness and isolated process/container configuration.
+
+| Final connected suite | Passed |
+|---|---:|
+| account-recovery | 3 |
+| creator-workspace | 20 |
+| inbox-support-workspace | 1 |
+| u04-merchant | 4 |
+| u06-accessibility | 1 |
+| u06-ops-content-admin | 1 |
+| u06-role-bundle | 3 |
+| u11-workspace-recovery | 2 |
+| u25-public-accessibility | 36 |
+| u26-pilot-control-room | 1 |
+| u26-pilot-security | 1 |
+
+## Regenerated artifacts and exact hashes
+
+Post-green source packaging regenerated the tested archive with identical bytes. The 746-input manifest required no membership change; all 747 ZIP entries and member hashes were checked. Canonical members equal committed Git blobs; 61 tested members differ only in line endings. The canonical archive is not claimed as separately built.
+
+- Tested ZIP (exact file bytes): `d23cb4bc0d9a63ff6b71ef77189278dbcd9378c5c43d9774e49925facdfe56fc`.
+- Canonical ZIP (exact file bytes): `a308a7427ef80aef55b4141538e53a48604e5d5eda20a09d6cd9ac329af12eef`.
+- Manifest Git LF blob: `f0c46feb5f0d69406a3b95e22b7c10a7b74dd6cedd6403504661491cc508c323`.
+- Manifest tested checkout: `365912a5c377da99c96f92bb74a0f5ede833ecc1e6624c3969161c71d3da8232`.
+- Eight-pilot-migration Git-blob envelope: `b91430438f465bf5436e6c3eda1cbe7ac7db879db40d50ed0758467a13fc0938` (same SQL, same envelope as earlier report).
+- Release JSON checkout UTF-8 CRLF SHA-256: `9a1e7711a69315531e9e171fd6d1ebc5f57fc7d9fdb316041b0b824f872769a5`; committed LF blob SHA-256: `3052a231cb5ef5a1fcf93965b722b322132115e98df35978aa29509b15525281`.
+- Release Markdown checkout UTF-8 CRLF SHA-256: `67e5a6e5ddf5e745864a25c083334b9a8891353e9bd505615c2a4b345c7bc3bc`; committed LF blob SHA-256: `e979a0d62ecfadb8a4f8f54bd523efbeab7978d9e455116f950b2bc9c6d9be93`.
+- Continuation evidence manifest SHA-256 (exact file bytes): `dbe9e75fb32fa91728b81fe79a3f5656c4a431f8ba8ef049cdfe0d109dd7ba4f`.
+
+The subsequent packet/report commit is documentation only; its ID is reported in the final reply and private final-commit receipt. Earlier failed runs/hashes remain historical and are not represented as current green evidence. The earlier RED-review row's phrase claiming connected support attachment was premature at that point; support attachment is now actually verified by this continuation's final matrix.
+
+## Remaining concerns
+
+No remaining connected-acceptance blocker is claimed on the tested isolated candidate. Existing 67 advisor warnings and Windows-only skips remain. Hosted deployment, exact notices/consent, named owners, privacy/retention decisions, real participants/content, physical iOS/Android, VoiceOver and NVDA remain independent UNVERIFIED/BLOCKED gates. Backup/restore remains WAIVED_BY_USER. No push, production mutation, provider activation, participant contact or subagents occurred. Public launch remains HOLD.
