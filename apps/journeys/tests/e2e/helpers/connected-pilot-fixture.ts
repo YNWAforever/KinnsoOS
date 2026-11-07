@@ -45,11 +45,15 @@ export function connectedPilotFixture(prefix: string) {
   }
 
   async function api(page: Page, path: string, method = 'GET', data?: object) {
-    const response = await page.request.fetch(origin + path, { method, data, headers: { Origin: origin }, maxRedirects: 0 });
+    const correlation = path === '/api/ops/merchant-applications' ? randomUUID() : undefined;
+    const response = await page.request.fetch(origin + path, {
+      method, data, headers: { Origin: origin, ...(correlation ? { 'X-Kinnso-Local-Correlation': correlation } : {}) },
+      maxRedirects: 0,
+    });
     const body = await response.json();
     if (!response.ok() || body.ok !== true) {
       throw Error(method + ' ' + path.split('?')[0] + ' ' + (data && 'command' in data ?
-        (data.command as { type: string }).type : '') + ': ' + response.status() + ' ' + (body.code ?? 'unknown'));
+        (data.command as { type: string }).type : '') + ': ' + response.status() + ' ' + (body.code ?? 'unknown') + (correlation ? ' correlation ' + correlation : ''));
     }
     return body.data;
   }

@@ -209,14 +209,12 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         await forbid(creator, '/api/creator/missions/' + absentMission, 'POST',
           { command: { type: 'join', applicationNote: 'Synthetic scope probe' } }, [403, 404],
           `select count(*) from public.mission_participants where mission_id in ('${missionId}', '${absentMission}')`);
+        const foreignCampaign = await campaignDetail();
         await forbid(traveller, '/api/merchant/campaigns', 'POST', { merchantId,
-          command: { type: 'createDraft', id: randomUUID(), publish: false, reason: 'Synthetic scope probe',
-            input: { title: 'Synthetic scope probe', summary: 'Synthetic scope probe', couponCode: 'SYNTHETIC',
-              couponUrl: 'https://example.test/synthetic', affiliateRate: 0, kinnsoRate: 0, creatorRate: 0,
-              requirements: [], deliverables: [], applicationOpensAt: null, applicationClosesAt: null,
-              scheduleTimeZone: 'UTC', milestones: [] } } }, [403, 404],
-          `select count(*),(select count(*) from kinnso_internal.merchant_audit where merchant_id='${merchantId}')
-            from public.missions where merchant_profile_id='${merchantId}'`);
+          command: { type: 'close', id: missionId, expectedUpdatedAt: foreignCampaign.updatedAt,
+            reason: 'Synthetic scope probe' } }, [403, 404],
+          `select status,updated_at,(select count(*) from kinnso_internal.merchant_audit where merchant_id='${merchantId}')
+            from public.missions where id='${missionId}'`);
       }
       await mission({ type: 'join', applicationNote: 'Synthetic application' });
       const application = (await campaignDetail()).participants[0];

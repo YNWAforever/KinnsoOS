@@ -24,9 +24,9 @@ export async function apiContext(request: Request, capability: string, write = f
   const started=performance.now();
   const correlation = request.headers.get('X-Kinnso-Local-Correlation');
   const trace = (stage: string, status?: number) => {
-    if (capability === 'pilot' && process.env.KINNSO_ENVIRONMENT === 'local' &&
+    if ((capability === 'pilot' || capability === 'ops') && process.env.KINNSO_ENVIRONMENT === 'local' &&
       process.env.KINNSO_LOCAL_BUILD_IDENTITY && uuid(correlation))
-      console.info('pilot-auth', correlation, stage, status ?? 0);
+      console.warn('connected-auth', correlation, stage, status ?? 0);
   };
   if (write && !sameOrigin(request,process.env.KINNSO_SITE_URL)) return {response:failure('FORBIDDEN',403)} as const;
   if (capabilities(process.env)[capability]?.mode !== 'connected') return {response:failure('UNAVAILABLE',503)} as const;
