@@ -284,11 +284,14 @@ AS $function$
  from state;
 $function$;
 
--- Every write path (including status and ops updates) advances the edit token.
-alter table public.community_sessions add column edit_revision integer not null default 1;
+-- Every update advances the revision. Only an insert mints a new lifetime token.
+alter table public.community_sessions add column edit_revision integer not null default 1,
+ add column edit_token uuid not null default gen_random_uuid();
 create function kinnso_internal.advance_community_session_revision() returns trigger
 language plpgsql set search_path='' as $$
 begin
+ -- Ignore caller-supplied tokens on both insert and update.
+ new.edit_token:=case when tg_op='INSERT' then gen_random_uuid() else old.edit_token end;
  new.edit_revision:=case when tg_op='INSERT' then 1 else old.edit_revision+1 end;
  return new;
 end $$;
@@ -296,17 +299,18 @@ revoke all on function kinnso_internal.advance_community_session_revision() from
 create trigger community_sessions_edit_revision before insert or update on public.community_sessions
  for each row execute function kinnso_internal.advance_community_session_revision();
 
-create function public.edit_kinnso_creator_session(p_session_id uuid,p_request_id uuid,p_expected_revision integer,p_input jsonb)
+create function public.edit_kinnso_creator_session(p_session_id uuid,p_request_id uuid,p_expected_token uuid,p_expected_revision integer,p_input jsonb)
 returns jsonb language plpgsql security definer set search_path='' as $$
 declare a uuid:=kinnso_internal.actor(); s public.community_sessions; prior kinnso_internal.requests; dg text; result jsonb;
 begin
- if p_session_id is null or p_request_id is null or p_expected_revision is null or p_expected_revision<1
+ if p_session_id is null or p_request_id is null or p_expected_token is null or p_expected_revision is null or p_expected_revision<1
  or jsonb_typeof(p_input) is distinct from 'object' then raise exception 'INVALID';end if;
  if not exists(select 1 from public.creators where id=a and status='active' for share) then raise exception 'FORBIDDEN';end if;
  perform pg_advisory_xact_lock(hashtextextended(a::text||p_request_id::text,0));
  select * into s from public.community_sessions where id=p_session_id and host_creator_id=a for update;
  if not found then raise exception 'SESSION_NOT_FOUND';end if;
- dg:=kinnso_internal.request_digest(jsonb_build_array('creator.session.edit',p_session_id,p_expected_revision,p_input)::text);
+ if s.edit_token<>p_expected_token then raise exception 'CONFLICT';end if;
+ dg:=kinnso_internal.request_digest(jsonb_build_array('creator.session.edit',p_session_id,p_expected_token,p_expected_revision,p_input)::text);
  select * into prior from kinnso_internal.requests where actor_id=a and request_id=p_request_id;
  if found then
   if prior.digest<>dg then raise exception 'REQUEST_ID_REUSED';end if;
@@ -322,5 +326,5 @@ begin
  insert into kinnso_internal.requests(actor_id,request_id,digest,result) values(a,p_request_id,dg,result);
  return result;
 end $$;
-revoke all on function public.edit_kinnso_creator_session(uuid,uuid,integer,jsonb) from public,anon,authenticated,service_role;
-grant execute on function public.edit_kinnso_creator_session(uuid,uuid,integer,jsonb) to authenticated;
+revoke all on function public.edit_kinnso_creator_session(uuid,uuid,uuid,integer,jsonb) from public,anon,authenticated,service_role;
+grant execute on function public.edit_kinnso_creator_session(uuid,uuid,uuid,integer,jsonb) to authenticated;

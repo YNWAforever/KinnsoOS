@@ -19,7 +19,7 @@ export async function POST(request:Request,{params}:{params:Promise<{id:string}>
   if(current.error)return backendFailure(current.error);
   if(!current.data)return failure('NOT_FOUND',404);
   if(!canSetSessionStatus(current.data.status,{embedUrl:current.data.embed_url},status))return failure('CONFLICT',409);
-  const result=await ctx.client.from('community_sessions').update({status}).eq('id',id).eq('host_creator_id',ctx.actor.id).select('id,status,updated_at,edit_revision').maybeSingle();
+  const result=await ctx.client.from('community_sessions').update({status}).eq('id',id).eq('host_creator_id',ctx.actor.id).select('id,status,updated_at,edit_revision,edit_token').maybeSingle();
   if(result.error)return backendFailure(result.error);
   return result.data?reply({ok:true,data:result.data}):failure('NOT_FOUND',404);
  }catch{return failure('UNAVAILABLE',503);}

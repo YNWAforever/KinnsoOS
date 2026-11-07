@@ -934,16 +934,17 @@ select pg_temp.ok((select status='published' from public.guides where id=${q(i.o
 `);
 
 check('lost edit response replays the original result after a newer edit',i=>{
- const edit=(req,rev,title)=>`select public.edit_kinnso_creator_session(${q(i.slot)},${q(req)},${rev},${json({title,description:'Synthetic',type:'ask_a_creator',starts_at:'2026-11-21T10:00:00Z',duration_minutes:60,destination_tags:[]})})`;
+ const edit=(req,rev,title)=>`format('select public.edit_kinnso_creator_session(%L,%L,%L,%s,%L)',${q(i.slot)},${q(req)},(select token from edit_lifetime),${rev},${json({title,description:'Synthetic',type:'ask_a_creator',starts_at:'2026-11-21T10:00:00Z',duration_minutes:60,destination_tags:[]})})`;
  return `
  insert into public.community_sessions(id,slug,host_creator_id,title,description,type,starts_at,duration_minutes)
  values(${q(i.slot)},${q('synthetic-'+i.slot)},${q(i.creator)},'Synthetic initial','Synthetic','ask_a_creator',now(),60);
- create temp table edit_a as select pg_temp.rpc(${q(i.creator)},${q(edit(i.request,1,'Synthetic A'))}) value;
- select pg_temp.rpc(${q(i.creator)},${q(edit(i.check,2,'Synthetic B'))});
- select pg_temp.ok((select value from edit_a)=pg_temp.rpc(${q(i.creator)},${q(edit(i.request,1,'Synthetic A'))}),'exact receipt');
- select pg_temp.denied(${q(i.creator)},${q(edit(i.request,1,'Synthetic changed'))},'REQUEST_ID_REUSED');
- select pg_temp.denied(${q(i.creator)},${q(edit(randomUUID(),1,'Synthetic stale'))},'CONFLICT');
- select pg_temp.ok((select title='Synthetic B' and edit_revision=3 from public.community_sessions where id=${q(i.slot)}),'newer edit preserved');
+ create temp table edit_lifetime as select edit_token token from public.community_sessions where id=${q(i.slot)};
+ create temp table edit_a as select pg_temp.rpc(${q(i.creator)},${edit(i.request,1,'Synthetic A')}) value;
+ select pg_temp.rpc(${q(i.creator)},${edit(i.check,2,'Synthetic B')});
+ select pg_temp.ok((select value from edit_a)=pg_temp.rpc(${q(i.creator)},${edit(i.request,1,'Synthetic A')}),'exact receipt');
+ select pg_temp.denied(${q(i.creator)},${edit(i.request,1,'Synthetic changed')},'REQUEST_ID_REUSED');
+ select pg_temp.denied(${q(i.creator)},${edit(randomUUID(),1,'Synthetic stale')},'CONFLICT');
+ select pg_temp.ok((select title='Synthetic B' and edit_revision=3 and edit_token=(select token from edit_lifetime) from public.community_sessions where id=${q(i.slot)}),'newer edit preserved');
  `;
 });
 
@@ -969,5 +970,32 @@ check('stale withdrawal from one Auth session cannot withdraw either run after a
  select pg_temp.ok((select status='joined' and revision=2 from kinnso_internal.pilot_participants where id=${q(slot)}),'new slot unchanged');
  select pg_temp.ok((select status='active' and revision=1 from kinnso_internal.pilot_participants where id=${q(i.creatorSlot)}),'old slot unchanged');
  select pg_temp.ok(not exists(select 1 from kinnso_internal.requests where actor_id=${q(i.creator)} and request_id=${q(req)}) and not exists(select 1 from kinnso_internal.pilot_participant_audit where participant_id in (${q(slot)},${q(i.creatorSlot)}) and command_type='withdrawParticipation'),'no withdrawal effects');
+ `;
+});
+check('stale edit after delete and recreate cannot write or leave a receipt',i=>{
+ const insert=title=>`insert into public.community_sessions(id,slug,host_creator_id,title,description,type,starts_at,duration_minutes)
+ values(${q(i.slot)},${q('synthetic-'+i.slot)},${q(i.creator)},${q(title)},'Synthetic','ask_a_creator',now(),60);`;
+ const input={title:'Synthetic stale',description:'Synthetic',type:'ask_a_creator',starts_at:'2026-11-21T10:00:00Z',duration_minutes:60,destination_tags:[]};
+ return `
+ ${insert('Synthetic original')}
+ create temp table original_lifetime as select edit_token token from public.community_sessions where id=${q(i.slot)};
+ update public.community_sessions set status='cancelled',edit_token=gen_random_uuid() where id=${q(i.slot)};
+ select pg_temp.ok((select edit_token=(select token from original_lifetime) from public.community_sessions where id=${q(i.slot)}),'status and direct updates preserve token');
+ delete from public.community_sessions where id=${q(i.slot)};
+ ${insert('Synthetic replacement')}
+ select pg_temp.denied(${q(i.creator)},format('select public.edit_kinnso_creator_session(%L,%L,%L,1,%L)',${q(i.slot)},${q(i.request)},(select token from original_lifetime),${json(input)}),'CONFLICT');
+ select pg_temp.ok((select title='Synthetic replacement' and edit_revision=1 and edit_token<>(select token from original_lifetime) from public.community_sessions where id=${q(i.slot)}),'replacement untouched');
+ select pg_temp.ok(not exists(select 1 from kinnso_internal.requests where actor_id=${q(i.creator)} and request_id=${q(i.request)}),'no receipt');
+ `;
+});
+
+check('an unconfirmed creator cannot replay a confirmed pilot publication receipt',i=>{
+ const publish=`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(i.request)})`;
+ return `
+ ${contentSeed(i)}
+ select pg_temp.rpc(${q(i.creator)},${q(publish)});
+ update auth.users set email_confirmed_at=null where id=${q(i.creator)};
+ select pg_temp.denied(${q(i.creator)},${q(publish)},'FORBIDDEN');
+ select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where entity_id=${q(i.guide)} and command_type='publishGuide'),'no extra audit');
  `;
 });

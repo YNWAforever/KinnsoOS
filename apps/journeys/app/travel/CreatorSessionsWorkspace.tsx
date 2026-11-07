@@ -4,7 +4,7 @@ import {useEffect,useRef,useState} from 'react';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {useApp} from './ui';
 
-type SessionItem={id:string;slug:string;title:string;description:string;type:string;startsAt:string;durationMinutes:number;status:string;embedUrl:string|null;replayUrl:string|null;destinationTags:string[];createdAt:string;updatedAt:string;revision:number};
+type SessionItem={id:string;slug:string;title:string;description:string;type:string;startsAt:string;durationMinutes:number;status:string;embedUrl:string|null;replayUrl:string|null;destinationTags:string[];createdAt:string;updatedAt:string;revision:number;editToken:string};
 type Draft={title:string;description:string;type:string;startsAt:string;durationMinutes:string;embedUrl:string;replayUrl:string;destinationTags:string};
 const empty:Draft={title:'',description:'',type:'destination_briefing',startsAt:'',durationMinutes:'45',embedUrl:'',replayUrl:'',destinationTags:''};
 function sessionDraft(row:SessionItem):Draft {
@@ -38,7 +38,7 @@ export function CreatorSessionsWorkspace({actorId,enabled,path}:{actorId:string|
   const own=generation.current;
   const payload={...draft,durationMinutes:Number(draft.durationMinutes),startsAt:draft.startsAt&&!draft.startsAt.endsWith('Z')?draft.startsAt+':00.000Z':draft.startsAt,destinationTags:draft.destinationTags.split(',').map(tag=>tag.trim()).filter(Boolean)};
   const signature=JSON.stringify(payload);
-  if(!intent.current){const requestId=crypto.randomUUID();intent.current={signature,requestId,body:JSON.stringify({requestId,...(editId?{expectedRevision:current!.revision}:{}),input:payload}),url:editId?'/api/creator/sessions/'+editId:'/api/creator/sessions',method:editId?'PUT':'POST'};}
+  if(!intent.current){const requestId=crypto.randomUUID();intent.current={signature,requestId,body:JSON.stringify({requestId,...(editId?{expectedToken:current!.editToken,expectedRevision:current!.revision}:{}),input:payload}),url:editId?'/api/creator/sessions/'+editId:'/api/creator/sessions',method:editId?'PUT':'POST'};}
   if(intent.current.signature!==signature){setError('IDEMPOTENCY_CONFLICT');return;}
   setBusy(true);setError('');setUnknown(false);
   try{
@@ -59,8 +59,9 @@ export function CreatorSessionsWorkspace({actorId,enabled,path}:{actorId:string|
  }
  async function changeStatus(status:'live'|'ended'|'cancelled'){
   if(!current||busy||unknown||stale)return;const own=generation.current;setBusy(true);setError('');try{const response=await fetch('/api/creator/sessions/'+current.id+'/status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestId:crypto.randomUUID(),status}),cache:'no-store'}),body=await response.json();if(own!==generation.current)return;if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');const nextRevision=body.data.edit_revision;
-   if(nextRevision!==current.revision+1)setStale(true);
-   setCurrent({...current,status:body.data.status,revision:nextRevision===current.revision+1?nextRevision:current.revision});setMessage(t('Session status updated.','活動狀態已更新。'));}catch(next){if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');}finally{if(own===generation.current)setBusy(false);}
+   const sameVersionChain=body.data.edit_token===current.editToken&&nextRevision===current.revision+1;
+   if(!sameVersionChain)setStale(true);
+   setCurrent({...current,status:body.data.status,revision:sameVersionChain?nextRevision:current.revision});setMessage(t('Session status updated.','活動狀態已更新。'));}catch(next){if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');}finally{if(own===generation.current)setBusy(false);}
  }
  const form=<form className="k-card k-form" onSubmit={save} aria-label={t('Creator session form','創作者活動表單')}>
   <label>{t('Session title','活動名稱')}<input required maxLength={160} value={draft.title} disabled={busy||unknown} onChange={event=>field('title',event.target.value)}/></label>

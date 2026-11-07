@@ -340,7 +340,7 @@ test('FINAL creator session lost success retries identical request and rejection
 test('lost edit response retries exact revision and reconciles the newer record',async({page})=>{
  await mount(page);
  const bodies:string[]=[];
- const initial={id:actor,title:'Synthetic initial',description:'Synthetic',type:'ask_a_creator',startsAt:'2026-12-01T10:00:00Z',durationMinutes:60,status:'scheduled',destinationTags:[],revision:1};
+ const initial={id:actor,title:'Synthetic initial',description:'Synthetic',type:'ask_a_creator',startsAt:'2026-12-01T10:00:00Z',durationMinutes:60,status:'scheduled',destinationTags:[],revision:1,editToken:second};
  await page.route(origin+'/api/creator/sessions/'+actor,async route=>{
   if(route.request().method()==='GET')return route.fulfill({json:{ok:true,data:bodies.length?{...initial,title:'Synthetic B',revision:3}:initial}});
   bodies.push(route.request().postData()!);
@@ -356,6 +356,6 @@ test('lost edit response retries exact revision and reconciles the newer record'
  await expect(page.getByText('Session saved on the server.',{exact:true})).toBeVisible();
  expect(bodies).toHaveLength(2);
  expect(bodies[1]).toBe(bodies[0]);
- expect(JSON.parse(bodies[0])).toMatchObject({expectedRevision:1,input:{title:'Synthetic A'}});
+ expect(JSON.parse(bodies[0])).toMatchObject({expectedToken:second,expectedRevision:1,input:{title:'Synthetic A'}});
  await expect(title).toHaveValue('Synthetic B');
 });
