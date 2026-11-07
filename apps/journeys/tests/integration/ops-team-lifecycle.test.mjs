@@ -22,22 +22,39 @@ test('operations invites and audits are retry-safe on the isolated target',async
   createdMembers.push(ownerMember,targetMember);
   const alreadyMember=await owner.client.rpc('admin_invite_ops_member',{p_email:member.email,p_role:'analyst'});assert.equal(alreadyMember.error?.message.includes('already_ops_member'),true);
 
+  const mutate=(args,client=owner.client)=>client.rpc('mutate_kinnso_ops_team',args);
+  const command=(action,fields={})=>({p_request_id:randomUUID(),p_action:action,...fields});
   const inviteEmail=invitee.email;
-  const firstToken=await ok(owner.client.rpc('admin_invite_ops_member',{p_email:inviteEmail,p_role:'admin'}));
-  const secondToken=await ok(owner.client.rpc('admin_invite_ops_member',{p_email:inviteEmail,p_role:'admin'}));
-  assert.equal(secondToken,firstToken);
-  const pending=(await ok(admin.from('kinnso_ops_invites').select('id,email,role,status').eq('email',inviteEmail).eq('status','pending')));assert.equal(pending.length,1);assert.equal(pending[0].role,'admin');
+  const inviteCommand=command('invite',{p_email:inviteEmail,p_role:'admin'});
+  const [first,second]=await Promise.all([ok(mutate(inviteCommand)),ok(mutate({...inviteCommand,p_email:' '+inviteEmail.toUpperCase()+' '}))]);
+  const firstToken=first.token;
+  assert.match(firstToken,/^[a-f0-9]{64}$/);
+  assert.deepEqual(second,first);
+  const pending=await ok(admin.from('kinnso_ops_invites').select('id,email,role,status').eq('email',inviteEmail).eq('status','pending'));
+  assert.equal(pending.length,1);assert.equal(pending[0].role,'admin');
+  const audit=async(entity,action)=>(await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',entity).eq('action',action))).length;
+  assert.equal(await audit(pending[0].id,'invite.create'),1);
+  const conflict=await mutate({...inviteCommand,p_role:'owner'});
+  assert.match(conflict.error?.message??'',/REQUEST_ID_REUSED/);
+  const forbidden=await mutate(inviteCommand,member.client);
+  assert.match(forbidden.error?.message??'',/forbidden/);
 
-  await ok(owner.client.rpc('admin_set_ops_member_role',{p_member_id:targetMember,p_role:'moderator',p_reason:'Synthetic retry-safe role change'}));
-  await ok(owner.client.rpc('admin_set_ops_member_role',{p_member_id:targetMember,p_role:'moderator',p_reason:'Synthetic retry-safe role change'}));
-  assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',targetMember).eq('action','role.set'))).length,1);
+  const roleCommand=command('setRole',{p_target:targetMember,p_role:'moderator',p_reason:'Synthetic role change'});
+  assert.deepEqual(await ok(mutate(roleCommand)),{id:targetMember,role:'moderator'});
+  await ok(mutate(command('setRole',{p_target:targetMember,p_role:'admin',p_reason:'Later role change'})));
+  assert.deepEqual(await ok(mutate(roleCommand)),{id:targetMember,role:'moderator'});
+  assert.equal((await ok(admin.from('kinnso_ops_members').select('role').eq('id',targetMember).single())).role,'admin');
+  assert.equal(await audit(targetMember,'role.set'),2);
 
-  await ok(owner.client.rpc('admin_suspend_ops_member',{p_member_id:targetMember,p_reason:'Synthetic retry-safe suspension'}));
-  await ok(owner.client.rpc('admin_suspend_ops_member',{p_member_id:targetMember,p_reason:'Synthetic retry-safe suspension'}));
-  await ok(owner.client.rpc('admin_reactivate_ops_member',{p_member_id:targetMember,p_reason:'Synthetic retry-safe reactivation'}));
-  await ok(owner.client.rpc('admin_reactivate_ops_member',{p_member_id:targetMember,p_reason:'Synthetic retry-safe reactivation'}));
-  assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',targetMember).eq('action','status.suspended'))).length,1);
-  assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',targetMember).eq('action','status.active'))).length,1);
+  const suspend=command('suspend',{p_target:targetMember,p_reason:'Synthetic suspension'});
+  const reactivate=command('reactivate',{p_target:targetMember,p_reason:'Synthetic reactivation'});
+  assert.deepEqual(await ok(mutate(suspend)),{id:targetMember,status:'suspended'});
+  assert.deepEqual(await ok(mutate(reactivate)),{id:targetMember,status:'active'});
+  assert.deepEqual(await ok(mutate(suspend)),{id:targetMember,status:'suspended'});
+  assert.deepEqual(await ok(mutate(reactivate)),{id:targetMember,status:'active'});
+  assert.equal((await ok(admin.from('kinnso_ops_members').select('status').eq('id',targetMember).single())).status,'active');
+  assert.equal(await audit(targetMember,'status.suspended'),1);
+  assert.equal(await audit(targetMember,'status.active'),1);
 
   const mismatch=await wrong.client.rpc('admin_accept_ops_invite',{p_token:firstToken});assert.equal(mismatch.error?.message.includes('email_mismatch'),true);
   await ok(invitee.client.rpc('admin_accept_ops_invite',{p_token:firstToken}));
@@ -48,9 +65,13 @@ test('operations invites and audits are retry-safe on the isolated target',async
   const revokeEmail=`revoke-${run}@example.test`;emails.push(revokeEmail);
   await ok(owner.client.rpc('admin_invite_ops_member',{p_email:revokeEmail,p_role:'analyst'}));
   const revokeInvite=(await ok(admin.from('kinnso_ops_invites').select('id').eq('email',revokeEmail).single())).id;
-  await ok(owner.client.rpc('admin_revoke_ops_invite',{p_invite_id:revokeInvite}));
-  await ok(owner.client.rpc('admin_revoke_ops_invite',{p_invite_id:revokeInvite}));
-  assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',revokeInvite).eq('action','invite.revoke'))).length,1);
+  const revoke=command('revoke',{p_target:revokeInvite});
+  const revokedResult={id:revokeInvite,status:'revoked'};
+  assert.deepEqual(await ok(mutate(revoke)),revokedResult);
+  // Replaying the receipt must succeed even after the revoked invite is gone.
+  await ok(admin.from('kinnso_ops_invites').delete().eq('id',revokeInvite));
+  assert.deepEqual(await ok(mutate(revoke)),revokedResult);
+  assert.equal(await audit(revokeInvite,'invite.revoke'),1);
  }finally{
   for(const email of emails)await admin.from('kinnso_ops_invites').delete().eq('email',email);
   const memberRows=createdUsers.length?await admin.from('kinnso_ops_members').select('id').in('user_id',createdUsers):{data:[]};

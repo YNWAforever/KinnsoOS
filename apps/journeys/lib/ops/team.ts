@@ -1,5 +1,11 @@
 export const OPS_ROLES=['owner','admin','moderator','analyst'] as const;
 export type OpsRole=(typeof OPS_ROLES)[number];
+export type OpsTeamAction=
+ | {action:'invite';email:string;role:OpsRole}
+ | {action:'revoke';inviteId:string}
+ | {action:'setRole';memberId:string;role:OpsRole;reason:string}
+ | {action:'suspend'|'reactivate';memberId:string;reason:string};
+export type OpsTeamMutation=OpsTeamAction & {requestId:string};
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const token=/^[a-f0-9]{64}$/;
 const invalid=():never=>{throw Error('INVALID_OPS_TEAM')};

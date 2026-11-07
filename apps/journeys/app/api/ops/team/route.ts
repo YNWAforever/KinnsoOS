@@ -1,11 +1,11 @@
 import {apiContext,backendFailure,boundedBody,failure,reply} from '../../../../lib/api/server';
 import {object,uuid} from '../../../../lib/api/validation';
-import {parseMemberReason,parseOpsInvite,parseOpsReason,parseRoleChange,projectMember,projectPendingInvite} from '../../../../lib/ops/team';
+import {parseMemberReason,parseOpsInvite,parseRoleChange,projectMember,projectPendingInvite} from '../../../../lib/ops/team';
 
 function managerFailure(message=''){
  if(/forbidden/.test(message))return failure('FORBIDDEN',403);
  if(/self_(?:role_change|suspend)|last_owner/.test(message))return failure('FORBIDDEN',403);
- if(/already_ops_member|pending_invite_conflict/.test(message))return failure('CONFLICT',409);
+ if(/already_ops_member|pending_invite_conflict|REQUEST_ID_REUSED|INVITE_RECEIPT_UNAVAILABLE/.test(message))return failure('CONFLICT',409);
  if(/not_found|not_found_or_not_(?:pending|active|suspended)/.test(message))return failure('NOT_FOUND',404);
  if(/bad_role|email_(?:required|too_long)|reason_(?:required|too_long)|invalid/.test(message)||/invite_/.test(message))return failure('INVALID',400);
  return failure('UNAVAILABLE',503);
@@ -32,38 +32,34 @@ export async function POST(request:Request){
  const ctx=await apiContext(request,'ops',true);if(ctx.response)return ctx.response;
  if(!ctx.actor.roles.includes('ops'))return failure('FORBIDDEN',403);
  if(!await owner(ctx.client))return failure('FORBIDDEN',403);
- let body:Record<string,unknown>;
- let started=false;
- try{body=object(await boundedBody(request,32768),['action','email','role','reason','memberId','inviteId']);}catch{return failure('INVALID',400);}
+ let args: {p_request_id:string;p_action:string;p_target?:string;p_email?:string;p_role?:string;p_reason?:string};
  try{
-  if(body.action==='invite'){
-   if(Object.keys(body).some(key=>!['action','email','role'].includes(key)))return failure('INVALID',400);
-   const input=parseOpsInvite({email:body.email,role:body.role});
-   started=true;
-   const result=await ctx.client.rpc('admin_invite_ops_member',{p_email:input.email,p_role:input.role});
-   if(!result.error)return reply({ok:true,data:{token:result.data}},201);
-   return managerFailure(result.error.message);
+  const body=object(await boundedBody(request,32768),['requestId','action','email','role','reason','memberId','inviteId']);
+  if(!uuid(body.requestId)||typeof body.action!=='string')return failure('INVALID',400);
+  const {requestId,action,...input}=body;
+  args={p_request_id:requestId,p_action:action};
+  switch(action){
+   case 'invite': {
+    const {email,role}=parseOpsInvite(input);
+    Object.assign(args,{p_email:email,p_role:role});break;
+   }
+   case 'revoke':
+    if(Object.keys(input).length!==1||!uuid(input.inviteId))return failure('INVALID',400);
+    args.p_target=input.inviteId;break;
+   case 'setRole': {
+    const {memberId,role,reason}=parseRoleChange(input);
+    Object.assign(args,{p_target:memberId,p_role:role,p_reason:reason});break;
+   }
+   case 'suspend':
+   case 'reactivate': {
+    const {memberId,reason}=parseMemberReason(input);
+    Object.assign(args,{p_target:memberId,p_reason:reason});break;
+   }
+   default:return failure('INVALID',400);
   }
-  if(body.action==='revoke'){
-   if(Object.keys(body).some(key=>!['action','inviteId'].includes(key))||typeof body.inviteId!=='string'||!uuid(body.inviteId))return failure('INVALID',400);
-   started=true;
-   const result=await ctx.client.rpc('admin_revoke_ops_invite',{p_invite_id:body.inviteId});
-   return result.error?managerFailure(result.error.message):reply({ok:true,data:{id:body.inviteId,status:'revoked'}});
-  }
-  if(body.action==='setRole'){
-   if(Object.keys(body).some(key=>!['action','memberId','role','reason'].includes(key)))return failure('INVALID',400);
-   const input=parseRoleChange({memberId:body.memberId,role:body.role,reason:body.reason});
-   started=true;
-   const result=await ctx.client.rpc('admin_set_ops_member_role',{p_member_id:input.memberId,p_role:input.role,p_reason:input.reason});
-   return result.error?managerFailure(result.error.message):reply({ok:true,data:{id:input.memberId,role:input.role}});
-  }
-  if(body.action==='suspend'||body.action==='reactivate'){
-   if(Object.keys(body).some(key=>!['action','memberId','reason'].includes(key)))return failure('INVALID',400);
-   const input=parseMemberReason({memberId:body.memberId,reason:body.reason}),fn=body.action==='suspend'?'admin_suspend_ops_member':'admin_reactivate_ops_member';
-   started=true;
-   const result=await ctx.client.rpc(fn,{p_member_id:input.memberId,p_reason:input.reason});
-   return result.error?managerFailure(result.error.message):reply({ok:true,data:{id:input.memberId,status:body.action==='suspend'?'suspended':'active'}});
-  }
-  return failure('INVALID',400);
- }catch{return failure(started?'UNAVAILABLE':'INVALID',started?503:400);}
+ }catch{return failure('INVALID',400);}
+ try{
+  const result=await ctx.client.rpc('mutate_kinnso_ops_team',args);
+  return result.error?managerFailure(result.error.message):reply({ok:true,data:result.data},args.p_action==='invite'?201:200);
+ }catch{return failure('UNAVAILABLE',503);}
 }

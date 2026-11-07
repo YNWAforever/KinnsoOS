@@ -750,6 +750,7 @@
     "tests/contracts/20261107152000_kinnso_pilot_duplicate_intake.sql": "supabase/migrations/20261107152000_kinnso_pilot_duplicate_intake.sql",
     "tests/contracts/20261107155000_kinnso_pilot_stored_intake_identity.sql": "supabase/migrations/20261107155000_kinnso_pilot_stored_intake_identity.sql",
     "tests/contracts/20261107165735_kinnso_pilot_final_review.sql": "supabase/migrations/20261107165735_kinnso_pilot_final_review.sql",
-    "tests/contracts/20261108120000_kinnso_pilot_residual_races.sql": "supabase/migrations/20261108120000_kinnso_pilot_residual_races.sql"
+    "tests/contracts/20261108120000_kinnso_pilot_residual_races.sql": "supabase/migrations/20261108120000_kinnso_pilot_residual_races.sql",
+    "tests/contracts/20261108123000_kinnso_ops_team_mutation_receipts.sql": "supabase/migrations/20261108123000_kinnso_ops_team_mutation_receipts.sql"
   }
 }
