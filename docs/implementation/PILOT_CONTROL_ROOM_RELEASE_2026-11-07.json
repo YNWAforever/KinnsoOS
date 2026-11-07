@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "readiness": "READY_FOR_USER_REVIEW",
+  "publicLaunch": "HOLD",
+  "source": {
+    "commit": "56161e2f6636850a5dac607738c419db1ba8f232",
+    "tree": "7781886e2618542ae3e62f1e0f08ba94e2c8ff4d",
+    "branch": "codex/single-origin-design-20261105",
+    "scope": "Exact tested runtime baseline; the later packet commit adds documentation and completes the corresponding-source manifest."
+  },
+  "sourceManifest": {
+    "path": "apps/journeys/scripts/source-manifest.json",
+    "testedSha256": "e28d4802015897f0d8fb8d5eda8104c2ef55bf61cb3f8169e1b8d7bdaa95d0eb",
+    "packetSha256": "ab3d5d53dcc8be8bef04c978171b6a2fa83a691bd76ba674a3e78d91e095a583",
+    "runtimeInputsAdded": 29,
+    "packageInputs": 744
+  },
+  "migrations": {
+    "files": [
+      {
+        "version": "20261107081531",
+        "name": "20261107081531_kinnso_pilot_control_room_schema.sql",
+        "sha256": "74c523d0c672925f39b4f51950b0fa7971ab497f38d3bf4820f3c0d9bd7adbc0"
+      },
+      {
+        "version": "20261107085017",
+        "name": "20261107085017_kinnso_pilot_control_room_rpcs.sql",
+        "sha256": "a217f40afc932e16e318a55773cc0018d2b575ebf61a02cfa22be60eab319e68"
+      },
+      {
+        "version": "20261107110059",
+        "name": "20261107110059_kinnso_pilot_readiness_publication_contract.sql",
+        "sha256": "b2702fdaa41963f2f1b44045a22d371e23c7867e695e380b199a1ed1ee2245e0"
+      },
+      {
+        "version": "20261107135337",
+        "name": "20261107135337_kinnso_pilot_traveller_support_context.sql",
+        "sha256": "d611bea3668888d7366544ab481d6bc14bc15e553a1ae18bf7e2b32c9616818e"
+      },
+      {
+        "version": "20261107145100",
+        "name": "20261107145100_kinnso_pilot_opaque_evidence.sql",
+        "sha256": "246579588dd27726de6d32076ca42512069d5b587758040bbae6c35ebf845b6d"
+      },
+      {
+        "version": "20261107152000",
+        "name": "20261107152000_kinnso_pilot_duplicate_intake.sql",
+        "sha256": "eabb4914d03924c0bcbfb58db7c3fa60efcfe49de502e1fa0587666c887188d2"
+      },
+      {
+        "version": "20261107155000",
+        "name": "20261107155000_kinnso_pilot_stored_intake_identity.sql",
+        "sha256": "13e49add8e9e57c32c337df8fa92ff268a749631282be32542b2c02412734588"
+      }
+    ],
+    "envelopeSha256": "a47fc2f30279058b59915da813027e1c6b3e75f3366133738ac87205fc40a2a0",
+    "envelopeEncoding": "UTF-8, ascending version; each LF-terminated line is version + space + filename + space + lowercase SHA-256 of exact Git blob."
+  },
+  "isolatedTarget": {
+    "project": "kinnsoos-public-it-20261106",
+    "api": "http://127.0.0.1:59721",
+    "dbPort": 59722,
+    "databaseContainer": "supabase_db_kinnsoos-public-it-20261106",
+    "ledgerCount": 211,
+    "schemaHead": "20261107155000",
+    "seeded": false,
+    "ownershipVerified": true
+  },
+  "production": {
+    "changed": false,
+    "deploymentChanged": false,
+    "freshRead": false,
+    "recordedRollbackDeployment": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+    "recordedSource": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+    "recordedLedgerCount": 209,
+    "recordedSchemaHead": "20261107020000",
+    "recordedCapabilities": [
+      "trips",
+      "bookmarks",
+      "creator",
+      "merchant",
+      "ops",
+      "notifications"
+    ],
+    "pilotEnabled": false,
+    "excludedCapabilities": [
+      "pilot",
+      "agent",
+      "media",
+      "sharing",
+      "telemetry"
+    ],
+    "receipt": "docs/production-rollout-audit-2026-11-07.json"
+  },
+  "checks": {
+    "unit": {
+      "total": 1585,
+      "passed": 1583,
+      "failed": 0,
+      "skipped": 2,
+      "initial": {
+        "total": 1585,
+        "passed": 1577,
+        "failed": 1,
+        "skipped": 7,
+        "cause": "Windows hard-link EPERM"
+      }
+    },
+    "typecheck": {
+      "passed": 1,
+      "failed": 0
+    },
+    "productionBuild": {
+      "attestedArchive": {
+        "sha256": "09ce1545dc9b3750b180643f96d3354858e927e7a6271fb717301b8c241420cb",
+        "inputs": 715,
+        "sourceRevision": "56161e2f6636850a5dac607738c419db1ba8f232",
+        "dirty": false
+      },
+      "default": "FAIL_WINDOWS_JUNCTION",
+      "webpack": "PASS",
+      "generated": 73
+    },
+    "sourcePackage": {
+      "total": 12,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 1,
+      "skip": "Windows symlink creation unavailable"
+    },
+    "advisors": {
+      "totalWarnings": 67,
+      "securityWarnings": 13,
+      "performanceWarnings": 54,
+      "newSecurityKeys": 0,
+      "performanceBaselineCompared": true,
+      "baselineKeyCount": 67,
+      "newKeys": [],
+      "removedKeys": [],
+      "pilotObjectsFlagged": 0,
+      "canonicalLedgerRestored": true
+    },
+    "integration": {
+      "total": 50,
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "scope": "Pilot SQL, direct grants/RLS, function ownership, exact run and evidence boundaries and integration fixtures"
+    },
+    "presentation": {
+      "total": 49,
+      "passed": 49,
+      "failed": 0,
+      "scope": "Separate desktop Chrome presentation suite with stubbed transport"
+    },
+    "browser": {
+      "operationsCleanupPredicates": 7,
+      "artifact": {
+        "head": "56161e2f6636850a5dac607738c419db1ba8f232",
+        "tree": "7781886e2618542ae3e62f1e0f08ba94e2c8ff4d",
+        "buildId": "MDmYdK-8eWzfQzUzhN8M6"
+      },
+      "expected": 73,
+      "passed": 73,
+      "failed": 0,
+      "workerCount": 1,
+      "retries": 0,
+      "serverReused": false,
+      "suites": {
+        "account-recovery": {
+          "expected": 3,
+          "passed": 3,
+          "failed": 0
+        },
+        "creator-workspace": {
+          "expected": 20,
+          "passed": 20,
+          "failed": 0
+        },
+        "inbox-support-workspace": {
+          "expected": 1,
+          "passed": 1,
+          "failed": 0
+        },
+        "u04-merchant": {
+          "expected": 4,
+          "passed": 4,
+          "failed": 0
+        },
+        "u06-accessibility": {
+          "expected": 1,
+          "passed": 1,
+          "failed": 0
+        },
+        "u06-ops-content-admin": {
+          "expected": 1,
+          "passed": 1,
+          "failed": 0
+        },
+        "u06-role-bundle": {
+          "expected": 3,
+          "passed": 3,
+          "failed": 0
+        },
+        "u11-workspace-recovery": {
+          "expected": 2,
+          "passed": 2,
+          "failed": 0
+        },
+        "u25-public-accessibility": {
+          "expected": 36,
+          "passed": 36,
+          "failed": 0
+        },
+        "u26-pilot-control-room": {
+          "expected": 1,
+          "passed": 1,
+          "failed": 0
+        },
+        "u26-pilot-security": {
+          "expected": 1,
+          "passed": 1,
+          "failed": 0
+        }
+      },
+      "cleanupPredicatesPerPilotScope": {
+        "task10a": 43,
+        "task10b": 43
+      },
+      "lineEndingControlAttempt": {
+        "passed": 6,
+        "failed": 0,
+        "cause": "Stopped to restage exact Git blob bytes"
+      },
+      "interruptedAttempt": {
+        "passed": 0,
+        "failed": 5,
+        "unfinished": 68,
+        "cause": "Incomplete local capability settings"
+      }
+    }
+  },
+  "blockers": {
+    "realNoticeArtifactsAndHashes": "BLOCKED/NOT_RUN",
+    "namedSupportAndPrivacyOwners": "BLOCKED/NOT_RUN",
+    "consentedRealParticipantsAndContent": "BLOCKED/NOT_RUN",
+    "approvedPrivacyAndRetentionPolicy": "BLOCKED/NOT_RUN",
+    "physicalIOS": "BLOCKED/NOT_RUN",
+    "physicalAndroid": "BLOCKED/NOT_RUN",
+    "VoiceOver": "BLOCKED/NOT_RUN",
+    "NVDA": "BLOCKED/NOT_RUN"
+  },
+  "privacyAndRetention": "Completed runs remain retained; no automatic retention or deletion term. Approve exact EN and zh-HK notice bytes/digests, processors, owner contacts, retention/redaction and escalation workflow before collecting real information. Keep exports restricted and free of private text and raw invite material.",
+  "historicalEvidence": {
+    "7A": {
+      "focusedPassed": 68,
+      "isolatedPilotAndCreatorPassed": 48,
+      "scope": "Exact consent digest, claim recovery and participant source rights"
+    },
+    "8": {
+      "presentationPassed": 49,
+      "scope": "Desktop EN/zh-HK keyboard, focus and reflow"
+    },
+    "9": {
+      "focusedPassed": 33,
+      "scope": "Canonical routes, default disconnection and gate wiring"
+    },
+    "10": {
+      "unattestedBrowserPassed": 3,
+      "unattestedBrowserFailed": 1,
+      "isolatedPassed": 45,
+      "scope": "Guide fixture and initial regression; historical logout timeout"
+    },
+    "10A": {
+      "connectedPassed": 1,
+      "runScopes": 2,
+      "integrationPassed": 49,
+      "scope": "Connected rehearsal and real-classified fixture, scoped support, exact export and cleanup"
+    },
+    "10B": {
+      "approvedBase": "56161e2f6636850a5dac607738c419db1ba8f232",
+      "connectedPassed": 73,
+      "integrationPassed": 50,
+      "scope": "Earlier exact-source negative and broad acceptance; separate from Task 11"
+    }
+  },
+  "backupRestore": "WAIVED_BY_USER",
+  "participantMessagesSent": false,
+  "realParticipantsUsed": false,
+  "externalProvidersActivated": false,
+  "pushed": false,
+  "nextApproval": "Review the isolated packet first. Separately authorize any push, exact target-bound migration and deployment plan with preflight and rollback, production capability activation, and any real pilot intake or participant contact. Public launch requires an independent approval after all external gates pass."
+}
