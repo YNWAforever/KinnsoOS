@@ -76,6 +76,7 @@
     "app/api/ops/submission/route.ts",
     "app/api/ops/summary/route.ts",
     "app/api/ops/team/route.ts",
+    "app/api/pilot/route.ts",
     "app/api/reconciliation/route.ts",
     "app/api/revalidate/route.ts",
     "app/api/reports/route.ts",

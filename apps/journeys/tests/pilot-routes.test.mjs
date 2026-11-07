@@ -46,8 +46,8 @@ async function compile(relative) {
         builder.onResolve({filter: /contracts\/capabilities(?:\.ts)?$/}, () => ({path: 'capabilities', namespace: 'pilot-test'}));
         builder.onLoad({filter: /.*/, namespace: 'pilot-test'}, ({path}) => ({
           contents: path === 'session' ? 'export async function serverClient(){return globalThis.fixture.client}'
-            : path === 'observer' ? 'export function observeRequest(){}'
-              : 'export function capabilities(){return {pilot:{mode:globalThis.fixture.mode}}}',
+            : path === 'observer' ? 'export function observeRequest(){}; export const timedRpc=(client,name,args)=>client.rpc(name,args); export async function successEvent(){}'
+              : 'export function capabilities(){return {pilot:{mode:globalThis.fixture.mode},creator:{mode:globalThis.fixture.mode}}}',
           loader: 'js',
         }));
       },
@@ -93,7 +93,7 @@ function setup(options = {}) {
       if (state.denied === 403) return {data: null, error: {message: 'FORBIDDEN'}};
       if (state.error) return {data: null, error: state.error};
       return {
-        data: name === 'get_kinnso_ops_pilot' ? state.data
+        data: name.startsWith('get_kinnso_') ? state.data
           : state.mutation ?? {snapshot: state.data}, error: null,
       };
     },
@@ -579,4 +579,91 @@ test('overlapping identical commands retain their request identity if either res
   assert.equal((await second).requestId, originalRequestId);
   await opsPilot.command(structuredClone(createRun));
   assert.equal(JSON.parse(state.attempts[2].options.body).requestId, originalRequestId);
+});
+
+const participantCode = await compile('../app/api/pilot/route.ts');
+const publishCode = await compile('../app/api/creator/guides/[id]/publish/route.ts');
+const self = {
+  run: {id: runId, name: 'Pilot', status: 'running'},
+  participant: {id: participantId, role: 'creator', status: 'active', consentVersion: 'v1'},
+  nextStep: {code: 'open_workflow', href: '/en/studio/guides', messageKey: 'pilot.next.open_workflow'},
+  readiness: {stage: 'executing', readyToBegin: true, executionComplete: false, blockers: []},
+};
+const claim = {type: 'claimInvite', requestId, code: 'synthetic-example-invite-value-for-tests'};
+
+test('participant route accepts only self requests and projects RPC readiness unchanged', async () => {
+  const {state} = setup({data: {...self, facts: {private: true}, participant: {...self.participant, email: 'private'}}});
+  const route = load(participantCode, state);
+  assert.equal(route.PUT, undefined);
+  assert.equal(route.PATCH, undefined);
+  for (const key of ['actorId', 'userId', 'runId']) {
+    await expectFailure(await route.GET(request(undefined, '?' + key + '=' + runId)), 400, 'INVALID');
+    await expectFailure(await route.POST(request({requestId, command: {...claim, [key]: runId}})), 400, 'INVALID');
+    await expectFailure(await route.POST(request({requestId, command: claim, [key]: runId})), 400, 'INVALID');
+  }
+  await expectFailure(await route.POST(request({requestId: otherId, command: claim})), 400, 'INVALID');
+  await expectFailure(await route.POST(request({requestId, command: claim}, '', {origin: 'https://foreign.test'})), 403, 'FORBIDDEN', requestId);
+  assert.equal(state.calls.length, 0);
+  assert.deepEqual(await (await route.GET(request())).json(), {ok: true, data: self});
+  assert.equal(state.calls[0].name, 'get_kinnso_pilot_self');
+});
+
+test('participant claim denials are indistinguishable and success uses only the command snapshot', async () => {
+  const {state} = setup({data: self, mutation: {snapshot: {...self, run: {...self.run, id: otherId}}, private: 'hidden'}});
+  const route = load(participantCode, state);
+  const envelope = {requestId, command: claim};
+  for (const details of ['wrong', 'expired', 'claimed', 'revoked']) {
+    state.error = {message: 'CONFLICT', details};
+    assert.deepEqual(await expectFailure(await route.POST(request(envelope)), 404, 'NOT_FOUND', requestId),
+      {ok: false, code: 'NOT_FOUND', retryable: false, requestId});
+  }
+  assert.deepEqual(state.events, []);
+  state.error = null;
+  assert.deepEqual(await (await route.POST(request(envelope))).json(),
+    {ok: true, data: {snapshot: {...self, run: {...self.run, id: otherId}}}});
+  assert.deepEqual(JSON.parse(JSON.stringify(state.calls.at(-1))), {
+    name: 'apply_kinnso_pilot_participant_command', args: {p_request_id: requestId, p_command: claim},
+  });
+  assert.deepEqual(JSON.parse(JSON.stringify(state.events)),
+    [[{action: 'pilot.participant.joined', runId: otherId, participantId}]]);
+});
+
+test('participant repository retains the unresolved request ID for the same command', async () => {
+  const attempts = [];
+  const {pilot} = load(repositoryCode, {fetch: async (url, options) => {
+    attempts.push({url, body: JSON.parse(options.body)});
+    return attempts.length === 1
+      ? Response.json({ok: false, retryable: true, code: 'UNAVAILABLE'}, {status: 503})
+      : Response.json({ok: true, data: {snapshot: self}});
+  }});
+  await pilot.command(claim);
+  await pilot.command({...claim, requestId: otherId});
+  assert.equal(attempts[0].url, '/api/pilot');
+  assert.deepEqual(attempts[0], attempts[1]);
+  assert.equal(attempts[0].body.requestId, attempts[0].body.command.requestId);
+});
+
+test('publish trusts the atomic RPC for review and emits only confirmed pilot publication IDs', async () => {
+  const {state} = setup();
+  const route = load(publishCode, state);
+  const post = expectedRevision => route.POST(request({requestId, expectedRevision}), {params: Promise.resolve({id: otherId})});
+  state.error = {message: 'PILOT_REVIEW_REQUIRED'};
+  await expectFailure(await post(1), 409, 'PILOT_REVIEW_REQUIRED');
+  await expectFailure(await post(2), 409, 'PILOT_REVIEW_REQUIRED');
+  state.error = {message: 'CONFLICT'};
+  await expectFailure(await post(2), 409, 'CONFLICT');
+  assert.deepEqual(state.events, []);
+  state.error = null;
+  const ordinary = {draft: {revision: 1}, snapshot: {version: 1}};
+  state.mutation = ordinary;
+  assert.deepEqual(await (await post(1)).json(), {ok: true, data: ordinary});
+  assert.deepEqual(state.events, []);
+  state.mutation = {...ordinary, runId, contentIntakeId: intakeId};
+  assert.equal((await post(1)).status, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.events)),
+    [[{action: 'pilot.content.published', runId, contentIntakeId: intakeId}]]);
+  state.throws = true;
+  await expectFailure(await post(1), 503, 'UNAVAILABLE');
+  assert.equal(state.events.length, 1);
+  assert.ok(state.calls.every(call => call.name === 'publish_kinnso_pilot_guide_draft'));
 });

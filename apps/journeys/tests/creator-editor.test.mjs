@@ -53,26 +53,46 @@ for(const item of ['day','stop'])for(const focusState of ['control','chosen-fiel
  });
 }
 
-test('a non-retryable save cannot restart autosave until correction or an explicit retry',async()=>{
+for(const locale of [null,'en','zh-HK'])test(locale ? 'pilot publish preserves the draft and retry intent in '+locale : 'a non-retryable save cannot restart autosave until correction or an explicit retry',async()=>{
  const source=await readFile(new URL('../app/travel/CreatorWorkspace.tsx',import.meta.url),'utf8');
  const compiled=await transform(source+'\nexport {CreatorEditor};',{loader:'tsx',format:'cjs',jsx:'automatic',target:'es2022'});
  const states=[],refs=[],effects=[],timers=[],writes=[];let cursor=0,tree;
  const hooks={useId:()=>':editor:',useState(initial){const i=cursor++;if(!(i in states))states[i]=typeof initial==='function'?initial():initial;return[states[i],v=>states[i]=typeof v==='function'?v(states[i]):v];},useRef(initial){const i=cursor++;return refs[i]??(refs[i]={current:initial});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((v,j)=>!Object.is(v,old.deps[j])))effects[i]={work,deps,cleanup:old?.cleanup,pending:true};}};
  const blank=()=>({title:'',city:'',summary:'',content:{days:[{offset:0,title:'',stops:[{title:'',description:'',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}]}});
+ const payload={...blank(),title:'Retained input',city:'Hong Kong',summary:'Summary'}; payload.content.days[0].stops[0].title='Stop';
  const jsx=(type,props)=>({type,props}),module={exports:{}};
  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,
   setTimeout:fn=>{const timer={fn,active:true};timers.push(timer);return timer;},clearTimeout:timer=>timer.active=false,
   require:name=>{
    if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-   if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
-   if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{save:(...args)=>new Promise(resolve=>writes.push({args,resolve}))}};
+   if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==="zh-HK"?zh:en,href:path=>'/en/'+path})};
+   if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{get:async()=>({ok:true,data:{payload,revision:3,publishedVersion:0,sourceChanged:false}}),publish:(...args)=>new Promise(resolve=>writes.push({args,resolve})),save:(...args)=>new Promise(resolve=>writes.push({args,resolve}))}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
    if(name==='./CreatorCollaborationTasks')return{CreatorCollaborationTasks(){throw Error('The editor must not render the overview');}};
    if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts')return{};if(name==='../../lib/creators/editor-operations')return ops;
    throw Error('Unexpected dependency '+name);
   }}));
- function render(){cursor=0;tree=module.exports.CreatorEditor({path:'studio/guides/new'});for(const e of effects)if(e?.pending){e.pending=false;e.cleanup?.();e.cleanup=e.work();}}
+ function render(){cursor=0;tree=module.exports.CreatorEditor({path:locale?'studio/guides/example/edit':'studio/guides/new'});for(const e of effects)if(e?.pending){e.pending=false;e.cleanup?.();e.cleanup=e.work();}}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(n=>elements(n))];}
+ if(locale){
+  render();await Promise.resolve();render();
+  const find=label=>elements().find(e=>e.type==='button'&&e.props.children===label);
+  const publish=()=>find(locale==='en'?'Publish structured version':'發布結構化版本');
+  assert.equal(publish().props.disabled,false);
+  const attempt=publish().props.onClick();render();
+  writes[0].resolve({ok:false,code:'UNAVAILABLE',retryable:true});await attempt;render();
+  const retry=elements().find(e=>e.type==='button'&&e.props.onClick&&e.props.children===(locale==='en'?'Retry same action':'重試同一操作'));
+  assert.ok(retry);
+  const retried=retry.props.onClick();render();
+  assert.deepEqual(writes[1].args,writes[0].args);
+  writes[1].resolve({ok:false,code:'PILOT_REVIEW_REQUIRED',retryable:false});await retried;render();
+  assert.ok(elements().some(e=>e.props.children===(locale==='en'
+    ? 'This draft needs pilot review before publication. Your draft is kept.'
+    : '這份草稿須通過試點審核才能發布，草稿已保留。')));
+  assert.ok(elements().some(e=>e.props.value==='Retained input'));
+  assert.equal(publish().props.disabled,false);
+  return;
+ }
  const button=()=>elements().find(e=>e.type==='button'&&e.props.children==='Save draft');render();render();
  const title=elements().find(e=>e.type==='label'&&e.props.children?.[0]==='Guide title').props.children[1];title.props.onChange({target:{value:'Retained input'}});render();
  const action=button().props.onClick();render();writes[0].resolve({ok:false,code:'INVALID',retryable:false});await action;render();

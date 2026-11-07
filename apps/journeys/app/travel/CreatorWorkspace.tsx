@@ -119,7 +119,7 @@ function CreatorEditor({ path }: { path: string }) {
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
    if(command.action==='save'&&!r.retryable)setSaveRejected(true);
    setMessage('');
-   setActionError({ action: command.action, message: r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
+   setActionError({ action: command.action, message: r.code === 'PILOT_REVIEW_REQUIRED' ? t('This draft needs pilot review before publication. Your draft is kept.', '這份草稿須通過試點審核才能發布，草稿已保留。') : r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
   }
   intent.current = null; setPending(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
