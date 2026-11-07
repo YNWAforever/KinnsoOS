@@ -184,6 +184,7 @@ async function getParticipant(actorId: string, signal?: AbortSignal): Promise<Ap
 }
 
 export const pilot = {
+  hasPending: (actorId: string | null) => !!actorId && participantIntent?.actorId === actorId,
   invalidate: invalidateParticipant,
   selectActor: selectParticipant,
   subscribeInvalidation: subscribeAccountInvalidation,
