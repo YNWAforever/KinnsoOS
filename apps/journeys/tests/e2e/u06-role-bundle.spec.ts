@@ -42,7 +42,7 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
   const created = await admin.auth.admin.createUser({email, password, email_confirm: true});
   expect(created.error).toBeNull();
   const actorId = created.data.user!.id;
-  let release!: () => void, held = false;
+  let release!: () => void, heldUrl: string | undefined;
   const released = new Promise<void>(resolve => {release = resolve;});
   let logoutPage: Page | undefined;
   try {
@@ -55,14 +55,14 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
     expect((await page.request.get('/api/trips')).status()).toBe(200);
     await page.route('**/_next/static/chunks/*.js', async route => {
       const response = await route.fetch();
-      if (!held && (await response.text()).includes(agentMarker)) {
-        held = true;
+      if (!heldUrl && (await response.text()).includes(agentMarker)) {
+        heldUrl = route.request().url();
         await released;
       }
       await route.fulfill({response});
     });
     await page.goto('/en/agent', {waitUntil: 'commit'});
-    await expect.poll(() => held, {timeout: 10000}).toBe(true);
+    await expect.poll(() => Boolean(heldUrl), {timeout: 10000}).toBe(true);
     // Witness real broadcasts without forwarding them or changing product state.
     await page.evaluate(() => {
       const witness = window as unknown as {lazyLogoutCount: number; lazyLogoutChannel: BroadcastChannel};
@@ -79,8 +79,12 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
     await expect.poll(() => page.evaluate(() => (window as unknown as {lazyLogoutCount: number}).lazyLogoutCount)).toBeGreaterThanOrEqual(2);
     const denied = await page.request.get('/api/trips');
     expect(denied.status()).toBe(401);
+    // Synchronize on the specific delayed script, not unrelated page traffic.
+    const script = page.waitForResponse(response => response.url() === heldUrl, {timeout: 10000});
     release();
-    await page.waitForLoadState('networkidle');
+    const delivered = await script;
+    expect(delivered.ok()).toBe(true);
+    expect(await delivered.finished()).toBeNull();
     const panel = page.locator('section.k-page').filter({has: page.getByRole('heading', {name: 'Task preview', exact: true})}).first();
     if (await panel.getByLabel('Query', {exact: true}).count()) {
       await panel.getByLabel('Query', {exact: true}).fill('Synthetic query after completed logout');

@@ -1,8 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { createHash, randomUUID } from 'node:crypto';
 import { verifiedConnectedArtifact } from '../../scripts/connected-build-identity.mjs';
 import { connectedPilotFixture } from './helpers/connected-pilot-fixture';
 
+const roles = ['traveller', 'creator', 'merchant'] as const;
 const fixture = connectedPilotFixture('task10a');
 const { origin, suiteLabel, runIds, guides, missions, signIn, api, ops, participant } = fixture;
 

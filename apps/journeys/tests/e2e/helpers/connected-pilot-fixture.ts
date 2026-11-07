@@ -19,7 +19,6 @@ export function connectedPilotFixture(prefix: string) {
   const serviceClient = () => createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false, autoRefreshToken: false } });
   let admin: ReturnType<typeof serviceClient>;
-  const roles = ['traveller', 'creator', 'merchant'] as const;
 
   test.beforeAll(() => {
     loadEnvFile('.env.test');
@@ -62,9 +61,9 @@ export function connectedPilotFixture(prefix: string) {
   }
 
   function sql(statement: string) {
-        return execFileSync('docker', ['exec', '-i', target.dbContainer, 'psql',
-          '-X', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq'],
-        { input: statement, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+    return execFileSync('docker', ['exec', '-i', target.dbContainer, 'psql',
+      '-X', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq'],
+    { input: statement, encoding: 'utf8', windowsHide: true, stdio: ['pipe', 'pipe', 'pipe'] }).trim();
   }
 
   test.afterAll(async ({}, testInfo) => {
