@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
-  "readiness": "READY_FOR_USER_REVIEW",
-  "fixWave": "PR115_SIGNED_CURSOR_FINAL_CLOSURE",
+  "readiness": "BLOCKED_RELEASE_VALIDATION",
+  "fixWave": "PR115_FINAL_CI_MERGE",
   "publicLaunch": "HOLD",
   "realParticipation": "BLOCKED",
   "journeysDeployment": {
@@ -10,9 +10,13 @@
     "hostedCandidateVerification": "NOT_RUN"
   },
   "source": {
-    "commit": "4e18b996b07bb0f02692df53e670a083fe139cb0",
-    "tree": "8db349ffaa7fcddf7fc83480f4f8b25958852b6c",
+    "commit": "4409a5fc0dea15e6d8e6328bbc7e7cf66cb1c958",
+    "tree": "94d4adaee5e7dd22b58ea0ebe5038f4522c66ba7",
     "branch": "codex/single-origin-design-20261105",
+    "parents": [
+      "7a929d8524f475e6988cda80f44b139a10a0e08c",
+      "a47bb04e5c4ba9807fe3a291ab12550631dc2ef6"
+    ],
     "scope": "Exact clean tested source; follow-up packet commit changes documentation only."
   },
   "sourceManifest": {
@@ -24,24 +28,29 @@
     "checkoutHashBasis": "Exact Windows checkout and runtime ZIP member bytes"
   },
   "archives": {
+    "exactGitTree": {
+      "path": ".local-private/pr115-final-merge/tested-tree.zip",
+      "sha256": "601434cbae409a9ae172441a0ccc3ceba319d79cde2da5d4abf5de68bb30976b",
+      "hashBasis": "Exact saved file bytes"
+    },
     "testedRuntime": {
-      "path": ".local-private/pr115-final-cursor/tested-runtime-source.zip",
-      "sha256": "b819ca647105b694bd2e00d9982a3f758337e2c5b592b782665d19c1a03fdcc6",
+      "path": ".local-private/pr115-final-merge/tested-runtime-source.zip",
+      "sha256": "e3802ee74111dce94375cd549c4a63e32432aaf3710fd59e73badce31900c7bb",
       "hashBasis": "Exact saved file bytes"
     },
     "canonicalSource": {
-      "path": ".local-private/pr115-final-cursor/final-committed-source.zip",
-      "sha256": "28659080433035bc2a8f2dd9d7f09ceff8d75651b2b7ad91f3b0ee402a74d059",
+      "path": ".local-private/pr115-final-merge/final-committed-source.zip",
+      "sha256": "ac3d4089771be17bc23c3094c649185b73404f3f4e32b1213e65b349be41bddf",
       "hashBasis": "Exact saved file bytes"
     },
     "regenerationLog": {
-      "path": ".local-private/pr115-final-cursor/source-regeneration.log",
+      "path": ".local-private/pr115-final-merge/source-regeneration.log",
       "sha256": "6a5b65b35b11eb892366406a982e393b4adbd38f791c561e3d5bf643ee14052f",
       "hashBasis": "Exact saved file bytes"
     },
     "verificationLog": {
-      "path": ".local-private/pr115-final-cursor/archive-verification.log",
-      "sha256": "13ec8a58d2757d987bf7d36378e0a0ea4154451436bd32a48ef19fd08aaa64f2",
+      "path": ".local-private/pr115-final-merge/archive-verification.log",
+      "sha256": "63a0aa02f921e33046f76563301b33306db5c4673a52eccd9bf37148e3730478",
       "hashBasis": "Exact saved file bytes"
     },
     "inputs": 765,
@@ -1199,22 +1208,22 @@
     "ownershipVerified": true,
     "resetAllMigrations": "PASS",
     "finalResetLog": {
-      "path": ".local-private/pr115-final-cursor/reset.log",
+      "path": ".local-private/pr115-final-merge/reset.log",
       "sha256": "7dfd51d3f3b3c8e323aeb69986c81eb8e68c030e539f0d36c5c4f6d2d5a57fdf",
       "hashBasis": "Exact saved file bytes"
     },
     "migrationListLog": {
-      "path": ".local-private/pr115-final-cursor/migration-list.log",
+      "path": ".local-private/pr115-final-merge/migration-list.log",
       "sha256": "bb93af880be762b37478b280741783b6f3582bdb00a28ff8fa0394e8356b5147",
       "hashBasis": "Exact saved file bytes"
     },
     "ledgerLog": {
-      "path": ".local-private/pr115-final-cursor/ledger.log",
+      "path": ".local-private/pr115-final-merge/ledger.log",
       "sha256": "eb98b76d780fb5adb6d659ad000c740b6a097a16a3570c219ef86632956aee34",
       "hashBasis": "Exact saved file bytes"
     },
     "identityLog": {
-      "path": ".local-private/pr115-final-cursor/target.log",
+      "path": ".local-private/pr115-final-merge/target.log",
       "sha256": "cbd4de86f71004d94f18d6776ed932d9b4a771c236cf29bdf012db280cca77ae",
       "hashBasis": "Exact saved file bytes"
     },
@@ -1256,15 +1265,15 @@
       "fail": 0,
       "skipped": 2,
       "log": {
-        "path": ".local-private/pr115-final-cursor/unit.log",
-        "sha256": "7f010574cbb875e284fbf8acf979c83201d30307a9277cc4db7e2468fe5bc726",
+        "path": ".local-private/pr115-final-merge/unit.log",
+        "sha256": "d7c7a98c1ebd0afb859187bcb6ed031bba0bf870eed6c3a1549f6f31f5a0a28e",
         "hashBasis": "Exact saved file bytes"
       }
     },
     "typecheck": {
       "status": "PASS",
       "log": {
-        "path": ".local-private/pr115-final-cursor/typecheck.log",
+        "path": ".local-private/pr115-final-merge/typecheck.log",
         "sha256": "a48493bb7a8ec96d9e2fd7048c0e54de314efb2aecaaa8f73368d2c4d8053640",
         "hashBasis": "Exact saved file bytes"
       }
@@ -1273,15 +1282,15 @@
       "status": "PASS",
       "command": "npm run build",
       "artifact": {
-        "head": "4e18b996b07bb0f02692df53e670a083fe139cb0",
-        "tree": "8db349ffaa7fcddf7fc83480f4f8b25958852b6c",
-        "buildId": "M0z2RcXtVAZ3K8pDme1Or"
+        "head": "4409a5fc0dea15e6d8e6328bbc7e7cf66cb1c958",
+        "tree": "94d4adaee5e7dd22b58ea0ebe5038f4522c66ba7",
+        "buildId": "XR6C-O3b5ldT-6jAV5Cv-"
       },
       "bundler": "Webpack",
       "generatedEntries": 73,
       "log": {
-        "path": ".local-private/pr115-final-cursor/build.log",
-        "sha256": "e0d9a95b58b041b849c73fe6928ec10ff5eca89f359bf4dabd301817c4e41d72",
+        "path": ".local-private/pr115-final-merge/build.log",
+        "sha256": "131d91784811c4a17d6cf7aa441ee18905b2236ab8822c79bdd15685fb8fb88a",
         "hashBasis": "Exact saved file bytes"
       }
     },
@@ -1290,22 +1299,28 @@
       "failed": 0,
       "skipped": 1,
       "log": {
-        "path": ".local-private/pr115-final-cursor/source-package.log",
-        "sha256": "70972ad99c645f29b24c1237d93c7224cf053d74cf25161ed19f1fbbb4840931",
+        "path": ".local-private/pr115-final-merge/source-package.log",
+        "sha256": "ff7761d6912b290384befbdf3c7287295dd49382e5aa2b84b0c8ee2dfda3b2ba",
         "hashBasis": "Exact saved file bytes"
       }
     },
     "integration": {
-      "tests": 67,
+      "tests": 68,
       "pass": 67,
-      "fail": 0,
+      "fail": 1,
       "skipped": 0,
       "log": {
-        "path": ".local-private/pr115-final-cursor/integration.log",
-        "sha256": "4eb1537d8cfbcc2c3e44526a0424af4701fc89256ac9bbcea7cd18f0fdab1979",
+        "path": ".local-private/pr115-final-merge/integration.log",
+        "sha256": "e87b318ad73b80c4cfa338e51f45046ccb8c1ebdf7ec7f5b55960d4897cdfe6e",
         "hashBasis": "Exact saved file bytes"
       },
-      "scope": "Pilot Control Room and Ops team lifecycle"
+      "scope": "Pilot Control Room, Ops team lifecycle, and audited Ops content cleanup",
+      "observedFailure": "Concurrent identical admin_create_partner_perk calls: one returned 200 and the other returned 23505 on partner_perks_slug_key; expected both to replay one result.",
+      "exactSyntheticResidueCleanup": {
+        "path": ".local-private/pr115-final-merge/failed-integration-fixture-cleanup.log",
+        "sha256": "5d818ad683ef38384d1354d77b81edd702e0c26e1177117614dd7bed4474d8ee",
+        "hashBasis": "Exact saved file bytes"
+      }
     },
     "advisors": {
       "total": 67,
@@ -1317,8 +1332,8 @@
       "removedKeys": [],
       "roleLabelOnlyDifference": false,
       "log": {
-        "path": ".local-private/pr115-final-cursor/advisors.log",
-        "sha256": "624799f877d3069de12a7f2598a63ef72f3212b8d4f3b6e17f38ac31e039a344",
+        "path": ".local-private/pr115-final-merge/advisors.log",
+        "sha256": "bcf0d88e4ad3fc3605c9575a900a2ee6f02c6412be31bbbd7aabdaec55f08197",
         "hashBasis": "Exact saved file bytes"
       }
     },
@@ -1329,15 +1344,15 @@
       "skipped": 0,
       "notRun": 0,
       "log": {
-        "path": ".local-private/pr115-final-cursor/browser.log",
-        "sha256": "515604ff576bce435cf534695834e2c1d8bfa811b6be5f74c6556080b638909a",
+        "path": ".local-private/pr115-final-merge/browser.log",
+        "sha256": "eae16ab2c625838e261b66c824a8c8b491eb25c71c47442aca1de3036b866aa5",
         "hashBasis": "Exact saved file bytes"
       },
       "identityVerified": true,
       "artifact": {
-        "head": "4e18b996b07bb0f02692df53e670a083fe139cb0",
-        "tree": "8db349ffaa7fcddf7fc83480f4f8b25958852b6c",
-        "buildId": "M0z2RcXtVAZ3K8pDme1Or"
+        "head": "4409a5fc0dea15e6d8e6328bbc7e7cf66cb1c958",
+        "tree": "94d4adaee5e7dd22b58ea0ebe5038f4522c66ba7",
+        "buildId": "XR6C-O3b5ldT-6jAV5Cv-"
       },
       "passedBySpec": {
         "account-recovery": 3,
@@ -1360,43 +1375,19 @@
       "serverReused": false,
       "plannedSpecs": 14,
       "selection": {
-        "path": ".local-private/pr115-final-cursor/browser-list.log",
-        "sha256": "e600d8c61dd2066e64f050c67fcd16d6f671b8827b9348aeb070425f70ab30d0",
+        "path": ".local-private/pr115-final-merge/browser-list.log",
+        "sha256": "e623316f09a08b710a8981103c3647e6bf8cf1fbfa60421e49f5052a75d8fcad",
         "hashBasis": "Exact saved file bytes"
       },
       "exit": "browser=0",
-      "scope": "Prior 90 cases plus four focused UI pagination/moderation cases and one connected signed-cursor reschedule regression in one invocation.",
+      "scope": "Complete 95-case attested matrix, including every prior PR regression.",
       "matrixDelta": {
-        "priorRetained": 90,
-        "refreshed": 5,
-        "added": [
-          [
-            "pr115-review-ui.spec.ts",
-            "ambiguous moderation retry replays exact bytes and account invalidation clears controls"
-          ],
-          [
-            "pr115-review-ui.spec.ts",
-            "moderation CONFLICT unlocks controls and permits a corrected command"
-          ],
-          [
-            "pr115-review-ui.spec.ts",
-            "moderation INVALID unlocks controls and permits a corrected command"
-          ],
-          [
-            "pr115-review-ui.spec.ts",
-            "session load more appends older sessions once and ends at the last page"
-          ],
-          [
-            "u06-creator-merchant-ops-migration.spec.ts",
-            "creator session pagination reaches older owned rows across a timestamp tie"
-          ]
-        ],
-        "strengthenedExisting": [
-          "Creator session pagination reschedules the page-one anchor before loading page two."
-        ],
+        "priorRetained": 95,
+        "refreshed": 0,
+        "added": [],
         "log": {
-          "path": ".local-private/pr115-final-cursor/browser-matrix-delta.json",
-          "sha256": "1919314618ad2dabf04de43f7c60e8d90585b49c1a411ca86ebcd9dbb69cd1f6",
+          "path": ".local-private/pr115-final-merge/browser-matrix-delta.json",
+          "sha256": "6c64e4cec514adaac88bbc32a22a7e8287dd679f6418702c91436c11c5c2b71c",
           "hashBasis": "Exact saved file bytes"
         }
       }
@@ -1408,8 +1399,8 @@
       "skipped": 0,
       "notRun": 0,
       "log": {
-        "path": ".local-private/pr115-final-cursor/presentation.log",
-        "sha256": "2c731cf7246ccdc3d87efd7882e08b215c04dd03f03b7cb9fec919173ceae5df",
+        "path": ".local-private/pr115-final-merge/presentation.log",
+        "sha256": "b91b0f483e6aad3791b443b2d358e51e16fc0a924a3cf733566c02ee11df471b",
         "hashBasis": "Exact saved file bytes"
       },
       "scope": "Synthetic transport"
@@ -1465,9 +1456,81 @@
       },
       "residueTotal": 0,
       "tableCount": 44,
+      "beforeFinalIsolatedReset": {
+        "target": "kinnsoos-public-it-20261106",
+        "basis": "Full-table aggregate readback after exact fixture cleanup on clean unseeded disposable target",
+        "tables": {
+          "auth.users": 6,
+          "auth.sessions": 6,
+          "auth.identities": 6,
+          "public.creators": 6,
+          "public.guides": 0,
+          "public.guide_versions": 0,
+          "kinnso_internal.guide_drafts": 0,
+          "public.trips": 0,
+          "public.trip_revisions": 0,
+          "public.trip_days": 0,
+          "public.trip_stops": 0,
+          "public.guide_saves": 0,
+          "public.missions": 0,
+          "public.mission_participants": 0,
+          "public.mission_milestones": 0,
+          "public.mission_milestone_submissions": 0,
+          "public.mission_verification_jobs": 0,
+          "public.merchant_applications": 0,
+          "public.merchant_profiles": 0,
+          "public.kinnso_ops_members": 4,
+          "public.ops_audit_log": 23,
+          "public.notifications": 6,
+          "public.enquiries": 0,
+          "public.community_sessions": 0,
+          "public.partner_perks": 0,
+          "public.testimonials": 0,
+          "kinnso_internal.support_cases": 0,
+          "kinnso_internal.support_messages": 0,
+          "kinnso_internal.support_audit": 0,
+          "kinnso_internal.inbox_events": 0,
+          "kinnso_internal.notification_outbox": 0,
+          "kinnso_internal.requests": 0,
+          "kinnso_internal.creator_requests": 0,
+          "kinnso_internal.workspace_requests": 0,
+          "kinnso_internal.trip_requests": 0,
+          "kinnso_internal.pilot_runs": 0,
+          "kinnso_internal.pilot_participants": 0,
+          "kinnso_internal.pilot_invites": 0,
+          "kinnso_internal.pilot_checks": 0,
+          "kinnso_internal.pilot_collaborations": 0,
+          "kinnso_internal.pilot_content_intakes": 0,
+          "kinnso_internal.pilot_evidence": 0,
+          "kinnso_internal.pilot_participant_audit": 0,
+          "kinnso_internal.pilot_events": 0
+        },
+        "residueTotal": 57,
+        "tableCount": 44,
+        "log": {
+          "path": ".local-private/pr115-final-merge/cleanup-before-final-reset.json",
+          "sha256": "a3ac06fcc3f731120fb90cfbf2e5706de0fda6c5889a2b2029e06756d0a3fe5d",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "finalIsolatedReset": {
+        "path": ".local-private/pr115-final-merge/cleanup-reset.log",
+        "sha256": "7dfd51d3f3b3c8e323aeb69986c81eb8e68c030e539f0d36c5c4f6d2d5a57fdf",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "afterFinalIsolatedResetReadback": {
+        "path": ".local-private/pr115-final-merge/cleanup-after-final-reset.log",
+        "sha256": "6f3cf5cddb4e85d27051c1e6591113c316661147e56b973b32f5fb8a9b2b0804",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "finalResetLedger": {
+        "path": ".local-private/pr115-final-merge/cleanup-ledger.log",
+        "sha256": "eb98b76d780fb5adb6d659ad000c740b6a097a16a3570c219ef86632956aee34",
+        "hashBasis": "Exact saved file bytes"
+      },
       "additionalOpsInviteRows": 0,
       "additionalOpsInviteLog": {
-        "path": ".local-private/pr115-final-cursor/invite-cleanup.log",
+        "path": ".local-private/pr115-final-merge/invite-cleanup.log",
         "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
         "hashBasis": "Exact saved file bytes"
       },
@@ -1478,15 +1541,36 @@
         "perk_redemptions": 0
       },
       "refreshedFixtureTablesLog": {
-        "path": ".local-private/pr115-final-cursor/extra-cleanup.log",
+        "path": ".local-private/pr115-final-merge/extra-cleanup.log",
         "sha256": "da7de6eccb4a4a2a52a6b7d46f161000353dc13cc770c7c074c8a3ce1beaaf9e",
         "hashBasis": "Exact saved file bytes"
       },
       "pilotExactPredicatesVerified": true,
       "operationsExactPredicatesVerified": true,
       "operationsLog": {
-        "path": ".local-private/pr115-final-cursor/operations-cleanup.log",
+        "path": ".local-private/pr115-final-merge/operations-cleanup.log",
         "sha256": "0265986725d46acf5e9a47a9159749c2db1da05d0bc1666fc850000848e73f2d",
+        "hashBasis": "Exact saved file bytes"
+      }
+    },
+    "conflictFocused": {
+      "tests": 34,
+      "pass": 34,
+      "fail": 0,
+      "skipped": 0,
+      "log": {
+        "path": ".local-private/pr115-final-merge/focused.log",
+        "sha256": "0cf9898338c0ed02a1dd2b8778859fbc719cbee1dde4a5323ad645271e8c8a10",
+        "hashBasis": "Exact saved file bytes"
+      }
+    },
+    "webFocused": {
+      "filesPassed": 5,
+      "passed": 31,
+      "exit": "web=0",
+      "log": {
+        "path": ".local-private/pr115-final-merge/web-focused.log",
+        "sha256": "1177dfadd99132f28b48ff06a537551a50bb9e8c8e017ca6f68517c1c75aaec0",
         "hashBasis": "Exact saved file bytes"
       }
     },
@@ -1501,7 +1585,7 @@
         "service_role"
       ],
       "log": {
-        "path": ".local-private/pr115-final-cursor/invite-privileges.log",
+        "path": ".local-private/pr115-final-merge/invite-privileges.log",
         "sha256": "6465aaa6dd6d48d99a429b58547ec123448fe45c6e91121e93059adbbaa11514",
         "hashBasis": "Exact saved file bytes"
       }
@@ -1518,7 +1602,9 @@
     "physicalIOS": "BLOCKED/NOT_RUN",
     "physicalAndroid": "BLOCKED/NOT_RUN",
     "VoiceOver": "BLOCKED/NOT_RUN",
-    "NVDA": "BLOCKED/NOT_RUN"
+    "NVDA": "BLOCKED/NOT_RUN",
+    "opsContentConcurrentPerkCreate": "BLOCKED: independent database fix and exact-source revalidation required.",
+    "pr115FinalClosure": "One or more local release gates did not pass; see exact checks and logs."
   },
   "privacyAndRetention": "Completed runs remain retained; no automatic retention or deletion term. Approve exact EN and zh-HK notice bytes/digests, processors, owner contacts, retention/redaction and escalation workflow before collecting real information. Keep exports restricted and free of private text and raw invite material.",
   "backupRestore": "WAIVED_BY_USER",
@@ -1527,12 +1613,14 @@
   "realParticipantsUsed": false,
   "externalProvidersActivated": false,
   "concerns": [
-    "Initial browser discovery overlapped the local reset and found zero cases. After reset, discovery selected the complete matrix. Only one browser execution was started.",
+    "The two-parent merge retained all six remote fixture and cleanup files and left local signed pagination and moderation code unchanged.",
     "Production rollback facts are historical; no production read, mutation or deployment.",
     "Signed session cursors require the existing server-only Auth recovery secret or Supabase secret key. The isolated build was tested with local configuration; production configuration was not read.",
-    "Synthetic tests do not clear real participant, physical-device or assistive-technology gates."
+    "Synthetic tests do not clear real participant, physical-device or assistive-technology gates.",
+    "The web RLS fixture runs intentionally retain some records. Browser-specific cleanup passed, and a final reset of the disposable database removed all remaining fixture rows.",
+    "Concurrent identical admin_create_partner_perk calls: one returned 200 and the other returned 23505 on partner_perks_slug_key; expected both to replay one result. The existing RPC targets only the id constraint in ON CONFLICT. No SQL or test assertion was changed to mask the failure."
   ],
-  "nextApproval": "Review the isolated packet first. Separately authorize any push, exact target-bound migration and deployment plan with preflight and rollback, production capability activation, and any real pilot intake or participant contact. Public launch requires an independent approval after all external gates pass.",
+  "nextApproval": "Fix the concurrent Ops perk-create replay and rerun the exact release gates before any push or deployment; existing public, real participant, device and assistive-technology holds remain.",
   "testProcessConfiguration": {
     "capabilities": [
       "trips",
@@ -1553,19 +1641,14 @@
     "assertionsUnchangedInTask2": true
   },
   "diagnosticHistory": {
-    "discoveryDuringReset": {
-      "path": ".local-private/pr115-final-cursor/browser-list-during-reset.log",
-      "sha256": "ba48dd2edf2852d8044381515f0acca49348a8000bb6bb9d8c012e4de9efbb9d",
-      "hashBasis": "Exact saved file bytes"
-    },
-    "priorPacket": "733052d329a895d67bcd827bf6e8c8b1b3e8ffed",
+    "priorPacket": "7a929d8524f475e6988cda80f44b139a10a0e08c",
     "scope": "Historical; prior results excluded from these counts"
   },
   "isolatedAuthConfiguration": {
     "scope": "Disposable Auth temporary 20 idle / 20 open pool; restored after matrix and cleanup",
     "startup": {
-      "path": ".local-private/pr115-final-cursor/auth-pool-startup.log",
-      "sha256": "bec1cf9f62527605dbccc4763b7bf53de25eb7ce2e4cd1bd2ae690f0fc24ab0a",
+      "path": ".local-private/pr115-final-merge/auth-pool-startup.log",
+      "sha256": "b5c33e0ef78f6b1aedafd9278a5a6cfa1874fd0d345e213430c54d8eabcf91a9",
       "hashBasis": "Exact saved file bytes"
     },
     "restoration": {
@@ -1575,7 +1658,7 @@
       "maxIdleConnections": 0,
       "maxOpenConnections": 0,
       "afterFinalMatrixAndCleanup": true,
-      "at": "2026-11-07T22:32:42Z",
+      "at": "2026-11-07T22:46:16Z",
       "productionChanged": false
     }
   }
