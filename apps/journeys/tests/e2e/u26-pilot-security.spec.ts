@@ -11,8 +11,9 @@ const participantPath = '/api/pilot';
 async function denied(response: APIResponse, status: number, code: string, privateValues: string[] = []) {
   const raw = await response.text();
   expect(response.status()).toBe(status);
-  expect(JSON.parse(raw)).toMatchObject({ ok: false, code });
-  expect(Object.keys(JSON.parse(raw)).every(key => ['ok', 'code', 'requestId', 'retryable'].includes(key))).toBe(true);
+  const envelope = JSON.parse(raw);
+  expect(envelope?.ok === false && envelope?.code === code).toBe(true);
+  expect(Object.keys(envelope).every(key => ['ok', 'code', 'requestId', 'retryable'].includes(key))).toBe(true);
   expect(privateValues.some(value => raw.includes(value))).toBe(false);
 }
 
@@ -38,14 +39,14 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
     });
     expect(Boolean(membership.error)).toBe(false);
     await signIn(member, 'member', suiteLabel);
-    await signIn(outsider, 'outsider', suiteLabel);
+    const outsiderId = await signIn(outsider, 'outsider', suiteLabel);
     const id = randomUUID();
     runIds.push(id);
     const created = await ops(operator, { type: 'createRun', id, name: suiteLabel,
       dataClassification: 'synthetic', candidateReleaseSha: build.head, environmentOrigin: origin });
     const digest = (label: string) => createHash('sha256').update(suiteLabel + label).digest('hex');
     let { snapshot } = await ops(operator, { type: 'configureRun', id,
-      expectedRevision: created.snapshot.run.revision,
+      expectedRevision: created.snapshot.run.revision, syntheticRehearsalRunId: null,
       participationNoticeVersion: suiteLabel + '-participation', participationNoticeDigest: digest('participation'),
       privacyNoticeVersion: suiteLabel + '-privacy', privacyNoticeDigest: digest('privacy'),
       contentConsentVersion: suiteLabel + '-rights', contentConsentDigest: digest('rights'),
@@ -63,16 +64,35 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
       ({ snapshot } = await ops(operator, { type: 'setRunStatus', id, status,
         expectedRevision: snapshot.run.revision, reason: 'Synthetic security acceptance' }));
     }
+    function postOps(page: Page, command: object) {
+      return page.request.post(opsPath, {
+        headers: { Origin: origin }, data: { requestId: randomUUID(), command },
+      });
+    }
     const invite = async (role: string) => {
       const participantId = slots.get(role)!;
       const slot = snapshot.participants.find((item: { id: string }) => item.id === participantId);
-      return ops(operator, { type: 'createInvite', id: randomUUID(), participantId,
+      const inviteId = randomUUID();
+      const result = await ops(operator, { type: 'createInvite', id: inviteId, participantId,
         expectedRevision: slot.revision, expiresInHours: 1 });
+      return { ...result, inviteId };
     };
     const wrong = randomUUID();
     const sensitive = [suiteLabel, id, ...slots.values(), wrong];
     await denied(await claim(member, wrong), 404, 'NOT_FOUND', sensitive);
     await denied(await member.request.get(opsPath + '?runId=' + id), 403, 'FORBIDDEN', sensitive);
+    const forged = { type: 'setRunStatus', id, status: 'paused',
+      expectedRevision: snapshot.run.revision, reason: 'Synthetic authorization probe' };
+    await denied(await postOps(member, forged), 403, 'FORBIDDEN', sensitive);
+    const operatorOnlyRequest = randomUUID();
+    await denied(await operator.request.post(participantPath, {
+      headers: { Origin: origin },
+      data: { requestId: operatorOnlyRequest, command: { type: 'acknowledgeNotification', requestId: operatorOnlyRequest } },
+    }), 403, 'FORBIDDEN', sensitive);
+
+    const evidence = { type: 'addEvidenceReference', runId: id, checkCode: 'physical_ios',
+      entityType: 'manual', entityId: id, evidenceReference: 'https://untrusted.example.test/private' };
+    await denied(await postOps(operator, { ...evidence, private: { label: suiteLabel } }), 400, 'INVALID', sensitive);
 
     const { inviteCode } = await invite('traveller');
     const requestId = randomUUID();
@@ -91,11 +111,30 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
       where run_id='${id}' and participant_id='${slots.get('traveller')}' and command_type='claimInvite'`)).toBe('1');
 
     snapshot = await api(operator, opsPath + '?runId=' + id);
+    const revoked = await invite('merchant');
+    snapshot = await api(operator, opsPath + '?runId=' + id);
+    const merchantSlot = snapshot.participants.find((item: { id: string }) => item.id === slots.get('merchant'));
+    await ops(operator, { type: 'revokeInvite', id: revoked.inviteId, participantId: merchantSlot.id,
+      expectedRevision: merchantSlot.revision, reason: 'Synthetic invite revocation' });
+    await denied(await claim(outsider, revoked.inviteCode), 404, 'NOT_FOUND', [...sensitive, revoked.inviteCode]);
+
+    snapshot = await api(operator, opsPath + '?runId=' + id);
     const pending = await invite('creator');
     snapshot = await api(operator, opsPath + '?runId=' + id);
-    await ops(operator, { type: 'setRunStatus', id, status: 'paused',
-      expectedRevision: snapshot.run.revision, reason: 'Synthetic security acceptance' });
+    ({ snapshot } = await ops(operator, { type: 'setRunStatus', id, status: 'paused',
+      expectedRevision: snapshot.run.revision, reason: 'Synthetic security acceptance' }));
     await denied(await claim(outsider, pending.inviteCode), 404, 'NOT_FOUND', [...sensitive, pending.inviteCode]);
+    ({ snapshot } = await ops(operator, { type: 'setRunStatus', id, status: 'cancelled',
+      expectedRevision: snapshot.run.revision, reason: 'Synthetic security acceptance' }));
+    await denied(await claim(outsider, pending.inviteCode), 404, 'NOT_FOUND', [...sensitive, pending.inviteCode]);
+
+    const suspended = await fixture.admin.from('kinnso_ops_members').update({ status: 'paused' }).eq('user_id', operatorId);
+    expect(Boolean(suspended.error)).toBe(false);
+    await denied(await operator.request.get(opsPath + '?runId=' + id), 403, 'FORBIDDEN', sensitive);
+    await denied(await postOps(operator, forged), 403, 'FORBIDDEN', sensitive);
+    expect(fixture.sql(`with expired as (update auth.sessions set not_after=now()-interval '1 minute'
+      where user_id='${outsiderId}' returning id) select count(*) from expired`)).toBe('1');
+    await denied(await claim(outsider, wrong), 401, 'AUTH_REQUIRED', sensitive);
   } finally {
     await Promise.all(contexts.map(context => context.close()));
   }
