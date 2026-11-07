@@ -649,7 +649,7 @@ check('evidence participant foreign key rejects a slot from another run',i=>{
  do $$begin
   begin
    insert into kinnso_internal.pilot_evidence(run_id,check_code,entity_type,entity_id,participant_id,evidence_reference,captured_by_ops_member_id)
-   values(${q(i.run)},'guide_discovered','guide',${q(i.guide)},${q(otherSlot)},'ref:foreign-slot',${q(i.ops)});
+   values(${q(i.run)},'guide_discovered','guide',${q(i.guide)},${q(otherSlot)},${q('ref:'+otherSlot)},${q(i.ops)});
   exception when foreign_key_violation then return;end;
   raise exception 'cross-run evidence slot accepted';
  end$$;
