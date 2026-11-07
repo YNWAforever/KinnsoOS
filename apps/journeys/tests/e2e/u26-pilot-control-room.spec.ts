@@ -100,7 +100,6 @@ test.afterAll(async () => {
     ['public.notifications', byUser('creator_id')],
     ['public.mission_verification_jobs', byUser('creator_id')],
     ['public.mission_milestone_submissions', submission],
-    ['public.mission_milestones', missionChild],
     ['public.mission_participants', missionChild],
     ['public.missions', mission],
     ['kinnso_internal.merchant_audit', merchantChild],
@@ -114,14 +113,16 @@ test.afterAll(async () => {
     '-X', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-Atq'],
     { input: statement, encoding: 'utf8', windowsHide: true }).trim();
   // Check each predicate before removing any parent needed to resolve it.
-  const tripResidue = ['trip_revisions', 'trip_stops', 'trip_days'].map(table =>
-    'select count(*) from public.' + table + ' where ' + tripChild + ';').join('\n');
+  // Published milestones and append-only revisions can only be removed by their parent cascade.
+  const cascadeResidue = ['trip_revisions', 'trip_stops', 'trip_days'].map(table =>
+    'select count(*) from public.' + table + ' where ' + tripChild + ';')
+    .concat('select count(*) from public.mission_milestones where ' + missionChild + ';').join('\n');
   const residue = sql('begin;\ncreate temp table task10a_trips on commit drop as select id from public.trips where ' +
     byUser('owner_user_id') + ';\n' + filters.map(([table, where]) =>
     'delete from ' + table + ' where ' + where + ';\n' +
     "do $$ begin if exists(select 1 from " + table + ' where ' + where +
-    ") then raise exception 'Cleanup residue: " + table + "'; end if; end $$;").join('\n') + '\n' + tripResidue + '\ncommit;');
-  expect(residue.split(/\r?\n/)).toEqual(['0', '0', '0']);
+    ") then raise exception 'Cleanup residue: " + table + "'; end if; end $$;").join('\n') + '\n' + cascadeResidue + '\ncommit;');
+  expect(residue.split(/\r?\n/)).toEqual(['0', '0', '0', '0']);
   for (const id of users) {
     const result = await admin.auth.admin.deleteUser(id);
     if (result.error) throw Error('Synthetic Auth cleanup failed');
@@ -130,7 +131,7 @@ test.afterAll(async () => {
     ['auth.identities', 'user_id'], ['public.creators', 'id']]) {
     expect(sql('select count(*) from ' + table + ' where ' + byUser(key)), table).toBe('0');
   }
-  console.log('Task10A cleanup verified:', filters.length + 7, 'exact predicates');
+  console.log('Task10A cleanup verified:', filters.length + 8, 'exact predicates');
 });
 
 test('pilot rehearsal completes; real-classified replay retains the four manual gates', async ({ browser }) => {
