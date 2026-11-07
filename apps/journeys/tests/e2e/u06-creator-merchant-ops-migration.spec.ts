@@ -140,3 +140,43 @@ test('creator, merchant and operations migration works end to end on the isolate
   if(failures.length){testInfo.annotations.push({type:'fixture cleanup failures',description:failures.join(', ')});throw Error('Synthetic migration cleanup failed: '+failures.join(', '));}
  }
 });
+
+test('redeemed perk remains revealable after a contribution revocation lowers the tier',async({page,baseURL})=>{
+ test.setTimeout(90000);
+ expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+ const creator=await user('perk-entitlement'),source=randomUUID(),claimed=randomUUID(),unclaimed=randomUUID();
+ const event={p_creator_id:creator.id,p_event_type:'guide_published',p_source_id:source};
+ try{
+  await ok(admin.from('creators').update({status:'active'}).eq('id',creator.id));
+  await ok(admin.rpc('award_contribution_event',{...event,p_points:75}));
+  await ok(admin.from('partner_perks').insert([claimed,unclaimed].map((id,index)=>({
+   id,slug:'entitlement-'+id,partner_name:'Synthetic Partner',title:index===0?'Earned rail benefit':'Unclaimed rail benefit',
+   summary:'Synthetic tier entitlement fixture',category:'travel',discount_label:'10%',min_tier:'rising',
+   redemption_type:'code',redemption_value:index===0?'ENTITLEMENT-CODE':'OTHER-CODE',sort_order:index,active:true,
+  }))));
+  await signIn(page,creator,'studio/perks');
+  const earned=page.getByRole('article').filter({hasText:'Earned rail benefit'});
+  await expect(page.getByText('Current tier: rising')).toBeVisible();
+  await earned.getByRole('button',{name:'Redeem perk'}).click();
+  await expect(earned.getByText('ENTITLEMENT-CODE',{exact:true})).toBeVisible();
+  await ok(admin.rpc('revoke_contribution_event',event));
+  await page.reload();
+  await expect(page.getByText('Current tier: seed')).toBeVisible();
+  await expect(earned.getByText('ENTITLEMENT-CODE',{exact:true})).toHaveCount(0);
+  const response=page.waitForResponse(r=>r.request().method()==='POST'&&new URL(r.url()).pathname==='/api/creator/perks');
+  await earned.getByRole('button',{name:'Reveal perk'}).click();
+  expect((await response).status()).toBe(200);
+  await expect(earned.getByText('ENTITLEMENT-CODE',{exact:true})).toBeVisible();
+  const post=(perkId:string)=>page.request.post('/api/creator/perks',{headers:{origin:baseURL!},data:{requestId:randomUUID(),perkId}});
+  const denied=await post(unclaimed);
+  expect(denied.status()).toBe(403);
+  expect((await denied.json()).code).toBe('FORBIDDEN');
+  expect(await ok(admin.from('perk_redemptions').select('perk_id').eq('creator_id',creator.id))).toEqual([{perk_id:claimed}]);
+  await ok(admin.from('partner_perks').update({active:false}).eq('id',claimed));
+  expect((await post(claimed)).status()).toBe(404);
+ }finally{
+  await ok(admin.from('perk_redemptions').delete().eq('creator_id',creator.id));
+  await ok(admin.from('partner_perks').delete().in('id',[claimed,unclaimed]));
+  await ok(admin.auth.admin.deleteUser(creator.id));
+ }
+});
