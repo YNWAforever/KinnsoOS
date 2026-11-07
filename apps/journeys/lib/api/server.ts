@@ -12,6 +12,7 @@ export function failure(code: ErrorCode, status: number) {
 }
 export function backendFailure(error: {message?:string; code?:string} | null) {
   const message = error?.message ?? '';
+  if (message === 'PILOT_REVIEW_REQUIRED') return failure('PILOT_REVIEW_REQUIRED',409);
   if (/trip_not_found|guide_not_found|media_not_found|share_not_found|job_not_found|claim_not_found|merchant_not_found|mission_not_found|notification_not_found|support_not_found|report_not_found|submission_not_found|preset_not_found|creator_not_found/.test(message)) return failure('NOT_FOUND',404);
   if (/revision_conflict|idempotency_conflict|immutable_campaign_terms|already_participant/.test(message)) return failure('CONFLICT',409);
   if (/unauthenticated/.test(message)) return failure('AUTH_REQUIRED',401);

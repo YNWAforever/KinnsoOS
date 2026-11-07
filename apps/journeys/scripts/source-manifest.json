@@ -691,6 +691,7 @@
     "tests/contracts/20261106135230_harden_ops_team_security.sql": "supabase/migrations/20261106135230_harden_ops_team_security.sql",
     "tests/contracts/20261107020000_kinnso_ops_content_audit.sql": "supabase/migrations/20261107020000_kinnso_ops_content_audit.sql",
     "tests/contracts/20261107081531_kinnso_pilot_control_room_schema.sql": "supabase/migrations/20261107081531_kinnso_pilot_control_room_schema.sql",
-    "tests/contracts/20261107085017_kinnso_pilot_control_room_rpcs.sql": "supabase/migrations/20261107085017_kinnso_pilot_control_room_rpcs.sql"
+    "tests/contracts/20261107085017_kinnso_pilot_control_room_rpcs.sql": "supabase/migrations/20261107085017_kinnso_pilot_control_room_rpcs.sql",
+    "tests/contracts/20261107110059_kinnso_pilot_readiness_publication_contract.sql": "supabase/migrations/20261107110059_kinnso_pilot_readiness_publication_contract.sql"
   }
 }

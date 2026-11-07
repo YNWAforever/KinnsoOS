@@ -15,6 +15,18 @@ test('immutable campaign terms are a terminal private conflict rather than an ou
  const response=module.exports.backendFailure({message:'immutable_campaign_terms'});assert.equal(response.status,409);assert.equal(response.headers.get('cache-control'),'private, no-store');
  const body=await response.json();assert.equal(body.code,'CONFLICT');assert.equal(body.retryable,false);assert.equal(JSON.stringify(body).includes('immutable_campaign_terms'),false);
 });
+test('only the exact pilot review error maps to a private non-retryable conflict',async()=>{
+ const source=await readFile(new URL('../lib/api/server.ts',import.meta.url),'utf8'),module={exports:{}};
+ const compiled=await transform(source,{loader:'ts',format:'cjs'});runInContext(compiled.code,createContext({module,exports:module.exports,Response,crypto,require:()=>({})}));
+ for(const [message,status,code] of [['PILOT_REVIEW_REQUIRED',409,'PILOT_REVIEW_REQUIRED'],['revision_conflict',409,'CONFLICT'],['prefix PILOT_REVIEW_REQUIRED',503,'UNAVAILABLE']]){
+  const response=module.exports.backendFailure({message});
+  assert.equal(response.status,status);
+  assert.equal(response.headers.get('cache-control'),'private, no-store');
+  const body=await response.json();
+  assert.equal(body.code,code);
+  assert.equal(body.retryable,status===503);
+ }
+});
 test('campaign schedule accepts explicit UTC or offset instants and unbounded legacy input',()=>{
  for(const patch of [{},{applicationOpensAt:null,applicationClosesAt:null,scheduleTimeZone:'UTC'},{applicationOpensAt:'2026-10-12T00:00:00+08:00',applicationClosesAt:'2026-10-12T17:00:00Z',scheduleTimeZone:'Asia/Hong_Kong'},{applicationOpensAt:'2026-11-01T01:30:00-04:00',applicationClosesAt:'2026-11-01T01:30:00-05:00',scheduleTimeZone:'America/New_York'},{applicationOpensAt:'2026-10-12T00:00:00.000001Z',applicationClosesAt:'2026-10-12T00:00:00.000002Z',scheduleTimeZone:'UTC'}])assert.deepEqual(campaignCommand(command(patch)),command(patch));
 });

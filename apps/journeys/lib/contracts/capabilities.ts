@@ -1,5 +1,5 @@
 export type CapabilityMode = 'demo' | 'connected' | 'unavailable';
-export type ErrorCode = 'AUTH_REQUIRED' | 'FORBIDDEN' | 'NOT_FOUND' | 'CONFLICT' | 'INVALID' | 'UNAVAILABLE';
+export type ErrorCode = 'AUTH_REQUIRED' | 'FORBIDDEN' | 'NOT_FOUND' | 'CONFLICT' | 'PILOT_REVIEW_REQUIRED' | 'INVALID' | 'UNAVAILABLE';
 export type ApiResult<T> = { ok: true; data: T } | {
   ok: false; code: ErrorCode; retryable: boolean; requestId: string;
 };
