@@ -226,7 +226,7 @@ test('first FORBIDDEN retains the exact request through an authorized refresh of
   expect(errors).toEqual([]);
 });
 
-test('FINAL operator reads source cover rights and draft before approval and can attach support evidence',async({page})=>{
+test('FINAL operator reads source cover rights and draft before approval',async({page})=>{
  await mount(page);
  await expect(page.getByText('Reviewable source',{exact:true})).toBeVisible();
  await expect(page.getByText('true · ref:2',{exact:true})).toBeVisible();

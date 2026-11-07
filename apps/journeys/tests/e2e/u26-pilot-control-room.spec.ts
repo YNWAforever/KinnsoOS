@@ -115,9 +115,9 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         await creator.getByLabel('Content language code',{exact:true}).fill(input.authoredLocale);
         await creator.getByLabel('Source summary',{exact:true}).fill(input.sourceSummary);
         await creator.getByLabel('Source URLs (one per line, up to 20)',{exact:true}).fill(input.sourceUrls.join('\n'));
-        await creator.getByLabel('Rights basis',{exact:true}).selectOption(input.rightsBasis);
+        await creator.getByRole('combobox',{name:'Rights basis',exact:true}).selectOption(input.rightsBasis);
         await creator.getByLabel('Rights evidence reference',{exact:true}).fill(input.rightsEvidenceReference);
-        await creator.getByLabel('Cover rights',{exact:true}).selectOption(input.coverRightsConfirmed===null?'':String(input.coverRightsConfirmed));
+        await creator.getByRole('combobox',{name:'Cover rights',exact:true}).selectOption(input.coverRightsConfirmed===null?'':String(input.coverRightsConfirmed));
         if(input.coverRightsConfirmed)await creator.getByLabel('Cover rights evidence reference',{exact:true}).fill(input.coverRightsEvidenceReference);
         await creator.getByLabel('I agree to this content consent notice.',{exact:true}).check();
         const result=creator.waitForResponse(r=>r.url().endsWith('/api/pilot')&&r.request().method()==='POST');
