@@ -16,9 +16,12 @@ test('anonymous publication projection excludes owner drafts and follows publish
   assert.equal((await admin.from('guides').update({creator_name:'Synthetic public author',cover_url:cover,published_at:time}).eq('id',id)).error,null);
   const rows=await anonymous.from('guides').select('id,creator_name,published_at,cover_url').in('id',[id,draft,otherDraft]);
   assert.equal(rows.error,null);assert.deepEqual(rows.data.map(row=>row.id),[id]);
+  assert.equal(await readPublicGuidePage(id,process.env),null);
+  const publicCreator=await admin.from('creators').update({handle:owner.id,public_profile:{languages:['en']}}).eq('id',owner.id).select('id').single();
+  assert.equal(publicCreator.error,null);assert.equal(publicCreator.data.id,owner.id);
   const guide=await readPublicGuidePage(id,process.env);assert.equal(guide.kind,'summary');assert.equal(guide.publication.author,'Synthetic public author');
   assert.equal(Date.parse(guide.publication.publishedAt),Date.parse(time));assert.equal(guide.publication.coverUrl,cover);
-  assert.deepEqual(Object.keys(guide.publication).sort(),['author','coverUrl','publishedAt']);assert.equal(guide.days,undefined);
+  assert.deepEqual(Object.keys(guide.publication).sort(),['author','authorHandle','coverUrl','publishedAt']);assert.equal(guide.publication.authorHandle,'synthetic');assert.equal(guide.days,undefined);
   assert.equal(await readPublicGuidePage(draft,process.env),null);assert.equal(await readPublicGuidePage(otherDraft,process.env),null);
   const version=await owner.client.rpc('publish_guide_version',{p_guide_id:id,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Explicit authored day',stops:[{title:'Explicit authored stop',description:'Public source description',placeId:null,startMinuteOfDay:600,durationMinutes:45}]}]}});
   assert.equal(version.error,null);

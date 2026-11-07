@@ -7,9 +7,10 @@ import {pilotExecutionReadiness} from '../../lib/pilot/readiness.ts';
 
 // No credentials or remote target overrides: authenticate SQL sessions with local
 // synthetic Auth rows, then execute each public boundary as authenticated.
-const env={...process.env,KINNSO_TEST_TARGET:'local',KINNSO_TEST_PROJECT:'kinnsoos-public-it-20261106',
- KINNSO_TEST_API_ORIGIN:'http://127.0.0.1:59721',KINNSO_TEST_DB_CONTAINER:'supabase_db_kinnsoos-public-it-20261106',SUPABASE_URL:'http://127.0.0.1:59721'};
-const target=verifyTestTarget(env);
+const target=verifyTestTarget();
+assert.equal(target.projectRef,'kinnsoos-public-it-20261106');
+assert.equal(target.apiOrigin,'http://127.0.0.1:59721');
+assert.equal(target.dbContainer,'supabase_db_kinnsoos-public-it-20261106');
 const args=['exec','-i',target.dbContainer,'psql','-X','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-Atq'];
 const sql=text=>execFileSync('docker',args,{input:text,encoding:'utf8',windowsHide:true,stdio:['pipe','pipe','pipe']}).trim();
 const q=x=>`'${String(x).replaceAll("'","''")}'`;
