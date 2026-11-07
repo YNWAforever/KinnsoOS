@@ -22,3 +22,13 @@ From apps/journeys: `node --experimental-strip-types --test --test-reporter=dot 
 - `git diff --check`: passed.
 
 Self-review checked exact dispatch, the disabled and signed-out states, account invalidation, legacy route guards, manifest coverage, and navigation visibility. The server route test exercises real page dispatch with external dependencies stubbed. No live browser, authenticated backend, production service, database, credentials, deployment, or capability activation was used.
+
+## Round 1 — Behavioral route regression coverage
+
+Replaced the pilot source-pattern assertions with a route integration harness that executes the real locale page, Workbench, OpsWorkspace, PilotWorkspace and PilotControlRoom. Next routing and dynamic loading, unrelated UI and external reads are stubbed. Kept the server dispatch and 404 tests and the existing retired-host guard.
+
+The integration tests cover both participant locales, pilot independence from trips, the exact Ops query and run ID, both independent gates, wrong Ops path/view, disabled and signed-out entries making no private requests, and ordinary-account navigation on home and in the denied Ops queue. Both participant and Ops invalidation are exercised with a read in flight: participant aborts the request, Ops drops the late result, and neither restarts a read for the invalidated actor.
+
+- RED: Ran only “only exact Ops pilot query starts control-room reads” on a temporary test copy with the router query suppressed. It exited 1 at “exact Ops pilot query must delegate to the control room.” The temporary copy was removed.
+- GREEN: Ran capabilities, consolidated-origin-navigation, pilot-page-entry, ops-filters, pilot-control-room-ui and pilot-participant-ui with Node's test runner: 33 passed. `npm run typecheck` and `git diff --check` passed.
+- This round changed only tests and this report. No full unit rerun, browser launch, database, production access, or deployment.
