@@ -30,7 +30,8 @@ function PilotSession({ actorId, enabled, runId }: Props) {
   const [invalid, setInvalid] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [unknown, setUnknown] = useState(() => !!opsPilot.pending(actorId));
+  const unresolved = !!opsPilot.pending(actorId);
+  const unknown = unresolved && !busy;
   const [notice, setNotice] = useState('');
   const [confirmation, setConfirmation] = useState<Intent | null>(null);
   const [invite, setInvite] = useState<{ code: string; id: string; opener: HTMLElement } | null>(null);
@@ -105,11 +106,9 @@ function PilotSession({ actorId, enabled, runId }: Props) {
       return;
     }
     if (!result.ok && result.retryable) {
-      setUnknown(true);
       if (!confirmation) restoreFocus(intent.opener);
       return;
     }
-    setUnknown(false);
     setConfirmation(null);
     if (!result.ok) {
       setCanWrite(false);
@@ -152,7 +151,8 @@ function PilotSession({ actorId, enabled, runId }: Props) {
     setNotice(t('Acceptance summary exported.', '已匯出驗收摘要。'));
   }
 
-  const writable = canWrite && !unknown;
+  // Keep the confirmation opener mounted while saving, but block other writes during recovery.
+  const writable = canWrite && (!unresolved || busy && !!confirmation);
   const actions = { canWrite: writable, confirm };
   const run = snapshot?.run;
   const mutable = writable && !!run && !['completed', 'cancelled'].includes(run.status);
@@ -165,20 +165,24 @@ function PilotSession({ actorId, enabled, runId }: Props) {
       <Link href={href('ops?view=overview')}>{t('Operations overview', '營運總覽')}</Link>
       <Link href={href('ops')}>{t('Review queue', '審核待辦')}</Link>
     </nav>
-    {signIn ? <Link href={href('sign-in?next=' + encodeURIComponent(href(path)))}>{t('Sign in to continue', '登入後繼續')}</Link>
+    {signIn ? <><Link href={href('sign-in?next=' + encodeURIComponent(href(path)))}>{t('Sign in to continue', '登入後繼續')}</Link>
+        {actorId && !invalid && enabled && error === 'AUTH_REQUIRED' && <button type="button" className="k-btn" onClick={() => setRefresh(x => x + 1)}>{t('Refresh pilot', '重新載入試行計劃')}</button>}</>
       : !enabled ? <p role="status">{t('Operations services are disconnected.', '營運服務尚未接通。')}</p>
-      : error === 'FORBIDDEN' ? <p role="alert">{t('Access denied. An active operations role is required.', '拒絕存取。需要有效的營運角色。')}</p>
+      : error === 'FORBIDDEN' ? <>
+        <p role="alert">{t('Access denied. An active operations role is required.', '拒絕存取。需要有效的營運角色。')}</p>
+        <button type="button" className="k-btn" onClick={() => setRefresh(x => x + 1)}>{t('Refresh pilot', '重新載入試行計劃')}</button>
+      </>
       : <>
         {error && <p role="alert">{error === 'NOT_FOUND' ? t('Pilot run record not found.', '找不到試行計劃紀錄。') : t('The pilot could not be loaded. It may be disconnected.', '未能載入試行計劃，服務可能尚未接通。')}</p>}
         {!snapshot && !error && <p role="status">{t('Loading pilot…', '正在載入試行計劃…')}</p>}
         <button type="button" className="k-btn" disabled={!!confirmation || !!invite || busy} onClick={() => setRefresh(x => x + 1)}>{t('Refresh pilot', '重新載入試行計劃')}</button>
         {snapshot && <>
-          {unknown && !confirmation && <div className="k-card" role="status">
+          {unresolved && !confirmation && <div className="k-card" role="status">
             <p>{t('A previous pilot change is unresolved. Retry it before making another change.', '先前的變更結果未明。請先重試，才可進行其他變更。')}</p>
             {canWrite && <button type="button" className="k-btn" disabled={busy} onClick={event => {
               const command = opsPilot.pending(actorId);
               if (command) void send({command, opener:event.currentTarget, label:''}, true);
-              else { setUnknown(false); setRefresh(x => x + 1); restoreFocus(event.currentTarget); }
+              else { setRefresh(x => x + 1); restoreFocus(event.currentTarget); }
             }}>{t('Retry previous request', '重試先前請求')}</button>}
           </div>}
           {!canWrite && <p role="status">{t('Read only. Changes require an operations admin or owner.', '唯讀。變更需要營運管理員或擁有者。')}</p>}

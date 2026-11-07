@@ -194,3 +194,34 @@ test('operator records manual evidence without an editable result for a derived 
   expect(overflow.width, JSON.stringify(overflow)).toBeLessThanOrEqual(overflow.viewport);
   expect(errors).toEqual([]);
 });
+
+test('first FORBIDDEN retains the exact request through an authorized refresh of the mounted room',async({page})=>{
+  const fixture = { denied:false, writable:true, post:(_body:unknown,index:number) =>
+    index===1 ? {ok:false,code:'FORBIDDEN',retryable:false} : undefined };
+  const {wire,errors}=await mount(page,fixture);
+  await page.getByRole('button',{name:'Generate or rotate code'}).click();
+  fixture.denied=true;
+  fixture.writable=false;
+  await page.getByRole('dialog').getByRole('button',{name:'Confirm',exact:true}).click();
+  await expect(page.getByRole('alert')).toContainText('Access denied');
+  await expect(page.getByRole('heading',{name:'Participant slots'})).toHaveCount(0);
+
+  fixture.denied=false;
+  fixture.writable=true;
+  await page.getByRole('button',{name:'Refresh pilot'}).click();
+  const retry=page.getByRole('button',{name:'Retry previous request'});
+  await expect(retry).toBeVisible();
+  await expect(page.getByRole('button',{name:'Generate or rotate code'})).toHaveCount(0);
+  await expect(page.getByRole('button',{name:'Add participant slot'})).toHaveCount(0);
+  expect(wire).toHaveLength(1);
+
+  await retry.click();
+  await expect(page.getByRole('button',{name:'Add participant slot'})).toBeVisible();
+  await expect(retry).toHaveCount(0);
+  expect(wire).toHaveLength(2);
+  expect(wire[1]).toEqual(wire[0]);
+  expect(wire[0].actor).toBe(actorId);
+  expect(wire[0].body.requestId).toMatch(/^[a-f0-9-]{36}$/);
+  expect(wire[0].body.command).toMatchObject({type:'createInvite',participantId:slot,expectedRevision:2});
+  expect(errors).toEqual([]);
+});
