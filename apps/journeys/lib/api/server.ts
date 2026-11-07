@@ -22,18 +22,25 @@ export function backendFailure(error: {message?:string; code?:string} | null) {
 }
 export async function apiContext(request: Request, capability: string, write = false) {
   const started=performance.now();
+  const correlation = request.headers.get('X-Kinnso-Local-Correlation');
+  const trace = (stage: string, status?: number) => {
+    if (capability === 'pilot' && process.env.KINNSO_ENVIRONMENT === 'local' &&
+      process.env.KINNSO_LOCAL_BUILD_IDENTITY && uuid(correlation))
+      console.info('pilot-auth', correlation, stage, status ?? 0);
+  };
   if (write && !sameOrigin(request,process.env.KINNSO_SITE_URL)) return {response:failure('FORBIDDEN',403)} as const;
   if (capabilities(process.env)[capability]?.mode !== 'connected') return {response:failure('UNAVAILABLE',503)} as const;
   const client = await serverClient();
   if (!client) return {response:failure('UNAVAILABLE',503)} as const;
   const {data:{user},error} = await client.auth.getUser();
-  if (error || !user) return {response:failure('AUTH_REQUIRED',401)} as const;
+  if (error || !user) { trace('auth-user', error?.status); return {response:failure('AUTH_REQUIRED',401)} as const; }
   const intentActor = request.headers.get('X-Kinnso-Intent-Actor');
   if (intentActor !== null && (!uuid(intentActor) || intentActor.toLowerCase() !== user.id.toLowerCase()))
     return {response:failure('AUTH_REQUIRED',401)} as const;
   // The RPC also verifies the current auth.sessions row and authoritative roles.
   const actor = await client.rpc('kinnso_actor');
-  if (actor.error || actor.data?.id !== user.id) return {response:failure('AUTH_REQUIRED',401)} as const;
+  if (actor.error || actor.data?.id !== user.id) { trace('actor-rpc', actor.status); return {response:failure('AUTH_REQUIRED',401)} as const; }
+  trace('authorized', actor.status);
   observeRequest(actor.data,started);
   return {client,actor:actor.data} as const;
 }

@@ -73,6 +73,20 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         ({ snapshot } = await ops(operator, { type: 'setParticipantStatus', id,
           expectedRevision: joined.revision, status: 'active', reason: 'Synthetic consent verified' }));
       }
+      async function forbid(page: typeof operator, path: string, method: string, data: object, codes = [403, 404], readback?: string) {
+        const before = readback ? fixture.sql(readback) : '';
+        const requestId = randomUUID();
+        const response = await page.request.fetch(origin + path, {
+          method, data: { ...data, requestId }, headers: { Origin: origin }, maxRedirects: 0,
+        });
+        const status = response.status();
+        expect(codes, method + ' ' + path.split('/').slice(0, 4).join('/')).toContain(status);
+        const body = await response.json();
+        expect(body.ok === false && body.code === ({403:'FORBIDDEN',404:'NOT_FOUND',409:'CONFLICT'} as Record<number,string>)[status]).toBe(true);
+        expect(Object.keys(body).every(key => ['ok','code','retryable','requestId'].includes(key))).toBe(true);
+        expect(fixture.sql(`select count(*) from kinnso_internal.requests where request_id='${requestId}'`)).toBe('0');
+        if (readback) expect(fixture.sql(readback)).toBe(before);
+      }
       const creator = members[1];
       await creator.goto(origin + '/en/studio');
       const confirm = creator.getByRole('button', { name: 'Confirm creator profile', exact: true });
@@ -85,12 +99,29 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         const guideId = randomUUID();
         guides.push(guideId);
         const title = label + '-guide-' + index;
-        const intake = (await participant(creator, { type: 'submitContentIntake', intake: {
+        const intakeInput = {
           title, destination: 'Kyoto', authoredLocale: 'en', sourceSummary: 'Synthetic original work',
           sourceUrls: [], rightsBasis: 'original', rightsEvidenceReference: 'ref:' + guideId,
           authorConsentVersion: notices.contentConsentVersion, authorConsentDigest: notices.contentConsentDigest,
           coverRightsConfirmed: null, coverRightsEvidenceReference: null,
-        } })).snapshot.intake;
+        };
+        const intake = (await participant(creator, { type: 'submitContentIntake', intake: intakeInput })).snapshot.intake;
+        if (classification === 'synthetic' && index === 1) {
+          const duplicate = randomUUID();
+          const before = fixture.sql(`select count(*) from kinnso_internal.pilot_content_intakes where run_id='${runId}'`);
+          const response = await creator.request.post(origin + '/api/pilot', { headers: { Origin: origin },
+            data: { requestId: duplicate, command: { type: 'submitContentIntake', requestId: duplicate, intake: intakeInput } } });
+          expect(response.status()).toBe(409);
+          expect((await response.json()).code).toBe('CONFLICT');
+          expect(fixture.sql(`select count(*) from kinnso_internal.pilot_content_intakes where run_id='${runId}'`)).toBe(before);
+          expect(fixture.sql(`select count(*) from kinnso_internal.requests where request_id='${duplicate}'`)).toBe('0');
+        }
+        if (classification === 'synthetic' && index === 2) {
+          await forbid(operator, '/api/ops/pilot', 'POST', { command: { type: 'bindGuide', intakeId: intake.id,
+            guideId: guides[firstGuide], expectedRevision: intake.revision } }, [409], `select count(*),
+            (select count(*) from public.ops_audit_log where entity_id='${intake.id}') from kinnso_internal.pilot_content_intakes
+            where run_id='${runId}' and guide_id='${guides[firstGuide]}'`);
+        }
         const path = '/api/creator/guides/' + guideId;
         const draft = await api(creator, path, 'PUT', { expectedRevision: 0, requestId: randomUUID(), payload: {
           title, city: 'Kyoto', summary: 'Synthetic rehearsal route',
@@ -105,6 +136,39 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         await ops(operator, { type: 'reviewContentIntake', id: intake.id, expectedRevision: bound.revision,
           decision: 'approve', expectedDraftRevision: bound.currentDraftRevision,
           expectedContentDigest: bound.currentContentDigest, reason: 'Reviewed synthetic original work' });
+        if (classification === 'synthetic' && index === 1) {
+          await forbid(members[0], path + '/publish', 'POST', { expectedRevision: draft.revision }, [403, 404],
+            `select count(*) from public.guide_versions where guide_id='${guideId}'`);
+          const drift = [
+            { sourceUrls: ['https://example.test/source'] },
+            { coverRightsConfirmed: true, coverRightsEvidenceReference: 'ref:' + guideId },
+            { authoredLocale: 'zh-HK' },
+            { rightsBasis: 'permission' },
+          ];
+          let nextInput: Record<string, unknown> = { ...intakeInput };
+          const current = async () => (await api(operator, '/api/ops/pilot?runId=' + runId))
+            .contentIntakes.find((item: { id: string }) => item.id === intake.id);
+          for (const change of drift) {
+            const approved = await current();
+            await ops(operator, { type: 'reviewContentIntake', id: intake.id,
+              expectedRevision: approved.revision, decision: 'reject', reason: 'Synthetic rights change' });
+            const rejected = await current();
+            nextInput = { ...nextInput, ...change };
+            await participant(creator, { type: 'updateOwnedContentIntake', id: intake.id,
+              expectedRevision: rejected.revision, intake: nextInput });
+            const revised = await current();
+            expect(revised.status).toBe('submitted');
+            const deniedPublication = await creator.request.post(origin + path + '/publish', {
+              headers: { Origin: origin }, data: { expectedRevision: draft.revision, requestId: randomUUID() },
+            });
+            expect(deniedPublication.status()).toBe(409);
+            expect((await deniedPublication.json()).code).toBe('PILOT_REVIEW_REQUIRED');
+            expect(fixture.sql(`select count(*) from public.guide_versions where guide_id='${guideId}'`)).toBe('0');
+            await ops(operator, { type: 'reviewContentIntake', id: intake.id, expectedRevision: revised.revision,
+              decision: 'approve', expectedDraftRevision: revised.currentDraftRevision,
+              expectedContentDigest: revised.currentContentDigest, reason: 'Reviewed changed synthetic rights' });
+          }
+        }
         await api(creator, path + '/publish', 'POST', { expectedRevision: draft.revision, requestId: randomUUID() });
         expect(await api(members[0], '/api/guides/' + guideId)).toMatchObject({ title, version: 1 });
       }
@@ -140,6 +204,20 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       const mission = (command: object) => api(creator, '/api/creator/missions/' + missionId, 'POST', {
         command, requestId: randomUUID(),
       });
+      if (classification === 'synthetic') {
+        const absentMission = randomUUID();
+        await forbid(creator, '/api/creator/missions/' + absentMission, 'POST',
+          { command: { type: 'join', applicationNote: 'Synthetic scope probe' } }, [403, 404],
+          `select count(*) from public.mission_participants where mission_id in ('${missionId}', '${absentMission}')`);
+        await forbid(traveller, '/api/merchant/campaigns', 'POST', { merchantId,
+          command: { type: 'createDraft', id: randomUUID(), publish: false, reason: 'Synthetic scope probe',
+            input: { title: 'Synthetic scope probe', summary: 'Synthetic scope probe', couponCode: 'SYNTHETIC',
+              couponUrl: 'https://example.test/synthetic', affiliateRate: 0, kinnsoRate: 0, creatorRate: 0,
+              requirements: [], deliverables: [], applicationOpensAt: null, applicationClosesAt: null,
+              scheduleTimeZone: 'UTC', milestones: [] } } }, [403, 404],
+          `select count(*),(select count(*) from kinnso_internal.merchant_audit where merchant_id='${merchantId}')
+            from public.missions where merchant_profile_id='${merchantId}'`);
+      }
       await mission({ type: 'join', applicationNote: 'Synthetic application' });
       const application = (await campaignDetail()).participants[0];
       expect(application.status).toBe('applied');
@@ -157,6 +235,14 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       const revision = (await campaignDetail()).submissions[0];
       await submit(revision.id, revision.updatedAt, 2);
       const resubmitted = (await campaignDetail()).submissions[0];
+      if (classification === 'synthetic') {
+        await forbid(merchant, '/api/merchant/campaigns', 'POST', { merchantId, command: {
+          type: 'reviewSubmission', id: randomUUID(), expectedUpdatedAt: resubmitted.updatedAt,
+          action: 'approve', feedback: 'Synthetic scope probe', reason: 'Synthetic scope probe',
+        } }, [403, 404], `select status,updated_at,
+          (select count(*) from kinnso_internal.merchant_audit where merchant_id='${merchantId}')
+          from public.mission_milestone_submissions where id='${resubmitted.id}'`);
+      }
       await review(resubmitted, 'approve');
       const inbox = await api(creator, '/api/inbox');
       expect(inbox.items).toEqual(expect.arrayContaining([
@@ -181,6 +267,12 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
         requestId: randomUUID(), expectedRevision: adopted.revision,
         command: { type: 'updateStop', id: adopted.days[0].stops[0].id, patch: { travellerNote: label + '-private-note' } },
       });
+      if (classification === 'synthetic') {
+        await forbid(creator, '/api/trips/' + trip.id + '/commands', 'POST', {
+          expectedRevision: edited.revision, command: { type: 'updateStop', id: adopted.days[0].stops[0].id,
+            patch: { travellerNote: 'Synthetic scope probe' } },
+        }, [403, 404], `select count(*) from public.trip_revisions where trip_id='${trip.id}'`);
+      }
       await traveller.reload();
       expect((await api(traveller, '/api/trips/' + trip.id)).revision).toBe(edited.revision);
       expect(await api(traveller, '/api/support/context?mission=' + missionId)).toEqual({
@@ -192,6 +284,12 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
       const supportId = randomUUID();
       const opened = await support(traveller, { type: 'create', id: supportId, subject: label + '-private-subject',
         message: label + '-private-message', context: { type: 'mission', id: missionId } });
+      if (classification === 'synthetic') {
+        await forbid(creator, '/api/support', 'POST', { command: { type: 'reply', id: supportId,
+          expectedRevision: opened.revision, message: 'Synthetic scope probe' } }, [403, 404],
+          `select count(*),(select count(*) from kinnso_internal.support_audit where case_id='${supportId}')
+            from kinnso_internal.support_messages where case_id='${supportId}'`);
+      }
       const responseText = label + '-private-response';
       await support(operator, { type: 'review', id: supportId, expectedRevision: opened.revision,
         ownerId: operatorId, status: 'resolved', reason: 'Synthetic support review', message: responseText });

@@ -364,7 +364,7 @@ function executionSeed(i,initialize=true){
  select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(i.guide)},1,${q(randomUUID())})`)});
  ${[0,1].map(()=>{const guide=randomUUID();return `
  select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(guide)},0,${q(randomUUID())},${json(draft)})`)});
- select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
+ select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:{...content,rightsEvidenceReference:'ref:'+guide}}))});
  select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','bindGuide','intakeId',(select id from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)} and guide_id is null),'guideId',${q(guide)},'expectedRevision',1)));
  select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','reviewContentIntake','id',(select id from kinnso_internal.pilot_content_intakes where guide_id=${q(guide)}),'expectedRevision',2,'decision','approve','reason','Reviewed','expectedDraftRevision',(select revision from kinnso_internal.guide_drafts where guide_id=${q(guide)}),'expectedContentDigest',(select kinnso_internal.pilot_digest(payload) from kinnso_internal.guide_drafts where guide_id=${q(guide)}))));
  select pg_temp.rpc(${q(i.creator)},${q(`select public.publish_kinnso_pilot_guide_draft(${q(guide)},1,${q(randomUUID())})`)});`;}).join('\n')}
@@ -422,7 +422,7 @@ test('authoritative facts satisfy the readiness evaluator and permit explicit co
 check('three valid publications cannot conceal a fourth unapproved linked guide',i=>{
  const guide=randomUUID();return `${executionSeed(i)}
  select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(guide)},0,${q(randomUUID())},${json(draft)})`)});
- select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
+ select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:{...content,rightsEvidenceReference:'ref:'+guide}}))});
  select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','bindGuide','intakeId',(select id from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)} and guide_id is null),'guideId',${q(guide)},'expectedRevision',1)));
  select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'Cannot skip linked guide'}))},'CONFLICT');`;
 });
@@ -812,4 +812,12 @@ check('external URL cannot be recorded as an opaque pilot evidence reference',i=
  ${invoke(i,{type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'ref:1'})}
  ${manualPass(i,'physical_ios','ref:1')}
  select pg_temp.ok((select status='pass' from kinnso_internal.pilot_check_rows(${q(i.run)}) where code='physical_ios'),'opaque evidence still works');
+`);
+
+check('ordinary duplicate intake conflicts without writing a second row or audit',i=>`
+ ${seed(i)}
+ select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
+ select pg_temp.denied(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))},'CONFLICT');
+ select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)}),'one intake');
+ select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where run_id=${q(i.run)} and command_type='submitContentIntake'),'one intake audit');
 `);
