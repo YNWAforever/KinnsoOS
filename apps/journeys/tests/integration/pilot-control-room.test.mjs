@@ -814,10 +814,18 @@ check('external URL cannot be recorded as an opaque pilot evidence reference',i=
  select pg_temp.ok((select status='pass' from kinnso_internal.pilot_check_rows(${q(i.run)}) where code='physical_ios'),'opaque evidence still works');
 `);
 
-check('ordinary duplicate intake conflicts without writing a second row or audit',i=>`
+check('normalized intake duplicates conflict and exact request replay remains distinct',i=>{
+ const first=pc({type:'submitContentIntake',intake:content},i.request);
+ const variant={...content,title:content.title+' '};
+ return `
  ${seed(i)}
- select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))});
- select pg_temp.denied(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:content}))},'CONFLICT');
+ create temp table original as select pg_temp.rpc(${q(i.creator)},${q(first)}) value;
+ select pg_temp.ok((select value - '_pilotReplay' from original) =
+   (pg_temp.rpc(${q(i.creator)},${q(first)}) - '_pilotReplay'),'exact replay receipt');
+ select pg_temp.denied(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:variant},i.request))},'REQUEST_ID_REUSED');
+ select pg_temp.denied(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:variant}))},'CONFLICT');
  select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)}),'one intake');
  select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where run_id=${q(i.run)} and command_type='submitContentIntake'),'one intake audit');
-`);
+ select pg_temp.ok((select count(*)=1 from kinnso_internal.requests where actor_id=${q(i.creator)}),'one receipt');
+ `;
+});

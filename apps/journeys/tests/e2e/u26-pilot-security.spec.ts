@@ -30,9 +30,9 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
   const health = await request.get('/api/health');
   expect(JSON.parse(health.headers()['x-kinnso-local-build'] || 'null')).toEqual(build);
 
-  const contexts = await Promise.all([0, 1, 2].map(() => browser.newContext()));
+  const contexts = await Promise.all([0, 1, 2, 3].map(() => browser.newContext()));
   try {
-    const [operator, member, outsider] = await Promise.all(contexts.map(context => context.newPage()));
+    const [operator, member, outsider, activeMember] = await Promise.all(contexts.map(context => context.newPage()));
     const operatorId = await signIn(operator, 'operator', suiteLabel);
     const membership = await fixture.admin.from('kinnso_ops_members').insert({
       user_id: operatorId, display_name: suiteLabel, role: 'admin', status: 'active',
@@ -168,6 +168,73 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
       expectedRevision: merchantSlot.revision, reason: 'Synthetic invite revocation' });
     await denied(await claim(outsider, revoked.inviteCode), 404, 'NOT_FOUND', [...sensitive, revoked.inviteCode]);
 
+    // Use a separate active slot so the response contains private workflow state.
+    await signIn(activeMember, 'active-signout', suiteLabel);
+    snapshot = await api(operator, opsPath + '?runId=' + id);
+    const activeInvite = await invite('merchant');
+    expect((await claim(activeMember, activeInvite.inviteCode)).status()).toBe(200);
+    await fixture.participant(activeMember, { type: 'acceptConsent',
+      noticeVersion: suiteLabel + '-participation', noticeDigest: digest('participation'),
+      privacyNoticeVersion: suiteLabel + '-privacy', privacyNoticeDigest: digest('privacy') });
+    snapshot = await api(operator, opsPath + '?runId=' + id);
+    const activeSlot = snapshot.participants.find((item: { id: string }) => item.id === slots.get('merchant'));
+    await ops(operator, { type: 'setParticipantStatus', id: activeSlot.id, expectedRevision: activeSlot.revision,
+      status: 'active', reason: 'Synthetic active sign-out probe' });
+    await activeMember.goto('/en/pilot');
+    await expect(activeMember.getByRole('navigation', { name: 'Pilot tasks', exact: true })).toBeVisible();
+    // This one transport ignores cancellation; the production repository and UI
+    // still receive and process their normal account invalidation signal.
+    await activeMember.evaluate(() => {
+      const original = window.fetch.bind(window);
+      window.fetch = async (input, init) => {
+        if (input !== '/api/pilot' || init?.method !== 'GET') return original(input, init);
+        const response = await original(input, { ...init, signal: undefined });
+        (window as Window & { pilotLateStatus?: number }).pilotLateStatus = response.status;
+        return response;
+      };
+    });
+    const late = gate(), releaseRead = gate(), readDelivered = gate();
+    let privatePayload = false;
+    const signout = await activeMember.context().newPage();
+    const holdRead = async (route: Route) => {
+      const response = await route.fetch({ maxRedirects: 0 });
+      const body = await response.json();
+      const self = body.data;
+      privatePayload = response.status() === 200 && self?.run?.id === id &&
+        self?.participant?.id === activeSlot.id && self.participant.status === 'active' &&
+        /^[a-f0-9]{64}$/.test(self.participant.consentDigest) &&
+        self?.nextStep?.code === 'open_workflow' && Boolean(self.workflowLinks);
+      late.open();
+      await releaseRead.wait;
+      await route.fulfill({ response });
+      readDelivered.open();
+    };
+    await activeMember.route('**/api/pilot', holdRead);
+    try {
+      await activeMember.getByRole('button', { name: 'Refresh pilot', exact: true }).click();
+      await late.wait;
+      expect(privatePayload).toBe(true);
+      await signout.goto('/en/me');
+      await signout.getByRole('button', { name: 'Sign out', exact: true }).click();
+      await signout.waitForURL('**/en/sign-in*');
+      const signedOut = activeMember.getByRole('link', { name: 'Sign in to continue', exact: true });
+      await expect(signedOut).toBeVisible();
+      releaseRead.open();
+      await readDelivered.wait;
+      await expect.poll(() => activeMember.evaluate(() =>
+        (window as Window & { pilotLateStatus?: number }).pilotLateStatus)).toBe(200);
+      await activeMember.evaluate(() => new Promise<void>(resolve =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      await expect(signedOut).toBeVisible();
+      await expect(activeMember.getByRole('heading', { name: suiteLabel, exact: true })).toHaveCount(0);
+      await expect(activeMember.getByRole('navigation', { name: 'Pilot tasks', exact: true })).toHaveCount(0);
+      await expect(activeMember.getByText('Accepted consent digest:', { exact: false })).toHaveCount(0);
+    } finally {
+      releaseRead.open();
+      await activeMember.unroute('**/api/pilot', holdRead);
+      await signout.close();
+    }
+
     snapshot = await api(operator, opsPath + '?runId=' + id);
     const pending = await invite('creator');
     snapshot = await api(operator, opsPath + '?runId=' + id);
@@ -185,35 +252,6 @@ test('pilot invitation errors are opaque and exact claim replay writes once', as
     ({ snapshot } = await ops(operator, { type: 'setRunStatus', id, status: 'cancelled',
       expectedRevision: snapshot.run.revision, reason: 'Synthetic security acceptance' }));
     await denied(await claim(outsider, pending.inviteCode), 404, 'NOT_FOUND', [...sensitive, pending.inviteCode]);
-
-    const late = gate(), releaseRead = gate(), readDelivered = gate();
-    let capturedStatus = 0;
-    const signout = await member.context().newPage();
-    await member.route('**/api/pilot', async route => {
-      try {
-        const response = await route.fetch({ maxRedirects: 0 });
-        capturedStatus = response.status();
-        late.open();
-        await releaseRead.wait;
-        await route.fulfill({ response }).catch(() => {});
-      } finally { readDelivered.open(); }
-    });
-    try {
-      await member.goto('/en/pilot', { waitUntil: 'commit' });
-      await late.wait;
-      expect(capturedStatus).toBe(200);
-      await signout.goto('/en/me');
-      await signout.getByRole('button', { name: 'Sign out', exact: true }).click();
-      await signout.waitForURL('**/en/sign-in*');
-      await expect(member.getByRole('link', { name: 'Sign in to continue', exact: true })).toBeVisible();
-      releaseRead.open();
-      await readDelivered.wait;
-      await expect(member.getByRole('link', { name: 'Sign in to continue', exact: true })).toBeVisible();
-      await expect(member.getByRole('heading', { name: suiteLabel, exact: true })).toHaveCount(0);
-    } finally {
-      releaseRead.open();
-      await signout.close();
-    }
 
     const suspended = await fixture.admin.from('kinnso_ops_members').update({ status: 'paused' }).eq('user_id', operatorId);
     expect(Boolean(suspended.error)).toBe(false);
