@@ -108,3 +108,119 @@ revoke all on function public.admin_create_partner_perk(
 grant execute on function public.admin_create_partner_perk(
   uuid, text, text, text, text, text, text, text, text, integer, boolean
 ) to authenticated;
+
+-- Session create also writes a deterministic unique slug. Handle either unique
+-- constraint, then use the existing exact-request check by primary key.
+create or replace function public.admin_create_community_session(
+  p_request_id uuid,
+  p_host_creator_id uuid,
+  p_title text,
+  p_description text,
+  p_type text,
+  p_starts_at timestamptz,
+  p_duration_minutes integer,
+  p_embed_url text default null,
+  p_replay_url text default null,
+  p_destination_tags text[] default '{}'::text[]
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_title text := pg_catalog.btrim(p_title);
+  v_description text := pg_catalog.btrim(p_description);
+  v_embed_url text := nullif(pg_catalog.btrim(p_embed_url), '');
+  v_replay_url text := nullif(pg_catalog.btrim(p_replay_url), '');
+  v_tags text[] := coalesce(p_destination_tags, '{}'::text[]);
+  v_created_id uuid;
+  v_existing public.community_sessions%rowtype;
+begin
+  if not public.is_active_ops_role('moderator') then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+  if p_request_id is null or p_host_creator_id is null or p_starts_at is null then
+    raise exception 'invalid_session' using errcode = '22023';
+  end if;
+  if v_title is null or char_length(v_title) not between 1 and 160
+     or v_description is null or char_length(v_description) not between 1 and 4000 then
+    raise exception 'invalid_session_text' using errcode = '22023';
+  end if;
+  if p_type not in ('destination_briefing','ask_a_creator','merchant_spotlight','new_creator_intro')
+     or p_duration_minutes not between 1 and 1440 then
+    raise exception 'invalid_session_fields' using errcode = '22023';
+  end if;
+  if not exists (
+    select 1 from public.creators c
+     where c.id = p_host_creator_id and c.status = 'active'
+  ) then
+    raise exception 'invalid_session_host' using errcode = '22023';
+  end if;
+  if (v_embed_url is not null and (
+        char_length(v_embed_url) > 2048
+        or v_embed_url !~* '^https://(www\.|m\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be)([/?#]|$)'
+      ))
+     or (v_replay_url is not null and (
+        char_length(v_replay_url) > 2048
+        or v_replay_url !~* '^https://(www\.|m\.)?(youtube\.com|youtube-nocookie\.com|youtu\.be)([/?#]|$)'
+      )) then
+    raise exception 'invalid_session_url' using errcode = '22023';
+  end if;
+  if cardinality(v_tags) > 20
+     or exists (
+       select 1 from pg_catalog.unnest(v_tags) tag
+        where tag is null or char_length(pg_catalog.btrim(tag)) not between 1 and 40
+     )
+     or cardinality(v_tags) <> (
+       select count(distinct pg_catalog.btrim(tag))
+         from pg_catalog.unnest(v_tags) tag
+     ) then
+    raise exception 'invalid_session_tags' using errcode = '22023';
+  end if;
+  v_tags := array(
+    select pg_catalog.btrim(tag)
+      from pg_catalog.unnest(v_tags) tag
+  );
+
+  insert into public.community_sessions
+    (id, slug, host_creator_id, title, description, type, starts_at,
+     duration_minutes, embed_url, replay_url, destination_tags, status)
+  values
+    (p_request_id, 'ops-session-' || p_request_id::text, p_host_creator_id,
+     v_title, v_description, p_type, p_starts_at, p_duration_minutes,
+     v_embed_url, v_replay_url, v_tags, 'scheduled')
+  on conflict do nothing
+  returning id into v_created_id;
+
+  if v_created_id is null then
+    select * into v_existing
+      from public.community_sessions s
+     where s.id = p_request_id;
+    if not found then
+      raise exception 'session_conflict' using errcode = '23505';
+    end if;
+    if v_existing.host_creator_id is distinct from p_host_creator_id
+       or v_existing.title is distinct from v_title
+       or v_existing.description is distinct from v_description
+       or v_existing.type is distinct from p_type
+       or v_existing.starts_at is distinct from p_starts_at
+       or v_existing.duration_minutes is distinct from p_duration_minutes
+       or v_existing.embed_url is distinct from v_embed_url
+       or v_existing.replay_url is distinct from v_replay_url
+       or v_existing.destination_tags is distinct from v_tags then
+      raise exception 'request_id_reused' using errcode = '23505';
+    end if;
+    return pg_catalog.jsonb_build_object('id', v_existing.id, 'status', v_existing.status);
+  end if;
+
+  perform public.ops_audit_log_append(
+    'community_session', p_request_id, 'session.create', null,
+    pg_catalog.jsonb_build_object(
+      'hostCreatorId', p_host_creator_id,
+      'status', 'scheduled'
+    )
+  );
+  return pg_catalog.jsonb_build_object('id', p_request_id, 'status', 'scheduled');
+end
+$$;
