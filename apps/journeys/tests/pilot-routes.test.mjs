@@ -487,6 +487,80 @@ test('opsPilot returns authorization/conflict failures without cached successful
   }
 });
 
+for (const [status, code] of [[401, 'AUTH_REQUIRED'], [403, 'FORBIDDEN']]) {
+  test(`an unresolved evidence command retains its UUID through 503 -> ${status} -> success`, async () => {
+    const command = {
+      type: 'addEvidenceReference', runId, checkCode: 'physical_ios', entityType: 'manual',
+      entityId: runId, evidenceReference: 'ref:1',
+    };
+    const state = {events: [], attempts: [], status: 503};
+    state.fetch = async (url, options) => {
+      if (options.method === 'GET') return Response.json({ok: true, data: snapshot()});
+      state.attempts.push({url, options});
+      return state.status === 200
+        ? Response.json({ok: true, data: {snapshot: {run: null}}})
+        : Response.json({
+          ok: false, code: state.status === 503 ? 'UNAVAILABLE' : code,
+          retryable: state.status === 503, requestId: otherId,
+        }, {status: state.status});
+    };
+    const {opsPilot} = load(repositoryCode, state);
+    assert.equal((await opsPilot.get()).ok, true);
+    let originalRequestId;
+    for (const nextStatus of [503, status, 200]) {
+      state.status = nextStatus;
+      const result = await opsPilot.command(structuredClone(command));
+      const envelope = JSON.parse(state.attempts.at(-1).options.body);
+      originalRequestId ??= envelope.requestId;
+      assert.equal(envelope.requestId, originalRequestId, 'Authorization loss cannot resolve an earlier unknown write');
+      assert.deepEqual(envelope.command, command);
+      assert.equal(result.ok, nextStatus === 200);
+      if (!result.ok) {
+        assert.equal(result.code, nextStatus === 503 ? 'UNAVAILABLE' : code);
+        assert.equal(result.retryable, nextStatus === 503);
+        assert.equal(result.requestId, originalRequestId);
+        assert.equal('data' in result, false, 'Permission denial must never return an earlier private snapshot');
+      }
+    }
+    await opsPilot.command(structuredClone(command));
+    assert.notEqual(JSON.parse(state.attempts.at(-1).options.body).requestId, originalRequestId,
+      'A confirmed successful retry conclusively resolves the intent');
+  });
+}
+
+test('terminal policy clears resolvable outcomes and retains unresolved authorization interruptions', async () => {
+  for (const [status, code, precedesUnknown, retains] of [
+    [400, 'INVALID', false, false], [400, 'INVALID', true, false],
+    [401, 'AUTH_REQUIRED', false, true], [401, 'AUTH_REQUIRED', true, true],
+    [403, 'FORBIDDEN', false, true], [403, 'FORBIDDEN', true, true],
+    [404, 'NOT_FOUND', false, false], [404, 'NOT_FOUND', true, false],
+    [409, 'CONFLICT', false, false], [409, 'CONFLICT', true, false],
+  ]) {
+    const state = {events: [], attempts: [], status: precedesUnknown ? 503 : status};
+    state.fetch = async (url, options) => {
+      state.attempts.push({url, options});
+      return state.status === 200
+        ? Response.json({ok: true, data: {snapshot: {run: null}}})
+        : Response.json({
+          ok: false, code: state.status === 503 ? 'UNAVAILABLE' : code,
+          retryable: state.status === 503, requestId: otherId,
+        }, {status: state.status});
+    };
+    const {opsPilot} = load(repositoryCode, state);
+    await opsPilot.command(createRun);
+    const originalRequestId = JSON.parse(state.attempts[0].options.body).requestId;
+    if (precedesUnknown) {
+      state.status = status;
+      await opsPilot.command(createRun);
+    }
+    state.status = 200;
+    await opsPilot.command(createRun);
+    const finalRequestId = JSON.parse(state.attempts.at(-1).options.body).requestId;
+    if (retains) assert.equal(finalRequestId, originalRequestId, `${code} after unknown=${precedesUnknown}`);
+    else assert.notEqual(finalRequestId, originalRequestId, `${code} after unknown=${precedesUnknown}`);
+  }
+});
+
 test('overlapping identical commands retain their request identity if either response is unknown', async () => {
   const state = {events: [], attempts: [], responses: []};
   state.fetch = async (url, options) => {
