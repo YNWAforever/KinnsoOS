@@ -74,7 +74,7 @@ export const shareRecoveryConfigured=(env:Environment)=>shareReceiptKeyring(env)
 export function capabilities(env: Environment): Record<string, Capability> {
   const configured = backendTarget(env) !== null;
   const ready = new Set((env.KINNSO_ENABLED_CAPABILITIES ?? '').split(','));
-  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'shareRecovery', 'creator', 'merchant', 'ops', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
+  return Object.fromEntries(['auth', 'catalog', 'trips', 'bookmarks', 'media', 'mediaUpload', 'sharing', 'shareRecovery', 'creator', 'merchant', 'ops', 'pilot', 'notifications', 'agent', 'telemetry', 'booking', 'payment']
     .map((name) => [name, {
       mode: configured && (name === 'auth' || name === 'catalog' ||
         (name === 'shareRecovery' ? ready.has('sharing') && shareRecoveryConfigured(env) : name === 'mediaUpload' ? ready.has('media') && mediaRuntimeConfigured(env) :

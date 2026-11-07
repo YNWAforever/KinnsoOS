@@ -32,6 +32,7 @@ function RoleWorkspaceLoading() {
   const {t} = useApp();
   return <div className="os-loading" role="status">{t('Loading workspace…', '正在載入工作區…')}</div>;
 }
+const PilotWorkspace = dynamic(() => import('./pilot/PilotWorkspace').then(mod => mod.PilotWorkspace));
 const ConnectedOpsWorkspace = dynamic(
   () => import('./OpsWorkspace').then(mod => mod.OpsWorkspace),
   {loading: RoleWorkspaceLoading},
@@ -277,7 +278,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
   creatorMissionEntry?:PrivateCreatorMissionEntry|null;
-  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
+  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;pilot?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
@@ -681,7 +682,8 @@ export function Workbench({
     else if(path==='ops/settlements')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="operations-settlements"/>;
     else if(path==='ops/accept-invite')content=<OpsInviteAcceptance actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/reconciliation'||path==='merchant/reconciliation')content=<FinanceWorkspace actorId={workspaceActor?.id??null} enabled={path==='ops/reconciliation'?features.ops===true:features.merchant===true} opsMode={path==='ops/reconciliation'}/>;
-    else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
+    else if(path==='pilot')content=<PilotWorkspace actorId={workspaceActor?.id??null} enabled={features.pilot===true}/>;
+    else if(path==='ops'||path.startsWith('ops/'))content=<ConnectedOpsWorkspace actorId={workspaceActor?.id??null} enabled={features.ops===true} pilotEnabled={path==='ops'&&features.pilot===true} allowPilotView={path==='ops'}/>;
     else if(path==='merchant/invitation')content=<MerchantInvitationRecipient actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>;
     else if(path==='merchant'||path.startsWith('merchant/')||path.startsWith('merchants/dashboard'))content=<RealMerchantWorkspace key={workspaceActor?.id+':'+(merchantSection??'')} section={merchantSection} initialSnapshot={merchantEntry?.actorId===workspaceActor?.id?merchantEntry:null} actorId={workspaceActor?.id??null} enabled={features.merchant===true} onboarding={<MerchantOnboarding actorId={workspaceActor?.id??null} enabled={features.merchant===true}/>} profile={(merchantId,onLockChange)=><MerchantProfile key={merchantId} actorId={workspaceActor?.id??null} merchantId={merchantId} onLockChange={onLockChange}/>}/>;
     else if(path==='me'||path==='settings')content=<div className="k-page"><h1>{t('Your Kinnso account','你的 Kinnso 帳戶')}</h1>{actor?<><p>{t('Signed in · account data is private','已登入 · 帳戶資料屬私人')}</p><AccountSignOut label={t('Sign out','登出')}/></>:<Link className="k-btn primary" href={`/${locale}/sign-in`}>{t('Sign in','登入')}</Link>}<Link className="k-btn" href={`/${locale}/demo/me`}>{t('Local demo export and recovery','本機示範匯出及復原')}</Link></div>;

@@ -157,7 +157,7 @@ function PilotSession({ actorId, enabled, runId }: Props) {
   const run = snapshot?.run;
   const mutable = writable && !!run && !['completed', 'cancelled'].includes(run.status);
   const regular = mutable && run?.status !== 'paused';
-  const signIn = !actorId || invalid || error === 'AUTH_REQUIRED';
+  const signIn = enabled && (!actorId || invalid || error === 'AUTH_REQUIRED');
   const path = 'ops?view=pilot' + (runId ? '&id=' + encodeURIComponent(runId) : '');
   return <section className="k-page" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
     <h1 ref={heading} tabIndex={-1}>{t('Pilot control room', '試行計劃控制室')}</h1>

@@ -183,7 +183,7 @@ export default async function Page({ params,searchParams }: Props) {
     if(isGuideSlug(publicRoute.reference))redirect(`/${locale}/g/${guide.id}`);
     if(guide.kind==='itinerary'&&['en','zh-HK'].includes(locale)){
       const actor=await currentActor();
-      return <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}><Workbench key={locale+'g/'+guide.id} locale={locale as 'en'|'zh-HK'} path={'g/'+guide.id} mode={capabilities(process.env).trips.mode} actor={actor} publicGuide={guide} features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}/></Suspense>;
+      return <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}><Workbench key={locale+'g/'+guide.id} locale={locale as 'en'|'zh-HK'} path={'g/'+guide.id} mode={capabilities(process.env).trips.mode} actor={actor} publicGuide={guide} features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',pilot:capabilities(process.env).pilot.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}/></Suspense>;
     }
     return <PublicGuideContent guide={guide} locale={locale}/>;
   }
@@ -192,7 +192,7 @@ export default async function Page({ params,searchParams }: Props) {
   if (
     !["en", "zh-HK"].includes(locale) ||
     (!["library", "workspace", "admin"].includes(path) &&
-      !isKnownRoute(path) && !(route[0]==='g'&&route.length===2&&!demo&&(/^g\/[0-9a-f-]{36}$/i.test(path)||isGuideSlug(route[1])))) ||
+      !isKnownRoute(path) && !(!demo && path === "pilot") && !(route[0]==='g'&&route.length===2&&!demo&&(/^g\/[0-9a-f-]{36}$/i.test(path)||isGuideSlug(route[1])))) ||
     path.startsWith("legacy/")
   )
     notFound();
@@ -215,7 +215,7 @@ export default async function Page({ params,searchParams }: Props) {
         tripHeading={tripHeading}
         merchantEntry={merchantEntry}
         creatorMissionEntry={creatorMissionEntry}
-        features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
+        features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',pilot:capabilities(process.env).pilot.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
       />
     </Suspense>
   );

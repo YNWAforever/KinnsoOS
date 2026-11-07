@@ -80,3 +80,11 @@ test('local unified media matches only the owned runtime ports and retains local
   assert.equal(contract.capabilities(ci).mediaUpload?.mode,'unavailable');
   assert.equal(contract.capabilities({...ci,CI:'true',KINNSO_TEST_PROJECT:'kinnso-v3'}).mediaUpload?.mode,'connected');
 });
+
+test('pilot requires explicit enablement and an approved backend, and remains private', () => {
+  assert.equal(contract.capabilities(mediaBase).pilot?.mode, 'unavailable');
+  assert.equal(contract.capabilities({KINNSO_ENABLED_CAPABILITIES:'pilot'}).pilot?.mode, 'unavailable');
+  assert.deepEqual(contract.capabilities({...mediaBase,KINNSO_ENABLED_CAPABILITIES:'pilot'}).pilot, {
+    mode:'connected', dataOwner:'backend', session:true, visibility:'private', transactionOwner:'backend',
+  });
+});

@@ -610,6 +610,7 @@
     "tests/photo-upload-lifetime.test.mjs",
     "tests/pilot-contracts.test.mjs",
     "tests/pilot-control-room-ui.test.mjs",
+    "tests/pilot-page-entry.test.mjs",
     "tests/pilot-participant-ui.test.mjs",
     "tests/pilot-metrics.test.mjs",
     "tests/pilot-preparation.test.mjs",
