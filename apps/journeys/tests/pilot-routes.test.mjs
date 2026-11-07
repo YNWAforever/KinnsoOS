@@ -1,0 +1,508 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+import {createContext, runInContext} from 'node:vm';
+import {build} from 'esbuild';
+
+const require = createRequire(import.meta.url);
+const runId = '11111111-1111-4111-8111-111111111111';
+const participantId = '22222222-2222-4222-8222-222222222222';
+const intakeId = '33333333-3333-4333-8333-333333333333';
+const requestId = '44444444-4444-4444-8444-444444444444';
+const actorId = '55555555-5555-4555-8555-555555555555';
+const otherId = '66666666-6666-4666-8666-666666666666';
+const origin = 'https://pilot.example.test';
+const emptyFacts = () => ({participants: [], publications: [], checks: [], submissions: [], notifications: []});
+const snapshot = (status = 'draft') => ({
+  run: {
+    id: runId, name: 'Synthetic pilot', status, revision: 1, dataClassification: 'synthetic',
+    candidateReleaseSha: 'synthetic', environmentOrigin: origin,
+    acceptanceStartedAt: status === 'running' ? '2026-11-07T00:00:00Z' : null,
+    minimumPublishedGuides: 1, participationNoticeVersion: 'v1',
+    privacyNoticeVersion: 'v1', contentConsentVersion: 'v1',
+  },
+  participants: [], contentIntakes: [], collaboration: null, checks: [],
+  facts: {...emptyFacts(), privateMarker: 'PRIVATE_AUTH_SOURCE'},
+  beginFacts: {rpcAvailable: true, ownersConfigured: true, noticesPinned: true, syntheticRehearsalPassed: true},
+  readiness: {stage: 'execution_complete', readyToBegin: true, executionComplete: true, blockers: []},
+});
+const createRun = {
+  type: 'createRun', id: runId, name: 'Synthetic pilot', dataClassification: 'synthetic',
+  candidateReleaseSha: 'synthetic', environmentOrigin: origin,
+};
+
+async function compile(relative) {
+  const entry = new URL(relative, import.meta.url);
+  if (!existsSync(entry)) return null;
+  const compiled = await build({
+    entryPoints: [fileURLToPath(entry)], bundle: true, write: false, platform: 'node', format: 'cjs',
+    plugins: [{
+      name: 'pilot-external-boundaries',
+      setup(builder) {
+        builder.onResolve({filter: /supabase\/server(?:\.ts)?$/}, () => ({path: 'session', namespace: 'pilot-test'}));
+        builder.onResolve({filter: /telemetry\/server(?:\.ts)?$/}, () => ({path: 'observer', namespace: 'pilot-test'}));
+        builder.onResolve({filter: /contracts\/capabilities(?:\.ts)?$/}, () => ({path: 'capabilities', namespace: 'pilot-test'}));
+        builder.onLoad({filter: /.*/, namespace: 'pilot-test'}, ({path}) => ({
+          contents: path === 'session' ? 'export async function serverClient(){return globalThis.fixture.client}'
+            : path === 'observer' ? 'export function observeRequest(){}'
+              : 'export function capabilities(){return {pilot:{mode:globalThis.fixture.mode}}}',
+          loader: 'js',
+        }));
+      },
+    }],
+  });
+  return compiled.outputFiles[0].text;
+}
+
+const routeCode = await compile('../app/api/ops/pilot/route.ts');
+const repositoryCode = await compile('../lib/pilot/repository.ts');
+const telemetryCode = await compile('../lib/pilot/telemetry.ts');
+
+function load(code, fixture = {}) {
+  assert.ok(code, 'Task 5 production module must exist');
+  const module = {exports: {}};
+  const context = createContext({
+    module, exports: module.exports, require, Request, Response, Headers, URL, URLSearchParams,
+    Buffer, TextEncoder, AbortSignal, crypto: globalThis.crypto, performance, fixture,
+    process: {env: {KINNSO_SITE_URL: origin}}, fetch: (...args) => fixture.fetch(...args),
+    console: {info: (...args) => {
+      if (fixture.telemetryThrows) throw new Error('Optional telemetry failed');
+      fixture.events.push(args);
+    }},
+  });
+  runInContext(code, context);
+  return module.exports;
+}
+
+function setup(options = {}) {
+  const state = {
+    mode: 'connected', events: [], calls: [], denied: null, error: null, throws: false,
+    data: snapshot(), mutation: null, ...options,
+  };
+  state.client = {
+    auth: {getUser: async () => ({
+      data: {user: state.denied === 401 ? null : {id: actorId}},
+      error: state.denied === 401 ? {message: 'unauthenticated'} : null,
+    })},
+    rpc: async (name, args) => {
+      if (name === 'kinnso_actor') return {data: {id: actorId, roles: ['ops']}, error: null};
+      state.calls.push({name, args});
+      if (state.throws) throw new Error('Unknown network outcome');
+      if (state.denied === 403) return {data: null, error: {message: 'FORBIDDEN'}};
+      if (state.error) return {data: null, error: state.error};
+      return {
+        data: name === 'get_kinnso_ops_pilot' ? state.data
+          : state.mutation ?? {snapshot: state.data}, error: null,
+      };
+    },
+  };
+  return {state, route: load(routeCode, state)};
+}
+
+function request(body, query = '', headers = {}) {
+  return new Request(origin + '/api/ops/pilot' + query, {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: {host: 'pilot.example.test', 'content-type': 'application/json', ...body === undefined ? {} : {origin}, ...headers},
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+}
+
+async function expectFailure(response, status, code, expectedRequestId) {
+  assert.equal(response.status, status);
+  assert.equal(response.headers.get('cache-control'), 'private, no-store');
+  assert.equal(response.headers.get('vary'), 'Cookie');
+  const body = await response.json();
+  assert.equal(body.ok, false);
+  assert.equal(body.code, code);
+  assert.equal(body.retryable, status === 503);
+  assert.equal('data' in body, false);
+  assert.equal(typeof body.requestId, 'string');
+  if (expectedRequestId) assert.equal(body.requestId, expectedRequestId);
+  return body;
+}
+
+function assertRedacted(value) {
+  const serialized = JSON.stringify(value);
+  assert.equal(serialized.includes('PRIVATE_AUTH_SOURCE'), false);
+  assert.equal(serialized.includes('"facts"'), false);
+  assert.equal(serialized.includes('"beginFacts"'), false);
+}
+
+test('GET accepts one optional UUID runId and rejects unknown or duplicate query fields', async () => {
+  const {state, route} = setup();
+  for (const query of ['', '?runId=' + runId]) {
+    const response = await route.GET(request(undefined, query));
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).ok, true);
+  }
+  assert.deepEqual(JSON.parse(JSON.stringify(state.calls)), [
+    {name: 'get_kinnso_ops_pilot', args: {p_run_id: null}},
+    {name: 'get_kinnso_ops_pilot', args: {p_run_id: runId}},
+  ]);
+  for (const query of ['?runId=', '?runId=invalid', '?runId=' + runId + '&runId=' + runId, '?extra=x']) {
+    await expectFailure(await route.GET(request(undefined, query)), 400, 'INVALID');
+  }
+  assert.equal(state.calls.length, 2);
+  assert.equal(state.events.length, 0);
+});
+
+test('GET evaluates begin facts and execution facts before redacting every response', async () => {
+  const {state, route} = setup();
+  let body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.stage, 'ready_to_begin');
+  assert.equal(body.data.readiness.executionComplete, false);
+  assertRedacted(body);
+  assert.ok(state.data.facts, 'Evaluation must not mutate the RPC snapshot');
+  state.data.beginFacts.rpcAvailable = false;
+  body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.readyToBegin, false);
+  assert.ok(body.data.readiness.blockers.some(blocker => blocker.code === 'capability_disconnected'));
+  state.data = snapshot();
+  delete state.data.beginFacts;
+  body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.readyToBegin, false);
+  state.data = snapshot('running');
+  body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.stage, 'executing');
+  assert.equal(body.data.readiness.executionComplete, false);
+  assert.ok(body.data.readiness.blockers.some(blocker => blocker.code === 'distinct_auth_users'));
+  assertRedacted(body);
+  state.data = {run: null, participants: [], contentIntakes: [], collaboration: null, checks: [], facts: emptyFacts()};
+  body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.stage, 'setup_incomplete');
+  assert.equal(body.data.readiness.blockers[0].code, 'run_missing');
+  assertRedacted(body);
+});
+
+test('POST requires one bounded exact request envelope and a valid operations command', async () => {
+  const {state, route} = setup();
+  for (const body of [
+    null, [], [createRun], createRun, {requestId, command: [createRun]},
+    {requestId: 'bad', command: createRun}, {requestId, command: {...createRun, secret: 'PRIVATE'}},
+    {requestId, command: {...createRun, id: 'bad'}}, {requestId, command: createRun, extra: true},
+    {requestId, command: {type: 'unknown'}},
+  ]) await expectFailure(await route.POST(request(body)), 400, 'INVALID');
+  const envelope = {requestId, command: createRun};
+  await expectFailure(await route.POST(request(envelope, '?extra=x')), 400, 'INVALID');
+  await expectFailure(await route.POST(request(envelope, '', {'content-length': '262145'})), 400, 'INVALID');
+  await expectFailure(await route.POST(new Request(origin + '/api/ops/pilot', {
+    method: 'POST', headers: {origin}, body: ' '.repeat(262145) + JSON.stringify(envelope),
+  })), 400, 'INVALID');
+  await expectFailure(await route.POST(new Request(origin + '/api/ops/pilot', {
+    method: 'POST', headers: {origin}, body: JSON.stringify(envelope) + JSON.stringify(envelope),
+  })), 400, 'INVALID');
+  assert.equal(state.calls.length, 0);
+  assert.equal(state.events.length, 0);
+  const response = await route.POST(request(envelope));
+  assert.equal(response.status, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.calls[0])), {
+    name: 'admin_apply_kinnso_pilot_command', args: {p_request_id: requestId, p_command: createRun},
+  });
+});
+
+test('the common pilot gate enforces capability, current session and same-origin writes without ad hoc role checks', async () => {
+  const {state, route} = setup({mode: 'unavailable'});
+  await expectFailure(await route.GET(request()), 503, 'UNAVAILABLE');
+  await expectFailure(await route.POST(request({requestId, command: createRun})), 503, 'UNAVAILABLE', requestId);
+  assert.equal(state.calls.length, 0);
+  state.mode = 'connected';
+  for (const status of [401, 403]) {
+    state.denied = status;
+    await expectFailure(await route.GET(request()), status, status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN');
+    await expectFailure(await route.POST(request({requestId, command: createRun})), status,
+      status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN', requestId);
+  }
+  state.denied = null;
+  state.calls.length = 0;
+  for (const headers of [{origin: 'https://foreign.example'}, {'sec-fetch-site': 'cross-site'}, {'x-kinnso-intent-actor': otherId}]) {
+    const status = headers['x-kinnso-intent-actor'] ? 401 : 403;
+    await expectFailure(await route.POST(request({requestId, command: createRun}, '', headers)), status,
+      status === 401 ? 'AUTH_REQUIRED' : 'FORBIDDEN', requestId);
+  }
+  assert.equal(state.calls.length, 0);
+  assert.equal(state.events.length, 0);
+  assert.equal((await route.GET(request())).status, 200, 'Read-only GET does not require Origin');
+  assert.equal((await route.POST(request({requestId, command: createRun}))).status, 200,
+    'Database RPC authority remains authoritative even when actor roles do not include admin');
+});
+
+test('RPC failures preserve the failure vocabulary and original mutation request ID', async () => {
+  const {state, route} = setup();
+  for (const [error, status, code] of [
+    [{message: 'CONFLICT'}, 409, 'CONFLICT'], [{message: 'revision_conflict'}, 409, 'CONFLICT'],
+    [{message: 'REQUEST_ID_REUSED'}, 409, 'CONFLICT'], [{message: 'NOT_FOUND'}, 404, 'NOT_FOUND'],
+    [{message: 'INVALID'}, 400, 'INVALID'], [{message: 'unauthenticated'}, 401, 'AUTH_REQUIRED'],
+    [{message: 'FORBIDDEN'}, 403, 'FORBIDDEN'], [{code: '23514'}, 400, 'INVALID'],
+    [{message: 'Internal private diagnostic'}, 503, 'UNAVAILABLE'],
+  ]) {
+    state.error = error;
+    await expectFailure(await route.GET(request()), status, code);
+    const body = await expectFailure(await route.POST(request({requestId, command: createRun})), status, code, requestId);
+    assert.equal(JSON.stringify(body).includes('Internal private diagnostic'), false);
+  }
+  state.error = null;
+  state.throws = true;
+  await expectFailure(await route.GET(request()), 503, 'UNAVAILABLE');
+  await expectFailure(await route.POST(request({requestId, command: createRun})), 503, 'UNAVAILABLE', requestId);
+  assert.equal(state.events.length, 0);
+});
+
+test('mutations recompute readiness and strip internal facts while preserving the one-time invite result', async () => {
+  const data = snapshot('running');
+  const {state, route} = setup({
+    mutation: {snapshot: data, inviteCode: 'ONE_TIME_PRIVATE_CODE', facts: {secret: true}, beginFacts: {secret: true}},
+  });
+  const command = {type: 'createInvite', id: otherId, participantId, expectedRevision: 1, expiresInHours: 24};
+  const body = await (await route.POST(request({requestId, command}))).json();
+  assert.equal(body.data.inviteCode, 'ONE_TIME_PRIVATE_CODE');
+  assert.equal(body.data.snapshot.readiness.stage, 'executing');
+  assert.equal(body.data.snapshot.readiness.executionComplete, false);
+  assertRedacted(body);
+  assert.equal(state.events.length, 1);
+  assert.equal(JSON.stringify(state.events).includes('ONE_TIME_PRIVATE_CODE'), false);
+  state.mutation = {snapshot: snapshot()};
+  const configured = await (await route.POST(request({requestId, command: createRun}))).json();
+  assert.equal(configured.data.snapshot.readiness.stage, 'ready_to_begin');
+  assertRedacted(configured);
+});
+
+test('public snapshot projection removes nested internal fields from reads and every mutation', async () => {
+  const data = snapshot('running');
+  data.run.facts = {privateMarker: 'PRIVATE_AUTH_SOURCE'};
+  data.participants = [{
+    id: participantId, role: 'creator', cohortRole: 'required_creator', displayLabel: 'Synthetic',
+    status: 'active', userLinked: true, consentAccepted: true, revision: 1,
+    beginFacts: {privateMarker: 'PRIVATE_AUTH_SOURCE'},
+  }];
+  data.contentIntakes = [{
+    id: intakeId, creatorParticipantId: participantId, guideId: otherId, status: 'approved',
+    guideDraftRevision: 1, reviewedGuideVersion: 1, contentDigest: 'digest',
+    title: 'Synthetic', destination: 'Tokyo', authoredLocale: 'en', revision: 1,
+    facts: {privateMarker: 'PRIVATE_AUTH_SOURCE'},
+  }];
+  data.checks = [{
+    code: 'physical_ios', category: 'manual', status: 'not_run', evidenceReference: null,
+    observedSummary: null, revision: 1, derived: false, beginFacts: {privateMarker: 'PRIVATE_AUTH_SOURCE'},
+  }];
+  data.collaboration = {
+    id: otherId, merchantParticipantId: otherId, creatorParticipantId: participantId, missionId: intakeId,
+    facts: {privateMarker: 'PRIVATE_AUTH_SOURCE'},
+    steps: [{code: 'mission_published', status: 'pass', facts: {privateMarker: 'PRIVATE_AUTH_SOURCE'}}],
+  };
+  const {route} = setup({data});
+  assertRedacted(await (await route.GET(request())).json());
+  for (const command of [
+    createRun,
+    {type: 'setParticipantStatus', id: participantId, expectedRevision: 1, status: 'paused', reason: 'Synthetic'},
+  ]) assertRedacted(await (await route.POST(request({requestId, command}))).json());
+});
+
+test('GET and POST derive execution completion from exact source facts rather than backend readiness', async () => {
+  const data = snapshot('running');
+  const roles = ['traveller', 'creator', 'merchant'];
+  const identities = [participantId, actorId, otherId];
+  data.participants = roles.map((role, index) => ({
+    id: identities[index], role, cohortRole: 'required_' + role, displayLabel: 'Synthetic',
+    status: 'active', userLinked: true, consentAccepted: true, revision: 1,
+  }));
+  data.contentIntakes = [{
+    id: intakeId, creatorParticipantId: actorId, guideId: requestId, status: 'published',
+    guideDraftRevision: 2, reviewedGuideVersion: 7, contentDigest: 'digest',
+    title: 'Synthetic', destination: 'Tokyo', authoredLocale: 'en', revision: 1,
+  }];
+  data.collaboration = {
+    id: intakeId, merchantParticipantId: otherId, creatorParticipantId: actorId, missionId: intakeId,
+    steps: ['merchant_approved', 'mission_published', 'application_active', 'notification_acknowledged']
+      .map(code => ({code, status: 'pass'})),
+  };
+  data.checks = [
+    ...['creator_public', 'guide_saved', 'trip_adopted', 'trip_revised', 'support_resolved', 'support_acknowledged']
+      .map(code => ({code, derived: true})),
+    ...['guide_discovered', 'trip_recovered', 'privacy_support', 'alert_owner', 'physical_ios', 'physical_android', 'voiceover', 'nvda']
+      .map(code => ({code, derived: false})),
+  ].map(check => ({
+    ...check, category: 'synthetic', status: 'pass', evidenceReference: 'ref:1',
+    observedSummary: 'Synthetic observation', revision: 1,
+  }));
+  const fact = {runId, dataClassification: 'synthetic', capturedAt: '2026-11-07T00:00:01Z'};
+  data.facts = {
+    participants: data.participants.map(participant => ({...fact, entityId: participant.id, userId: participant.id})),
+    publications: [{
+      ...fact, entityId: requestId, intakeId, creatorUserId: actorId, status: 'published',
+      publishedVersion: 7, publishedContentDigest: 'digest', currentDraftRevision: 2, currentContentDigest: 'digest',
+    }],
+    checks: [...data.checks, ...data.collaboration.steps].map(check => ({
+      ...fact, code: check.code, status: 'pass', entityId: runId, missionId: intakeId,
+      ...check.code === 'notification_acknowledged' ? {notificationId: requestId, capturedAt: '2026-11-07T00:00:04Z'} : {},
+    })),
+    submissions: [{
+      ...fact, entityId: intakeId, missionId: intakeId, creatorUserId: actorId, status: 'approved',
+      capturedAt: '2026-11-07T00:00:02Z',
+    }],
+    notifications: [{
+      ...fact, entityId: requestId, missionId: intakeId, submissionId: intakeId, creatorUserId: actorId,
+      entityType: 'mission', notificationType: 'submission.approved', capturedAt: '2026-11-07T00:00:03Z',
+    }],
+  };
+  data.readiness = {stage: 'setup_incomplete', readyToBegin: false, executionComplete: false, blockers: []};
+  const {route} = setup({data});
+  let body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.executionComplete, true);
+  assert.equal(body.data.readiness.stage, 'execution_complete');
+  assertRedacted(body);
+  body = await (await route.POST(request({requestId, command: createRun}))).json();
+  assert.equal(body.data.snapshot.readiness.executionComplete, true);
+  assertRedacted(body);
+  data.facts.publications[0].currentContentDigest = 'changed';
+  body = await (await route.GET(request())).json();
+  assert.equal(body.data.readiness.executionComplete, false);
+  assert.ok(body.data.readiness.blockers.some(blocker => blocker.code === 'guide_not_exact'));
+});
+
+test('each confirmed operations command emits exactly one matching allowlisted event', async () => {
+  const {state, route} = setup();
+  for (const [command, action] of [
+    [createRun, 'pilot.run.created'],
+    [{type: 'configureRun', id: runId, expectedRevision: 1, participationNoticeVersion: 'v1',
+      privacyNoticeVersion: 'v1', contentConsentVersion: 'v1', coordinatorReference: 'PRIVATE',
+      supportOwnerReference: 'PRIVATE', privacyOwnerReference: 'PRIVATE', alertOwnerReference: 'PRIVATE',
+      privateChannelReference: 'PRIVATE', syntheticRehearsalRunId: null}, 'pilot.run.configured'],
+    [{type: 'setRunStatus', id: runId, expectedRevision: 1, status: 'recruiting', reason: 'PRIVATE'}, 'pilot.run.status_changed'],
+    [{type: 'addParticipant', id: participantId, runId, role: 'traveller', cohortRole: 'required_traveller', displayLabel: 'PRIVATE'}, 'pilot.participant.status_changed'],
+    [{type: 'setParticipantStatus', id: participantId, expectedRevision: 1, status: 'withdrawn', reason: 'PRIVATE'}, 'pilot.participant.status_changed'],
+    [{type: 'createInvite', id: otherId, participantId, expectedRevision: 1, expiresInHours: 24}, 'pilot.invite.created'],
+    [{type: 'revokeInvite', id: otherId, participantId, expectedRevision: 1, reason: 'PRIVATE'}, 'pilot.participant.status_changed'],
+    [{type: 'reviewContentIntake', id: intakeId, expectedRevision: 1, decision: 'approve', reason: 'PRIVATE'}, 'pilot.content.reviewed'],
+    [{type: 'bindGuide', intakeId, guideId: otherId, expectedRevision: 1}, 'pilot.guide.bound'],
+    [{type: 'bindCollaboration', id: otherId, runId, merchantParticipantId: otherId, creatorParticipantId: participantId, missionId: intakeId}, 'pilot.collaboration.bound'],
+    [{type: 'addEvidenceReference', runId, checkCode: 'physical_ios', entityType: 'manual', entityId: runId, evidenceReference: 'PRIVATE'}, 'pilot.evidence.added'],
+    [{type: 'setManualCheck', id: otherId, expectedRevision: 1, status: 'pass', evidenceReference: 'PRIVATE', observedSummary: 'PRIVATE'}, 'pilot.check.changed'],
+  ]) {
+    const before = state.events.length;
+    const response = await route.POST(request({requestId, command}));
+    assert.equal(response.status, 200, command.type);
+    assert.equal(state.events.length, before + 1, command.type);
+    const event = state.events.at(-1)[0];
+    assert.equal(event.action, action);
+    assert.equal(event.runId, runId);
+    assert.equal(JSON.stringify(event).includes('PRIVATE'), false);
+    assert.ok(Object.keys(event).every(key => ['action', 'runId', 'participantId', 'contentIntakeId', 'checkCode', 'status'].includes(key)));
+  }
+});
+
+test('telemetry accepts only event-specific identifiers and fixed code/status values', async () => {
+  const state = {events: []};
+  const {emitPilotMetric} = load(telemetryCode, state);
+  await emitPilotMetric('pilot.content.reviewed', {runId, contentIntakeId: intakeId, status: 'approved'});
+  assert.equal(state.events.length, 1);
+  assert.deepEqual(JSON.parse(JSON.stringify(state.events[0][0])), {
+    action: 'pilot.content.reviewed', runId, contentIntakeId: intakeId, status: 'approved',
+  });
+  for (const [action, ids] of [
+    ['pilot.unknown', {runId}], ['pilot.run.created', {runId: 'private@example.test'}],
+    ['pilot.run.created', {runId, participantId}], ['pilot.run.created', {runId, status: 'PRIVATE'}],
+    ['pilot.check.changed', {runId, checkCode: 'PRIVATE', status: 'pass'}],
+    ['pilot.check.changed', {runId, status: 'PRIVATE'}],
+    ['pilot.content.reviewed', {runId, contentIntakeId: 'PRIVATE'}],
+    ['pilot.run.created', {runId, userId: actorId}], ['pilot.run.created', {runId, reason: 'PRIVATE'}],
+    ['pilot.invite.created', {runId, participantId, inviteCode: 'PRIVATE'}],
+    ['pilot.evidence.added', {runId, checkCode: 'physical_ios', evidenceReference: 'PRIVATE'}],
+    ['pilot.run.created', null],
+  ]) await emitPilotMetric(action, ids);
+  assert.equal(state.events.length, 1, 'Unallowlisted identifiers or free text must never reach the sink');
+  state.telemetryThrows = true;
+  await assert.doesNotReject(() => emitPilotMetric('pilot.run.created', {runId}));
+});
+
+test('telemetry failure and malformed backend results cannot turn success into a retried command', async () => {
+  const {state, route} = setup({telemetryThrows: true});
+  const body = await (await route.POST(request({requestId, command: createRun}))).json();
+  assert.equal(body.ok, true);
+  assertRedacted(body);
+  assert.equal(state.calls.length, 1);
+  state.mutation = null;
+  state.data = null;
+  await expectFailure(await route.GET(request()), 503, 'UNAVAILABLE');
+  await expectFailure(await route.POST(request({requestId, command: createRun})), 503, 'UNAVAILABLE', requestId);
+});
+
+test('opsPilot repository retains exact command payload and request ID across unknown outcomes', async () => {
+  const state = {events: [], attempts: [], failure: 'response'};
+  state.fetch = async (url, options) => {
+    state.attempts.push({url, options});
+    if (state.failure === 'network') throw new Error('Disconnected');
+    if (state.failure === 'malformed') return new Response('bad', {status: 503});
+    if (state.failure === 'response') return Response.json({
+      ok: false, code: 'UNAVAILABLE', retryable: true, requestId: otherId,
+    }, {status: 503});
+    return Response.json({ok: true, data: {snapshot: {run: null}}});
+  };
+  const {opsPilot} = load(repositoryCode, state);
+  let firstRequestId;
+  for (const failure of ['response', 'network', 'malformed', null]) {
+    state.failure = failure;
+    const result = await opsPilot.command(structuredClone(createRun));
+    const attempt = state.attempts.at(-1);
+    assert.equal(attempt.url, '/api/ops/pilot');
+    assert.equal(attempt.options.method, 'POST');
+    assert.equal(attempt.options.cache, 'no-store');
+    const envelope = JSON.parse(attempt.options.body);
+    firstRequestId ??= envelope.requestId;
+    assert.equal(envelope.requestId, firstRequestId);
+    assert.deepEqual(envelope.command, createRun);
+    assert.deepEqual(Object.keys(envelope).sort(), ['command', 'requestId']);
+    if (failure) {
+      assert.equal(result.retryable, true);
+      assert.equal(result.requestId, firstRequestId);
+    } else assert.equal(result.ok, true);
+  }
+  await opsPilot.command(createRun);
+  assert.notEqual(JSON.parse(state.attempts.at(-1).options.body).requestId, firstRequestId,
+    'Confirmed completion releases the pending request identity');
+  await opsPilot.get();
+  assert.equal(state.attempts.at(-1).url, '/api/ops/pilot');
+  await opsPilot.get(runId);
+  assert.equal(state.attempts.at(-1).url, '/api/ops/pilot?runId=' + runId);
+});
+
+test('opsPilot returns authorization/conflict failures without cached successful data', async () => {
+  const state = {events: [], attempts: [], status: 200};
+  state.fetch = async (url, options) => {
+    state.attempts.push({url, options});
+    return state.status === 200 ? Response.json({ok: true, data: snapshot()})
+      : Response.json({ok: false, code: state.status === 401 ? 'AUTH_REQUIRED' : state.status === 403 ? 'FORBIDDEN' : 'CONFLICT',
+        retryable: false, requestId}, {status: state.status});
+  };
+  const {opsPilot} = load(repositoryCode, state);
+  assert.equal((await opsPilot.get()).ok, true);
+  for (const status of [401, 403, 409]) {
+    state.status = status;
+    for (const result of [await opsPilot.get(runId), await opsPilot.command(createRun)]) {
+      assert.equal(result.ok, false);
+      assert.equal(result.retryable, false);
+      assert.equal('data' in result, false);
+    }
+  }
+});
+
+test('overlapping identical commands retain their request identity if either response is unknown', async () => {
+  const state = {events: [], attempts: [], responses: []};
+  state.fetch = async (url, options) => {
+    state.attempts.push({url, options});
+    if (state.attempts.length <= 2) return new Promise(resolve => state.responses.push(resolve));
+    return Response.json({ok: true, data: {snapshot: {run: null}}});
+  };
+  const {opsPilot} = load(repositoryCode, state);
+  const first = opsPilot.command(createRun);
+  const second = opsPilot.command(structuredClone(createRun));
+  const originalRequestId = JSON.parse(state.attempts[0].options.body).requestId;
+  assert.equal(JSON.parse(state.attempts[1].options.body).requestId, originalRequestId);
+  state.responses[0](Response.json({ok: true, data: {snapshot: {run: null}}}));
+  await first;
+  state.responses[1](Response.json({ok: false, code: 'UNAVAILABLE', retryable: true, requestId: otherId}, {status: 503}));
+  assert.equal((await second).requestId, originalRequestId);
+  await opsPilot.command(structuredClone(createRun));
+  assert.equal(JSON.parse(state.attempts[2].options.body).requestId, originalRequestId);
+});
