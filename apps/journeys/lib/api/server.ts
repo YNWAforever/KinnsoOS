@@ -24,7 +24,7 @@ export async function apiContext(request: Request, capability: string, write = f
   const started=performance.now();
   const correlation = request.headers.get('X-Kinnso-Local-Correlation');
   const trace = (stage: string, status?: number) => {
-    if ((capability === 'pilot' || capability === 'ops') && process.env.KINNSO_ENVIRONMENT === 'local' &&
+    if ((capability === 'pilot' || capability === 'ops' || capability === 'merchant') && process.env.KINNSO_ENVIRONMENT === 'local' &&
       process.env.KINNSO_LOCAL_BUILD_IDENTITY && uuid(correlation))
       console.warn('connected-auth', correlation, stage, status ?? 0);
   };

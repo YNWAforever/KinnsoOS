@@ -45,7 +45,8 @@ export function connectedPilotFixture(prefix: string) {
   }
 
   async function api(page: Page, path: string, method = 'GET', data?: object) {
-    const correlation = path === '/api/ops/merchant-applications' ? randomUUID() : undefined;
+    const correlation = ['/api/ops/merchant-applications', '/api/merchant/campaigns'].includes(path.split('?')[0])
+      ? randomUUID() : undefined;
     const response = await page.request.fetch(origin + path, {
       method, data, headers: { Origin: origin, ...(correlation ? { 'X-Kinnso-Local-Correlation': correlation } : {}) },
       maxRedirects: 0,
@@ -85,7 +86,12 @@ export function connectedPilotFixture(prefix: string) {
       sql,
       async deleteUser(id: string) {
         const result = await admin.auth.admin.deleteUser(id);
-        if (result.error && result.error.status !== 404) throw Error('Synthetic Auth cleanup failed');
+        if (!result.error || result.error.status === 404) return;
+      if ((result.error.status ?? 0) < 500 || !users.some(user => user.id === id) ||
+          !/^[a-f0-9-]{36}$/.test(id)) throw Error('Synthetic Auth cleanup failed');
+      // The verified local DB is reachable even when GoTrue cannot open a TCP
+      // connection. Only the exact known fixture ID is eligible for this fallback.
+      sql(`delete from auth.users where id='${id}'::uuid`);
       },
     });
     console.log(prefix + ' cleanup verified:', count, 'exact predicates');

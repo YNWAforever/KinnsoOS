@@ -16,6 +16,13 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
   console.log('Task10A expected and served build:', expectedBuild);
   let rehearsal: string | null = null;
   for (const classification of ['synthetic', 'real'] as const) {
+    if (classification === 'real') {
+      // Allow the isolated Docker Auth-to-Postgres sockets from the first scope
+      // to leave TIME_WAIT before creating a second set of browser sessions.
+      await test.step('Let isolated Auth connections drain between pilot scopes', async () => {
+        await new Promise<void>(resolve => setTimeout(resolve, 65_000));
+      });
+    }
     const runId = randomUUID();
     runIds.unshift(runId);
     const label = suiteLabel + '-' + classification;
