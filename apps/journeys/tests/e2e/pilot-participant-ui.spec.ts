@@ -48,16 +48,18 @@ test.beforeAll(async () => {
 
 async function mount(page: Page, options: {
   snapshot?: PilotSelfSnapshot; locale?: string;
+  get?: (index: number) => unknown | Promise<unknown>;
   post?: (index: number) => unknown | Promise<unknown>;
 } = {}) {
   const wire: {requestId:string; command:PilotParticipantCommand}[] = [];
   const errors: string[] = [];
+  let reads = 0;
   page.on('pageerror',error => errors.push(error.message));
   await page.route(origin+'/**', async route => {
     const url = new URL(route.request().url());
     if (url.pathname !== '/api/pilot') return route.fulfill({contentType:'text/html',body:'<!doctype html><html><body></body></html>'});
     expect(url.search).toBe('');
-    if (route.request().method() === 'GET') return route.fulfill({json:{ok:true,data:route.request().headers()['x-kinnso-intent-actor'] === second ? empty : options.snapshot ?? empty}});
+    if (route.request().method() === 'GET') return route.fulfill({json:await options.get?.(++reads) ?? {ok:true,data:route.request().headers()['x-kinnso-intent-actor'] === second ? empty : options.snapshot ?? empty}});
     wire.push(route.request().postDataJSON());
     const response = await options.post?.(wire.length);
     if (response === false) return route.abort('failed');
@@ -65,7 +67,9 @@ async function mount(page: Page, options: {
   });
   await page.goto(origin);
   await page.setViewportSize({width:320,height:844});
-  await page.setContent(`<style>${css}html{font-size:200%}body:has(.k-app){margin:16px;overflow-x:visible}.k-app{font-size:1rem}button,a{white-space:normal}</style><div class="k-app"><main id="fixture"></main></div>`);
+  await page.setContent(`<!doctype html><html lang="${options.locale ?? 'en'}"><head><style>${css}</style></head><body><div class="k-app"><main id="k-main" class="k-main" tabindex="-1"><div id="fixture"></div></main></div></body></html>`);
+  // Simulate 200% browser text size without altering layout, wrapping or overflow rules.
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
   await page.addScriptTag({content:script});
   const render = (id: string | null) => page.evaluate(([id,locale]) => (window as any).renderPilot(id,locale), [id,options.locale ?? 'en']);
   await render(actor);
@@ -168,4 +172,120 @@ test('sign-out invalidates private state and discards a late previous account re
   await expect(page.getByText('No pilot slot is available for this account.')).toBeVisible();
   await expect(page.getByText(run.name)).toHaveCount(0);
   await expect(page.getByRole('button',{name:'Retry same request'})).toHaveCount(0);
+});
+
+test('keyboard refresh keeps focus through loading, recoverable error and success', async ({page}) => {
+  const replies = [Promise.withResolvers<unknown>(), Promise.withResolvers<unknown>()];
+  await mount(page,{get:index=>index === 1 ? {ok:true,data:empty} : replies[index-2].promise});
+  const refresh = page.getByRole('button',{name:'Refresh pilot'});
+  const heading = page.getByRole('heading',{name:'Pilot participation'});
+  for (const [index, reply] of [{ok:false,code:'UNAVAILABLE',retryable:true},{ok:true,data:empty}].entries()) {
+    await refresh.focus();
+    await page.keyboard.press('Enter');
+    await expect(page.getByText('Loading pilot participation…')).toBeVisible();
+    await expect(heading).toBeFocused();
+    replies[index].resolve(reply);
+    await expect(page.getByText(index === 0 ? 'Pilot participation could not be loaded.' : 'No pilot slot is available for this account.')).toBeVisible();
+    await expect(heading).toBeFocused();
+  }
+});
+
+async function expectReflow(page: Page) {
+  const problems = await page.locator('#fixture').evaluate(root => {
+    const issues: string[] = [];
+    const viewport = document.documentElement.clientWidth;
+    if (Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > viewport) issues.push('document overflow');
+    if (parseFloat(getComputedStyle(root.querySelector('.k-page')!).fontSize) < 32) issues.push('workspace body text did not scale');
+    const inspect = (rect: DOMRect, label: string) => {
+      if (rect.width && (rect.left < -1 || rect.right > viewport + 1)) issues.push(label + ' crosses viewport');
+    };
+    for (const element of root.querySelectorAll<HTMLElement>('button,a,input,textarea,select')) {
+      const box = element.getBoundingClientRect();
+      inspect(box, element.tagName + ': ' + element.textContent);
+      if (element.matches('button,a,select') && (element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 1))
+        issues.push('clipped control: ' + element.textContent);
+    }
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (!node.textContent?.trim() || node.parentElement?.closest('select,textarea')) continue;
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      for (const rect of range.getClientRects()) inspect(rect, node.textContent);
+    }
+    return issues;
+  });
+  expect(problems).toEqual([]);
+}
+
+const labels = {
+  en:{accept:'Accept these notices',retry:'Retry same request',signIn:'Sign in to continue',title:'Title',submit:'Submit intake',resubmit:'Resubmit intake',heading:'Pilot participation'},
+  'zh-HK':{accept:'同意這些通知',retry:'重試相同請求',signIn:'登入後繼續',title:'標題',submit:'提交資料',resubmit:'重新提交資料',heading:'試行計劃參與'},
+};
+for (const locale of ['en','zh-HK'] as const) {
+  const copy=labels[locale];
+  test(`${locale} real shell reflow: consent, unknown retry and access denial`,async ({page})=>{
+    await mount(page,{locale,snapshot:consent,post:index=>index===1 ? false : {ok:false,code:'AUTH_REQUIRED',retryable:false}});
+    for (const value of [run.participationNoticeVersion,run.privacyNoticeVersion,digest,code])
+      await expect(page.getByText(value,{exact:true})).toBeVisible();
+    await expectReflow(page);
+    const accept=page.getByRole('button',{name:copy.accept});
+    await accept.focus();
+    await page.keyboard.press('Enter');
+    const retry=page.getByRole('button',{name:copy.retry});
+    await expect(retry).toBeFocused();
+    await expectReflow(page);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('link',{name:copy.signIn})).toBeVisible();
+    await expect(retry).toBeFocused();
+    await expectReflow(page);
+  });
+
+  for (const status of ['new','draft','rejected','submitted','approved'] as const) {
+    test(`${locale} real shell reflow: ${status} creator intake`,async ({page})=>{
+      const {wire}=await mount(page,{locale,snapshot:{...ready,intake:status==='new' ? null : {...intake,status}},
+        post:()=>({ok:true,data:{snapshot:{...ready,intake:{...intake,status:'submitted',revision:4}}}})});
+      const title=page.getByLabel(copy.title,{exact:true});
+      await expect(title).toHaveValue(status==='new' ? '' : intake.title);
+      await expectReflow(page);
+      if (status==='approved' || status==='submitted') {
+        await expect(title).toBeDisabled();
+        await expect(page.getByRole('button',{name:copy.resubmit})).toHaveCount(0);
+        if (status==='approved') await expect(page.locator(`a[href="/${locale}/studio/guides/${second}/edit"]`)).toBeVisible();
+        expect(wire).toEqual([]);
+        return;
+      }
+      if (status==='new') {
+        await title.fill(intake.title);
+        for (const [label,value] of [
+          [locale==='en' ? 'Destination' : '目的地',intake.destination],
+          [locale==='en' ? 'Source summary' : '來源摘要',intake.sourceSummary],
+          [locale==='en' ? 'Rights evidence reference' : '權利證明參考資料',intake.rightsEvidenceReference],
+        ]) await page.getByLabel(label,{exact:true}).fill(value);
+      }
+      await page.getByRole('checkbox').check();
+      const submit=page.getByRole('button',{name:status==='new' ? copy.submit : copy.resubmit,exact:true});
+      await submit.focus();
+      await page.keyboard.press('Enter');
+      await expect(title).toBeDisabled();
+      await expect(page.getByRole('heading',{name:copy.heading})).toBeFocused();
+      expect(wire[0].command).toMatchObject(status==='new' ? {type:'submitContentIntake'} :
+        {type:'updateOwnedContentIntake',id:intake.id,expectedRevision:intake.revision});
+      await expectReflow(page);
+    });
+  }
+}
+
+test('wrong, expired, claimed and revoked responses show the same safe denial',async ({page})=>{
+  const reasons=['wrong','expired','claimed','revoked'];
+  const {wire}=await mount(page,{post:index=>({ok:false,code:'NOT_FOUND',retryable:false,detail:'Fixture reason: '+reasons[index-1]})});
+  const input=page.getByLabel('Invitation code');
+  for (const [index,reason] of reasons.entries()) {
+    await input.fill(index.toString(16).repeat(64));
+    await page.getByRole('button',{name:'Claim invitation'}).click();
+    await expect.poll(()=>wire.length).toBe(index+1);
+    await expect(page.getByRole('status').filter({hasText:'This invitation code could not be used.'})).toBeVisible();
+    await expect(input).toHaveValue('');
+    await expect(page.getByText('Fixture reason: '+reason)).toHaveCount(0);
+  }
 });

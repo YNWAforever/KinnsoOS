@@ -126,6 +126,7 @@ function ParticipantSession({ actorId, enabled }: Props) {
   const roleLink = participant?.role === 'merchant' ? snapshot?.workflowLinks?.merchant
     : participant?.role === 'traveller' ? snapshot?.workflowLinks?.trip : null;
   const refreshView = () => {
+    heading.current?.focus();
     setSnapshot(null);
     setCode('');
     setFeedback('');
@@ -133,7 +134,7 @@ function ParticipantSession({ actorId, enabled }: Props) {
     setRefresh(value => value + 1);
   };
 
-  return <section className="k-page" style={{ minWidth: 0, overflowWrap: 'anywhere' }}>
+  return <section className="k-page" style={{ minWidth: 0, overflowWrap: 'anywhere', fontSize: '1rem' }}>
     <h1 ref={heading} tabIndex={-1}>{t('Pilot participation', '試行計劃參與')}</h1>
     {!enabled ? <p role="status">{t('Pilot participation is unavailable.', '試行計劃暫未開放。')}</p>
       : !actorId || invalid || accessLost ? <p><Link href={href('sign-in?next=' + encodeURIComponent(href('pilot')))}>
