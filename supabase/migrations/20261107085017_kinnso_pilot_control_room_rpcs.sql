@@ -1,5 +1,23 @@
 -- Pilot RPCs. All state changes and their redacted audit/receipt commit together.
 -- Participant attribution deliberately does not change the operations audit API.
+alter table kinnso_internal.pilot_evidence
+ add column participant_id uuid,
+ add constraint pilot_evidence_participant_fk foreign key (run_id, participant_id)
+   references kinnso_internal.pilot_participants(run_id, id),
+ drop constraint pilot_evidence_entity_type_check,
+ add constraint pilot_evidence_entity_type_check check (entity_type in (
+   'guide', 'trip', 'mission', 'mission_participant', 'mission_submission',
+   'notification', 'support_case', 'manual'
+ ));
+create index pilot_evidence_participant_idx
+ on kinnso_internal.pilot_evidence (run_id, participant_id);
+
+alter table kinnso_internal.pilot_collaborations
+ add column status text not null default 'active' check (status in ('active', 'retired')),
+ drop constraint pilot_collaborations_run_id_key;
+create unique index pilot_collaborations_active_run_idx
+ on kinnso_internal.pilot_collaborations (run_id) where status = 'active';
+
 create table kinnso_internal.pilot_participant_audit (
  id uuid primary key default gen_random_uuid(),
  actor_user_id uuid not null references auth.users(id),
@@ -28,21 +46,108 @@ declare a uuid:=kinnso_internal.actor(); begin
  return a;
 end $$;
 
-create function kinnso_internal.pilot_reference_allowed(rid uuid,code text,kind text,eid uuid) returns boolean language plpgsql stable set search_path='' as $$
-declare r kinnso_internal.pilot_runs; traveller uuid; creator uuid; mission uuid; begin
+-- Evidence is a reference to current authoritative scope, never a copied body.
+create function kinnso_internal.pilot_reference_allowed(
+ rid uuid, code text, kind text, eid uuid, p_participant_id uuid default null
+) returns boolean language plpgsql stable set search_path='' as $$
+declare
+ r kinnso_internal.pilot_runs;
+ traveller kinnso_internal.pilot_participants;
+ creator kinnso_internal.pilot_participants;
+ mission uuid;
+begin
  select * into r from kinnso_internal.pilot_runs where id=rid;
- select user_id into traveller from kinnso_internal.pilot_participants where run_id=rid and pilot_cohort_role='required_traveller' and status='active';
- select user_id into creator from kinnso_internal.pilot_participants where run_id=rid and pilot_cohort_role='required_creator' and status='active';
- select mission_id into mission from kinnso_internal.pilot_collaborations where run_id=rid;
- if kind='guide' and code in ('guide_discovered','guide_saved') then return exists(select 1 from kinnso_internal.pilot_content_intakes i join public.guides g on g.id=i.guide_id where i.run_id=rid and i.guide_id=eid and i.status='published' and g.creator_id=creator and g.status='published');end if;
- if kind='trip' and code in ('trip_adopted','trip_revised','trip_recovered') then return exists(select 1 from public.trips t join public.trip_stops s on s.trip_id=t.id join kinnso_internal.pilot_content_intakes i on i.guide_id=s.source_guide_id and i.reviewed_guide_version=s.source_guide_version where t.id=eid and t.owner_user_id=traveller and i.run_id=rid and i.status='published' and s.adopted_at>r.acceptance_started_at and s.source_withdrawn_at is null);end if;
+ select * into traveller from kinnso_internal.pilot_participants
+ where run_id=rid and pilot_cohort_role='required_traveller' and status='active';
+ select * into creator from kinnso_internal.pilot_participants
+ where run_id=rid and pilot_cohort_role='required_creator' and status='active';
+ select mission_id into mission from kinnso_internal.pilot_collaborations
+ where run_id=rid and status='active';
+
+ if code in ('guide_discovered','trip_recovered') then
+  if traveller.id is null or p_participant_id is distinct from traveller.id then return false;end if;
+ elsif p_participant_id is not null then
+  return false;
+ end if;
+ if kind='manual' then
+  return eid=rid and code in (
+   'privacy_support','alert_owner','physical_ios','physical_android','voiceover','nvda'
+  );
+ end if;
+ if kind='guide' and code in ('guide_discovered','guide_saved') then
+  return exists(
+   select 1 from kinnso_internal.pilot_content_intakes i
+   join public.guides g on g.id=i.guide_id
+   join public.guide_versions v on v.guide_id=g.id and v.version=i.reviewed_guide_version
+   where i.run_id=rid and i.guide_id=eid and i.status='published'
+    and i.creator_participant_id=creator.id and g.creator_id=creator.user_id
+    and g.status='published' and v.withdrawn_at is null
+  );
+ end if;
+ if kind='trip' and code in ('trip_adopted','trip_revised','trip_recovered') then
+  return exists(
+   select 1 from public.trips t
+   join public.trip_stops s on s.trip_id=t.id
+   join kinnso_internal.pilot_content_intakes i
+    on i.guide_id=s.source_guide_id and i.reviewed_guide_version=s.source_guide_version
+   join public.guides g on g.id=i.guide_id
+   join public.guide_versions v on v.guide_id=g.id and v.version=i.reviewed_guide_version
+   where t.id=eid and t.owner_user_id=traveller.user_id
+    and i.run_id=rid and i.status='published' and i.creator_participant_id=creator.id
+    and g.creator_id=creator.user_id and g.status='published' and v.withdrawn_at is null
+    and s.adopted_at>r.acceptance_started_at and s.source_withdrawn_at is null
+  );
+ end if;
  if kind='mission' and code in ('mission_published','application_active') then return eid=mission;end if;
- if kind='mission_participant' and code='application_active' then return exists(select 1 from public.mission_participants where id=eid and mission_id=mission and creator_id=creator);end if;
- if kind='mission_submission' and code='submission_approved' then return exists(select 1 from public.mission_milestone_submissions s join public.mission_participants p on p.id=s.mission_participant_id join public.mission_milestones ms on ms.id=s.mission_milestone_id and ms.mission_id=p.mission_id where s.id=eid and p.mission_id=mission and p.creator_id=creator and s.created_at>r.acceptance_started_at);end if;
- if kind='notification' and code='notification_acknowledged' then return exists(select 1 from public.notifications n where n.id=eid and n.creator_id=creator and n.entity_type='mission' and n.entity_id=mission and n.notification_type='submission.approved' and n.created_at>r.acceptance_started_at and exists(select 1 from public.mission_milestone_submissions s join public.mission_participants p on p.id=s.mission_participant_id where s.id::text=n.payload->>'submission_id' and p.mission_id=mission and p.creator_id=creator));end if;
- if kind='support_case' and code in ('support_resolved','support_acknowledged') then return exists(select 1 from kinnso_internal.support_cases s where s.id=eid and s.recipient_id=traveller and s.mission_id=mission and s.created_at>r.acceptance_started_at);end if;
+ if kind='mission_participant' and code='application_active' then
+  return exists(select 1 from public.mission_participants
+   where id=eid and mission_id=mission and creator_id=creator.user_id);
+ end if;
+ if kind='mission_submission' and code='submission_approved' then
+  return exists(
+   select 1 from public.mission_milestone_submissions s
+   join public.mission_participants p on p.id=s.mission_participant_id
+   join public.mission_milestones ms on ms.id=s.mission_milestone_id and ms.mission_id=p.mission_id
+   where s.id=eid and p.mission_id=mission and p.creator_id=creator.user_id
+    and s.created_at>r.acceptance_started_at
+  );
+ end if;
+ if kind='notification' and code='notification_acknowledged' then
+  return exists(
+   select 1 from public.notifications n
+   where n.id=eid and n.creator_id=creator.user_id and n.entity_type='mission'
+    and n.entity_id=mission and n.notification_type='submission.approved'
+    and n.created_at>r.acceptance_started_at
+    and exists(select 1 from public.mission_milestone_submissions s
+     join public.mission_participants p on p.id=s.mission_participant_id
+     where s.id::text=n.payload->>'submission_id'
+      and p.mission_id=mission and p.creator_id=creator.user_id)
+  );
+ end if;
+ if kind='support_case' and code in ('support_resolved','support_acknowledged') then
+  return exists(select 1 from kinnso_internal.support_cases s
+   where s.id=eid and s.recipient_id=traveller.user_id and s.mission_id=mission
+    and s.created_at>r.acceptance_started_at);
+ end if;
  return false;
 end $$;
+
+-- The same evidence predicate gates both mutation and readiness. A later piece
+-- of evidence cannot silently inherit an earlier recorded pass.
+create function kinnso_internal.pilot_manual_evidence(
+ rid uuid, code text, reference text, as_of timestamptz
+) returns boolean language sql stable set search_path='' as $$
+ select exists(
+  select 1 from kinnso_internal.pilot_evidence e
+  join kinnso_internal.pilot_runs r on r.id=e.run_id
+  join public.kinnso_ops_members m on m.id=e.captured_by_ops_member_id and m.status='active'
+  where e.run_id=rid and e.check_code=code and e.evidence_reference=reference
+   and e.captured_at>r.acceptance_started_at and e.captured_at<=as_of
+   and kinnso_internal.pilot_reference_allowed(
+    e.run_id,e.check_code,e.entity_type,e.entity_id,e.participant_id
+   )
+ );
+$$;
 
 create function kinnso_internal.pilot_check_rows(rid uuid) returns setof kinnso_internal.pilot_checks language plpgsql stable set search_path='' as $$
 declare r kinnso_internal.pilot_runs; k kinnso_internal.pilot_checks; cp kinnso_internal.pilot_participants; tp kinnso_internal.pilot_participants; mp kinnso_internal.pilot_participants; c kinnso_internal.pilot_collaborations; stamp timestamptz;
@@ -51,11 +156,16 @@ begin
  select * into cp from kinnso_internal.pilot_participants where run_id=rid and pilot_cohort_role='required_creator' and status='active';
  select * into tp from kinnso_internal.pilot_participants where run_id=rid and pilot_cohort_role='required_traveller' and status='active';
  select * into mp from kinnso_internal.pilot_participants where run_id=rid and pilot_cohort_role='required_merchant' and status='active';
- select * into c from kinnso_internal.pilot_collaborations where run_id=rid and creator_participant_id=cp.id and merchant_participant_id=mp.id;
+ select * into c from kinnso_internal.pilot_collaborations where run_id=rid and status='active' and creator_participant_id=cp.id and merchant_participant_id=mp.id;
  for k in select * from kinnso_internal.pilot_checks where run_id=rid order by code loop
   stamp:=null;
   if kinnso_internal.pilot_manual(k.code) then
-   if k.updated_at<=r.acceptance_started_at or r.acceptance_started_at is null then k.status:='not_run';end if;
+   if k.updated_at<=r.acceptance_started_at or r.acceptance_started_at is null
+    or (k.status='pass' and not kinnso_internal.pilot_manual_evidence(
+     rid,k.code,k.evidence_reference,k.updated_at
+    )) then
+    k.status:='not_run';
+   end if;
    return next k;continue;
   end if;
   case k.code
@@ -80,28 +190,104 @@ end $$;
 
 create function kinnso_internal.pilot_execution_complete(rid uuid) returns boolean language plpgsql stable set search_path='' as $$
 declare r kinnso_internal.pilot_runs; snap jsonb; latest jsonb; notif jsonb; begin
- select * into r from kinnso_internal.pilot_runs where id=rid;
- if r.status not in ('running','completed') or r.acceptance_started_at is null or not kinnso_internal.pilot_begin_ready(r) then return false;end if;
- if (select count(distinct p.user_id) from kinnso_internal.pilot_participants p join auth.users u on u.id=p.user_id and u.deleted_at is null and (u.banned_until is null or u.banned_until<=now()) where p.run_id=rid and p.pilot_cohort_role<>'observer' and p.status='active' and p.consent_version=r.participation_notice_version and p.consented_at>r.acceptance_started_at and not exists(select 1 from public.creators cr where cr.id=p.user_id and cr.status in ('suspended','banned')))<>3 then return false;end if;
- if exists(select 1 from kinnso_internal.pilot_check_rows(rid) where status<>'pass') then return false;end if;
- if (select count(*) from kinnso_internal.pilot_content_intakes i join kinnso_internal.pilot_participants p on p.id=i.creator_participant_id and p.status='active' and p.pilot_cohort_role='required_creator' join public.guides g on g.id=i.guide_id and g.creator_id=p.user_id and g.status='published' join kinnso_internal.guide_drafts d on d.guide_id=g.id join public.guide_versions v on v.guide_id=g.id and v.version=i.reviewed_guide_version and v.withdrawn_at is null where i.run_id=rid and i.status='published' and v.published_at>r.acceptance_started_at and d.revision=i.guide_draft_revision and kinnso_internal.pilot_digest(d.payload)=i.content_digest and kinnso_internal.pilot_digest(jsonb_build_object('title',g.title,'city',g.city,'summary',g.summary,'content',v.content))=i.content_digest and v.version=(select max(version) from public.guide_versions where guide_id=g.id))<r.minimum_published_guides then return false;end if;
+ select * into r from kinnso_internal.pilot_runs
+   where id=rid;
+ if r.status not in ('running','completed')
+    or r.acceptance_started_at is null
+    or not kinnso_internal.pilot_begin_ready(r) then
+  return false;
+ end if;
+ if (select count(distinct p.user_id) from kinnso_internal.pilot_participants p
+   join auth.users u on u.id=p.user_id
+    and u.deleted_at is null
+    and (u.banned_until is null
+    or u.banned_until<=now())
+   where p.run_id=rid
+    and p.pilot_cohort_role<>'observer'
+    and p.status='active'
+    and p.consent_version=r.participation_notice_version
+    and p.consented_at>r.acceptance_started_at
+    and not exists(select 1 from public.creators cr
+   where cr.id=p.user_id
+    and cr.status in ('suspended','banned')))<>3 then
+  return false;
+ end if;
+ if exists(select 1 from kinnso_internal.pilot_check_rows(rid)
+   where status<>'pass') then
+  return false;
+ end if;
+ if (select count(*) from kinnso_internal.pilot_content_intakes i
+   join kinnso_internal.pilot_participants p on p.id=i.creator_participant_id
+    and p.status='active'
+    and p.pilot_cohort_role='required_creator'
+   join public.guides g on g.id=i.guide_id
+    and g.creator_id=p.user_id
+    and g.status='published'
+   join kinnso_internal.guide_drafts d on d.guide_id=g.id
+   join public.guide_versions v on v.guide_id=g.id
+    and v.version=i.reviewed_guide_version
+    and v.withdrawn_at is null
+   where i.run_id=rid
+    and i.status='published'
+    and v.published_at>r.acceptance_started_at
+    and d.revision=i.guide_draft_revision
+    and kinnso_internal.pilot_digest(d.payload)=i.content_digest
+    and kinnso_internal.pilot_digest(jsonb_build_object('title',g.title,'city',g.city,'summary',g.summary,'content',v.content))=i.content_digest
+    and v.version=(select max(version) from public.guide_versions
+   where guide_id=g.id))<r.minimum_published_guides then
+  return false;
+ end if;
  snap:=kinnso_internal.pilot_snapshot(rid);
  -- A minimum count is not permission to conceal additional linked drift.
  if exists(select 1 from jsonb_array_elements(snap->'contentIntakes') x
- left join lateral(select f from jsonb_array_elements(snap->'facts'->'publications') f where f->>'intakeId'=x->>'id') pub on true
- where (x->>'guideId' is not null or x->>'status' in ('approved','published','withdrawn'))
- and (x->>'status' is distinct from 'published' or pub.f->>'status' is distinct from 'published'
- or pub.f->>'publishedVersion' is distinct from x->>'reviewedGuideVersion'
- or pub.f->>'currentDraftRevision' is distinct from x->>'guideDraftRevision'
- or pub.f->>'publishedContentDigest' is distinct from x->>'contentDigest'
- or pub.f->>'currentContentDigest' is distinct from x->>'contentDigest'
- or not exists(select 1 from kinnso_internal.pilot_participants pp where pp.id::text=x->>'creatorParticipantId' and pp.run_id=rid and pp.pilot_cohort_role='required_creator' and pp.status='active' and pp.user_id::text=pub.f->>'creatorUserId'))) then return false;end if;
+ left join lateral(select f from jsonb_array_elements(snap->'facts'->'publications') f
+   where f->>'intakeId'=x->>'id') pub on true
+   where (x->>'guideId' is not null
+    or x->>'status' in ('approved','published','withdrawn'))
+    and (x->>'status' is distinct from 'published'
+    or pub.f->>'status' is distinct from 'published'
+    or pub.f->>'publishedVersion' is distinct from x->>'reviewedGuideVersion'
+    or pub.f->>'currentDraftRevision' is distinct from x->>'guideDraftRevision'
+    or pub.f->>'publishedContentDigest' is distinct from x->>'contentDigest'
+    or pub.f->>'currentContentDigest' is distinct from x->>'contentDigest'
+    or not exists(select 1 from kinnso_internal.pilot_participants pp
+   where pp.id::text=x->>'creatorParticipantId'
+    and pp.run_id=rid
+    and pp.pilot_cohort_role='required_creator'
+    and pp.status='active'
+    and pp.user_id::text=pub.f->>'creatorUserId'))) then
+  return false;
+ end if;
  select s into latest from jsonb_array_elements(snap->'facts'->'submissions') s order by (s->>'capturedAt')::timestamptz desc limit 1;
- if latest is null or latest->>'status'<>'approved' or (select count(*) from jsonb_array_elements(snap->'facts'->'submissions') s where s->>'capturedAt'=latest->>'capturedAt')<>1 then return false;end if;
- if exists(select 1 from jsonb_array_elements(snap->'facts'->'submissions') s where (s->>'capturedAt')::timestamptz<=r.acceptance_started_at) then return false;end if;
- select n into notif from jsonb_array_elements(snap->'facts'->'notifications') n where n->>'submissionId'=latest->>'entityId' and (n->>'capturedAt')::timestamptz>r.acceptance_started_at order by (n->>'capturedAt')::timestamptz desc limit 1;
- if notif is null or (notif->>'capturedAt')::timestamptz<(latest->>'capturedAt')::timestamptz or (select count(*) from jsonb_array_elements(snap->'facts'->'notifications') n where n->>'submissionId'=latest->>'entityId' and n->>'capturedAt'=notif->>'capturedAt')<>1 then return false;end if;
- return notif is not null and exists(select 1 from kinnso_internal.pilot_participant_audit au join kinnso_internal.pilot_collaborations c on c.run_id=au.run_id and c.creator_participant_id=au.participant_id where au.run_id=rid and au.command_type='acknowledgeNotification' and au.entity_id::text=notif->>'entityId' and au.created_at>=(notif->>'capturedAt')::timestamptz);
+ if latest is null
+    or latest->>'status'<>'approved'
+    or (select count(*) from jsonb_array_elements(snap->'facts'->'submissions') s
+   where s->>'capturedAt'=latest->>'capturedAt')<>1 then
+  return false;
+ end if;
+ if exists(select 1 from jsonb_array_elements(snap->'facts'->'submissions') s
+   where (s->>'capturedAt')::timestamptz<=r.acceptance_started_at) then
+  return false;
+ end if;
+ select n into notif from jsonb_array_elements(snap->'facts'->'notifications') n
+   where n->>'submissionId'=latest->>'entityId'
+    and (n->>'capturedAt')::timestamptz>r.acceptance_started_at order by (n->>'capturedAt')::timestamptz desc limit 1;
+ if notif is null
+    or (notif->>'capturedAt')::timestamptz<(latest->>'capturedAt')::timestamptz
+    or (select count(*) from jsonb_array_elements(snap->'facts'->'notifications') n
+   where n->>'submissionId'=latest->>'entityId'
+    and n->>'capturedAt'=notif->>'capturedAt')<>1 then
+  return false;
+ end if;
+ return notif is not null
+    and exists(select 1 from kinnso_internal.pilot_participant_audit au
+   join kinnso_internal.pilot_collaborations c on c.run_id=au.run_id
+    and c.status='active'
+    and c.creator_participant_id=au.participant_id
+   where au.run_id=rid
+    and au.command_type='acknowledgeNotification'
+    and au.entity_id::text=notif->>'entityId'
+    and au.created_at>=(notif->>'capturedAt')::timestamptz);
 end $$;
 
 create function public.apply_kinnso_pilot_participant_command(p_request_id uuid,p_command jsonb) returns jsonb
@@ -171,7 +357,7 @@ begin
   entity_type:='intake';
  when 'acknowledgeNotification' then
   if r.status<>'running' or p.status<>'active' or p.consented_at is null then raise exception 'CONFLICT';end if;
-  select nn.* into n from public.notifications nn join kinnso_internal.pilot_collaborations c on c.run_id=r.id and c.mission_id=nn.entity_id and c.creator_participant_id=p.id
+  select nn.* into n from public.notifications nn join kinnso_internal.pilot_collaborations c on c.run_id=r.id and c.status='active' and c.mission_id=nn.entity_id and c.creator_participant_id=p.id
   join public.mission_milestone_submissions s on s.id::text=nn.payload->>'submission_id' and s.status='approved' and s.created_at>r.acceptance_started_at
   join public.mission_participants mp on mp.id=s.mission_participant_id and mp.creator_id=a and mp.mission_id=c.mission_id
   where nn.creator_id=a and nn.entity_type='mission' and nn.notification_type='submission.approved' and nn.created_at>r.acceptance_started_at
@@ -242,12 +428,12 @@ declare r kinnso_internal.pilot_runs; result jsonb; checks jsonb; facts jsonb; c
 begin
  select * into r from kinnso_internal.pilot_runs where id=p_run;
  if not found then raise exception 'NOT_FOUND'; end if;
- select * into c from kinnso_internal.pilot_collaborations where run_id=r.id;
+ select * into c from kinnso_internal.pilot_collaborations where run_id=r.id and status='active';
  select coalesce(jsonb_agg(jsonb_build_object('code',k.code,'category',k.category,'status',k.status,'evidenceReference',k.evidence_reference,'observedSummary',k.observed_summary,'revision',k.revision,'derived',not kinnso_internal.pilot_manual(k.code)) order by k.code),'[]') into checks from kinnso_internal.pilot_check_rows(r.id) k;
  facts:=jsonb_build_object(
  'participants',coalesce((select jsonb_agg(jsonb_build_object('runId',r.id,'dataClassification',r.data_classification,'entityId',p.id,'userId',p.user_id,'capturedAt',p.consented_at) order by p.id) from kinnso_internal.pilot_participants p join auth.users u on u.id=p.user_id and u.deleted_at is null and (u.banned_until is null or u.banned_until<=now()) where p.run_id=r.id and p.status<>'withdrawn' and not exists(select 1 from public.creators cr where cr.id=p.user_id and cr.status in ('suspended','banned'))),'[]'),
  'publications',coalesce((select jsonb_agg(jsonb_build_object('runId',r.id,'dataClassification',r.data_classification,'capturedAt',v.published_at,'entityId',g.id,'intakeId',i.id,'creatorUserId',g.creator_id,'status',case when v.withdrawn_at is not null then 'withdrawn' else g.status end,'publishedVersion',v.version,'publishedContentDigest',kinnso_internal.pilot_digest(jsonb_build_object('title',g.title,'city',g.city,'summary',g.summary,'content',v.content)),'currentDraftRevision',d.revision,'currentContentDigest',kinnso_internal.pilot_digest(d.payload)) order by i.id)
- from kinnso_internal.pilot_content_intakes i join public.guides g on g.id=i.guide_id left join kinnso_internal.guide_drafts d on d.guide_id=g.id left join lateral(select * from public.guide_versions where guide_id=g.id order by version desc limit 1)v on true where i.run_id=r.id),'[]'),
+ from kinnso_internal.pilot_content_intakes i join public.guides g on g.id=i.guide_id left join kinnso_internal.guide_drafts d on d.guide_id=g.id left join lateral(select * from public.guide_versions where guide_id=g.id order by version desc limit 1)v on true where i.run_id=r.id and i.status<>'withdrawn'),'[]'),
  'checks',coalesce((select jsonb_agg(jsonb_build_object('runId',r.id,'dataClassification',r.data_classification,'capturedAt',k.updated_at,'entityId',k.id,'code',k.code,'status',k.status,'missionId',c.mission_id,'notificationId',(select a.entity_id from kinnso_internal.pilot_participant_audit a where a.run_id=r.id and a.command_type='acknowledgeNotification' order by a.created_at desc,a.id limit 1)) order by k.code) from kinnso_internal.pilot_check_rows(r.id) k),'[]'),
  'submissions',coalesce((select jsonb_agg(jsonb_build_object('runId',r.id,'dataClassification',r.data_classification,'capturedAt',s.created_at,'entityId',s.id,'missionId',mp.mission_id,'creatorUserId',mp.creator_id,'status',s.status) order by s.created_at,s.id)
  from public.mission_milestone_submissions s join public.mission_participants mp on mp.id=s.mission_participant_id join public.mission_milestones ms on ms.id=s.mission_milestone_id and ms.mission_id=mp.mission_id join kinnso_internal.pilot_participants p on p.id=c.creator_participant_id and p.user_id=mp.creator_id where mp.mission_id=c.mission_id),'[]'),
@@ -255,7 +441,7 @@ begin
  from public.notifications n join kinnso_internal.pilot_participants p on p.id=c.creator_participant_id and p.user_id=n.creator_id where n.entity_type='mission' and n.entity_id=c.mission_id and n.notification_type='submission.approved' and exists(select 1 from public.mission_milestone_submissions s join public.mission_participants mp on mp.id=s.mission_participant_id where s.id::text=n.payload->>'submission_id' and mp.creator_id=p.user_id and mp.mission_id=c.mission_id)),'[]'));
  result:=jsonb_build_object('run',jsonb_build_object('id',r.id,'name',r.name,'status',r.status,'revision',r.revision,'dataClassification',r.data_classification,'candidateReleaseSha',r.candidate_release_sha,'environmentOrigin',r.environment_origin,'acceptanceStartedAt',r.acceptance_started_at,'minimumPublishedGuides',r.minimum_published_guides,'participationNoticeVersion',r.participation_notice_version,'privacyNoticeVersion',r.privacy_notice_version,'contentConsentVersion',r.content_consent_version),
  'participants',coalesce((select jsonb_agg(jsonb_build_object('id',p.id,'role',p.role,'cohortRole',p.pilot_cohort_role,'displayLabel',p.display_label,'status',p.status,'userLinked',p.user_id is not null,'consentAccepted',p.consent_version=r.participation_notice_version and p.consented_at is not null,'revision',p.revision) order by p.id) from kinnso_internal.pilot_participants p where p.run_id=r.id and p.status<>'withdrawn'),'[]'),
- 'contentIntakes',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'creatorParticipantId',i.creator_participant_id,'guideId',i.guide_id,'status',i.status,'guideDraftRevision',i.guide_draft_revision,'reviewedGuideVersion',i.reviewed_guide_version,'contentDigest',i.content_digest,'title',i.title,'destination',i.destination,'authoredLocale',i.authored_locale,'revision',i.revision) order by i.id) from kinnso_internal.pilot_content_intakes i where i.run_id=r.id),'[]'),
+ 'contentIntakes',coalesce((select jsonb_agg(jsonb_build_object('id',i.id,'creatorParticipantId',i.creator_participant_id,'guideId',i.guide_id,'status',i.status,'guideDraftRevision',i.guide_draft_revision,'reviewedGuideVersion',i.reviewed_guide_version,'contentDigest',i.content_digest,'title',i.title,'destination',i.destination,'authoredLocale',i.authored_locale,'revision',i.revision) order by i.id) from kinnso_internal.pilot_content_intakes i where i.run_id=r.id and i.status<>'withdrawn'),'[]'),
  'collaboration',case when c.id is not null then jsonb_build_object('id',c.id,'merchantParticipantId',c.merchant_participant_id,'creatorParticipantId',c.creator_participant_id,'missionId',c.mission_id,'steps',(select coalesce(jsonb_agg(k),'[]') from jsonb_array_elements(checks) k where k->>'code' in ('merchant_approved','mission_published','application_active','notification_acknowledged'))) end,
  'checks',checks,'facts',facts,
  'beginFacts',jsonb_build_object('rpcAvailable',to_regprocedure('public.admin_apply_kinnso_pilot_command(uuid,jsonb)') is not null,'ownersConfigured',r.coordinator_reference is not null and r.support_owner_reference is not null and r.privacy_owner_reference is not null and r.alert_owner_reference is not null and r.private_channel_reference is not null,'noticesPinned',r.participation_notice_version is not null and r.privacy_notice_version is not null and r.content_consent_version is not null,'syntheticRehearsalPassed',exists(select 1 from kinnso_internal.pilot_runs s where s.id=r.synthetic_rehearsal_run_id and s.status='completed' and s.data_classification='synthetic' and s.candidate_release_sha=r.candidate_release_sha)),
@@ -285,18 +471,19 @@ begin
  when 'setRunStatus' then array['type','id','expectedRevision','status','reason']
  when 'addParticipant' then array['type','id','runId','role','cohortRole','displayLabel']
  when 'setParticipantStatus' then array['type','id','expectedRevision','status','reason']
- when 'createInvite' then array['type','id','participantId','expiresInHours']
- when 'revokeInvite' then array['type','id','participantId','reason']
+ when 'createInvite' then array['type','id','participantId','expectedRevision','expiresInHours']
+ when 'revokeInvite' then array['type','id','participantId','expectedRevision','reason']
  when 'reviewContentIntake' then array['type','id','expectedRevision','decision','reason']
  when 'bindGuide' then array['type','intakeId','guideId','expectedRevision']
  when 'bindCollaboration' then array['type','id','runId','merchantParticipantId','creatorParticipantId','missionId']
  when 'setManualCheck' then array['type','id','expectedRevision','status','evidenceReference','observedSummary']
  when 'addEvidenceReference' then array['type','runId','checkCode','entityType','entityId','evidenceReference'] end;
+ if kind='addEvidenceReference' and p_command ? 'participantId' then fields:=array_append(fields,'participantId');end if;
  if fields is null or p_request_id is null then raise exception 'INVALID';end if;
  perform kinnso_internal.pilot_keys(p_command,fields);
  foreach k in array fields loop
   if k='id' or k like '%Id' then
-   if not(k='syntheticRehearsalRunId' and p_command->k='null'::jsonb) then perform (kinnso_internal.pilot_text(p_command,k,36,36))::uuid;end if;
+   if not(k in ('syntheticRehearsalRunId','participantId') and p_command->k='null'::jsonb and (k='syntheticRehearsalRunId' or kind='addEvidenceReference')) then perform (kinnso_internal.pilot_text(p_command,k,36,36))::uuid;end if;
   end if;
  end loop;
  if p_command ? 'expectedRevision' and (jsonb_typeof(p_command->'expectedRevision')<>'number' or (p_command->>'expectedRevision') !~ '^[1-9][0-9]{0,8}$') then raise exception 'INVALID';end if;
@@ -335,13 +522,13 @@ begin
    if v='completed' then
     -- Hold the authoritative aggregates while evaluating the final transition.
     -- Existing draft/campaign commands lock these same aggregate rows.
-    perform 1 from public.guides g join kinnso_internal.pilot_content_intakes pi on pi.guide_id=g.id where pi.run_id=r.id order by g.id for share of g;
-    perform 1 from kinnso_internal.guide_drafts gd join kinnso_internal.pilot_content_intakes pi on pi.guide_id=gd.guide_id where pi.run_id=r.id order by gd.guide_id for share of gd;
+    perform 1 from public.guides g join kinnso_internal.pilot_content_intakes pi on pi.guide_id=g.id where pi.run_id=r.id and pi.status<>'withdrawn' order by g.id for share of g;
+    perform 1 from kinnso_internal.guide_drafts gd join kinnso_internal.pilot_content_intakes pi on pi.guide_id=gd.guide_id where pi.run_id=r.id and pi.status<>'withdrawn' order by gd.guide_id for share of gd;
     perform 1 from auth.users u join kinnso_internal.pilot_participants pp on pp.user_id=u.id where pp.run_id=r.id order by u.id for share of u;
     perform 1 from public.creators cr join kinnso_internal.pilot_participants pp on pp.user_id=cr.id where pp.run_id=r.id order by cr.id for share of cr;
-    perform 1 from public.missions mission join kinnso_internal.pilot_collaborations pc on pc.mission_id=mission.id where pc.run_id=r.id for share of mission;
-    perform 1 from public.mission_participants mp join kinnso_internal.pilot_collaborations pc on pc.mission_id=mp.mission_id where pc.run_id=r.id order by mp.id for share of mp;
-    perform 1 from public.mission_milestone_submissions sub join public.mission_participants mp on mp.id=sub.mission_participant_id join kinnso_internal.pilot_collaborations pc on pc.mission_id=mp.mission_id where pc.run_id=r.id order by sub.id for share of sub;
+    perform 1 from public.missions mission join kinnso_internal.pilot_collaborations pc on pc.mission_id=mission.id where pc.run_id=r.id and pc.status='active' for share of mission;
+    perform 1 from public.mission_participants mp join kinnso_internal.pilot_collaborations pc on pc.mission_id=mp.mission_id where pc.run_id=r.id and pc.status='active' order by mp.id for share of mp;
+    perform 1 from public.mission_milestone_submissions sub join public.mission_participants mp on mp.id=sub.mission_participant_id join kinnso_internal.pilot_collaborations pc on pc.mission_id=mp.mission_id where pc.run_id=r.id and pc.status='active' order by sub.id for share of sub;
     if not kinnso_internal.pilot_execution_complete(r.id) then raise exception 'CONFLICT';end if;
    end if;
    update kinnso_internal.pilot_runs set status=v,revision=revision+1,acceptance_started_at=case when v in ('recruiting','running') then coalesce(acceptance_started_at,clock_timestamp()) else acceptance_started_at end,updated_at=clock_timestamp() where id=r.id;
@@ -349,22 +536,54 @@ begin
    if (select count(*) from kinnso_internal.pilot_participants where run_id=r.id)>=100 then raise exception 'CONFLICT';end if;
    insert into kinnso_internal.pilot_participants(id,run_id,role,pilot_cohort_role,display_label) values(eid,r.id,kinnso_internal.pilot_text(p_command,'role',1,20),kinnso_internal.pilot_text(p_command,'cohortRole',1,30),kinnso_internal.pilot_text(p_command,'displayLabel',1,80));
   when 'setParticipantStatus' then
-   select * into p from kinnso_internal.pilot_participants where id=eid for update;
+   select * into p from kinnso_internal.pilot_participants
+    where id=eid for update;
    v:=kinnso_internal.pilot_text(p_command,'status',1,20);
-   if p.revision<>(p_command->>'expectedRevision')::integer or p.status in ('withdrawn','completed') or v not in ('active','paused','withdrawn','completed') or v=p.status or (v='active' and (p.user_id is null or p.consented_at is null or p.consent_version<>r.participation_notice_version)) or (v='completed' and p.status<>'active') then raise exception 'CONFLICT';end if;
+   if p.revision<>(p_command->>'expectedRevision')::integer
+     or p.status in ('withdrawn','completed')
+     or v not in ('active','paused','withdrawn','completed')
+     or v=p.status
+     or (v='active'
+     and (p.user_id is null
+     or p.consented_at is null
+     or p.consent_version<>r.participation_notice_version))
+     or (v='completed'
+     and p.status<>'active') then raise exception 'CONFLICT';end if;
    update kinnso_internal.pilot_participants set status=v,revision=revision+1,updated_at=clock_timestamp() where id=p.id;
-   if v='withdrawn' then update kinnso_internal.pilot_invites set status='revoked' where participant_id=p.id and status='active'; end if;
+   if v='withdrawn' then
+    update kinnso_internal.pilot_invites set status='revoked'
+    where participant_id=p.id and status='active';
+    if p.role in ('creator','merchant') then
+     update kinnso_internal.pilot_collaborations
+     set status='retired',revision=revision+1,updated_at=clock_timestamp()
+     where run_id=r.id and status='active'
+      and (creator_participant_id=p.id or merchant_participant_id=p.id);
+    end if;
+    if p.role='creator' then
+     update kinnso_internal.pilot_content_intakes
+     set status='withdrawn',revision=revision+1,updated_at=clock_timestamp()
+     where run_id=r.id and creator_participant_id=p.id and status<>'withdrawn';
+    end if;
+   end if;
   when 'createInvite' then
    select * into p from kinnso_internal.pilot_participants where id=(p_command->>'participantId')::uuid for update;
-   if p.status<>'invited' or p.user_id is not null then raise exception 'CONFLICT';end if;
+   if p.revision is distinct from (p_command->>'expectedRevision')::integer
+    or p.status<>'invited' or p.user_id is not null then raise exception 'CONFLICT';end if;
    if r.data_classification='real' and not kinnso_internal.pilot_begin_ready(r) then raise exception 'CONFLICT';end if;
    if jsonb_typeof(p_command->'expiresInHours')<>'number' or (p_command->>'expiresInHours')!~'^[0-9]{1,3}$' or (p_command->>'expiresInHours')::int not between 1 and 168 then raise exception 'INVALID';end if;
    update kinnso_internal.pilot_invites set status='revoked' where participant_id=p.id and status='active';
+   update kinnso_internal.pilot_participants
+   set revision=revision+1,updated_at=clock_timestamp() where id=p.id returning * into p;
    raw_code:=encode(extensions.gen_random_bytes(32),'hex');
    insert into kinnso_internal.pilot_invites(id,participant_id,code_hash,expires_at,created_by_ops_member_id) values(eid,p.id,extensions.digest(raw_code,'sha256'),clock_timestamp()+make_interval(hours=>(p_command->>'expiresInHours')::int),m);
   when 'revokeInvite' then
+   select * into p from kinnso_internal.pilot_participants
+   where id=(p_command->>'participantId')::uuid for update;
+   if p.revision is distinct from (p_command->>'expectedRevision')::integer then raise exception 'CONFLICT';end if;
    update kinnso_internal.pilot_invites set status='revoked' where id=eid and participant_id=(p_command->>'participantId')::uuid and status='active';
    if not found then raise exception 'CONFLICT';end if;
+   update kinnso_internal.pilot_participants
+   set revision=revision+1,updated_at=clock_timestamp() where id=p.id returning * into p;
   when 'bindGuide' then
    select * into i from kinnso_internal.pilot_content_intakes where id=eid for update;
    if i.revision<>(p_command->>'expectedRevision')::int or i.status in ('published','withdrawn') then raise exception 'CONFLICT';end if;
@@ -386,8 +605,24 @@ begin
    update kinnso_internal.pilot_content_intakes set status=case v when 'approve' then 'approved' else 'rejected' end,guide_draft_revision=case when v='approve' then d.revision end,content_digest=case when v='approve' then kinnso_internal.pilot_digest(d.payload) end,reviewed_guide_version=(select max(version) from public.guide_versions where guide_id=i.guide_id),review_reason=reason,reviewed_by_ops_member_id=m,reviewed_at=clock_timestamp(),revision=revision+1,updated_at=clock_timestamp() where id=i.id;
   when 'bindCollaboration' then
    if (p_command->>'merchantParticipantId')::uuid=(p_command->>'creatorParticipantId')::uuid then raise exception 'INVALID';end if;
-   if not exists(select 1 from kinnso_internal.pilot_participants cp join kinnso_internal.pilot_participants mp on mp.run_id=cp.run_id join public.merchant_profiles merchant on merchant.user_id=mp.user_id and merchant.status='active' join public.missions mission on mission.merchant_profile_id=merchant.id where cp.id=(p_command->>'creatorParticipantId')::uuid and mp.id=(p_command->>'merchantParticipantId')::uuid and cp.run_id=r.id and cp.role='creator' and mp.role='merchant' and cp.status='active' and mp.status='active' and mission.id=(p_command->>'missionId')::uuid)
-   or exists(select 1 from kinnso_internal.pilot_collaborations where mission_id=(p_command->>'missionId')::uuid) then raise exception 'CONFLICT';end if;
+   if not exists(select 1 from kinnso_internal.pilot_participants cp
+    join kinnso_internal.pilot_participants mp on mp.run_id=cp.run_id
+    join public.merchant_profiles merchant on merchant.user_id=mp.user_id
+     and merchant.status='active'
+    join public.missions mission on mission.merchant_profile_id=merchant.id
+    where cp.id=(p_command->>'creatorParticipantId')::uuid
+     and mp.id=(p_command->>'merchantParticipantId')::uuid
+     and cp.run_id=r.id
+     and cp.role='creator'
+     and mp.role='merchant'
+     and cp.status='active'
+     and mp.status='active'
+     and mission.id=(p_command->>'missionId')::uuid)
+
+     or exists(select 1 from kinnso_internal.pilot_collaborations
+    where mission_id=(p_command->>'missionId')::uuid
+     and (status='active'
+     or run_id<>r.id)) then raise exception 'CONFLICT';end if;
    insert into kinnso_internal.pilot_collaborations(id,run_id,merchant_participant_id,creator_participant_id,mission_id) values(eid,r.id,(p_command->>'merchantParticipantId')::uuid,(p_command->>'creatorParticipantId')::uuid,(p_command->>'missionId')::uuid);
   when 'setManualCheck' then
    select * into ck from kinnso_internal.pilot_checks where id=eid for update;
@@ -395,12 +630,15 @@ begin
    if r.status<>'running' or r.acceptance_started_at is null or clock_timestamp()<=r.acceptance_started_at or ck.revision<>(p_command->>'expectedRevision')::int then raise exception 'CONFLICT';end if;
    v:=kinnso_internal.pilot_text(p_command,'status',1,20);ref:=kinnso_internal.pilot_text(p_command,'evidenceReference',1,500,true);obs:=kinnso_internal.pilot_text(p_command,'observedSummary',1,1000,true);
    if v not in ('not_run','pass','fail','blocked') or (v='pass' and (ref is null or obs is null)) then raise exception 'INVALID';end if;
+   if v='pass' and not kinnso_internal.pilot_manual_evidence(r.id,ck.code,ref,clock_timestamp()) then
+    raise exception 'CONFLICT';
+   end if;
    update kinnso_internal.pilot_checks set status=v,evidence_reference=ref,observed_summary=obs,revision=revision+1,updated_by_ops_member_id=m,updated_at=clock_timestamp() where id=eid;
   when 'addEvidenceReference' then
    if r.status<>'running' or r.acceptance_started_at is null or clock_timestamp()<=r.acceptance_started_at then raise exception 'CONFLICT';end if;
    k:=kinnso_internal.pilot_text(p_command,'checkCode',1,100);v:=kinnso_internal.pilot_text(p_command,'entityType',1,40);ref:=kinnso_internal.pilot_text(p_command,'evidenceReference',1,500,true);
-   if not exists(select 1 from kinnso_internal.pilot_checks where run_id=r.id and code=k) or not kinnso_internal.pilot_reference_allowed(r.id,k,v,eid) then raise exception 'INVALID';end if;
-   insert into kinnso_internal.pilot_evidence(run_id,check_code,entity_type,entity_id,evidence_reference,captured_by_ops_member_id) values(r.id,k,v,eid,ref,m) returning id into ev;
+   if not exists(select 1 from kinnso_internal.pilot_checks where run_id=r.id and code=k) or not coalesce(kinnso_internal.pilot_reference_allowed(r.id,k,v,eid,(p_command->>'participantId')::uuid),false) or (kinnso_internal.pilot_manual(k) and ref is null) then raise exception 'INVALID';end if;
+   insert into kinnso_internal.pilot_evidence(run_id,check_code,entity_type,entity_id,participant_id,evidence_reference,captured_by_ops_member_id,captured_at) values(r.id,k,v,eid,(p_command->>'participantId')::uuid,ref,m,clock_timestamp()) returning id into ev;
   else raise exception 'INVALID';
   end case;
  end if;

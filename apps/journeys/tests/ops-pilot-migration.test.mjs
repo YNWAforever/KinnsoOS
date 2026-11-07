@@ -7,6 +7,14 @@ const sql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_SCHEMA_
 const tables = ['runs', 'participants', 'invites', 'content_intakes', 'collaborations', 'checks', 'evidence'];
 const PILOT_RPC_MIGRATION = '20261107085017_kinnso_pilot_control_room_rpcs.sql';
 const rpcSql = readFileSync(new URL('../../../supabase/migrations/' + PILOT_RPC_MIGRATION, import.meta.url), 'utf8');
+test('pilot RPC schema binds evidence to same-run slots and retains retired collaborations',()=>{
+ assert.match(rpcSql,/alter table kinnso_internal\.pilot_evidence[\s\S]*?add column participant_id uuid/i);
+ assert.match(rpcSql,/foreign key\s*\(run_id,\s*participant_id\)\s*references kinnso_internal\.pilot_participants\(run_id,\s*id\)/i);
+ assert.match(rpcSql,/create index[^;]+on kinnso_internal\.pilot_evidence\s*\(run_id,\s*participant_id\)/i);
+ assert.match(rpcSql,/alter table kinnso_internal\.pilot_collaborations[\s\S]*?drop constraint pilot_collaborations_run_id_key/i);
+ assert.match(rpcSql,/create unique index[^;]+on kinnso_internal\.pilot_collaborations\s*\(run_id\)\s*where status\s*=\s*'active'/i);
+ assert.match(rpcSql,/entity_type in\s*\([^;]+'manual'/i);
+});
 
 test('pilot RPC migration retains separate private participant attribution and protects delegates', () => {
   assert.match(rpcSql, /create table kinnso_internal\.pilot_participant_audit/);

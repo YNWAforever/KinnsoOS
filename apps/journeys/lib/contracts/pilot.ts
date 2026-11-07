@@ -4,7 +4,7 @@ export type PilotRole = 'traveller' | 'creator' | 'merchant';
 export type PilotCohortRole = 'required_traveller' | 'required_creator' | 'required_merchant' | 'observer';
 export type PilotRunStatus = 'draft' | 'recruiting' | 'paused' | 'running' | 'completed' | 'cancelled';
 export type PilotCheckStatus = 'not_run' | 'pass' | 'fail' | 'blocked';
-export type PilotEvidenceEntityType = 'guide' | 'trip' | 'mission' | 'mission_participant' | 'mission_submission' | 'notification' | 'support_case';
+export type PilotEvidenceEntityType = 'guide' | 'trip' | 'mission' | 'mission_participant' | 'mission_submission' | 'notification' | 'support_case' | 'manual';
 export type PilotReadinessStage = 'setup_incomplete' | 'ready_to_begin' | 'executing' | 'execution_complete' | 'completed' | 'blocked';
 export type PilotContentIntakeInput = { title:string; destination:string; authoredLocale:string; sourceSummary:string; sourceUrls:string[]; rightsBasis:'original'|'licence'|'permission'; rightsEvidenceReference:string; authorConsentVersion:string; coverRightsConfirmed:boolean|null; coverRightsEvidenceReference:string|null };
 export type OpsPilotCommand =
@@ -13,13 +13,13 @@ export type OpsPilotCommand =
  | {type:'setRunStatus';id:string;expectedRevision:number;status:PilotRunStatus;reason:string}
  | {type:'addParticipant';id:string;runId:string;role:PilotRole;cohortRole:PilotCohortRole;displayLabel:string}
  | {type:'setParticipantStatus';id:string;expectedRevision:number;status:'active'|'paused'|'withdrawn'|'completed';reason:string}
- | {type:'createInvite';id:string;participantId:string;expiresInHours:number}
- | {type:'revokeInvite';id:string;participantId:string;reason:string}
+ | {type:'createInvite';id:string;participantId:string;expectedRevision:number;expiresInHours:number}
+ | {type:'revokeInvite';id:string;participantId:string;expectedRevision:number;reason:string}
  | {type:'reviewContentIntake';id:string;expectedRevision:number;decision:'approve'|'reject';reason:string}
  | {type:'bindGuide';intakeId:string;guideId:string;expectedRevision:number}
  | {type:'bindCollaboration';id:string;runId:string;merchantParticipantId:string;creatorParticipantId:string;missionId:string}
  | {type:'setManualCheck';id:string;expectedRevision:number;status:PilotCheckStatus;evidenceReference:string|null;observedSummary:string|null}
- | {type:'addEvidenceReference';runId:string;checkCode:string;entityType:PilotEvidenceEntityType;entityId:string;evidenceReference:string|null};
+ | {type:'addEvidenceReference';runId:string;checkCode:string;entityType:PilotEvidenceEntityType;entityId:string;participantId?:string|null;evidenceReference:string|null};
 export type PilotParticipantCommand =
  | {type:'claimInvite';requestId:string;code:string}
  | {type:'acceptConsent';requestId:string;noticeVersion:string}
@@ -60,7 +60,7 @@ function intake(value:unknown):PilotContentIntakeInput {
 }
 export function parseOpsPilotCommand(input:unknown):OpsPilotCommand {
  const type=(input&&typeof input==='object'&&!Array.isArray(input)?(input as Record<string,unknown>).type:undefined);
- const fields:Record<string,string[]>={createRun:['type','id','name','dataClassification','candidateReleaseSha','environmentOrigin'],configureRun:['type','id','expectedRevision','participationNoticeVersion','privacyNoticeVersion','contentConsentVersion','coordinatorReference','supportOwnerReference','privacyOwnerReference','alertOwnerReference','privateChannelReference','syntheticRehearsalRunId'],setRunStatus:['type','id','expectedRevision','status','reason'],addParticipant:['type','id','runId','role','cohortRole','displayLabel'],setParticipantStatus:['type','id','expectedRevision','status','reason'],createInvite:['type','id','participantId','expiresInHours'],revokeInvite:['type','id','participantId','reason'],reviewContentIntake:['type','id','expectedRevision','decision','reason'],bindGuide:['type','intakeId','guideId','expectedRevision'],bindCollaboration:['type','id','runId','merchantParticipantId','creatorParticipantId','missionId'],setManualCheck:['type','id','expectedRevision','status','evidenceReference','observedSummary'],addEvidenceReference:['type','runId','checkCode','entityType','entityId','evidenceReference']};
+ const fields:Record<string,string[]>={createRun:['type','id','name','dataClassification','candidateReleaseSha','environmentOrigin'],configureRun:['type','id','expectedRevision','participationNoticeVersion','privacyNoticeVersion','contentConsentVersion','coordinatorReference','supportOwnerReference','privacyOwnerReference','alertOwnerReference','privateChannelReference','syntheticRehearsalRunId'],setRunStatus:['type','id','expectedRevision','status','reason'],addParticipant:['type','id','runId','role','cohortRole','displayLabel'],setParticipantStatus:['type','id','expectedRevision','status','reason'],createInvite:['type','id','participantId','expectedRevision','expiresInHours'],revokeInvite:['type','id','participantId','expectedRevision','reason'],reviewContentIntake:['type','id','expectedRevision','decision','reason'],bindGuide:['type','intakeId','guideId','expectedRevision'],bindCollaboration:['type','id','runId','merchantParticipantId','creatorParticipantId','missionId'],setManualCheck:['type','id','expectedRevision','status','evidenceReference','observedSummary'],addEvidenceReference:['type','runId','checkCode','entityType','entityId','participantId','evidenceReference']};
  if(typeof type!=='string'||!Object.hasOwn(fields,type))fail(); const o=object(input,fields[type as string]);
  switch(type){
  case'createRun': {const classification=choice(o.dataClassification,['synthetic','real']);const sha=str(o.candidateReleaseSha,1,80);const url=str(o.environmentOrigin,1,2048);let u:URL;try{u=new URL(url)}catch{return fail()}if(u.username||u.password||u.pathname!=='/'||u.search||u.hash||!['http:','https:'].includes(u.protocol))fail();if(classification==='real'&&(!/^[0-9a-f]{40}$/.test(sha)||u.protocol!=='https:'))fail();return{type,id:ident(o.id),name:str(o.name,1,200),dataClassification:classification,candidateReleaseSha:sha,environmentOrigin:u.origin}}
@@ -68,13 +68,26 @@ export function parseOpsPilotCommand(input:unknown):OpsPilotCommand {
  case'setRunStatus':return{type,id:ident(o.id),expectedRevision:rev(o.expectedRevision),status:choice(o.status,['draft','recruiting','paused','running','completed','cancelled']),reason:str(o.reason,1,1000)};
  case'addParticipant':return{type,id:ident(o.id),runId:ident(o.runId),role:choice(o.role,['traveller','creator','merchant']),cohortRole:choice(o.cohortRole,['required_traveller','required_creator','required_merchant','observer']),displayLabel:str(o.displayLabel,1,80)};
  case'setParticipantStatus':return{type,id:ident(o.id),expectedRevision:rev(o.expectedRevision),status:choice(o.status,['active','paused','withdrawn','completed']),reason:str(o.reason,1,1000)};
- case'createInvite':if(!Number.isInteger(o.expiresInHours)||Number(o.expiresInHours)<1||Number(o.expiresInHours)>168)fail();return{type,id:ident(o.id),participantId:ident(o.participantId),expiresInHours:Number(o.expiresInHours)};
- case'revokeInvite':return{type,id:ident(o.id),participantId:ident(o.participantId),reason:str(o.reason,1,1000)};
+ case'createInvite':if(!Number.isInteger(o.expiresInHours)||Number(o.expiresInHours)<1||Number(o.expiresInHours)>168)fail();return{type,id:ident(o.id),participantId:ident(o.participantId),expectedRevision:rev(o.expectedRevision),expiresInHours:Number(o.expiresInHours)};
+ case'revokeInvite':return{type,id:ident(o.id),participantId:ident(o.participantId),expectedRevision:rev(o.expectedRevision),reason:str(o.reason,1,1000)};
  case'reviewContentIntake':return{type,id:ident(o.id),expectedRevision:rev(o.expectedRevision),decision:choice(o.decision,['approve','reject']),reason:str(o.reason,1,1000)};
  case'bindGuide':return{type,intakeId:ident(o.intakeId),guideId:ident(o.guideId),expectedRevision:rev(o.expectedRevision)};
  case'bindCollaboration':{const m=ident(o.merchantParticipantId),c=ident(o.creatorParticipantId);if(m.toLowerCase()===c.toLowerCase())fail();return{type,id:ident(o.id),runId:ident(o.runId),merchantParticipantId:m,creatorParticipantId:c,missionId:ident(o.missionId)}}
  case'setManualCheck':{const status=choice(o.status,['not_run','pass','fail','blocked']);const evidence=o.evidenceReference===null?null:str(o.evidenceReference,1,500);const summary=o.observedSummary===null?null:str(o.observedSummary,1,1000);if(status==='pass'&&(!evidence||!summary))fail();return{type,id:ident(o.id),expectedRevision:rev(o.expectedRevision),status,evidenceReference:evidence,observedSummary:summary}}
- case'addEvidenceReference':return{type,runId:ident(o.runId),checkCode:str(o.checkCode,1,100),entityType:choice(o.entityType,['guide','trip','mission','mission_participant','mission_submission','notification','support_case']),entityId:ident(o.entityId),evidenceReference:o.evidenceReference===null?null:str(o.evidenceReference,1,500)};
+ case'addEvidenceReference': {
+  const runId=ident(o.runId), entityId=ident(o.entityId), checkCode=str(o.checkCode,1,100);
+  const entityType=choice(o.entityType,['guide','trip','mission','mission_participant','mission_submission','notification','support_case','manual']);
+  const participantId=o.participantId===undefined||o.participantId===null?null:ident(o.participantId);
+  const evidenceReference=o.evidenceReference===null?null:str(o.evidenceReference,1,500);
+  const scopedType=checkCode==='guide_discovered'?'guide':checkCode==='trip_recovered'?'trip':null;
+  const external=['privacy_support','alert_owner','physical_ios','physical_android','voiceover','nvda'].includes(checkCode);
+  if(scopedType && (!participantId||entityType!==scopedType||!evidenceReference))fail();
+  if(!scopedType && participantId!==null)fail();
+  if(external && (entityType!=='manual'||entityId.toLowerCase()!==runId.toLowerCase()||!evidenceReference))fail();
+  if(entityType==='manual'&&!external)fail();
+  return{type,runId,checkCode,entityType,entityId,...(o.participantId===undefined?{}:{participantId}),evidenceReference};
+ }
+
  default:return fail();
  }
 }

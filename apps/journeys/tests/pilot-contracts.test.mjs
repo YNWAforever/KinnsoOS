@@ -8,8 +8,8 @@ const ops=[
 {type:'setRunStatus',id,expectedRevision:1,status:'recruiting',reason:'Approved'},
 {type:'addParticipant',id,runId:id,role:'traveller',cohortRole:'required_traveller',displayLabel:'Traveller A'},
 {type:'setParticipantStatus',id,expectedRevision:1,status:'active',reason:'Verified'},
-{type:'createInvite',id,participantId:id,expiresInHours:168},
-{type:'revokeInvite',id,participantId:id,reason:'Rotate'},
+{type:'createInvite',id,participantId:id,expectedRevision:1,expiresInHours:168},
+{type:'revokeInvite',id,participantId:id,expectedRevision:2,reason:'Rotate'},
 {type:'reviewContentIntake',id,expectedRevision:1,decision:'approve',reason:'Rights verified'},
 {type:'bindGuide',intakeId:id,guideId:other,expectedRevision:1},
 {type:'bindCollaboration',id,runId:id,merchantParticipantId:id,creatorParticipantId:other,missionId:id},
@@ -25,6 +25,24 @@ test('requires real run release identity and secure origin',()=>{const real={...
 test('validates configured notices, owner references and rehearsal reference',()=>{const config={...ops[1],syntheticRehearsalRunId:other};assert.throws(()=>parseOpsPilotCommand({...config,privacyNoticeVersion:''}));assert.throws(()=>parseOpsPilotCommand({...config,syntheticRehearsalRunId:'bad'}));assert.throws(()=>parseOpsPilotCommand({...config,alertOwnerReference:''}))});
 test('rejects invalid run statuses and missing state-change reasons',()=>{assert.throws(()=>parseOpsPilotCommand({...ops[2],status:'ready'}));assert.throws(()=>parseOpsPilotCommand({...ops[2],reason:''}));assert.throws(()=>parseOpsPilotCommand({...ops[4],reason:''}));assert.throws(()=>parseOpsPilotCommand({...ops[6],reason:''}));assert.throws(()=>parseOpsPilotCommand({...ops[7],reason:''}))});
 test('validates invite duration and manual pass evidence',()=>{for(const hours of [0,169,1.5])assert.throws(()=>parseOpsPilotCommand({...ops[5],expiresInHours:hours}));assert.throws(()=>parseOpsPilotCommand({...ops[10],evidenceReference:null}));assert.throws(()=>parseOpsPilotCommand({...ops[10],observedSummary:null}))});
+test('invite mutations require a positive observed participant revision',()=>{
+ for(const command of [ops[5],ops[6]]) {
+  assert.deepEqual(parseOpsPilotCommand(command),command);
+  for(const expectedRevision of [undefined,null,0,-1,1.5,'1']) assert.throws(()=>parseOpsPilotCommand({...command,expectedRevision}));
+ }
+});
+test('manual evidence supports scoped participant IDs and external run evidence',()=>{
+ const base={type:'addEvidenceReference',runId:id,checkCode:'guide_discovered',entityType:'guide',entityId:other,participantId:id,evidenceReference:'ref:'+other};
+ assert.deepEqual(parseOpsPilotCommand(base),base);
+ for(const participantId of [undefined,null,'bad']) assert.throws(()=>parseOpsPilotCommand({...base,participantId}));
+ assert.throws(()=>parseOpsPilotCommand({...base,entityType:'manual'}));
+ assert.throws(()=>parseOpsPilotCommand({...base,checkCode:'trip_recovered'}));
+ const manual={...base,checkCode:'physical_ios',entityType:'manual',entityId:id,participantId:null};
+ assert.deepEqual(parseOpsPilotCommand(manual),manual);
+ assert.throws(()=>parseOpsPilotCommand({...manual,entityId:other}));
+ assert.throws(()=>parseOpsPilotCommand({...manual,participantId:id}));
+ assert.throws(()=>parseOpsPilotCommand({...manual,evidenceReference:null}));
+});
 test('participant commands cannot carry operations identity or authority fields',()=>{for(const key of ['userId','runId','decision','approval','role','evidenceReference'])assert.throws(()=>parsePilotParticipantCommand({...participant[0],[key]:'forbidden'}))});
 test('rejects unknown participant command names',()=>{assert.throws(()=>parsePilotParticipantCommand({...participant[0],type:'approveContent'}))});
 
