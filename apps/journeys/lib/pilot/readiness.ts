@@ -32,6 +32,8 @@ export type PilotExecutionFacts = {
     status: string;
     publishedVersion: number | null;
     publishedContentDigest: string | null;
+    currentDraftRevision: number | null;
+    currentContentDigest: string | null;
   }>;
   checks: Array<PilotEvidenceFact & {
     code: string;
@@ -211,7 +213,9 @@ export function pilotExecutionReadiness(input: PilotExecutionReadinessInput): Pi
     const exactPublication = publication && eligible(publication) && !!creatorUserId &&
       publication.entityId === intake.guideId && publication.creatorUserId === creatorUserId &&
       publication.status === 'published' && publication.publishedVersion === intake.reviewedGuideVersion &&
-      publication.publishedContentDigest === intake.contentDigest;
+      publication.publishedContentDigest === intake.contentDigest &&
+      publication.currentDraftRevision === intake.guideDraftRevision &&
+      publication.currentContentDigest === intake.contentDigest;
     const exact = exactPublication && !!creatorId && intake.creatorParticipantId === creatorId && present(intake.guideId) &&
       intake.status === 'published' && positiveInteger(intake.guideDraftRevision) &&
       positiveInteger(intake.reviewedGuideVersion) && present(intake.contentDigest);

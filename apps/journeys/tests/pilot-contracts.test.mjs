@@ -140,6 +140,7 @@ const facts = {
   publications: contentIntakes.map(i => ({
     ...fact, entityId: i.guideId, intakeId: i.id, creatorUserId: 'creator-auth',
     status: 'published', publishedVersion: i.reviewedGuideVersion, publishedContentDigest: i.contentDigest,
+    currentDraftRevision: i.guideDraftRevision, currentContentDigest: i.contentDigest,
   })),
   checks: [...checks, ...collaboration.steps].map(c => ({
     ...fact, code: c.code, status: c.status, entityId: c.code + '-source', missionId: 'mission',
@@ -182,7 +183,7 @@ test('publication facts must match each reviewed guide, creator, version and dig
 
 test('execution accepts a reviewed publication version independent of the approved draft revision', () => {
   const intake = { ...contentIntakes[0], guideDraftRevision: 2, reviewedGuideVersion: 7 };
-  const publication = { ...facts.publications[0], publishedVersion: 7 };
+  const publication = { ...facts.publications[0], publishedVersion: 7, currentDraftRevision: 2 };
   const evaluate = (reviewedIntake, publishedFact) => pilotExecutionReadiness({
     ...execution,
     contentIntakes: [reviewedIntake, ...contentIntakes.slice(1)],
@@ -198,6 +199,35 @@ test('execution accepts a reviewed publication version independent of the approv
     { ...intake, reviewedGuideVersion: null }, { ...publication, publishedVersion: null },
   ).executionComplete, false);
 });
+
+for (const [label, drift] of [
+  ['later revision', { currentDraftRevision: 3 }],
+  ['changed digest', { currentContentDigest: 'changed' }],
+  ['missing revision', { currentDraftRevision: undefined }],
+  ['null digest', { currentContentDigest: null }],
+]) {
+  test(`execution blocks post-approval draft drift (${label}) until the approved draft is restored`, () => {
+    const intake = { ...contentIntakes[0], guideDraftRevision: 2, reviewedGuideVersion: 7 };
+    const publication = {
+      ...facts.publications[0], publishedVersion: 7,
+      currentDraftRevision: 2, currentContentDigest: intake.contentDigest,
+    };
+    const evaluate = () => pilotExecutionReadiness({
+      ...execution,
+      contentIntakes: [intake, ...contentIntakes.slice(1)],
+      facts: { ...facts, publications: [publication, ...facts.publications.slice(1)] },
+    });
+    assert.equal(evaluate().executionComplete, true);
+    Object.assign(publication, drift);
+    const readiness = evaluate();
+    assert.equal(readiness.executionComplete, false);
+    assert.ok(readiness.blockers.some(blocker => blocker.code === 'guide_not_exact' && blocker.recordId === intake.id));
+    Object.assign(publication, { currentDraftRevision: 2, currentContentDigest: intake.contentDigest });
+    assert.equal(evaluate().executionComplete, true);
+    assert.equal(publication.publishedVersion, 7);
+    assert.equal(publication.publishedContentDigest, intake.contentDigest);
+  });
+}
 
 test('revision requested must be followed by source approval and its exact mission notification', () => {
   const requested = { ...approved, capturedAt: later, entityId: 'initial-submission', status: 'revision_requested' };
