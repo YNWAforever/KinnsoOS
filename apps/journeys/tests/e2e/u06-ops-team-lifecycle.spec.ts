@@ -2,6 +2,7 @@ import {test,expect,type Page} from '@playwright/test';
 import {randomUUID} from 'node:crypto';
 import {loadEnvFile} from 'node:process';
 import {createClient} from '@supabase/supabase-js';
+import {cleanOpsInviteFixtures} from '../integration/ops-invite-fixtures.mjs';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
 
 loadEnvFile('.env.test');
@@ -51,10 +52,37 @@ test('operations owner invites, accepts, changes and revokes access with safe re
  }finally{
   const failures:string[]=[];const clean=async(name:string,work:()=>PromiseLike<unknown>)=>{try{await work();}catch{failures.push(name);}};
   for(const context of contexts)await clean('context',()=>context.close());
-  for(const email of [owner.email,invited.email,analyst.email,revoked.email])await clean('invite '+email,()=>ok(admin.from('kinnso_ops_invites').delete().eq('email',email)));
+  await clean('invite history',async()=>cleanOpsInviteFixtures([owner.email,invited.email,analyst.email,revoked.email]));
   if(memberIds.length)await clean('audit',()=>ok(admin.from('ops_audit_log').delete().in('actor_ops_member_id',memberIds)));
   if(userIds.length)await clean('members',()=>ok(admin.from('kinnso_ops_members').delete().in('user_id',userIds)));
   for(const id of userIds)await clean('user '+id,()=>ok(admin.auth.admin.deleteUser(id)));
   if(failures.length){testInfo.annotations.push({type:'fixture cleanup failures',description:failures.join(', ')});throw Error('Synthetic operations team cleanup failed: '+failures.join(', '));}
+ }
+});
+
+test('invite operation still returns 201 after revoke and rejects changed input',async({page,baseURL})=>{
+ test.setTimeout(90000);
+ expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+ const owner=await user('receipt-owner'),email='receipt-invite-'+randomUUID()+'@example.test';
+ let memberId:string|undefined;
+ try{
+  memberId=(await ok(admin.from('kinnso_ops_members').insert({user_id:owner.id,display_name:'Receipt owner',role:'owner',status:'active'}).select('id').single())).id;
+  await signIn(page,owner,'ops?view=team');
+  const post=(data:object)=>page.request.post('/api/ops/team',{headers:{origin:baseURL!},data});
+  const command={action:'invite',email,role:'analyst',requestId:randomUUID()};
+  const first=await post(command);expect(first.status()).toBe(201);
+  const invite=await ok(admin.from('kinnso_ops_invites').select('id').eq('email',email).single());
+  expect((await post({action:'revoke',inviteId:invite.id,requestId:randomUUID()})).status()).toBe(200);
+  const replay=await post(command);expect(replay.status()).toBe(201);
+  expect((await replay.json()).data.token===(await first.json()).data.token).toBe(true);
+  expect((await post({...command,role:'owner'})).status()).toBe(409);
+  expect((await ok(admin.from('kinnso_ops_invites').select('status').eq('id',invite.id).single())).status).toBe('revoked');
+ }finally{
+  cleanOpsInviteFixtures([email]);
+  if(memberId){
+   await ok(admin.from('ops_audit_log').delete().eq('actor_ops_member_id',memberId));
+   await ok(admin.from('kinnso_ops_members').delete().eq('id',memberId));
+  }
+  await ok(admin.auth.admin.deleteUser(owner.id));
  }
 });

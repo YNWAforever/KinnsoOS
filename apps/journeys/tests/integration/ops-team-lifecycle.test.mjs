@@ -4,6 +4,7 @@ import {randomUUID,randomBytes} from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {loadEnvFile} from 'node:process';
 import {createClient} from '@supabase/supabase-js';
+import {cleanOpsInviteFixtures} from './ops-invite-fixtures.mjs';
 import {verifyTestTarget} from '../../scripts/verify-test-target.mjs';
 
 loadEnvFile('.env.test');
@@ -34,6 +35,10 @@ test('operations invites and audits are retry-safe on the isolated target',async
   assert.equal(pending.length,1);assert.equal(pending[0].role,'admin');
   const audit=async(entity,action)=>(await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',ownerMember).eq('entity_id',entity).eq('action',action))).length;
   assert.equal(await audit(pending[0].id,'invite.create'),1);
+  const deletions=await Promise.all([owner.client,admin].map(client=>
+   client.from('kinnso_ops_invites').delete().eq('id',pending[0].id)));
+  for(const result of deletions)assert.equal(result.error?.code,'42501','API DELETE must fail explicitly');
+  assert.equal((await ok(mutate(inviteCommand))).token===firstToken,true);
   const conflict=await mutate({...inviteCommand,p_role:'owner'});
   assert.match(conflict.error?.message??'',/REQUEST_ID_REUSED/);
   const forbidden=await mutate(inviteCommand,member.client);
@@ -62,18 +67,21 @@ test('operations invites and audits are retry-safe on the isolated target',async
   await ok(invitee.client.rpc('admin_accept_ops_invite',{p_token:firstToken}));
   assert.equal((await ok(admin.from('ops_audit_log').select('id').eq('actor_ops_member_id',acceptedMember.id).eq('action','invite.accept'))).length,1);
 
+  assert.equal((await ok(mutate(inviteCommand))).token===firstToken,true,'accepted invite still has its original receipt');
+  assert.match((await mutate({...inviteCommand,p_role:'owner'})).error?.message??'',/REQUEST_ID_REUSED/);
+
   const revokeEmail=`revoke-${run}@example.test`;emails.push(revokeEmail);
   await ok(owner.client.rpc('admin_invite_ops_member',{p_email:revokeEmail,p_role:'analyst'}));
   const revokeInvite=(await ok(admin.from('kinnso_ops_invites').select('id').eq('email',revokeEmail).single())).id;
   const revoke=command('revoke',{p_target:revokeInvite});
   const revokedResult={id:revokeInvite,status:'revoked'};
   assert.deepEqual(await ok(mutate(revoke)),revokedResult);
-  // Replaying the receipt must succeed even after the revoked invite is gone.
-  await ok(admin.from('kinnso_ops_invites').delete().eq('id',revokeInvite));
+  // Revoked history is protected too.
+  assert.equal((await admin.from('kinnso_ops_invites').delete().eq('id',revokeInvite)).error?.code,'42501');
   assert.deepEqual(await ok(mutate(revoke)),revokedResult);
   assert.equal(await audit(revokeInvite,'invite.revoke'),1);
  }finally{
-  for(const email of emails)await admin.from('kinnso_ops_invites').delete().eq('email',email);
+  cleanOpsInviteFixtures(emails);
   const memberRows=createdUsers.length?await admin.from('kinnso_ops_members').select('id').in('user_id',createdUsers):{data:[]};
   const allMemberIds=[...new Set([...createdMembers,...((memberRows.data??[]).map(row=>row.id))])];
   if(allMemberIds.length)await admin.from('ops_audit_log').delete().in('actor_ops_member_id',allMemberIds);
@@ -108,7 +116,7 @@ test('operations database rejects legacy suspension, token/audit access and stal
   const stale=await analyst.client.rpc('admin_list_ops_members');
   assert.ok(stale.error,'a revoked Auth session must be rejected even when its JWT has not expired');
  }finally{
-  for(const email of emails)await admin.from('kinnso_ops_invites').delete().eq('email',email);
+  cleanOpsInviteFixtures(emails);
   const memberRows=createdUsers.length?await admin.from('kinnso_ops_members').select('id').in('user_id',createdUsers):{data:[]};
   const allMemberIds=[...new Set([...createdMembers,...((memberRows.data??[]).map(row=>row.id))])];
   if(allMemberIds.length)await admin.from('ops_audit_log').delete().in('actor_ops_member_id',allMemberIds);
@@ -158,7 +166,7 @@ test('concurrent owner and invite transitions preserve final-owner and acceptanc
   assert.deepEqual(expiredRows.map(row=>row.status),['expired','pending']);
   assert.equal(expiredRows[1].token,replacement);
  }finally{
-  for(const email of emails)await admin.from('kinnso_ops_invites').delete().eq('email',email);
+  cleanOpsInviteFixtures(emails);
   if(createdMembers.length)await admin.from('ops_audit_log').delete().in('actor_ops_member_id',createdMembers);
   if(createdUsers.length)await admin.from('kinnso_ops_members').delete().in('user_id',createdUsers);
   for(const id of createdUsers)await admin.auth.admin.deleteUser(id);

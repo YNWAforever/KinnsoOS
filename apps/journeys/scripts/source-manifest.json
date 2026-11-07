@@ -581,6 +581,7 @@
     "tests/integration/ops-content.test.mjs",
     "tests/integration/ops-routing.test.mjs",
     "tests/integration/ops-scale.test.mjs",
+    "tests/integration/ops-invite-fixtures.mjs",
     "tests/integration/ops-team-lifecycle.test.mjs",
     "tests/integration/pilot-control-room.test.mjs",
     "tests/integration/pilot-metrics.test.mjs",
@@ -751,6 +752,7 @@
     "tests/contracts/20261107155000_kinnso_pilot_stored_intake_identity.sql": "supabase/migrations/20261107155000_kinnso_pilot_stored_intake_identity.sql",
     "tests/contracts/20261107165735_kinnso_pilot_final_review.sql": "supabase/migrations/20261107165735_kinnso_pilot_final_review.sql",
     "tests/contracts/20261108120000_kinnso_pilot_residual_races.sql": "supabase/migrations/20261108120000_kinnso_pilot_residual_races.sql",
-    "tests/contracts/20261108123000_kinnso_ops_team_mutation_receipts.sql": "supabase/migrations/20261108123000_kinnso_ops_team_mutation_receipts.sql"
+    "tests/contracts/20261108123000_kinnso_ops_team_mutation_receipts.sql": "supabase/migrations/20261108123000_kinnso_ops_team_mutation_receipts.sql",
+    "tests/contracts/20261108124500_protect_ops_invite_history.sql": "supabase/migrations/20261108124500_protect_ops_invite_history.sql"
   }
 }
