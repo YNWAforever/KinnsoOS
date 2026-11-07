@@ -1,15 +1,61 @@
 import { apiContext, boundedBody, failure, reply } from '../../../lib/api/server';
 import { object, uuid } from '../../../lib/api/validation.ts';
 import { parsePilotParticipantCommand } from '../../../lib/contracts/pilot.ts';
-import type { PilotMetricAction, PilotParticipantCommand, PilotSelfSnapshot } from '../../../lib/contracts/pilot.ts';
+import type { PilotMetricAction, PilotParticipantCommand, PilotSelfSnapshot, PilotSelfIntake } from '../../../lib/contracts/pilot.ts';
 import { emitPilotMetric } from '../../../lib/pilot/telemetry.ts';
 
-function selfView({ run, participant, nextStep, readiness }: PilotSelfSnapshot): PilotSelfSnapshot {
+function digest(value: unknown): string | null {
+  return typeof value === 'string' && value.length === 64 && /^[0-9a-f]{64}$/.test(value) ? value : null;
+}
+
+function canonicalLink(value: unknown, prefix: string, suffix = ''): string | null {
+  return typeof value === 'string' && value.startsWith(prefix) && value.endsWith(suffix)
+    && uuid(value.slice(prefix.length, suffix.length ? -suffix.length : undefined)) ? value : null;
+}
+
+function intakeView(i: PilotSelfIntake | null | undefined): PilotSelfIntake | null {
+  if (!i || !uuid(i.id) || !Number.isSafeInteger(i.revision) || i.revision < 1
+    || !['draft','submitted','approved','rejected','published','withdrawn'].includes(i.status)
+    || !['original','licence','permission'].includes(i.rightsBasis)
+    || ![i.title,i.destination,i.authoredLocale,i.sourceSummary,i.rightsEvidenceReference].every(v => typeof v === 'string')
+    || !Array.isArray(i.sourceUrls) || i.sourceUrls.length > 20 || !i.sourceUrls.every(v => typeof v === 'string')) return null;
+  const guideId = uuid(i.guideId) ? i.guideId : null;
   return {
-    run: run && { id: run.id, name: run.name, status: run.status },
+    id:i.id, status:i.status, revision:i.revision, title:i.title, destination:i.destination,
+    authoredLocale:i.authoredLocale, sourceSummary:i.sourceSummary, sourceUrls:i.sourceUrls,
+    rightsBasis:i.rightsBasis, rightsEvidenceReference:i.rightsEvidenceReference,
+    coverRightsConfirmed:typeof i.coverRightsConfirmed === 'boolean' ? i.coverRightsConfirmed : null,
+    coverRightsEvidenceReference:typeof i.coverRightsEvidenceReference === 'string' ? i.coverRightsEvidenceReference : null,
+    reviewReason:typeof i.reviewReason === 'string' ? i.reviewReason : null, guideId,
+    currentDraftRevision:guideId && Number.isSafeInteger(i.currentDraftRevision) && i.currentDraftRevision! > 0 ? i.currentDraftRevision : null,
+    editorHref:guideId && i.editorHref === '/en/studio/guides/' + guideId + '/edit' ? i.editorHref : null,
+  };
+}
+
+function selfView({ run, participant, nextStep, readiness, contentConsent, intake, workflowLinks }: PilotSelfSnapshot): PilotSelfSnapshot {
+  const active = participant?.status === 'active';
+  const creator = active && participant.role === 'creator';
+  const contentDigest = creator && digest(contentConsent?.digest);
+
+  return {
+    run: run && { id: run.id, name: run.name, status: run.status,
+      participationNoticeVersion: typeof run.participationNoticeVersion === 'string' ? run.participationNoticeVersion : undefined,
+      participationNoticeDigest: run.participationNoticeDigest === undefined ? undefined : digest(run.participationNoticeDigest),
+      privacyNoticeVersion: typeof run.privacyNoticeVersion === 'string' ? run.privacyNoticeVersion : undefined,
+      privacyNoticeDigest: run.privacyNoticeDigest === undefined ? undefined : digest(run.privacyNoticeDigest),
+    },
     participant: participant && {
       id: participant.id, role: participant.role, status: participant.status, consentVersion: participant.consentVersion,
+      consentDigest: participant.consentDigest === undefined ? undefined : digest(participant.consentDigest),
     },
+    contentConsent: contentConsent === undefined ? undefined :
+      contentDigest && typeof contentConsent?.version === 'string' ? {version:contentConsent.version,digest:contentDigest} : null,
+    intake: intake === undefined ? undefined : creator ? intakeView(intake) : null,
+    workflowLinks: workflowLinks === undefined ? undefined : active && workflowLinks ? {
+      merchant: participant.role === 'merchant' ? canonicalLink(workflowLinks.merchant, '/en/merchant/campaigns/') : null,
+      trip: participant.role === 'traveller' ? canonicalLink(workflowLinks.trip, '/en/trips/') : null,
+      supportCaseId: uuid(workflowLinks.supportCaseId) ? workflowLinks.supportCaseId : null,
+    } : null,
     nextStep: nextStep && { code: nextStep.code, href: nextStep.href, messageKey: nextStep.messageKey },
     readiness: {
       stage: readiness.stage, readyToBegin: readiness.readyToBegin, executionComplete: readiness.executionComplete,
@@ -58,20 +104,29 @@ export async function GET(request: Request): Promise<Response> {
 }
 
 export async function POST(request: Request): Promise<Response> {
-  let command: PilotParticipantCommand;
+  let command: PilotParticipantCommand | null = null;
+  let requestId: string;
   try {
     if (new URL(request.url).search) return failure('INVALID', 400);
     const body = object(await boundedBody(request), ['requestId', 'command']);
-    command = parsePilotParticipantCommand(body.command);
-    if (!uuid(body.requestId) || body.requestId !== command.requestId) return failure('INVALID', 400);
+    if (!uuid(body.requestId)) return failure('INVALID', 400);
+    requestId = body.requestId;
+    const candidate = body.command as Partial<PilotParticipantCommand> | null;
+    if (candidate?.type === 'acceptConsent' && candidate.requestId === requestId &&
+      (candidate.noticeDigest == null || candidate.privacyNoticeDigest == null)) {
+      object(candidate, ['type','requestId','noticeVersion','noticeDigest','privacyNoticeVersion','privacyNoticeDigest']);
+    } else {
+      command = parsePilotParticipantCommand(candidate);
+      if (requestId !== command.requestId) return failure('INVALID', 400);
+    }
   } catch {
     return failure('INVALID', 400);
   }
 
-  const { requestId } = command;
   try {
     const ctx = await apiContext(request, 'pilot', true);
     if (ctx.response) return withRequestId(ctx.response, requestId);
+    if (!command) return withRequestId(failure('CONFLICT', 409), requestId);
     const result = await ctx.client.rpc('apply_kinnso_pilot_participant_command', {
       p_request_id: requestId, p_command: command,
     });

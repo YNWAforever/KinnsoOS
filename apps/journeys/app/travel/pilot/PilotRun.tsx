@@ -30,8 +30,11 @@ export const inputStyle = { display: 'block', maxWidth: '100%', boxSizing: 'bord
 export const uuidPattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
 
 const configuration = [
+  ['participationNoticeDigest','Participation notice SHA-256','參與通知 SHA-256'],
   ['participationNoticeVersion','Participation notice version','參與通知版本'],
+  ['privacyNoticeDigest','Privacy notice SHA-256','私隱通知 SHA-256'],
   ['privacyNoticeVersion','Privacy notice version','私隱通知版本'],
+  ['contentConsentDigest','Content consent SHA-256','內容同意 SHA-256'],
   ['contentConsentVersion','Content consent version','內容同意版本'],
   ['coordinatorReference','Coordinator reference','協調員參照'],
   ['supportOwnerReference','Support owner reference','客服負責人參照'],
@@ -74,8 +77,8 @@ export function PilotRun({ snapshot, canWrite, confirm }: PilotSectionProps) {
     {canWrite && run?.status === 'draft' && !snapshot.participants.some(slot => slot.userLinked) && <form key={run.id + ':' + run.revision} style={formStyle} onSubmit={event => {
       const { value, opener } = submitData(event);
       confirm({type:'configureRun', id:run.id, expectedRevision:run.revision,
-        participationNoticeVersion:value('participationNoticeVersion'), privacyNoticeVersion:value('privacyNoticeVersion'),
-        contentConsentVersion:value('contentConsentVersion'), coordinatorReference:value('coordinatorReference'),
+        participationNoticeVersion:value('participationNoticeVersion'), participationNoticeDigest:value('participationNoticeDigest'), privacyNoticeVersion:value('privacyNoticeVersion'), privacyNoticeDigest:value('privacyNoticeDigest'),
+        contentConsentVersion:value('contentConsentVersion'), contentConsentDigest:value('contentConsentDigest'), coordinatorReference:value('coordinatorReference'),
         supportOwnerReference:value('supportOwnerReference'), privacyOwnerReference:value('privacyOwnerReference'),
         alertOwnerReference:value('alertOwnerReference'), privateChannelReference:value('privateChannelReference'),
         syntheticRehearsalRunId:value('rehearsal') || null}, t('Configure run','設定計劃'), opener);
@@ -83,7 +86,7 @@ export function PilotRun({ snapshot, canWrite, confirm }: PilotSectionProps) {
       <h3>{t('Run setup','計劃設定')}</h3>
       <p>{t('Use opaque references for owners and channels. Do not enter contact details.', '請使用代號作為負責人及渠道參照。請勿輸入聯絡資料。')}</p>
       {configuration.map(([name,en,zh]) => <label key={name}>{t(en,zh)}
-        <input style={inputStyle} name={name} maxLength={name.endsWith('Version') ? 120 : 200} required defaultValue={name === 'participationNoticeVersion' || name === 'privacyNoticeVersion' || name === 'contentConsentVersion' ? run[name] ?? '' : ''}/>
+        <input style={inputStyle} name={name} pattern={name.endsWith('Digest') ? '[0-9a-f]{64}' : undefined} maxLength={name.endsWith('Digest') ? 64 : name.endsWith('Version') ? 120 : 200} required defaultValue={name === 'participationNoticeVersion' || name === 'privacyNoticeVersion' || name === 'contentConsentVersion' ? run[name] ?? '' : ''}/>
       </label>)}
       <label>{t('Completed rehearsal run ID','已完成演練的計劃 ID')}<input style={inputStyle} name="rehearsal" pattern={uuidPattern} required={run.dataClassification === 'real'}/></label>
       <button className="k-btn">{t('Configure run','設定計劃')}</button>

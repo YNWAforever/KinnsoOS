@@ -20,8 +20,8 @@ const snapshot = (status = 'draft') => ({
     id: runId, name: 'Synthetic pilot', status, revision: 1, dataClassification: 'synthetic',
     candidateReleaseSha: 'synthetic', environmentOrigin: origin,
     acceptanceStartedAt: status === 'running' ? '2026-11-07T00:00:00Z' : null,
-    minimumPublishedGuides: 1, participationNoticeVersion: 'v1',
-    privacyNoticeVersion: 'v1', contentConsentVersion: 'v1',
+    minimumPublishedGuides: 1, participationNoticeVersion: 'v1',participationNoticeDigest:'a'.repeat(64),
+    privacyNoticeVersion: 'v1',privacyNoticeDigest:'b'.repeat(64), contentConsentVersion: 'v1',contentConsentDigest:'c'.repeat(64),
   },
   participants: [], contentIntakes: [], collaboration: null, checks: [],
   facts: {...emptyFacts(), privateMarker: 'PRIVATE_AUTH_SOURCE'},
@@ -65,7 +65,7 @@ function load(code, fixture = {}) {
   const module = {exports: {}};
   const context = createContext({
     module, exports: module.exports, require, Request, Response, Headers, URL, URLSearchParams,
-    Buffer, TextEncoder, AbortSignal, crypto: globalThis.crypto, performance, fixture,
+    Buffer, TextEncoder, AbortController, AbortSignal, crypto: globalThis.crypto, performance, fixture,
     process: {env: {KINNSO_SITE_URL: origin}}, fetch: (...args) => fixture.fetch(...args),
     console: {info: (...args) => {
       if (fixture.telemetryThrows) throw new Error('Optional telemetry failed');
@@ -365,8 +365,8 @@ test('each confirmed operations command emits exactly one matching allowlisted e
   const {state, route} = setup();
   for (const [command, action] of [
     [createRun, 'pilot.run.created'],
-    [{type: 'configureRun', id: runId, expectedRevision: 1, participationNoticeVersion: 'v1',
-      privacyNoticeVersion: 'v1', contentConsentVersion: 'v1', coordinatorReference: 'PRIVATE',
+    [{type: 'configureRun', id: runId, expectedRevision: 1, participationNoticeVersion: 'v1',participationNoticeDigest:'a'.repeat(64),
+      privacyNoticeVersion: 'v1',privacyNoticeDigest:'b'.repeat(64), contentConsentVersion: 'v1',contentConsentDigest:'c'.repeat(64), coordinatorReference: 'PRIVATE',
       supportOwnerReference: 'PRIVATE', privacyOwnerReference: 'PRIVATE', alertOwnerReference: 'PRIVATE',
       privateChannelReference: 'PRIVATE', syntheticRehearsalRunId: null}, 'pilot.run.configured'],
     [{type: 'setRunStatus', id: runId, expectedRevision: 1, status: 'recruiting', reason: 'PRIVATE'}, 'pilot.run.status_changed'],
@@ -636,11 +636,56 @@ test('participant repository retains the unresolved request ID for the same comm
       ? Response.json({ok: false, retryable: true, code: 'UNAVAILABLE'}, {status: 503})
       : Response.json({ok: true, data: {snapshot: self}});
   }});
-  await pilot.command(claim);
-  await pilot.command({...claim, requestId: otherId});
+  await pilot.command(claim, participantId);
+  assert.equal((await pilot.command({...claim, code: claim.code + "x"}, participantId)).code, "CONFLICT");
+  await pilot.command({...claim, requestId: otherId}, participantId);
+  pilot.invalidate();
+  assert.equal((await pilot.retry(participantId)).code, "CONFLICT");
   assert.equal(attempts[0].url, '/api/pilot');
   assert.deepEqual(attempts[0], attempts[1]);
   assert.equal(attempts[0].body.requestId, attempts[0].body.command.requestId);
+});
+
+test('participant claims coalesce in flight and an account change discards the late snapshot', async () => {
+  let resolve, signal, calls = 0;
+  const {pilot} = load(repositoryCode, {fetch: (url, options) => {
+    calls++;
+    assert.equal(url, '/api/pilot');
+    assert.equal(options.method, 'POST');
+    assert.equal(options.headers['X-Kinnso-Intent-Actor'], participantId);
+    signal = options.signal;
+    return new Promise(r => { resolve = r; });
+  }});
+  const attempt = pilot.command(claim, participantId);
+  assert.equal(attempt, pilot.command({...claim, requestId:otherId}, participantId));
+  assert.equal(calls, 1);
+  pilot.selectActor(otherId);
+  assert.equal(signal.aborted, true);
+  assert.equal((await pilot.retry(otherId)).code, 'CONFLICT');
+  resolve(Response.json({ok:true, data:{snapshot:self}}));
+  assert.equal((await attempt).code, 'AUTH_REQUIRED');
+  assert.equal((await pilot.retry(participantId)).code, 'CONFLICT');
+});
+
+test('participant projection exposes only the owned editable fields and canonical references', async () => {
+  const data = {...self, participant:{...self.participant, role:'creator', status:'active', consentDigest:'a'.repeat(64)},
+    contentConsent:{version:'c1',digest:'b'.repeat(64),ownerReference:'private'},
+    intake:{id:intakeId,status:'rejected',revision:3,title:'Title',destination:'Place',authoredLocale:'en',
+      sourceSummary:'Summary',sourceUrls:[],rightsBasis:'original',rightsEvidenceReference:'rights:1',
+      coverRightsConfirmed:null,coverRightsEvidenceReference:null,reviewReason:'Revise',guideId:otherId,
+      currentDraftRevision:1,editorHref:'/en/studio/guides/'+otherId+'/edit',rawCode:'private'},
+    workflowLinks:{merchant:'/en/merchant/campaigns/'+otherId,trip:'/en/trips/'+otherId,supportCaseId:otherId,owner:'private'}};
+  const {state} = setup({data});
+  const route = load(participantCode, state);
+  const output = (await (await route.GET(new Request('https://kinnso.test/api/pilot'))).json()).data;
+  assert.equal(output.intake.editorHref, data.intake.editorHref);
+  assert.equal(output.intake.reviewReason, 'Revise');
+  assert.equal(output.workflowLinks.supportCaseId, otherId);
+  assert.equal(output.workflowLinks.merchant, null);
+  assert.equal(output.workflowLinks.trip, null);
+  assert.equal(JSON.stringify(output).includes('private'), false);
+  const missing = {type:'acceptConsent',requestId,noticeVersion:'v1',privacyNoticeVersion:'p1'};
+  await expectFailure(await route.POST(request({requestId,command:missing})),409,'CONFLICT',requestId);
 });
 
 test('publish trusts the atomic RPC for review and emits only confirmed pilot publication IDs', async () => {
@@ -676,12 +721,12 @@ test('all participant command metrics use exact allowed fields and skip receipt 
   const intake = {
     title: 'Private title', destination: 'Private destination', authoredLocale: 'en',
     sourceSummary: 'Private free text', sourceUrls: [], rightsBasis: 'original',
-    rightsEvidenceReference: 'Private reference', authorConsentVersion: 'v1',
+    rightsEvidenceReference: 'Private reference', authorConsentVersion: 'v1',authorConsentDigest:'c'.repeat(64),
     coverRightsConfirmed: null, coverRightsEvidenceReference: null,
   };
   for (const [command, action, fields] of [
     [claim, 'pilot.participant.joined', {}],
-    [{type: 'acceptConsent', noticeVersion: 'v1'}, 'pilot.consent.accepted', {}],
+    [{type: 'acceptConsent', noticeVersion: 'v1',noticeDigest:'a'.repeat(64),privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64)}, 'pilot.consent.accepted', {}],
     [{type: 'submitContentIntake', intake}, 'pilot.content.submitted', {}],
     [{type: 'updateOwnedContentIntake', intake, id: intakeId, expectedRevision: 1}, 'pilot.content.submitted', {contentIntakeId: intakeId}],
     [{type: 'acknowledgeNotification'}, 'pilot.notification.acknowledged', {}],

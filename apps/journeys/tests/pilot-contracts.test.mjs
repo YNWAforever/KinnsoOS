@@ -4,7 +4,7 @@ import { parseOpsPilotCommand, parsePilotParticipantCommand } from '../lib/contr
 const id='123e4567-e89b-12d3-a456-426614174000', other='123e4567-e89b-12d3-a456-426614174001';
 const ops=[
 {type:'createRun',id,name:'Run',dataClassification:'synthetic',candidateReleaseSha:'dev',environmentOrigin:'http://localhost:3000'},
-{type:'configureRun',id,expectedRevision:1,participationNoticeVersion:'p1',privacyNoticeVersion:'p1',contentConsentVersion:'c1',coordinatorReference:'ops:coord',supportOwnerReference:'ops:support',privacyOwnerReference:'ops:privacy',alertOwnerReference:'ops:alerts',privateChannelReference:'channel:private',syntheticRehearsalRunId:null},
+{type:'configureRun',id,expectedRevision:1,participationNoticeVersion:'p1',participationNoticeDigest:'a'.repeat(64),privacyNoticeVersion:'p1',privacyNoticeDigest:'b'.repeat(64),contentConsentVersion:'c1',contentConsentDigest:'c'.repeat(64),coordinatorReference:'ops:coord',supportOwnerReference:'ops:support',privacyOwnerReference:'ops:privacy',alertOwnerReference:'ops:alerts',privateChannelReference:'channel:private',syntheticRehearsalRunId:null},
 {type:'setRunStatus',id,expectedRevision:1,status:'recruiting',reason:'Approved'},
 {type:'addParticipant',id,runId:id,role:'traveller',cohortRole:'required_traveller',displayLabel:'Traveller A'},
 {type:'setParticipantStatus',id,expectedRevision:1,status:'active',reason:'Verified'},
@@ -15,8 +15,8 @@ const ops=[
 {type:'bindCollaboration',id,runId:id,merchantParticipantId:id,creatorParticipantId:other,missionId:id},
 {type:'setManualCheck',id,expectedRevision:1,status:'pass',evidenceReference:'private:evidence',observedSummary:'Observed'},
 {type:'addEvidenceReference',runId:id,checkCode:'check',entityType:'guide',entityId:id,evidenceReference:null}];
-const intake={title:'Title',destination:'Place',authoredLocale:'en',sourceSummary:'Observed research',sourceUrls:['https://example.com/'],rightsBasis:'original',rightsEvidenceReference:'private:rights',authorConsentVersion:'v1',coverRightsConfirmed:null,coverRightsEvidenceReference:null};
-const participant=[{type:'claimInvite',requestId:id,code:'a'.repeat(32)},{type:'acceptConsent',requestId:id,noticeVersion:'p1'},{type:'submitContentIntake',requestId:id,intake},{type:'updateOwnedContentIntake',requestId:id,id:other,expectedRevision:1,intake:{...intake,sourceUrls:[],rightsBasis:'permission',coverRightsConfirmed:true,coverRightsEvidenceReference:'private:cover'}},{type:'acknowledgeNotification',requestId:id},{type:'acknowledgeSupportResponse',requestId:id}];
+const intake={title:'Title',destination:'Place',authoredLocale:'en',sourceSummary:'Observed research',sourceUrls:['https://example.com/'],rightsBasis:'original',rightsEvidenceReference:'private:rights',authorConsentVersion:'v1',authorConsentDigest:'c'.repeat(64),coverRightsConfirmed:null,coverRightsEvidenceReference:null};
+const participant=[{type:'claimInvite',requestId:id,code:'a'.repeat(32)},{type:'acceptConsent',requestId:id,noticeVersion:'p1',noticeDigest:'a'.repeat(64),privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64)},{type:'submitContentIntake',requestId:id,intake},{type:'updateOwnedContentIntake',requestId:id,id:other,expectedRevision:1,intake:{...intake,sourceUrls:[],rightsBasis:'permission',coverRightsConfirmed:true,coverRightsEvidenceReference:'private:cover'}},{type:'acknowledgeNotification',requestId:id},{type:'acknowledgeSupportResponse',requestId:id}];
 test('accepts every operations command variant',()=>{for(const c of ops) assert.deepEqual(parseOpsPilotCommand(c),c)});
 test('accepts every participant command variant',()=>{for(const c of participant) assert.deepEqual(parsePilotParticipantCommand(c),c)});
 test('rejects unknown keys, commands, duplicate IDs and invalid UUIDs',()=>{assert.throws(()=>parseOpsPilotCommand({...ops[0],extra:true}));assert.throws(()=>parseOpsPilotCommand({...ops[0],type:'invented'}));assert.throws(()=>parseOpsPilotCommand({...ops[9],creatorParticipantId:id}));assert.throws(()=>parseOpsPilotCommand({...ops[9],creatorParticipantId:id.toUpperCase()}));assert.throws(()=>parseOpsPilotCommand({...ops[3],runId:'bad'}))});
@@ -55,7 +55,7 @@ const started = '2026-11-07T00:00:00Z';
 const run = {
   id, status: 'running', dataClassification: 'real', candidateReleaseSha: 'a'.repeat(40),
   environmentOrigin: 'https://pilot.example', acceptanceStartedAt: started,
-  participationNoticeVersion: 'p1', privacyNoticeVersion: 'p1', contentConsentVersion: 'c1',
+  participationNoticeVersion: 'p1',participationNoticeDigest:'a'.repeat(64), privacyNoticeVersion: 'p1',privacyNoticeDigest:'b'.repeat(64), contentConsentVersion: 'c1',contentConsentDigest:'c'.repeat(64),
   minimumPublishedGuides: 3,
 };
 const setup = {

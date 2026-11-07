@@ -87,12 +87,103 @@ export const opsPilot = {
   ),
 };
 
+type ParticipantIntent = {
+  actorId: string;
+  command: PilotParticipantCommand | null;
+  controller: AbortController;
+  attempt?: Promise<ApiResult<PilotParticipantMutationResult>>;
+};
+
+let participantIntent: ParticipantIntent | null = null;
+const participantReads = new Map<AbortController, string>();
+let unsubscribeParticipant: (() => void) | undefined;
+
+function invalidateParticipant() {
+  clearParticipantIntent();
+  for (const controller of participantReads.keys()) controller.abort();
+  participantReads.clear();
+  releaseParticipantListener();
+}
+
+function clearParticipantIntent() {
+  const intent = participantIntent;
+  participantIntent = null;
+  if (intent) {
+    intent.command = null;
+    intent.controller.abort();
+  }
+  releaseParticipantListener();
+}
+
+function releaseParticipantListener() {
+  if (participantIntent || participantReads.size) return;
+  unsubscribeParticipant?.();
+  unsubscribeParticipant = undefined;
+}
+
+function selectParticipant(actorId: string | null) {
+  if (participantIntent && participantIntent.actorId !== actorId ||
+      [...participantReads.values()].some(owner => owner !== actorId)) invalidateParticipant();
+}
+
+function participantCommand(actorId: string, command?: PilotParticipantCommand): Promise<ApiResult<PilotParticipantMutationResult>> {
+  selectParticipant(actorId);
+  const fail = (code: 'AUTH_REQUIRED' | 'INVALID' | 'CONFLICT', requestId: string = crypto.randomUUID()) =>
+    Promise.resolve({ok:false as const, code, retryable:false, requestId});
+  if (!actorId) return fail('AUTH_REQUIRED');
+  let parsed: PilotParticipantCommand | undefined;
+  try {
+    if (command) parsed = parsePilotParticipantCommand(command);
+  } catch {
+    return fail('INVALID');
+  }
+  if (!participantIntent && parsed) {
+    participantIntent = {actorId, command: parsed, controller: new AbortController()};
+    listenForParticipantInvalidation();
+  }
+  const intent = participantIntent;
+  if (!intent?.command) return fail('CONFLICT');
+  const {requestId} = intent.command;
+  if (parsed && JSON.stringify({...parsed, requestId}) !== JSON.stringify(intent.command))
+    return fail('CONFLICT', requestId);
+  if (intent.attempt) return intent.attempt;
+  intent.attempt = request<PilotParticipantMutationResult>('/api/pilot', 'POST', {
+    requestId, command: intent.command,
+  }, intent.controller.signal, actorId).then(result => {
+    delete intent.attempt;
+    if (participantIntent !== intent) return fail('AUTH_REQUIRED', requestId);
+    if (result.ok || !result.retryable) clearParticipantIntent();
+    return result.ok ? result : {...result, requestId};
+  });
+  return intent.attempt;
+}
+
+function listenForParticipantInvalidation() {
+  if (typeof window !== 'undefined') unsubscribeParticipant ??= subscribeAccountInvalidation(selectParticipant);
+}
+
+async function getParticipant(actorId: string, signal?: AbortSignal): Promise<ApiResult<PilotSelfSnapshot>> {
+  selectParticipant(actorId);
+  const authRequired = () => ({ok:false as const, code:'AUTH_REQUIRED' as const, retryable:false, requestId:crypto.randomUUID()});
+  if (!actorId) return authRequired();
+  const controller = new AbortController();
+  participantReads.set(controller, actorId);
+  listenForParticipantInvalidation();
+  try {
+    const result = await request<PilotSelfSnapshot>('/api/pilot', 'GET', undefined,
+      signal ? AbortSignal.any([signal, controller.signal]) : controller.signal, actorId);
+    return controller.signal.aborted ? authRequired() : result;
+  } finally {
+    participantReads.delete(controller);
+    releaseParticipantListener();
+  }
+}
+
 export const pilot = {
-  get: (): Promise<ApiResult<PilotSelfSnapshot>> => request<PilotSelfSnapshot>('/api/pilot'),
-  command: commandRepository<PilotParticipantCommand, PilotParticipantMutationResult>(
-    '/api/pilot', parsePilotParticipantCommand,
-    ({ requestId: _requestId, ...command }) => command,
-    (command, requestId) => ({ requestId, command: { ...command, requestId } }),
-    command => command.requestId,
-  ),
+  invalidate: invalidateParticipant,
+  selectActor: selectParticipant,
+  subscribeInvalidation: subscribeAccountInvalidation,
+  get: getParticipant,
+  command: (command: PilotParticipantCommand, actorId: string) => participantCommand(actorId, command),
+  retry: (actorId: string) => participantCommand(actorId),
 };
