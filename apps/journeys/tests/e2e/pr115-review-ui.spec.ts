@@ -251,16 +251,16 @@ test('session load more appends older sessions once and ends at the last page',a
  const urls:string[]=[];
  await mount(page,'/sessions',route=>{
   const url=new URL(route.request().url());urls.push(url.search);
-  return route.fulfill({json:{ok:true,data:url.searchParams.get('cursor')===rows[24].id
+  return route.fulfill({json:{ok:true,data:url.searchParams.get('cursor')==='opaque.cursor'
    ?{items:[rows[24],...rows.slice(25)],nextCursor:null}
-   :{items:rows.slice(0,25),nextCursor:{id:rows[24].id,startsAt:rows[24].startsAt}}}});
+   :{items:rows.slice(0,25),nextCursor:'opaque.cursor'}}});
  });
  await expect(page.getByRole('article')).toHaveCount(25);
  await page.getByRole('button',{name:'Load more sessions'}).click({timeout:3000});
  await expect(page.getByRole('article')).toHaveCount(27);
  await expect(page.getByRole('heading',{name:/^Owned session /})).toHaveText(rows.map(row=>row.title));
  await expect(page.getByRole('button',{name:'Load more sessions'})).toHaveCount(0);
- expect(urls).toEqual(['','?cursor=24']);
+ expect(urls).toEqual(['','?cursor=opaque.cursor']);
 });
 
 for(const [status,code] of [[400,'INVALID'],[409,'CONFLICT']] as const){

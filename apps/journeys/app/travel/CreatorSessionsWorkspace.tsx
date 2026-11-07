@@ -36,7 +36,7 @@ export function CreatorSessionsWorkspace({actorId,enabled,path}:{actorId:string|
     for(const row of rows)if(!byId.has(row.id))byId.set(row.id,row);
     return [...byId.values()];
    });
-   setNextCursor(typeof body.data?.nextCursor?.id==='string'?body.data.nextCursor.id:null);
+   setNextCursor(typeof body.data?.nextCursor==='string'?body.data.nextCursor:null);
   }catch(next){if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');}
   finally{if(own===generation.current)setPageLoading(false);}
  }

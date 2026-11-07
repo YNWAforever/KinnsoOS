@@ -194,6 +194,7 @@ test('creator session pagination reaches older owned rows across a timestamp tie
   await signIn(page,creator,'studio/sessions');
   await expect(page.getByRole('article')).toHaveCount(25);
   await expect(page.getByRole('heading',{name:/^Session [0-9a-f-]+$/})).toHaveText(ids.slice(0,25).map(id=>'Session '+id));
+  await ok(admin.from('community_sessions').update({starts_at:'2026-11-19T10:00:00Z'}).eq('id',ids[24]));
   await page.getByRole('button',{name:'Load more sessions'}).click();
   await expect(page.getByRole('article')).toHaveCount(27);
   await expect(page.getByRole('heading',{name:/^Session [0-9a-f-]+$/})).toHaveText(ids.map(id=>'Session '+id));

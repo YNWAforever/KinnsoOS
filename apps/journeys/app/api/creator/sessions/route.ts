@@ -1,3 +1,4 @@
+import {createHmac,timingSafeEqual} from 'node:crypto';
 import {apiContext,backendFailure,boundedBody,failure,reply} from '../../../../lib/api/server';
 import {object,uuid} from '../../../../lib/api/validation';
 import {parseCreatorSessionInput,sessionSlug} from '../../../../lib/creators/sessions';
@@ -5,29 +6,60 @@ import {parseCreatorSessionInput,sessionSlug} from '../../../../lib/creators/ses
 const columns='id,slug,title,description,type,starts_at,duration_minutes,status,embed_url,replay_url,destination_tags,created_at,updated_at';
 const project=(row:Record<string,unknown>)=>({id:row.id,slug:row.slug,title:row.title,description:row.description,type:row.type,startsAt:row.starts_at,durationMinutes:row.duration_minutes,status:row.status,embedUrl:row.embed_url,replayUrl:row.replay_url,destinationTags:row.destination_tags,createdAt:row.created_at,updatedAt:row.updated_at});
 
+const cursorTimestamp=/^\d{4,6}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/;
+const cursorFormat=/^[A-Za-z0-9_-]{1,116}\.[A-Za-z0-9_-]{43}$/;
+const cursorKey=()=>[process.env.KINNSO_AUTH_RECOVERY_SECRET,process.env.KINNSO_SUPABASE_SECRET_KEY].find(key=>key&&key.length>=32);
+const cursorTag=(encoded:string,actorId:string,key:string)=>createHmac('sha256',key)
+ .update('kinnso-creator-sessions-v1:'+actorId+':'+encoded).digest('base64url');
+const encodeCursor=(id:string,startsAt:string)=>Buffer.from(JSON.stringify([id,startsAt])).toString('base64url');
+
+function readCursor(token:string,actorId:string,key:string){
+ const [encoded,tag]=token.split('.');
+ if(!timingSafeEqual(Buffer.from(tag),Buffer.from(cursorTag(encoded,actorId,key))))return null;
+ try{
+  const tuple:unknown=JSON.parse(Buffer.from(encoded,'base64url').toString('utf8'));
+  if(!Array.isArray(tuple)||tuple.length!==2)return null;
+  const [id,startsAt]=tuple;
+  if(!uuid(id)||id!==id.toLowerCase()||typeof startsAt!=='string'||!cursorTimestamp.test(startsAt)||
+     encodeCursor(id,startsAt)!==encoded)return null;
+  return {id,startsAt};
+ }catch{return null;}
+}
+
 export async function GET(request:Request){
  const ctx=await apiContext(request,'creator');if(ctx.response)return ctx.response;
  if(!ctx.actor.roles.includes('creator'))return failure('FORBIDDEN',403);
- const params=new URL(request.url).searchParams,cursor=params.get('cursor');
- if([...params.keys()].some(key=>key!=='cursor')||params.getAll('cursor').length>1||(cursor!==null&&!uuid(cursor)))return failure('INVALID',400);
+ const params=new URL(request.url).searchParams,token=params.get('cursor');
+ if([...params.keys()].some(key=>key!=='cursor')||params.getAll('cursor').length>1||(token!==null&&!cursorFormat.test(token)))return failure('INVALID',400);
  try{
-  let boundary:string|null=null;
-  if(cursor){
-   // Resolve the boundary only in the caller's own rows. Use the database
-   // timestamp as-is so sub-millisecond ordering survives the next page.
-   const anchor=await ctx.client.from('community_sessions').select('starts_at').eq('host_creator_id',ctx.actor.id).eq('id',cursor).maybeSingle();
+  const key=cursorKey(),actorId=ctx.actor.id;
+  let cursor:ReturnType<typeof readCursor>=null;
+  if(token){
+   if(!key)return failure('UNAVAILABLE',503);
+   cursor=readCursor(token,actorId,key);
+   if(!cursor)return failure('INVALID',400);
+   // Verify current ownership without replacing the signed sort boundary.
+   const anchor=await ctx.client.from('community_sessions').select('id').eq('host_creator_id',actorId).eq('id',cursor.id).maybeSingle();
    if(anchor.error)return backendFailure(anchor.error);
-   const startsAt=anchor.data?.starts_at;
-   if(typeof startsAt!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(startsAt))return failure('INVALID',400);
-   boundary=`starts_at.lt.${startsAt},and(starts_at.eq.${startsAt},id.lt.${cursor})`;
+   if(!anchor.data)return failure('INVALID',400);
   }
-  let query=ctx.client.from('community_sessions').select(columns).eq('host_creator_id',ctx.actor.id);
-  if(boundary)query=query.or(boundary);
+  let query=ctx.client.from('community_sessions').select(columns).eq('host_creator_id',actorId);
+  if(cursor){
+   const {id,startsAt}=cursor;
+   // A rescheduled boundary row may now fall below its original position.
+   query=query.neq('id',id).or(`starts_at.lt.${startsAt},and(starts_at.eq.${startsAt},id.lt.${id})`);
+  }
   const result=await query.order('starts_at',{ascending:false}).order('id',{ascending:false}).limit(26);
   if(result.error)return backendFailure(result.error);
   const rows=(result.data??[]) as Record<string,unknown>[];
   const visible=rows.slice(0,25),last=visible.at(-1);
-  return reply({ok:true,data:{items:visible.map(project),nextCursor:rows.length>25&&last?{startsAt:last.starts_at,id:last.id}:null}});
+  let nextCursor:string|null=null;
+  if(rows.length>25&&last){
+   if(!key||!uuid(last.id)||typeof last.starts_at!=='string'||!cursorTimestamp.test(last.starts_at))return failure('UNAVAILABLE',503);
+   const encoded=encodeCursor(last.id.toLowerCase(),last.starts_at);
+   nextCursor=encoded+'.'+cursorTag(encoded,actorId,key);
+  }
+  return reply({ok:true,data:{items:visible.map(project),nextCursor}});
  }catch{return failure('UNAVAILABLE',503);}
 }
 
