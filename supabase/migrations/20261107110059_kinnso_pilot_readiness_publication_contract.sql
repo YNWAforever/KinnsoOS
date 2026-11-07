@@ -3,17 +3,46 @@
 -- and its evidence remain behind the operations boundary.
 create function kinnso_internal.pilot_self_snapshot(r kinnso_internal.pilot_runs, p kinnso_internal.pilot_participants)
 returns jsonb language sql stable set search_path='' as $$
+ with state as (
+  select case
+   when r.id is null or p.id is null then 'participant_unavailable'
+   when p.status='withdrawn' then 'participant_withdrawn'
+   when r.status='cancelled' then 'run_cancelled'
+   when p.status='completed' then 'completed'
+   when r.status='completed' then 'run_completed'
+   when r.status='paused' then 'run_paused'
+   when p.status='paused' then 'participant_paused'
+   when r.status not in ('recruiting','running') then 'run_not_running'
+   when p.status='invited' then 'invitation_required'
+   when p.consented_at is null or r.participation_notice_version is null
+    or p.consent_version is distinct from r.participation_notice_version then 'consent_required'
+   when p.status<>'active' then 'participant_not_active'
+   when r.status<>'running' then 'run_not_running'
+   else 'workflow_ready'
+  end as code
+ )
  select jsonb_build_object(
   'run',case when r.id is not null then jsonb_build_object('id',r.id,'name',r.name,'status',r.status) end,
   'participant',case when p.id is not null then jsonb_build_object('id',p.id,'role',p.role,'status',p.status,'consentVersion',p.consent_version) end,
-  'nextStep',case when r.status in ('recruiting','running') and p.status in ('joined','active') then
-    jsonb_build_object('code',case when p.consented_at is null then 'accept_consent' else 'open_workflow' end,
-     'href',case p.role when 'creator' then '/en/studio/guides' when 'merchant' then '/en/merchant' else '/en/trips' end,
-     'messageKey','pilot.next.open_workflow')
+  'nextStep',case
+   when code='workflow_ready' then jsonb_build_object('code','open_workflow',
+    'href',case p.role when 'creator' then '/en/studio/guides' when 'merchant' then '/en/merchant' else '/en/trips' end,
+    'messageKey','pilot.next.open_workflow')
+   when code='consent_required' and p.consented_at is null
+    and r.participation_notice_version is not null and r.privacy_notice_version is not null then
+    jsonb_build_object('code','accept_consent','href',null,'messageKey','pilot.next.accept_consent')
    end,
-  'readiness',jsonb_build_object('stage',case when r.status='running' and p.status='active'
-    and p.consented_at is not null and p.consent_version=r.participation_notice_version then 'executing' else 'blocked' end,
-   'readyToBegin',false,'executionComplete',false,'blockers','[]'::jsonb));
+  'readiness',jsonb_build_object(
+   'stage',case
+    when code='workflow_ready' then 'executing'
+    when code='completed' then 'completed'
+    when code in ('invitation_required','consent_required','participant_not_active') then 'setup_incomplete'
+    else 'blocked' end,
+   'readyToBegin',code='workflow_ready',
+   'executionComplete',code='completed',
+   'blockers',case when code in ('workflow_ready','completed') then '[]'::jsonb
+    else jsonb_build_array(jsonb_build_object('code',code,'category','participation','messageKey','pilot.readiness.'||code)) end))
+ from state;
 $$;
 revoke all on function kinnso_internal.pilot_self_snapshot(kinnso_internal.pilot_runs,kinnso_internal.pilot_participants)
  from public,anon,authenticated,service_role;

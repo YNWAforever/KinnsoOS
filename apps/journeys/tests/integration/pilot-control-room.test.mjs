@@ -96,11 +96,56 @@ select pg_temp.ok(pg_temp.rpc(${q(i.traveller)},'select public.get_kinnso_pilot_
  jsonb_build_object('run',jsonb_build_object('id',${q(i.run)}::uuid,'name','Synthetic pilot','status','running'),
  'participant',jsonb_build_object('id',${q(i.slot)}::uuid,'role','traveller','status','active','consentVersion','participation-v1'),
  'nextStep',jsonb_build_object('code','open_workflow','href','/en/trips','messageKey','pilot.next.open_workflow'),
- 'readiness',jsonb_build_object('stage','executing','readyToBegin',false,'executionComplete',false,'blockers','[]'::jsonb)),'strict self-only snapshot');
+ 'readiness',jsonb_build_object('stage','executing','readyToBegin',true,'executionComplete',false,'blockers','[]'::jsonb)),'strict self-only snapshot');
 select pg_temp.denied(${q(i.traveller)},${q(pc({type:'acceptConsent',noticeVersion:'participation-v1',runId:i.run}))},'INVALID');
 select pg_temp.denied(${q(i.traveller)},${q(pc({type:'approveEverything'}))},'INVALID');
 update public.creators set status='suspended' where id=${q(i.traveller)};
 select pg_temp.denied(${q(i.traveller)},'select public.get_kinnso_pilot_self()','FORBIDDEN');
+`);
+const selfReadiness=(stage,readyToBegin,executionComplete,code)=>({
+ stage,readyToBegin,executionComplete,blockers:code?[{code,category:'participation',messageKey:'pilot.readiness.'+code}]:[],
+});
+const expectSelf=(actor,stage,ready,complete,blocker,next)=>`
+ create temp table self_state as select pg_temp.rpc(${q(actor)},'select public.get_kinnso_pilot_self()') value;
+ select pg_temp.ok((select value->'readiness'=${json(selfReadiness(stage,ready,complete,blocker))}
+ and value#>>'{nextStep,code}' is not distinct from ${next?q(next):'null'} from self_state),${q(blocker??stage)});
+ drop table self_state;
+`;
+check('participant readiness distinguishes unavailable, invited, consent and activation',i=>`
+ ${seed(i)}
+ ${expectSelf(i.other,'blocked',false,false,'participant_unavailable',null)}
+ update kinnso_internal.pilot_runs set status='recruiting' where id=${q(i.run)};
+ update kinnso_internal.pilot_participants set status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'setup_incomplete',false,false,'invitation_required',null)}
+ update kinnso_internal.pilot_participants set status='joined' where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'setup_incomplete',false,false,'consent_required','accept_consent')}
+ update kinnso_internal.pilot_participants set consent_version='participation-v1',consented_at=now() where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'setup_incomplete',false,false,'participant_not_active',null)}
+`);
+check('only an active current-consent slot in a running run can begin workflow',i=>`
+ ${seed(i)}
+ ${expectSelf(i.traveller,'executing',true,false,null,'open_workflow')}
+ update kinnso_internal.pilot_participants set consent_version='outdated' where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'setup_incomplete',false,false,'consent_required',null)}
+ update kinnso_internal.pilot_participants set consent_version='participation-v1',status='paused' where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'blocked',false,false,'participant_paused',null)}
+ update kinnso_internal.pilot_participants set status='active' where id=${q(i.slot)};
+ update kinnso_internal.pilot_runs set status='paused' where id=${q(i.run)};
+ ${expectSelf(i.traveller,'blocked',false,false,'run_paused',null)}
+ update kinnso_internal.pilot_runs set status='recruiting' where id=${q(i.run)};
+ ${expectSelf(i.traveller,'blocked',false,false,'run_not_running',null)}
+`);
+check('completion is self-scoped; withdrawn and cancelled cannot complete',i=>`
+ ${seed(i)}
+ update kinnso_internal.pilot_runs set status='completed' where id=${q(i.run)};
+ ${expectSelf(i.traveller,'blocked',false,false,'run_completed',null)}
+ update kinnso_internal.pilot_participants set status='completed' where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'completed',false,true,null,null)}
+ ${expectSelf(i.creator,'blocked',false,false,'run_completed',null)}
+ update kinnso_internal.pilot_participants set status='withdrawn' where id=${q(i.slot)};
+ ${expectSelf(i.traveller,'blocked',false,false,'participant_withdrawn',null)}
+ update kinnso_internal.pilot_runs set status='cancelled' where id=${q(i.run)};
+ ${expectSelf(i.creator,'blocked',false,false,'run_cancelled',null)}
 `);
 check('historical participant display and replay return only safe state',i=>{
  const command=pc({type:'acceptConsent',noticeVersion:'participation-v1'},i.request);
@@ -115,7 +160,7 @@ check('historical participant display and replay return only safe state',i=>{
  update kinnso_internal.pilot_participants set status=${q(status)} where id=${q(i.slot)};
  create temp table ${status}_self as select pg_temp.rpc(${q(i.traveller)},'select public.get_kinnso_pilot_self()') value;
  select pg_temp.ok((select value->'participant'->>'status'=${q(status)} and value->'nextStep'='null'::jsonb
- and value->'readiness'->>'stage'='blocked' and not (value ?| array['facts','beginFacts','participants','checks']) from ${status}_self),'safe terminal read');
+ and value->'readiness'->>'stage'=${q(status==='completed'?'completed':'blocked')} and not (value ?| array['facts','beginFacts','participants','checks']) from ${status}_self),'safe terminal read');
  select pg_temp.ok((select value from ${status}_self)=pg_temp.rpc(${q(i.traveller)},${q(command)})->'snapshot','safe terminal replay');
  `).join('')}
  select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audit where participant_id=${q(i.slot)}),'no replay audit');
