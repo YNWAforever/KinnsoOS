@@ -180,3 +180,32 @@ test('redeemed perk remains revealable after a contribution revocation lowers th
   await ok(admin.auth.admin.deleteUser(creator.id));
  }
 });
+
+test('creator session pagination reaches older owned rows across a timestamp tie',async({page,baseURL})=>{
+ test.setTimeout(90000);
+ expect(new URL(baseURL!).origin).toBe('http://127.0.0.1:3495');
+ const creator=await user('session-pages'),other=await user('session-foreign'),foreign=randomUUID();
+ const ids=Array.from({length:27},()=>randomUUID()).sort().reverse();
+ const fixture=(id:string,owner:string)=>({id,host_creator_id:owner,slug:'page-'+id,title:'Session '+id,description:'Synthetic pagination fixture',
+  type:'destination_briefing',starts_at:'2026-11-20T10:00:00.123456Z',duration_minutes:45,status:'scheduled',destination_tags:[]});
+ try{
+  await ok(admin.from('creators').update({status:'active'}).eq('id',creator.id));
+  await ok(admin.from('community_sessions').insert([...ids.map(id=>fixture(id,creator.id)),fixture(foreign,other.id)]));
+  await signIn(page,creator,'studio/sessions');
+  await expect(page.getByRole('article')).toHaveCount(25);
+  await expect(page.getByRole('heading',{name:/^Session [0-9a-f-]+$/})).toHaveText(ids.slice(0,25).map(id=>'Session '+id));
+  await page.getByRole('button',{name:'Load more sessions'}).click();
+  await expect(page.getByRole('article')).toHaveCount(27);
+  await expect(page.getByRole('heading',{name:/^Session [0-9a-f-]+$/})).toHaveText(ids.map(id=>'Session '+id));
+  await expect(page.getByRole('button',{name:'Load more sessions'})).toHaveCount(0);
+  for(const cursor of [foreign,randomUUID(),'invalid']){
+   const response=await page.request.get('/api/creator/sessions?cursor='+cursor);
+   expect(response.status()).toBe(400);
+   expect((await response.json()).code).toBe('INVALID');
+  }
+ }finally{
+  await ok(admin.from('community_sessions').delete().in('id',[...ids,foreign]));
+  await ok(admin.auth.admin.deleteUser(creator.id));
+  await ok(admin.auth.admin.deleteUser(other.id));
+ }
+});

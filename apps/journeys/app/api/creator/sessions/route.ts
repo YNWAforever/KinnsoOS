@@ -8,9 +8,22 @@ const project=(row:Record<string,unknown>)=>({id:row.id,slug:row.slug,title:row.
 export async function GET(request:Request){
  const ctx=await apiContext(request,'creator');if(ctx.response)return ctx.response;
  if(!ctx.actor.roles.includes('creator'))return failure('FORBIDDEN',403);
- if(new URL(request.url).search)return failure('INVALID',400);
+ const params=new URL(request.url).searchParams,cursor=params.get('cursor');
+ if([...params.keys()].some(key=>key!=='cursor')||params.getAll('cursor').length>1||(cursor!==null&&!uuid(cursor)))return failure('INVALID',400);
  try{
-  const result=await ctx.client.from('community_sessions').select(columns).eq('host_creator_id',ctx.actor.id).order('starts_at',{ascending:false}).order('id',{ascending:false}).limit(26);
+  let boundary:string|null=null;
+  if(cursor){
+   // Resolve the boundary only in the caller's own rows. Use the database
+   // timestamp as-is so sub-millisecond ordering survives the next page.
+   const anchor=await ctx.client.from('community_sessions').select('starts_at').eq('host_creator_id',ctx.actor.id).eq('id',cursor).maybeSingle();
+   if(anchor.error)return backendFailure(anchor.error);
+   const startsAt=anchor.data?.starts_at;
+   if(typeof startsAt!=='string'||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(startsAt))return failure('INVALID',400);
+   boundary=`starts_at.lt.${startsAt},and(starts_at.eq.${startsAt},id.lt.${cursor})`;
+  }
+  let query=ctx.client.from('community_sessions').select(columns).eq('host_creator_id',ctx.actor.id);
+  if(boundary)query=query.or(boundary);
+  const result=await query.order('starts_at',{ascending:false}).order('id',{ascending:false}).limit(26);
   if(result.error)return backendFailure(result.error);
   const rows=(result.data??[]) as Record<string,unknown>[];
   const visible=rows.slice(0,25),last=visible.at(-1);

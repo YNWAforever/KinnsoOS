@@ -19,12 +19,12 @@ if(existsSync(routeUrl)){
 }
 
 const input={title:'Synthetic creator session',description:'Bounded synthetic creator session.',type:'destination_briefing',startsAt:'2026-11-20T10:00:00.000Z',durationMinutes:45,embedUrl:'https://www.youtube.com/watch?v=abc123',replayUrl:'',destinationTags:['Tokyo']};
-function setup(t,{roles=['creator'],revoked=false,insertError=null,existing=null,rows=[]}={}){
+function setup(t,{roles=['creator'],revoked=false,insertError=null,existing=null,rows=[],anchors=new Map(),pageRows=[]}={}){
  const env={KINNSO_SUPABASE_URL:'https://test.supabase.co',KINNSO_APPROVED_SUPABASE_ORIGIN:'https://test.supabase.co',KINNSO_LEGACY_AUTH_ORIGIN:'https://test.supabase.co',KINNSO_SUPABASE_PUBLISHABLE_KEY:'sb_publishable_test',KINNSO_SITE_URL:'https://journeys.example',KINNSO_ENABLED_CAPABILITIES:'creator',KINNSO_SYNTHETIC_RUN:'true'};
  const old=Object.fromEntries(Object.keys(env).map(key=>[key,process.env[key]]));Object.assign(process.env,env);
  const state={queries:[],rpcCalls:[],rows,existing,insertError,inserted:null};
- const query=table=>{const q={table,operation:'select',filters:[],orders:[],limit:null,payload:null,columns:null};state.queries.push(q);
-  const builder={select(columns){q.columns=columns;return this;},eq(key,value){q.filters.push([key,value]);return this;},order(key,value){q.orders.push([key,value]);return this;},limit(value){q.limit=value;return this;},insert(payload){q.operation='insert';q.payload=payload;state.inserted=payload;return this;},maybeSingle:async()=>({data:q.operation==='insert'?(state.insertError?null:state.existing??{id:q.payload.id,slug:q.payload.slug}):state.existing,error:q.operation==='insert'?state.insertError:null}),single:async()=>({data:q.operation==='insert'?(state.insertError?null:state.existing??{id:q.payload.id,slug:q.payload.slug}):state.existing,error:q.operation==='insert'?state.insertError:null}),then(resolve,reject){return Promise.resolve({data:state.rows,error:null}).then(resolve,reject);}};
+ const query=table=>{const q={table,operation:'select',filters:[],orders:[],limit:null,boundary:null,payload:null,columns:null};state.queries.push(q);
+  const builder={select(columns){q.columns=columns;return this;},eq(key,value){q.filters.push([key,value]);return this;},or(value){q.boundary=value;return this;},order(key,value){q.orders.push([key,value]);return this;},limit(value){q.limit=value;return this;},insert(payload){q.operation='insert';q.payload=payload;state.inserted=payload;return this;},maybeSingle:async()=>({data:q.operation==='insert'?(state.insertError?null:state.existing??{id:q.payload.id,slug:q.payload.slug}):q.columns==='starts_at'?anchors.get(q.filters.find(([key])=>key==='id')?.[1])??null:state.existing,error:q.operation==='insert'?state.insertError:null}),single:async()=>({data:q.operation==='insert'?(state.insertError?null:state.existing??{id:q.payload.id,slug:q.payload.slug}):q.columns==='starts_at'?anchors.get(q.filters.find(([key])=>key==='id')?.[1])??null:state.existing,error:q.operation==='insert'?state.insertError:null}),then(resolve,reject){return Promise.resolve({data:q.boundary?pageRows:state.rows,error:null}).then(resolve,reject);}};
   return builder;
  };
  globalThis.__creatorSessionsClient={auth:{getUser:async()=>({data:{user:{id:actor}},error:null})},rpc:async(name,args)=>{state.rpcCalls.push({name,args});return name==='kinnso_actor'?{data:revoked?null:{id:actor,roles},error:revoked?{message:'unauthenticated'}:null}:{data:null,error:null};},from:query};
@@ -57,4 +57,31 @@ test('a retried session create reconciles the already persisted record instead o
  const existing={id:session,slug:'synthetic-creator-session-000000'};
  const state=setup(t,{insertError:{code:'23505',message:'duplicate'},existing});const response=await route.POST(request({requestId:session,input}));assert.equal(response.status,200);
  assert.deepEqual((await response.json()).data,existing);assert.equal(state.queries.filter(q=>q.operation==='insert').length,1);assert.equal(state.queries.filter(q=>q.operation==='select').length,1);
+});
+
+test('owned session cursor advances past the full first page using a strict tie breaker',async t=>{
+ const starts_at='2026-11-20T10:00:00.123456+00:00';
+ const rows=Array.from({length:27},(_,i)=>({id:'11111111-1111-4111-8111-'+String(27-i).padStart(12,'0'),starts_at}));
+ const anchor=rows[24];
+ const state=setup(t,{rows:rows.slice(0,26),anchors:new Map([[anchor.id,anchor]]),pageRows:rows.slice(25)});
+ const first=(await (await route.GET(request(undefined))).json()).data;
+ const second=await route.GET(new Request('https://journeys.example/api/creator/sessions?cursor='+first.nextCursor.id));
+ assert.equal(second.status,200);
+ const {data}=await second.json();
+ assert.equal(data.nextCursor,null);
+ assert.deepEqual([...first.items,...data.items].map(row=>row.id),rows.map(row=>row.id));
+ assert.deepEqual(state.queries[1].filters,[['host_creator_id',actor],['id',anchor.id]]);
+ assert.deepEqual(state.queries[2].filters,[['host_creator_id',actor]]);
+ assert.equal(state.queries[2].boundary,`starts_at.lt.${starts_at},and(starts_at.eq.${starts_at},id.lt.${anchor.id})`);
+ assert.equal(state.queries[2].limit,26);
+});
+
+test('unknown or foreign session anchors fail without a page query, and malformed cursors never reach storage',async t=>{
+ const state=setup(t);
+ const get=query=>route.GET(new Request('https://journeys.example/api/creator/sessions?'+query));
+ for(const query of ['cursor=','cursor=invalid','limit=100','cursor='+session+'&cursor='+session])assert.equal((await get(query)).status,400);
+ assert.equal(state.queries.length,0);
+ assert.equal((await get('cursor='+session)).status,400);
+ assert.equal(state.queries.length,1);
+ assert.deepEqual(state.queries[0].filters,[['host_creator_id',actor],['id',session]]);
 });

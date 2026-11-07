@@ -16,6 +16,7 @@ test.beforeAll(async()=>{
   import {MerchantOffersWorkspace} from './app/travel/MerchantOffersWorkspace';
   import {CreatorLadderWorkspace} from './app/travel/CreatorLadderWorkspace';
   import {AppContext} from './app/travel/ui';
+  import {OpsRecordActions} from './app/travel/OpsRecordActions';
   import {OpsTeamWorkspace} from './app/travel/OpsTeamWorkspace';
   import {CreatorSessionsWorkspace} from './app/travel/CreatorSessionsWorkspace';
   function Offers(){
@@ -27,6 +28,8 @@ test.beforeAll(async()=>{
     {location.pathname==='/team' ? <OpsTeamWorkspace actorId="${actorId}" enabled/>
       : location.pathname==='/offers' ? <Offers/>
       : location.pathname==='/perks' ? <CreatorLadderWorkspace actorId="${actorId}" enabled path="studio/perks"/>
+      : location.pathname==='/records' ? <OpsRecordActions actorId="${actorId}" view="creators" detail={{creator:{id:"${id}",status:'active'}}}/>
+      : location.pathname==='/sessions' ? <CreatorSessionsWorkspace actorId="${actorId}" enabled path="studio/sessions"/>
       : <CreatorSessionsWorkspace actorId="${actorId}" enabled path="studio/sessions/${id}/edit"/>}
    </AppContext.Provider>);
  `},bundle:true,write:false,platform:'browser',jsx:'automatic',
@@ -241,4 +244,64 @@ test('redeemed perks recover after response loss and reload and retain each reve
  await expect(hotel.getByRole('link',{name:'https://example.test/perk'})).toHaveAttribute('href','https://example.test/perk');
  expect(redeemed.size).toBe(2);
  expect(wire.map(x=>x.perkId)).toEqual([id,id,id,editToken]);
+});
+
+test('session load more appends older sessions once and ends at the last page',async({page})=>{
+ const rows=Array.from({length:27},(_,i)=>({id:String(i),title:'Owned session '+i,startsAt:'2026-11-20T10:00:00Z',durationMinutes:45,status:'scheduled'}));
+ const urls:string[]=[];
+ await mount(page,'/sessions',route=>{
+  const url=new URL(route.request().url());urls.push(url.search);
+  return route.fulfill({json:{ok:true,data:url.searchParams.get('cursor')===rows[24].id
+   ?{items:[rows[24],...rows.slice(25)],nextCursor:null}
+   :{items:rows.slice(0,25),nextCursor:{id:rows[24].id,startsAt:rows[24].startsAt}}}});
+ });
+ await expect(page.getByRole('article')).toHaveCount(25);
+ await page.getByRole('button',{name:'Load more sessions'}).click({timeout:3000});
+ await expect(page.getByRole('article')).toHaveCount(27);
+ await expect(page.getByRole('heading',{name:/^Owned session /})).toHaveText(rows.map(row=>row.title));
+ await expect(page.getByRole('button',{name:'Load more sessions'})).toHaveCount(0);
+ expect(urls).toEqual(['','?cursor=24']);
+});
+
+for(const [status,code] of [[400,'INVALID'],[409,'CONFLICT']] as const){
+ test('moderation '+code+' unlocks controls and permits a corrected command',async({page})=>{
+  const bodies:Record<string,unknown>[]=[];
+  await mount(page,'/records',route=>{
+   bodies.push(route.request().postDataJSON());
+   return bodies.length===1?route.fulfill({status,json:{ok:false,code,retryable:false}}):route.fulfill({json:{ok:true,data:{}}});
+  });
+  const reason=page.getByLabel('Audit reason');
+  await reason.fill('First reason');
+  await page.getByRole('button',{name:'Apply moderation change'}).click();
+  await expect(page.getByRole('alert')).toContainText(code);
+  await expect(reason).toBeEnabled({timeout:3000});
+  await expect(page.getByRole('button',{name:'Retry the same change'})).toHaveCount(0);
+  await page.getByLabel('New status').selectOption('suspended');
+  await reason.fill('Corrected reason');
+  await page.getByRole('button',{name:'Apply moderation change'}).click();
+  await expect(page.getByRole('status')).toContainText('Operations record updated.');
+  expect(bodies.map(({status,reason})=>[status,reason])).toEqual([['active','First reason'],['suspended','Corrected reason']]);
+ });
+}
+
+test('ambiguous moderation retry replays exact bytes and account invalidation clears controls',async({page})=>{
+ const wire:(string|null)[]=[];
+ await mount(page,'/records',route=>{
+  wire.push(route.request().postData());
+  if(wire.length!==2)return route.abort('failed');
+  return route.fulfill({json:{ok:true,data:{}}});
+ });
+ const reason=page.getByLabel('Audit reason');
+ await reason.fill('Uncertain action');
+ await page.getByRole('button',{name:'Apply moderation change'}).click();
+ await expect(reason).toBeDisabled();
+ await page.getByRole('button',{name:'Retry the same change'}).click();
+ await expect(page.getByRole('status')).toContainText('Operations record updated.');
+ expect(wire[1]).toBe(wire[0]);
+ await reason.fill('Another action');
+ await page.getByRole('button',{name:'Apply moderation change'}).click();
+ await expect(page.getByRole('button',{name:'Retry the same change'})).toBeVisible();
+ await page.evaluate(()=>window.dispatchEvent(new CustomEvent('kinnso:account-invalidated',{detail:{ownerId:null}})));
+ await expect(page.getByRole('region',{name:'Moderation controls'})).toHaveCount(0,{timeout:3000});
+ expect(wire).toHaveLength(3);
 });
