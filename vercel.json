@@ -18,5 +18,11 @@
       "codex/aud-09-10-lint-deps": false,
       "codex/homepage-trip-planning-20261104": false
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/health-alert",
+      "schedule": "*/15 * * * *"
+    }
+  ]
 }

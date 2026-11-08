@@ -45,6 +45,7 @@
     "app/api/creator/sessions/[id]/status/route.ts",
     "app/api/creator/sessions/route.ts",
     "app/api/cron/collaboration-reminders/route.ts",
+    "app/api/cron/health-alert/route.ts",
     "app/api/cron/media-cleanup/route.ts",
     "app/api/cron/telemetry-retention/route.ts",
     "app/api/cron/traveller-analytics-retention/route.ts",
@@ -964,7 +965,8 @@
     "tests/contracts/20261108133000_ops_content_receipt_upgrade.sql": "supabase/migrations/20261108133000_ops_content_receipt_upgrade.sql",
     "tests/contracts/20261108134500_merchant_offer_pagination.sql": "supabase/migrations/20261108134500_merchant_offer_pagination.sql",
     "tests/contracts/20261109120000_content_honesty.sql": "supabase/migrations/20261109120000_content_honesty.sql",
-    "tests/contracts/20261109130000_author_verification.sql": "supabase/migrations/20261109130000_author_verification.sql"
+    "tests/contracts/20261109130000_author_verification.sql": "supabase/migrations/20261109130000_author_verification.sql",
+    "tests/contracts/20261109140000_health_alerting.sql": "supabase/migrations/20261109140000_health_alerting.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
