@@ -28,6 +28,7 @@ import {InboxWorkspace,SupportWorkspace} from './InboxWorkspace';
 import {ReportWorkspace} from './ReportWorkspace';
 import {MonitoringWorkspace} from './MonitoringWorkspace';
 import {ContentReadiness} from './ContentReadiness';
+import {OpsContentHygiene} from './OpsContentHygiene';
 import {TelemetryConsent} from './TelemetryConsent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -685,7 +686,7 @@ export function Workbench({
     else if(path==='inbox'||path==='studio/inbox')content=<InboxWorkspace actorId={actor?.id??null} enabled={features.notifications===true}/>;
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
-    else if(path==='ops/readiness')content=<ContentReadiness/>;
+    else if(path==='ops/readiness')content=<><ContentReadiness/><OpsContentHygiene/></>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/merchants')content=<MerchantApplicationReviewPage key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/settlements')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="operations-settlements"/>;

@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import type {StudioGuideIntent} from '../../lib/studio/guide-editor';
+import {CreatorContentStatus} from './CreatorContentStatus';
 import type {StudioGuideBinding} from '../../lib/studio/contracts';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
@@ -221,7 +222,8 @@ function CreatorEditor({ path, actorId=null }: { path: string; actorId?: string|
    {actionError && <p role="alert">{actionError.message}</p>}
    <p role="status">{status}</p>
    {version > 0 && <Link className="k-btn" href={href('g/' + id)}>{t('View published guide', '查看已發布攻略')}</Link>}
-   {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.city}</p><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={editor.keys[i].day}><h3>{d.title || t(`Day ${d.offset + 1}`, `第 ${d.offset + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={editor.keys[i].stops[j]}><h4>{s.title}</h4><p>{s.description}</p><p>{t('Start','開始')} {formatTimeOfDay(s.startMinuteOfDay)||'—'} · {t('Minutes','分鐘')} {s.durationMinutes??'—'}{s.placeId&&<> · {s.placeId}</>}</p></div>)}</article>)}</section>}
+   {id && <CreatorContentStatus key={revision > 0 ? 'persisted-guide' : 'new-guide'} guideId={id} publishedVersion={version}/>}
+  {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.city}</p><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={editor.keys[i].day}><h3>{d.title || t(`Day ${d.offset + 1}`, `第 ${d.offset + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={editor.keys[i].stops[j]}><h4>{s.title}</h4><p>{s.description}</p><p>{t('Start','開始')} {formatTimeOfDay(s.startMinuteOfDay)||'—'} · {t('Minutes','分鐘')} {s.durationMinutes??'—'}{s.placeId&&<> · {s.placeId}</>}</p></div>)}</article>)}</section>}
   </>}
  </section>;
 }
