@@ -1,0 +1,39 @@
+{
+  "rehearsalAt": "2026-11-08T23:51:52.256Z",
+  "kind": "logical product-schema restore rehearsal, second run (reproducibility)",
+  "source": "production Supabase Postgres (project scryfkefedzuetfdtrvl), live schema dump",
+  "target": "clean local database kinnso_restore2 in the disposable stack",
+  "dump": {
+    "command": "pg_dump --schema-only --no-owner --no-privileges -n public -n kinnso_internal -n supabase_migrations -n kinnso_share_api -n app_private",
+    "fileLines": 27305
+  },
+  "result": {
+    "exitCode": 0,
+    "restored": {
+      "tables": 181,
+      "functions": 434,
+      "indexes": 421,
+      "policies": 133
+    },
+    "production": {
+      "tables": 181,
+      "functions": 434,
+      "indexes": 421,
+      "policies": 133
+    },
+    "match": true
+  },
+  "comparisonToFirstRun": {
+    "firstRun": {
+      "tables": 180,
+      "functions": 431,
+      "indexes": 419
+    },
+    "delta": "grew by exactly the three releases since round 3: launch_gates, waiver_expiry, device_acceptance, launch_digest"
+  },
+  "limits": [
+    "Logical product schema only; platform schemas were stubbed or excluded.",
+    "Platform PITR/snapshot restore remains unexercised and is the owner decision.",
+    "No user data was restored in this run; the first rehearsal restored and matched key rows (13 creators / 11 guides / 9 published)."
+  ]
+}
