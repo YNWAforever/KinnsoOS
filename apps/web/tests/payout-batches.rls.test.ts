@@ -3,7 +3,7 @@ import { describe, expect, it, beforeAll, afterAll } from 'vitest'
 import { createClient } from '@supabase/supabase-js'
 import { createHmac, randomUUID } from 'node:crypto'
 import { spawn } from 'node:child_process'
-import { verifyTestTarget } from '../../journeys/scripts/verify-test-target.mjs'
+import { assertNonProductionTarget } from '../../../scripts/verify-kinnso-target'
 
 const url = process.env.SUPABASE_URL
 const anonKey = process.env.SUPABASE_ANON_KEY
@@ -19,10 +19,10 @@ const hookTimeout = 60000
 const testTimeout = 15000
 const runId = `${Date.now()}-${Math.random().toString(36).slice(2)}`
 
-function runPsql(sql: string): Promise<void> {
+function runPsql(verifiedDbId: string, sql: string): Promise<void> {
   return new Promise((resolve, reject) => {
     const p = spawn('docker', [
-      'exec', '-i', dbContainer!, 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
+      'exec', '-i', verifiedDbId, 'psql', '-U', 'postgres', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1',
     ])
     let stderr = ''
     p.stderr.on('data', (c) => { stderr += String(c) })
@@ -67,8 +67,12 @@ d('r10.2 payout batch lifecycle, idempotency, and RLS isolation', () => {
   // creatorB/USD: exists purely to prove creator isolation against creatorA's own USD batches.
   let batchCreatorBId = ''
 
+  let fixtureDbId: string | undefined
   beforeAll(async () => {
-    await runPsql(`
+    const dbId = assertNonProductionTarget(process.env).identity.dbId
+    if (typeof dbId !== 'string') throw new Error('BLOCKED: missing payout fixture database identity')
+    fixtureDbId = dbId
+    await runPsql(dbId, `
       insert into auth.users (id, email, aud, role, instance_id, encrypted_password, email_confirmed_at)
       values
         ('${creatorA}', 'payout-a-${runId}@example.test', 'authenticated', 'authenticated',
@@ -117,10 +121,10 @@ d('r10.2 payout batch lifecycle, idempotency, and RLS isolation', () => {
     // The append-only decision trigger has no application bypass. Temporarily
     // disable only that delete trigger inside a transaction on the attested
     // local stack. PostgreSQL holds the table lock until it is enabled again.
-    verifyTestTarget({
-      ...process.env, KINNSO_TEST_API_ORIGIN: url, KINNSO_TEST_DB_CONTAINER: dbContainer,
-    }, undefined, { allowCanonicalCi: true })
-    await runPsql(`
+    if (!fixtureDbId) return
+    const cleanupDbId = assertNonProductionTarget(process.env).identity.dbId
+    if (cleanupDbId !== fixtureDbId) throw new Error('BLOCKED: payout fixture database identity changed')
+    await runPsql(cleanupDbId, `
       begin;
       create temporary table fixture_payout_batches on commit drop as
         select b.id from public.creator_payout_batches b
