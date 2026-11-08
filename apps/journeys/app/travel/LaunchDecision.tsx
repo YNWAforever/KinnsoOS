@@ -121,24 +121,24 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
               </li>
             ))}
           </ul>
-          <form className="k-card" style={{ marginTop: '12px' }} onSubmit={(event) => { event.preventDefault(); void sign(); }} data-testid="launch-signoff-form">
+          <form className="k-card" style={{ marginTop: '12px', display: 'grid', gap: '10px' }} onSubmit={(event) => { event.preventDefault(); void sign(); }} data-testid="launch-signoff-form">
             <h3 style={{ marginTop: 0 }}>{t('Record a decision', '記錄決策')}</h3>
-            <label>{t('Gate', '關卡')}
-              <select value={form.gate} onChange={(event) => setForm((f) => ({ ...f, gate: event.target.value }))} data-testid="launch-signoff-gate">
+            <label style={{ display: 'grid', gap: '4px' }}>{t('Gate', '關卡')}
+              <select style={{ maxWidth: '22rem' }} value={form.gate} onChange={(event) => setForm((f) => ({ ...f, gate: event.target.value }))} data-testid="launch-signoff-gate">
                 {['rollback', 'backup', 'privacy', 'accessibility', 'devices', 'payments'].map((gate) => (
                   <option key={gate} value={gate}>{gateLabel(gate)}</option>
                 ))}
               </select>
             </label>
-            <label>{t('Decision', '決策')}
-              <select value={form.status} onChange={(event) => setForm((f) => ({ ...f, status: event.target.value as typeof form.status }))} data-testid="launch-signoff-status">
+            <label style={{ display: 'grid', gap: '4px' }}>{t('Decision', '決策')}
+              <select style={{ maxWidth: '22rem' }} value={form.status} onChange={(event) => setForm((f) => ({ ...f, status: event.target.value as typeof form.status }))} data-testid="launch-signoff-status">
                 <option value="accepted">{t('Accepted', '已接受')}</option>
                 <option value="waived">{t('Waived', '已豁免')}</option>
                 <option value="rejected">{t('Rejected', '已拒絕')}</option>
               </select>
             </label>
-            <label>{t('Evidence note (20–2000 characters)', '依據說明（20–2000 字）')}
-              <textarea value={form.note} rows={3} onChange={(event) => setForm((f) => ({ ...f, note: event.target.value }))} data-testid="launch-signoff-note" />
+            <label style={{ display: 'grid', gap: '4px' }}>{t('Evidence note (20–2000 characters)', '依據說明（20–2000 字）')}
+              <textarea value={form.note} rows={3} style={{ width: '100%', maxWidth: '36rem' }} onChange={(event) => setForm((f) => ({ ...f, note: event.target.value }))} data-testid="launch-signoff-note" />
             </label>
             {form.error && (
               <p role="alert" data-testid="launch-signoff-error" data-reason={form.error}>
@@ -147,7 +147,7 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
                   : t('The decision could not be saved. Retry.', '決策未能保存，請重試。')}
               </p>
             )}
-            <button type="submit" className="k-btn primary" disabled={busy} data-testid="launch-signoff-submit">
+            <button type="submit" className="k-btn primary" style={{ justifySelf: 'start' }} disabled={busy} data-testid="launch-signoff-submit">
               {busy ? t('Saving…', '儲存中…') : t('Record decision', '記錄決策')}
             </button>
           </form>
