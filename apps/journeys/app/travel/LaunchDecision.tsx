@@ -8,6 +8,7 @@ type Gate = {
   status: 'accepted' | 'blocked' | 'pending' | 'rejected';
   detail: string;
   signedAt: string | null;
+  expiresAt?: string | null;
 };
 type LaunchData = {
   verdict: 'launch-ready' | 'hold';
@@ -33,10 +34,11 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<'access-required' | 'unavailable' | null>(null);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState<{ gate: string; status: 'accepted' | 'waived' | 'rejected'; note: string; error?: string }>({
+  const [form, setForm] = useState<{ gate: string; status: 'accepted' | 'waived' | 'rejected'; note: string; expiresAt: string; error?: string }>({
     gate: 'privacy',
     status: 'accepted',
     note: '',
+    expiresAt: '',
   });
 
   const load = useCallback(async () => {
@@ -60,13 +62,19 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
   const sign = async () => {
     const trimmed = form.note.trim();
     if (trimmed.length < 20 || trimmed.length > 2000) { setForm((f) => ({ ...f, error: 'note' })); return; }
+    if (form.status === 'waived' && !/^\d{4}-\d{2}-\d{2}$/.test(form.expiresAt)) { setForm((f) => ({ ...f, error: 'expiry' })); return; }
     setBusy(true);
     setForm((f) => ({ ...f, error: undefined }));
     try {
       const response = await fetch('/api/ops/launch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ gate: form.gate, status: form.status, note: trimmed }),
+        body: JSON.stringify({
+          gate: form.gate,
+          status: form.status,
+          note: trimmed,
+          expiresAt: form.status === 'waived' || form.status === 'accepted' ? form.expiresAt || null : null,
+        }),
       });
       const payload = await response.json().catch(() => null);
       if (response.status === 201) { setForm((f) => ({ ...f, note: '' })); await load(); }
@@ -118,6 +126,9 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
                 <strong>{gateLabel(gate.gate)}</strong>{' '}
                 <span style={{ color: STATUS_COLOR[gate.status], fontWeight: 600 }}>{statusLabel(gate.status)}</span>
                 {gate.detail && <span className="k-meta" style={{ display: 'block', overflowWrap: 'anywhere' }}>{gate.detail}</span>}
+                {gate.expiresAt && (
+                  <span className="k-meta" style={{ display: 'block' }}>{t('Review by', '覆核期限')}: {new Date(gate.expiresAt).toISOString().slice(0, 10)}</span>
+                )}
               </li>
             ))}
           </ul>
@@ -140,9 +151,15 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
             <label style={{ display: 'grid', gap: '4px' }}>{t('Evidence note (20–2000 characters)', '依據說明（20–2000 字）')}
               <textarea value={form.note} rows={3} style={{ width: '100%', maxWidth: '36rem' }} onChange={(event) => setForm((f) => ({ ...f, note: event.target.value }))} data-testid="launch-signoff-note" />
             </label>
+            {(form.status === 'waived' || form.status === 'accepted') && (
+              <label style={{ display: 'grid', gap: '4px' }}>{t('Review by (waivers expire and block the launch again)', '覆核期限（豁免到期會再次阻止上線）')}
+                <input type="date" value={form.expiresAt} onChange={(event) => setForm((f) => ({ ...f, expiresAt: event.target.value }))} style={{ maxWidth: '14rem' }} data-testid="launch-signoff-expiry" />
+              </label>
+            )}
             {form.error && (
               <p role="alert" data-testid="launch-signoff-error" data-reason={form.error}>
-                {form.error === 'note' ? t('Write at least 20 characters of evidence.', '請填寫至少 20 字依據。')
+                {form.error === 'expiry' ? t('A waiver needs a review date in the future (within 90 days).', '豁免需要未來的覆核日期（90 天內）。')
+                  : form.error === 'note' ? t('Write at least 20 characters of evidence.', '請填寫至少 20 字依據。')
                   : form.error === 'invalid' ? t('That decision was rejected as invalid.', '此決策被判定為無效。')
                   : t('The decision could not be saved. Retry.', '決策未能保存，請重試。')}
               </p>

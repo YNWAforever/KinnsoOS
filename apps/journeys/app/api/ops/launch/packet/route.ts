@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     if (response.error) throw new Error(response.error.message);
     const state = response.data as {
       content: { published: number; synthetic: number; unverified: number; verified: number; ready: boolean };
-      signoffs: Record<string, { status: string; note: string; signedAt: string }>;
+      signoffs: Record<string, { status: string; note: string; signedAt: string; expiresAt?: string | null; stale?: boolean }>;
     };
     const signoff = (gate: string) => state.signoffs[gate] ?? null;
     const automatic = [
@@ -33,10 +33,17 @@ export async function GET(request: Request) {
       const row = signoff(gate);
       return {
         gate,
-        status: row ? (row.status === 'rejected' ? 'rejected' : 'accepted') : 'pending',
+        status: row
+          ? row.status === 'rejected'
+            ? 'rejected'
+            : row.status === 'waived' && row.stale
+              ? 'blocked'
+              : 'accepted'
+          : 'pending',
         decision: row?.status ?? null,
-        note: row?.note ?? '',
+        note: row?.stale ? `waiver expired ${row.expiresAt ?? 'without a review date'}` : row?.note ?? '',
         signedAt: row?.signedAt ?? null,
+        expiresAt: row?.expiresAt ?? null,
       };
     });
     const gates = [...automatic, ...human];

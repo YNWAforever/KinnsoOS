@@ -4,7 +4,7 @@ import { contentReadiness } from '../../../../lib/content-honesty/server';
 
 export const dynamic = 'force-dynamic';
 
-type LaunchSignoff = { gate: string; status: 'accepted' | 'waived' | 'rejected'; note: string; actorId: string; signedAt: string };
+type LaunchSignoff = { gate: string; status: 'accepted' | 'waived' | 'rejected'; note: string; actorId: string; signedAt: string; expiresAt: string | null; stale: boolean };
 type LaunchState = {
   content: { published: number; synthetic: number; unverified: number; verified: number; ready: boolean };
   signoffs: Record<string, LaunchSignoff>;
@@ -16,7 +16,12 @@ type Gate = (typeof GATES)[number];
 /** Human launch gates and how they are satisfied by automation. */
 function evaluate(state: LaunchState, env: Record<string, string | undefined>) {
   const signoff = (gate: Gate) => state.signoffs[gate]?.status ?? null;
-  const satisfied = (gate: Gate) => signoff(gate) === 'accepted' || signoff(gate) === 'waived';
+  const satisfied = (gate: Gate) => {
+    const latest = state.signoffs[gate];
+    if (!latest) return false;
+    if (latest.status === 'waived') return !latest.stale;
+    return latest.status === 'accepted';
+  };
   const alertsBound = Boolean(env.KINNSO_ALERT_WEBHOOK_URL && env.CRON_SECRET);
   const gates = [
     {
@@ -36,9 +41,18 @@ function evaluate(state: LaunchState, env: Record<string, string | undefined>) {
     ...GATES.map((gate) => ({
       gate,
       kind: 'signoff',
-      status: satisfied(gate) ? 'accepted' : signoff(gate) === 'rejected' ? 'rejected' : 'pending',
-      detail: state.signoffs[gate]?.note ?? '',
+      status: satisfied(gate)
+        ? 'accepted'
+        : state.signoffs[gate]?.stale
+          ? 'blocked'
+          : signoff(gate) === 'rejected'
+            ? 'rejected'
+            : 'pending',
+      detail: state.signoffs[gate]?.stale
+        ? `waiver expired ${state.signoffs[gate]?.expiresAt ? new Date(state.signoffs[gate].expiresAt).toISOString().slice(0, 10) : 'without a review date'}`
+        : state.signoffs[gate]?.note ?? '',
       signedAt: state.signoffs[gate]?.signedAt ?? null,
+      expiresAt: state.signoffs[gate]?.expiresAt ?? null,
     })),
   ];
   // Payments is out of scope for the free launch: it must be explicitly accepted or
@@ -77,7 +91,10 @@ export async function GET(request: Request) {
         checkedAt: new Date().toISOString(),
       },
     });
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (/invalid_|expiry_/.test(message)) return failure('INVALID', 400);
+    if (/forbidden/.test(message)) return failure('FORBIDDEN', 403);
     return failure('UNAVAILABLE', 503);
   }
 }
@@ -93,11 +110,12 @@ export async function POST(request: Request) {
   } catch {
     return failure('INVALID', 400);
   }
-  const body = input as { gate?: unknown; status?: unknown; note?: unknown } | null;
+  const body = input as { gate?: unknown; status?: unknown; note?: unknown; expiresAt?: unknown } | null;
   if (!body || typeof body !== 'object') return failure('INVALID', 400);
   if (typeof body.gate !== 'string' || !GATES.includes(body.gate as Gate)) return failure('INVALID', 400);
   if (body.status !== 'accepted' && body.status !== 'waived' && body.status !== 'rejected') return failure('INVALID', 400);
   if (typeof body.note !== 'string' || body.note.trim().length < 20 || body.note.trim().length > 2000) return failure('INVALID', 400);
+  if (body.expiresAt !== undefined && body.expiresAt !== null && (typeof body.expiresAt !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.expiresAt))) return failure('INVALID', 400);
 
   try {
     const client = await serverClient();
@@ -106,10 +124,14 @@ export async function POST(request: Request) {
       p_gate: body.gate,
       p_status: body.status,
       p_note: body.note.trim(),
+      p_expires_at: typeof body.expiresAt === 'string' ? body.expiresAt : null,
     });
     if (response.error) throw new Error(response.error.message);
     return reply({ ok: true, data: response.data as LaunchState }, 201);
-  } catch {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : '';
+    if (/invalid_|expiry_/.test(message)) return failure('INVALID', 400);
+    if (/forbidden/.test(message)) return failure('FORBIDDEN', 403);
     return failure('UNAVAILABLE', 503);
   }
 }
