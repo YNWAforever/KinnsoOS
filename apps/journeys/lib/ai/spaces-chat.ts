@@ -1,9 +1,11 @@
 import type { McpClient } from '../mcp/client';
+import type { ChatToolSource } from '../chat/contracts';
+import { mergeToolSources, toolSources } from '../chat/contracts';
 
 export type ChatTurnEvent =
   | { type: 'delta'; text: string }
-  | { type: 'tool'; id: string; name: string; status: 'running' | 'done' | 'error'; summary?: string }
-  | { type: 'final'; text: string; tools: Array<{ name: string; ok: boolean; summary?: string }>; model: string };
+  | { type: 'tool'; id: string; name: string; status: 'running' | 'done' | 'error'; summary?: string; sources?: ChatToolSource[] }
+  | { type: 'final'; text: string; tools: Array<{ name: string; ok: boolean; summary?: string }>; model: string; sources?: ChatToolSource[] };
 
 export type ChatTurnInput = {
   locale: 'en' | 'zh-HK';
@@ -204,10 +206,12 @@ function renderToolResult(locale: 'en' | 'zh-HK', structured: unknown): string {
  * key it still calls the MCP tools and answers from their output, labelled as
  * such, so the surface is usable and never fabricates a model response.
  */
-export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string; tools: Array<{ name: string; ok: boolean; summary?: string }>; model: string }> {
+export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string; tools: Array<{ name: string; ok: boolean; summary?: string }>; model: string; sources: ChatToolSource[] }> {
   const config = modelConfig();
   const tools = input.mcp.tools.map((tool) => ({ name: tool.name, description: tool.description, inputSchema: tool.inputSchema }));
   const toolTraces: Array<{ name: string; ok: boolean; summary?: string }> = [];
+  // One bounded source group per tool call; merged/deduped for the final reply.
+  const collectedSources: ChatToolSource[][] = [];
 
   if (!config) {
     const { tool, args } = keywordFallback(input.locale, input.question);
@@ -219,7 +223,9 @@ export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string;
       const result = await input.mcp.call(tool, args);
       structured = result.structured;
       summary = result.summary;
-      input.emit({ type: 'tool', id: 'fallback-1', name: tool, status: 'done', summary });
+      const sources = toolSources(structured);
+      collectedSources.push(sources);
+      input.emit({ type: 'tool', id: 'fallback-1', name: tool, status: 'done', summary, ...(sources.length ? { sources } : {}) });
     } catch (error) {
       ok = false;
       summary = error instanceof Error ? error.message : 'tool failed';
@@ -239,7 +245,7 @@ export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string;
         : 'Set KINNSO_MODEL_BASE_URL, KINNSO_MODEL_API_KEY and KINNSO_MODEL_ID to continue this conversation with a model.',
     ].filter(Boolean).join('\n\n');
     for (const piece of text.match(/[\s\S]{1,120}/g) ?? []) input.emit({ type: 'delta', text: piece });
-    return { text, tools: toolTraces, model: 'none:tool-grounded' };
+    return { text, tools: toolTraces, model: 'none:tool-grounded', sources: mergeToolSources(collectedSources) };
   }
 
   const messages: OpenAiMessage[] = [
@@ -279,7 +285,9 @@ export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string;
         const result = await input.mcp.call(call.name, args);
         structured = result.structured;
         summary = result.summary;
-        input.emit({ type: 'tool', id: call.id, name: call.name, status: 'done', summary });
+        const sources = toolSources(structured);
+        collectedSources.push(sources);
+        input.emit({ type: 'tool', id: call.id, name: call.name, status: 'done', summary, ...(sources.length ? { sources } : {}) });
       } catch (error) {
         ok = false;
         summary = error instanceof Error ? error.message : 'tool failed';
@@ -294,6 +302,7 @@ export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string;
     }
   }
 
-  input.emit({ type: 'final', text: finalText, tools: toolTraces, model: config.modelId });
-  return { text: finalText, tools: toolTraces, model: config.modelId };
+  const sources = mergeToolSources(collectedSources);
+  input.emit({ type: 'final', text: finalText, tools: toolTraces, model: config.modelId, sources });
+  return { text: finalText, tools: toolTraces, model: config.modelId, sources };
 }

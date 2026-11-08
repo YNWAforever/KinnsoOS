@@ -1,5 +1,14 @@
 import { serverClient } from '../supabase/server';
-import type { ChatSpace, ChatThread, ChatThreadDetail } from './contracts';
+import type {
+  ChatSearchItem,
+  ChatSpace,
+  ChatSpaceUpdate,
+  ChatThread,
+  ChatThreadDetail,
+  ChatThreadUpdate,
+  ChatUsage,
+} from './contracts';
+import { chatTurnLimit } from './contracts';
 
 type RpcError = { message?: string; code?: string } | null;
 type RpcClient = {
@@ -27,6 +36,15 @@ export function createSpace(id: string, name: string, description = ''): Promise
   return call<ChatSpace>('chat_create_space', { p_id: id, p_name: name, p_description: description });
 }
 
+export function updateSpace(id: string, update: ChatSpaceUpdate): Promise<ChatSpace> {
+  return call<ChatSpace>('chat_update_space', {
+    p_id: id,
+    p_name: update.name ?? null,
+    p_description: update.description ?? null,
+    p_archived: update.archived ?? null,
+  });
+}
+
 export function deleteSpace(id: string): Promise<{ deleted: boolean }> {
   return call<{ deleted: boolean }>('chat_delete_space', { p_id: id });
 }
@@ -38,6 +56,15 @@ export async function listThreads(spaceId: string): Promise<ChatThread[]> {
 
 export function createThread(id: string, spaceId: string, title = ''): Promise<ChatThread> {
   return call<ChatThread>('chat_create_thread', { p_id: id, p_space_id: spaceId, p_title: title });
+}
+
+export function updateThread(id: string, update: ChatThreadUpdate): Promise<ChatThread> {
+  return call<ChatThread>('chat_update_thread', {
+    p_id: id,
+    p_title: update.title ?? null,
+    p_archived: update.archived ?? null,
+    p_pinned: update.pinned ?? null,
+  });
 }
 
 export function deleteThread(id: string): Promise<{ deleted: boolean }> {
@@ -52,6 +79,20 @@ export function getThread(threadId: string): Promise<ChatThreadDetail> {
   return call<ChatThreadDetail>('chat_get_thread', { p_thread_id: threadId });
 }
 
+export async function searchChats(query: string, limit = 20): Promise<ChatSearchItem[]> {
+  const data = await call<{ items: ChatSearchItem[]; query: string | null }>('chat_search', {
+    p_query: query,
+    p_limit: limit,
+  });
+  return data?.items ?? [];
+}
+
+/** Current-hour turn budget (limit overlaid from config) plus workspace totals. */
+export async function usage(): Promise<ChatUsage> {
+  const data = await call<ChatUsage>('chat_usage');
+  return { ...data, limit: chatTurnLimit(process.env.KINNSO_CHAT_TURNS_PER_HOUR) };
+}
+
 export function appendMessage(
   threadId: string,
   requestId: string,
@@ -59,7 +100,8 @@ export function appendMessage(
   body: string,
   toolName: string | null = null,
   toolPayload: Record<string, unknown> = {},
-): Promise<{ id: string; threadId: string; sequence: number; role: string }> {
+  metadata: Record<string, unknown> = {},
+): Promise<{ id: string; threadId: string; sequence: number; role: string; metadata?: Record<string, unknown> }> {
   return call('chat_append_message', {
     p_thread_id: threadId,
     p_request_id: requestId,
@@ -67,6 +109,7 @@ export function appendMessage(
     p_body: body,
     p_tool_name: toolName,
     p_tool_payload: toolPayload,
+    p_metadata: metadata,
   });
 }
 
