@@ -27,7 +27,7 @@ const guestDraft=load('../lib/studio/guest-draft.ts',{});
 const routes = load('../app/travel/routes.ts', {'./model': {fixtures: []},'../../lib/studio/navigation':studioNavigation});
 const pageDependencies = {
   react: {cache: fn => fn, Suspense: Symbol('Suspense')},
-  'react/jsx-runtime': {jsx},
+  'react/jsx-runtime': {jsx,jsxs:jsx},
   'next/navigation': {notFound,redirect},
   '../../travel/Workbench': {Workbench},
   '../../travel/routes': routes,
@@ -48,6 +48,17 @@ test('both locale entries pass the exact pilot path and disabled flag to Workben
     assert.equal(children.props.locale, locale);
     assert.equal(children.props.path, 'pilot');
     assert.equal(children.props.features.pilot, false);
+  }
+});
+
+test('workspace streaming fallback exposes only the local creator entry without JavaScript', async () => {
+  for (const locale of ['en', 'zh-HK']) {
+    const {props: {fallback}} = await render(locale, ['workspace']);
+    const [, notice] = fallback.props.children;
+    assert.equal(notice.type, 'noscript');
+    assert.equal(notice.props.children.props.children.props.href, `/${locale}/studio`);
+    const pilot = await render(locale, ['pilot']);
+    assert.equal(pilot.props.fallback.props.children[1], false);
   }
 });
 
