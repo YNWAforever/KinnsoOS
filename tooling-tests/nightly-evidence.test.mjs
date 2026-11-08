@@ -152,6 +152,30 @@ const incompleteAnnotation = guide => ({ type: 'pilot-incomplete-creator-link',
   description: `pilot-incomplete-creator-link: guide /en/g/${guide} has no creator link` });
 const annotatedSuites = (status, annotations) => [{ suites: [{ specs: [{ tests: [{ status, annotations }] }] }] }];
 
+const missingExperienceAnnotation = guide => ({ type: 'pilot-incomplete-experience-link',
+  description: `pilot-incomplete-experience-link: guide /en/g/${guide} has no attributed experience link` });
+
+test('creator-complete guides without an attributed experience produce classified skip evidence', () => {
+  const annotations = ['first', 'second'].map(missingExperienceAnnotation);
+  const result = receipt('funnel', { stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 1 },
+    suites: annotatedSuites('skipped', [...annotations, { type: 'skip', description: annotations.map(item => item.description).join('; ') }]) });
+  assert.equal(result.code, 0);
+  assert.equal(result.value.reportStatus, 'VALID');
+  assert.equal(result.value.executionOutcome, 'success');
+  assert.deepEqual(result.value.counts, { total: 9, passed: 8, failed: 0, flaky: 0, skipped: 1 });
+  assert.deepEqual(result.value.pilotContent, annotations.map(annotation => ({ reason: annotation.type,
+    description: annotation.description, testOutcome: 'skipped' })));
+});
+
+test('an earlier missing experience link stays classified when a later guide completes the funnel', () => {
+  const annotation = missingExperienceAnnotation('first');
+  const result = receipt('funnel', { stats: { expected: 9, unexpected: 0, flaky: 0, skipped: 0 },
+    suites: annotatedSuites('expected', [annotation]) });
+  assert.equal(result.code, 0);
+  assert.deepEqual(result.value.counts, { total: 9, passed: 9, failed: 0, flaky: 0, skipped: 0 });
+  assert.deepEqual(result.value.pilotContent, [{ reason: annotation.type, description: annotation.description, testOutcome: 'expected' }]);
+});
+
 test('all incomplete creator links produce classified skip evidence with every affected guide', () => {
   const annotations = ['first', 'second'].map(incompleteAnnotation);
   const result = receipt('funnel', { stats: { expected: 8, unexpected: 0, flaky: 0, skipped: 1 },
@@ -193,6 +217,8 @@ test('pilot evidence only retains known public reasons, without arbitrary report
       { type: 'skip', description: 'private sentinel' },
       { type: 'pilot-incomplete-creator-link', description: 'private sentinel' },
       { type: 'pilot-incomplete-creator-link', description: 'pilot-incomplete-creator-link: guide /en/g/first?token=private sentinel has no creator link' },
+      { type: 'pilot-incomplete-experience-link', description: 'private sentinel' },
+      { type: 'pilot-incomplete-experience-link', description: 'pilot-incomplete-experience-link: guide /en/g/first?token=private sentinel has no attributed experience link' },
       { type: 'note', description: 'private sentinel' }]) });
   assert.equal(result.code, 0);
   assert.deepEqual(result.value.pilotContent, [{ reason: annotation.type, description: annotation.description, testOutcome: 'expected' }]);
