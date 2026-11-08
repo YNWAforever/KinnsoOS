@@ -30,7 +30,7 @@ test('published summary with a legacy database UUID survives API, SSR and hydrat
  const ok=async(p:PromiseLike<any>)=>{const r=await p;expect(r.error).toBeNull();return r.data;};
  try {
   actorId=(await ok(admin.auth.admin.createUser({email:'synthetic-publication-'+randomUUID()+'@example.test',password:'Synthetic!'+randomUUID(),email_confirm:true}))).user.id;
-  await ok(admin.from('creators').update({status:'active',public_profile:{niches:['Travel']},display_name:'Creator account',bio:'Private profile marker '+draft}).eq('id',actorId));
+  await ok(admin.from('creators').update({status:'active',public_profile:{niches:['Travel']},handle:'seo-'+actorId,display_name:'Creator account',bio:'Private profile marker '+draft}).eq('id',actorId));
   const base={creator_id:actorId,creator_handle:'synthetic',creator_name:author,city:'Kyoto',cover_url:cover,summary:'Public summary remains a summary'};
   await ok(admin.from('guides').insert([{...base,id,slug:'synthetic-'+id,title,status:'published',published_at:date},{...base,id:draft,slug:'synthetic-'+draft,title:'Private draft marker '+draft,status:'draft',published_at:null}]));
   const hidden=await request.get('/api/guides/'+draft);expect(hidden.status()).toBe(404);expect(await hidden.text()).not.toContain('Private draft marker');
@@ -65,7 +65,7 @@ test('authored published guide renders without JavaScript; withdrawing versions 
  const ok=async(p:PromiseLike<any>)=>{const r=await p;expect(r.error).toBeNull();return r.data;};
  try{
   const email='synthetic-seo-'+randomUUID()+'@example.test';actorId=(await ok(admin.auth.admin.createUser({email,password,email_confirm:true}))).user.id;
-  await ok(admin.from('creators').update({status:'active',public_profile:{niches:['Travel']},display_name:'Authored test creator'}).eq('id',actorId));
+  await ok(admin.from('creators').update({status:'active',public_profile:{niches:['Travel']},handle:'seo-'+actorId,display_name:'Authored test creator'}).eq('id',actorId));
   const actor=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_ANON_KEY!);await ok(actor.auth.signInWithPassword({email,password}));
   const payload={title:'Published source title',city:'Kyoto',summary:'Authored source summary',content:{days:[{offset:0,title:'Authored source day',stops:[{title:'Authored source stop',description:'Published description <script>unsafe()</script>',placeId:null,startMinuteOfDay:600,durationMinutes:45}]}]}};
   await ok(actor.rpc('save_kinnso_guide_draft',{p_draft_id:id,p_expected_revision:0,p_request_id:randomUUID(),p_payload:payload}));
