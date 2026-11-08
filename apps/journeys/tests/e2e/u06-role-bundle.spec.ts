@@ -9,13 +9,19 @@ const agentMarker = 'Source questions: read published sources and verification d
 const roleMarkers = ['Your next actions', 'Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', agentMarker, 'Drafts are private. Published versions can be adopted into traveller trips.'];
 
 function downloadedScripts(page: Page) {
-  const bodies: Promise<string>[] = [];
+  const urls = new Set<string>();
   page.on('response', response => {
     const path = new URL(response.url()).pathname;
     if (response.status() === 200 && path.startsWith('/_next/static/chunks/') && path.endsWith('.js'))
-      bodies.push(response.text());
+      urls.add(response.url());
   });
-  return async () => (await Promise.all(bodies)).join('\n');
+  return async () => (await Promise.all([...urls].map(async url => {
+    // The browser observed this exact immutable chunk. Read it independently
+    // so Chromium can evict the original response body after a navigation.
+    const response=await page.request.get(url);
+    expect(response.status()).toBe(200);
+    return response.text();
+  }))).join('\n');
 }
 
 test('U06 public search defers private role-workspace JavaScript', async ({page, baseURL}) => {

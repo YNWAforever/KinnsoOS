@@ -41,7 +41,7 @@ test('published summary with a legacy database UUID survives API, SSR and hydrat
    try {
     // Deterministic synthetic pixels verify image wiring/layout only, not production CDN parity.
     await context.route('**/_next/image?*',route=>route.fulfill({status:200,contentType:'image/png',body:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfWQAAAAASUVORK5CYII=','base64')}));
-    const page=await context.newPage();const refreshed=javaScriptEnabled?page.waitForResponse(r=>r.url().endsWith('/api/guides/'+id)&&r.status()===200):null;
+    const page=await context.newPage();const refreshed=javaScriptEnabled?page.waitForResponse(r=>new URL(r.url()).pathname==='/api/session'&&r.status()===200):null;
     const response=await page.goto('/'+locale+'/g/'+id);expect(response?.status()).toBe(200);if(refreshed)await refreshed;
     await expect(page.locator('article')).toHaveAttribute('lang','');await expect(page.locator('html')).toHaveAttribute('lang',locale);
     const languageNote=page.getByText(locale==='en'?'Original language: not provided.':'原文語言：來源未提供。',{exact:true});await expect(languageNote).toBeVisible();expect(await languageNote.evaluate(el=>el.closest('[lang]')?.getAttribute('lang'))).toBe(locale);
