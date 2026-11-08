@@ -983,7 +983,8 @@
     "tests/contracts/20261109150000_launch_gates.sql": "supabase/migrations/20261109150000_launch_gates.sql",
     "tests/contracts/20261109160000_data_rights.sql": "supabase/migrations/20261109160000_data_rights.sql",
     "tests/contracts/20261109170000_waiver_expiry.sql": "supabase/migrations/20261109170000_waiver_expiry.sql",
-    "tests/contracts/20261109180000_device_acceptance.sql": "supabase/migrations/20261109180000_device_acceptance.sql"
+    "tests/contracts/20261109180000_device_acceptance.sql": "supabase/migrations/20261109180000_device_acceptance.sql",
+    "tests/contracts/20261109190000_launch_digest.sql": "supabase/migrations/20261109190000_launch_digest.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",

@@ -14,7 +14,16 @@ type Snapshot = {
   chatTurnsUsedThisHour: number;
 };
 
-type State = 'ok' | 'unavailable' | 'cost-exhausted' | 'content-not-ready';
+type Digest = {
+  signoffsAccepted: number;
+  waiversActive: number;
+  waiversExpiringSoon: number;
+  waiversExpired: number;
+  rejectedGates: number;
+  holdBlocks: number;
+};
+
+type State = 'ok' | 'unavailable' | 'cost-exhausted' | 'content-not-ready' | 'waivers-expiring';
 
 /** Scheduled health alerting.
  *
@@ -46,13 +55,21 @@ export async function GET(request: Request) {
   if (denied) return failure(denied, denied === 'FORBIDDEN' ? 403 : 401);
 
   const destination = alertDestination(process.env);
-  if (new URL(request.url).searchParams.get('test') === '1') {
+  const query = new URL(request.url).searchParams;
+  if (query.get('test') === '1') {
+    const simulated = query.get('state');
+    const allowed = ['unavailable', 'cost-exhausted', 'content-not-ready', 'waivers-expiring'];
+    const simulatedState = simulated && allowed.includes(simulated) ? (simulated as 'unavailable' | 'cost-exhausted' | 'content-not-ready' | 'waivers-expiring') : null;
+    const text = simulatedState
+      ? `KinnsoOS simulated failure drill (${simulatedState}): this is a labelled test of the incident path, not a real incident. Delivery classification and transport are being verified.`
+      : 'KinnsoOS alert self-test (scheduler path): delivery works end to end. No incident is implied.';
     const result = await deliverAlert(
       {
-        text: 'KinnsoOS alert self-test (scheduler path): delivery works end to end. No incident is implied.',
-        state: 'test',
+        text,
+        state: simulatedState ?? 'test',
         site: process.env.KINNSO_SITE_URL ?? '',
         checkedAt: new Date().toISOString(),
+        ...(simulatedState ? { simulated: true } : {}),
       },
       process.env,
     );
@@ -69,6 +86,7 @@ export async function GET(request: Request) {
 
   let state: State = 'ok';
   let snapshot: Snapshot | null = null;
+  let digest: Digest | null = null;
   let reason = '';
 
   try {
@@ -80,6 +98,17 @@ export async function GET(request: Request) {
     });
     if (!response.ok) throw new Error(`snapshot ${response.status}`);
     snapshot = (await response.json()) as Snapshot;
+    try {
+      const digestResponse = await fetch(`${target}/rest/v1/rpc/kinnso_public_launch_digest`, {
+        method: 'POST',
+        headers: { apikey: key, Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+        body: '{}',
+        signal: AbortSignal.timeout(8000),
+      });
+      if (digestResponse.ok) digest = (await digestResponse.json()) as Digest;
+    } catch {
+      // The digest is additive: a failure here must not turn a healthy snapshot into an alert.
+    }
   } catch (error) {
     state = 'unavailable';
     reason = error instanceof Error ? error.message : 'snapshot unavailable';
@@ -91,12 +120,14 @@ export async function GET(request: Request) {
     state = 'cost-exhausted';
   } else if (snapshot && snapshot.verifiedGuides === 0 && now.getUTCHours() === 8 && now.getUTCMinutes() < 15) {
     state = 'content-not-ready';
+  } else if (digest && (digest.waiversExpiringSoon > 0 || digest.waiversExpired > 0) && now.getUTCHours() === 8 && now.getUTCMinutes() < 15) {
+    state = 'waivers-expiring';
   }
 
   if (state === 'ok') {
     return reply({
       ok: true,
-      data: { state, delivered: false, webhookConfigured: destination.configured, snapshot, site: Boolean(site) },
+      data: { state, delivered: false, webhookConfigured: destination.configured, snapshot, digest, site: Boolean(site) },
     });
   }
 
@@ -105,7 +136,9 @@ export async function GET(request: Request) {
       ? `KinnsoOS alert: operational snapshot unavailable (${reason}). Scheduled health checks cannot confirm the database.`
       : state === 'cost-exhausted'
         ? `KinnsoOS alert: hourly chat budget exhausted (${snapshot?.chatTurnsUsedThisHour ?? '?'}/${limit}). Chat turns are being rejected until the window resets.`
-        : `KinnsoOS digest: content gate still blocked — ${snapshot?.publishedGuides ?? 0} published, ${snapshot?.syntheticGuides ?? 0} synthetic, ${snapshot?.verifiedGuides ?? 0} verified. Launch remains HOLD.`;
+        : state === 'waivers-expiring'
+          ? `KinnsoOS digest: ${digest?.waiversExpired ?? 0} launch waiver(s) have expired and ${digest?.waiversExpiringSoon ?? 0} expire within 14 days. An expired waiver blocks launch again; review them in the launch panel.`
+          : `KinnsoOS digest: content gate still blocked — ${snapshot?.publishedGuides ?? 0} published, ${snapshot?.syntheticGuides ?? 0} synthetic, ${snapshot?.verifiedGuides ?? 0} verified. Launch remains HOLD.`;
 
   const result = await deliverAlert(
     {
@@ -114,6 +147,7 @@ export async function GET(request: Request) {
       site,
       checkedAt: now.toISOString(),
       snapshot,
+      ...(digest ? { digest } : {}),
       limit,
     },
     process.env,
