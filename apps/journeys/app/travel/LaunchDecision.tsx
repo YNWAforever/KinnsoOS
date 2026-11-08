@@ -152,6 +152,7 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
             </button>
           </form>
           <p className="os-note" role="note">{t('Decisions are append-only; the latest record per gate wins.', '決策只會追加；每個關卡以最新一筆為準。')}</p>
+          <p><a className="k-btn" href="/api/ops/launch/packet" download="kinnso-launch-packet.json" data-testid="launch-packet-download">{t('Download launch packet', '下載上線資料包')}</a></p>
         </>
       )}
     </section>

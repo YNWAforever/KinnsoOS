@@ -100,6 +100,7 @@ export function isKnownRoute(path: string) {
   if(isStudioRoute(path))return true;
   if(/^spaces(?:\/[0-9a-f-]{36})?(?:\/chat\/[0-9a-f-]{36})?$/.test(path))return true;
   if(/^studio\/missions\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(path))return true;
+  if(path==='account/data')return true;
   if(path==='merchant/invitation')return true;
   if(path==='ops/readiness')return true;
   if (/^articles\/[^/]+(?:\/[^/]+)?$/.test(path) && !path.split("/").includes(".."))
