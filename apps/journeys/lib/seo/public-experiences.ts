@@ -4,7 +4,7 @@ import { publicLabels } from './public-labels.ts';
 import { publicLanguage } from './public-language.ts';
 import { publicContentMetadata } from './public-presentation.ts';
 import { readPublicRows } from './public-http.ts';
-import { projectPublicMerchant, readPublicMerchant } from './public-merchants.ts';
+import { projectPublicMerchant } from './public-merchants.ts';
 import { sanitizePublicTerms } from './public-terms.ts';
 
 export type PublicExperienceCard = {

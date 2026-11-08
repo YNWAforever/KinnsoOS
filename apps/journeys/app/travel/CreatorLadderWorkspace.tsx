@@ -17,7 +17,7 @@ export function CreatorLadderWorkspace({actorId,enabled,path}:{actorId:string|nu
  const generation=useRef(0),pending=useRef(new Map<string,string>());
  useEffect(()=>{setValid(true);const unsubscribe=subscribeAccountInvalidation(next=>{if(next!==actorId){generation.current++;setValid(false);setLadder(null);setCatalog(null);setOpened({});setError('');setBusy(false);pending.current.clear();}});return()=>{generation.current++;unsubscribe();};},[actorId]);
  useEffect(()=>{const own=++generation.current;pending.current.clear();setBusy(false);setOpened({});setError('');setLadder(null);setCatalog(null);if(!actorId||!enabled)return;
-  void fetch(mode==='tier'?'/api/creator/ladder':'/api/creator/perks',{cache:'no-store'}).then(async response=>{const body=await response.json();if(own!==generation.current)return;if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');mode==='tier'?setLadder(body.data):setCatalog(body.data);}).catch((next:unknown)=>{if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');});
+  void fetch(mode==='tier'?'/api/creator/ladder':'/api/creator/perks',{cache:'no-store'}).then(async response=>{const body=await response.json();if(own!==generation.current)return;if(!response.ok||!body.ok)throw Error(body.code??'UNAVAILABLE');if(mode==='tier')setLadder(body.data);else setCatalog(body.data);}).catch((next:unknown)=>{if(own===generation.current)setError(next instanceof Error?next.message:'UNAVAILABLE');});
   return()=>{generation.current++;};
  },[actorId,enabled,mode]);
  async function redeem(perk:Perk){

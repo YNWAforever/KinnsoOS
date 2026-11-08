@@ -27,7 +27,6 @@ async function journey(browser:Browser,locale:string,viewport:{width:number;heig
  });
  const page=await context.newPage();
  try{
-  const prefix=encodeURIComponent('Synthetic Public');
   await page.goto(`/${locale}/destinations`);
   await expect(page.locator('html')).toHaveAttribute('lang',locale);
   await expect(page.locator(`a[href="/${locale}/destinations/tokyo"]`)).toBeVisible();

@@ -45,10 +45,10 @@ insert into auth.sessions(id,user_id,created_at,updated_at) select id,id,now(),n
 insert into public.kinnso_ops_members(id,user_id,display_name,role,status) values (${q(i.ops)},${q(i.ops)},'Synthetic admin','admin','active'),(${q(i.owner)},${q(i.owner)},'Synthetic owner','owner','active'),(${q(i.mod)},${q(i.mod)},'Synthetic moderator','moderator','active');
 update public.creators set public_profile='{}'::jsonb,status='active',display_name='Synthetic pilot',handle='pilot-'||substr(id::text,1,8) where id in (${q(i.creator)},${q(i.traveller)});
 `;}
-const call=(i,c,actor='ops',request=randomUUID())=>`select public.admin_apply_kinnso_pilot_command(${q(request)},${json(c)})`;
+const call=(c,request=randomUUID())=>`select public.admin_apply_kinnso_pilot_command(${q(request)},${json(c)})`;
 const pc=(c,request=randomUUID())=>`select public.apply_kinnso_pilot_participant_command(${q(request)},${json({...c,requestId:request})})`;
 const run=i=>({type:'createRun',id:i.run,name:'Synthetic pilot',dataClassification:'synthetic',candidateReleaseSha:'a'.repeat(40),environmentOrigin:'http://127.0.0.1:59721'});
-const invoke=(i,c,actor='ops',req)=>`select pg_temp.rpc(${q(i[actor])},${q(call(i,c,actor,req))});`;
+const invoke=(i,c,actor='ops',req)=>`select pg_temp.rpc(${q(i[actor])},${q(call(c,req))});`;
 const manualCodes=['guide_discovered','trip_recovered','privacy_support','alert_owner','physical_ios','physical_android','voiceover','nvda'];
 const manualCall=(i,code,reference)=>`format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',gen_random_uuid(),jsonb_build_object('type','setManualCheck','id',(select id from kinnso_internal.pilot_checks where run_id=${q(i.run)} and code=${q(code)}),'expectedRevision',(select revision from kinnso_internal.pilot_checks where run_id=${q(i.run)} and code=${q(code)}),'status','pass','evidenceReference',${q(reference)},'observedSummary',${q('Synthetic observation: '+code)}))`;
 const manualPass=(i,code,reference)=>`select pg_temp.rpc(${q(i.ops)},${manualCall(i,code,reference)});`;
@@ -64,7 +64,7 @@ function check(name,body){test(name,()=>{const i=ids();try{sql(`begin;${setup(i)
 check('moderator reads only; admin and owner mutate; current role and session revoke access',i=>`
 ${invoke(i,run(i))}
 select pg_temp.ok(pg_temp.rpc(${q(i.mod)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)})->'run'->>'id'=${q(i.run)},'moderator read');
-select pg_temp.denied(${q(i.mod)},${q(call(i,{...run(i),id:randomUUID()}))},'FORBIDDEN');
+select pg_temp.denied(${q(i.mod)},${q(call({...run(i),id:randomUUID()}))},'FORBIDDEN');
 ${invoke(i,{...run(i),id:randomUUID()},'owner')}
 update public.kinnso_ops_members set status='paused' where id=${q(i.mod)};
 select pg_temp.denied(${q(i.mod)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)},'FORBIDDEN');
@@ -72,23 +72,23 @@ update auth.sessions set not_after=now()-interval '1 second' where id=${q(i.ops)
 select pg_temp.denied(${q(i.ops)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)});
 `);
 check('request replay preserves result, rejects changed digest and appends exactly one ops event',i=>`
-create temp table receipt as select pg_temp.rpc(${q(i.ops)},${q(call(i,run(i),'ops',i.request))}) value;
-select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from receipt) and (select value||'{"_pilotReplay":true}'::jsonb from receipt)=pg_temp.rpc(${q(i.ops)},${q(call(i,run(i),'ops',i.request))}),'same receipt');
-select pg_temp.denied(${q(i.ops)},${q(call(i,{...run(i),name:'Different'},'ops',i.request))},'REQUEST_ID_REUSED');
+create temp table receipt as select pg_temp.rpc(${q(i.ops)},${q(call(run(i),i.request))}) value;
+select pg_temp.ok((select value->'_pilotReplay'='false'::jsonb from receipt) and (select value||'{"_pilotReplay":true}'::jsonb from receipt)=pg_temp.rpc(${q(i.ops)},${q(call(run(i),i.request))}),'same receipt');
+select pg_temp.denied(${q(i.ops)},${q(call({...run(i),name:'Different'},i.request))},'REQUEST_ID_REUSED');
 select pg_temp.ok((select count(*)=1 from public.ops_audit_log where entity_id=${q(i.run)}),'one audit');
 select pg_temp.ok((select count(*)>=18 from kinnso_internal.pilot_checks where run_id=${q(i.run)}),'default checks');
 `);
 check('real begin gates, immutable source and notice configuration, impossible terminal transitions',i=>`
 ${invoke(i,{...run(i),dataClassification:'real',environmentOrigin:'https://pilot.example.test'})}
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'running',reason:'begin'}))},'CONFLICT');
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'configureRun',id:i.run,expectedRevision:1,candidateReleaseSha:'b'.repeat(40)}))},'INVALID');
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'skip'}))},'CONFLICT');
+select pg_temp.denied(${q(i.ops)},${q(call({type:'setRunStatus',id:i.run,expectedRevision:1,status:'running',reason:'begin'}))},'CONFLICT');
+select pg_temp.denied(${q(i.ops)},${q(call({type:'configureRun',id:i.run,expectedRevision:1,candidateReleaseSha:'b'.repeat(40)}))},'INVALID');
+select pg_temp.denied(${q(i.ops)},${q(call({type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'skip'}))},'CONFLICT');
 update kinnso_internal.pilot_runs set status='cancelled' where id=${q(i.run)};
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'recruiting',reason:'reopen'}))},'CONFLICT');
+select pg_temp.denied(${q(i.ops)},${q(call({type:'setRunStatus',id:i.run,expectedRevision:1,status:'recruiting',reason:'reopen'}))},'CONFLICT');
 `);
 check('distinct required slots, withdrawal retains history and replacement inherits no identity',i=>`
 ${seed(i)}
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addParticipant',id:randomUUID(),runId:i.run,role:'traveller',cohortRole:'required_traveller',displayLabel:'duplicate'}))});
+select pg_temp.denied(${q(i.ops)},${q(call({type:'addParticipant',id:randomUUID(),runId:i.run,role:'traveller',cohortRole:'required_traveller',displayLabel:'duplicate'}))});
 ${invoke(i,{type:'setParticipantStatus',id:i.slot,expectedRevision:1,status:'withdrawn',reason:'leave'})}
 ${invoke(i,{type:'addParticipant',id:i.other,runId:i.run,role:'traveller',cohortRole:'required_traveller',displayLabel:'Replacement'})}
 select pg_temp.ok((select user_id is null and consented_at is null from kinnso_internal.pilot_participants where id=${q(i.other)}),'new identity');
@@ -198,9 +198,9 @@ check('claim response and replay stay scoped to the locked run and slot',i=>{
 check('invite first response only, replay redaction, consumed/revoked/expired denial and actor audit',i=>`
 ${seed(i)}
 update kinnso_internal.pilot_participants set user_id=null,status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};
-create temp table invite as select pg_temp.rpc(${q(i.ops)},${q(call(i,{type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1},'ops',i.request))}) value;
+create temp table invite as select pg_temp.rpc(${q(i.ops)},${q(call({type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1},i.request))}) value;
 select pg_temp.ok(length((select value->>'inviteCode' from invite))>=43,'entropy');
-select pg_temp.ok(not(pg_temp.rpc(${q(i.ops)},${q(call(i,{type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1},'ops',i.request))}) ? 'inviteCode'),'no replay secret');
+select pg_temp.ok(not(pg_temp.rpc(${q(i.ops)},${q(call({type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1},i.request))}) ? 'inviteCode'),'no replay secret');
 select pg_temp.ok(not exists(select 1 from kinnso_internal.requests where position((select value->>'inviteCode' from invite) in result::text)>0),'no stored code');
 select pg_temp.rpc(${q(i.traveller)},format('select public.apply_kinnso_pilot_participant_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','claimInvite','requestId',${q(randomUUID())},'code',(select value->>'inviteCode' from invite))- 'requestId'));
 select pg_temp.denied(${q(i.other)},format('select public.apply_kinnso_pilot_participant_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','claimInvite','code',(select value->>'inviteCode' from invite))));
@@ -209,7 +209,7 @@ select pg_temp.ok((select count(*)=1 from kinnso_internal.pilot_participant_audi
 check('pause rejects intake, acknowledgements, manual evidence, claims and linked publication',i=>`
 ${seed(i)}update kinnso_internal.pilot_runs set status='paused' where id=${q(i.run)};
 ${['acceptConsent','submitContentIntake','acknowledgeNotification','acknowledgeSupportResponse'].map(type=>`select pg_temp.denied(${q(i.creator)},${q(pc({type,...(type==='acceptConsent'?{noticeVersion:'participation-v1',noticeDigest:'a'.repeat(64),privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64)}:type==='submitContentIntake'?{intake:content}: {})}))});`).join('\n')}
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addEvidenceReference',runId:i.run,checkCode:'privacy_support',entityType:'guide',entityId:i.guide,evidenceReference:'ref:1'}))},'CONFLICT');
+select pg_temp.denied(${q(i.ops)},${q(call({type:'addEvidenceReference',runId:i.run,checkCode:'privacy_support',entityType:'guide',entityId:i.guide,evidenceReference:'ref:1'}))},'CONFLICT');
 select pg_temp.denied(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','setManualCheck','id',(select id from kinnso_internal.pilot_checks where run_id=${q(i.run)} and code='physical_ios'),'expectedRevision',1,'status','pass','evidenceReference','ref:1','observedSummary','Observed')),'CONFLICT');
 `);
 const content={title:'Synthetic guide',destination:'Kyoto',authoredLocale:'en',sourceSummary:'Synthetic original work',sourceUrls:[],rightsBasis:'original',rightsEvidenceReference:'ref:1',authorConsentVersion:'content-v1',authorConsentDigest:'c'.repeat(64),coverRightsConfirmed:null,coverRightsEvidenceReference:null};
@@ -263,8 +263,8 @@ select pg_temp.denied(${q(i.ops)},format('select public.admin_apply_kinnso_pilot
 `);
 check('cross-run and unowned guide, mission and support references fail',i=>`
 ${seed(i)}
-select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'bindCollaboration',id:i.other,runId:i.run,merchantParticipantId:i.merchantSlot,creatorParticipantId:i.merchantSlot,missionId:randomUUID()}))},'INVALID');
-${['guide','mission','support_case'].map(entityType=>`select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addEvidenceReference',runId:i.run,checkCode:'support_resolved',entityType,entityId:randomUUID(),evidenceReference:'ref:1'}))});`).join('\n')}
+select pg_temp.denied(${q(i.ops)},${q(call({type:'bindCollaboration',id:i.other,runId:i.run,merchantParticipantId:i.merchantSlot,creatorParticipantId:i.merchantSlot,missionId:randomUUID()}))},'INVALID');
+${['guide','mission','support_case'].map(entityType=>`select pg_temp.denied(${q(i.ops)},${q(call({type:'addEvidenceReference',runId:i.run,checkCode:'support_resolved',entityType,entityId:randomUUID(),evidenceReference:'ref:1'}))});`).join('\n')}
 `);
 check('internal tables and helper functions deny direct authenticated and service-role access',i=>`
 ${seed(i)}
@@ -288,10 +288,10 @@ select pg_temp.denied(${q(i.creator)},${q(pc({type:'claimInvite',code:'x'.repeat
 `);
 check('enrolled notices are immutable; rehearsal must be completed synthetic on exact release',i=>{
  const config={type:'configureRun',id:i.run,expectedRevision:1,participationNoticeVersion:'changed',participationNoticeDigest:'a'.repeat(64),privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64),contentConsentVersion:'content-v1',contentConsentDigest:'c'.repeat(64),coordinatorReference:'coordinator',supportOwnerReference:'support',privacyOwnerReference:'privacy',alertOwnerReference:'alerts',privateChannelReference:'channel',syntheticRehearsalRunId:null};
- return `${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call(i,config))},'CONFLICT');
+ return `${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call(config))},'CONFLICT');
  update kinnso_internal.pilot_runs set status='draft',data_classification='real',environment_origin='https://pilot.example.test' where id=${q(i.run)};
  delete from kinnso_internal.pilot_participants where run_id=${q(i.run)};
- select pg_temp.denied(${q(i.ops)},${q(call(i,{...config,syntheticRehearsalRunId:randomUUID()}))},'CONFLICT');`;
+ select pg_temp.denied(${q(i.ops)},${q(call({...config,syntheticRehearsalRunId:randomUUID()}))},'CONFLICT');`;
 });
 test('two concurrent claims have one winner and leave no test records',async()=>{
  const i=ids(),code=randomUUID().replaceAll('-','')+randomUUID().replaceAll('-','');
@@ -326,7 +326,7 @@ test('publication cannot reuse approval after a concurrent identical-content reb
   end loop;raise exception 'publisher never waited for run lock';end$$;
   set local role authenticated;
   select set_config('request.jwt.claims',${json({sub:i.ops,role:'authenticated',session_id:i.ops})}::text,true);
-  ${call(i,{type:'bindGuide',intakeId:i.intake,guideId:otherGuide,expectedRevision:3})};
+  ${call({type:'bindGuide',intakeId:i.intake,guideId:otherGuide,expectedRevision:3})};
   reset role;
   do $$declare statement text:=${approval(otherGuide,i.intake,4,'Reviewed replacement guide')}; begin set local role authenticated; execute statement; end$$;
   commit;`);
@@ -361,7 +361,7 @@ test('publication cannot reuse approval after a concurrent identical-content reb
  }
 });
 check('equivalent participant UUID spellings cannot bind collaboration',i=>`
-${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'bindCollaboration',id:randomUUID(),runId:i.run,merchantParticipantId:i.merchantSlot.toUpperCase(),creatorParticipantId:i.merchantSlot.toLowerCase(),missionId:randomUUID()}))},'INVALID');`);
+${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call({type:'bindCollaboration',id:randomUUID(),runId:i.run,merchantParticipantId:i.merchantSlot.toUpperCase(),creatorParticipantId:i.merchantSlot.toLowerCase(),missionId:randomUUID()}))},'INVALID');`);
 
 function executionSeed(i,initialize=true){
  const mission=randomUUID(),milestone=randomUUID(),mp=randomUUID(),sub=randomUUID(),merchant=randomUUID(),trip=randomUUID(),support=randomUUID();
@@ -413,7 +413,7 @@ test('authoritative facts satisfy the readiness evaluator and permit explicit co
  ${invoke(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'Coordinator confirms synthetic acceptance'})}
  select pg_temp.ok((select count(*) from public.ops_audit_log where actor_ops_member_id=${q(i.ops)})=(select count(*) from kinnso_internal.requests where actor_id=${q(i.ops)}),'every successful ops command has exactly one audit');
  select pg_temp.ok((select count(*) from kinnso_internal.pilot_participant_audit where run_id=${q(i.run)})=(select count(*) from kinnso_internal.requests where actor_id in (${q(i.creator)},${q(i.traveller)}) and result ? 'snapshot'),'every successful participant command and publish has exactly one audit');
- select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addParticipant',id:randomUUID(),runId:i.run,role:'traveller',cohortRole:'observer',displayLabel:'Too late'}))},'CONFLICT');rollback;`);}catch(e){assert.fail(String(e.stderr||e.message));}
+ select pg_temp.denied(${q(i.ops)},${q(call({type:'addParticipant',id:randomUUID(),runId:i.run,role:'traveller',cohortRole:'observer',displayLabel:'Too late'}))},'CONFLICT');rollback;`);}catch(e){assert.fail(String(e.stderr||e.message));}
  const snap=JSON.parse(output.split(/\r?\n/).find(x=>x.startsWith('FACTS:')).slice(6));
  assert.deepEqual(pilotExecutionReadiness(snap).blockers,[]);
  const self=JSON.parse(output.split(/\r?\n/).find(x=>x.startsWith('SELF:')).slice(5));
@@ -429,7 +429,7 @@ check('three valid publications cannot conceal a fourth unapproved linked guide'
  select pg_temp.rpc(${q(i.creator)},${q(`select public.save_kinnso_guide_draft(${q(guide)},0,${q(randomUUID())},${json(draft)})`)});
  select pg_temp.rpc(${q(i.creator)},${q(pc({type:'submitContentIntake',intake:{...content,rightsEvidenceReference:'ref:'+guide}}))});
  select pg_temp.rpc(${q(i.ops)},format('select public.admin_apply_kinnso_pilot_command(%L,%L::jsonb)',${q(randomUUID())},jsonb_build_object('type','bindGuide','intakeId',(select id from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)} and guide_id is null),'guideId',${q(guide)},'expectedRevision',1)));
- select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'Cannot skip linked guide'}))},'CONFLICT');`;
+ select pg_temp.denied(${q(i.ops)},${q(call({type:'setRunStatus',id:i.run,expectedRevision:1,status:'completed',reason:'Cannot skip linked guide'}))},'CONFLICT');`;
 });
 check('notification acknowledgement rejects an older approval after a newer submission',i=>`
 ${executionSeed(i)}
@@ -511,7 +511,7 @@ check('missing and stale notice digests fail without accepting consent',i=>{
  `;
 });
 check('an active participant cannot be completed before the run',i=>`
-${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setParticipantStatus',id:i.slot,expectedRevision:1,status:'completed',reason:'Participant finished'}))},'CONFLICT');
+${seed(i)}select pg_temp.denied(${q(i.ops)},${q(call({type:'setParticipantStatus',id:i.slot,expectedRevision:1,status:'completed',reason:'Participant finished'}))},'CONFLICT');
 select pg_temp.ok((select status='active' from kinnso_internal.pilot_participants where id=${q(i.slot)}),'participant completed');
 select pg_temp.ok(not kinnso_internal.pilot_execution_complete(${q(i.run)}),'participant status is not run acceptance');
 `);
@@ -556,15 +556,15 @@ function boundSeed(i){return `${contentSeed(i)}
 check('discovery evidence requires the current traveller and current creator published guide',i=>{
  const evidence={type:'addEvidenceReference',runId:i.run,checkCode:'guide_discovered',entityType:'guide',entityId:i.guide,evidenceReference:'ref:'+randomUUID()};
  return `${boundSeed(i)}
- select pg_temp.denied(${q(i.ops)},${q(call(i,evidence))},'INVALID');
- select pg_temp.denied(${q(i.ops)},${q(call(i,{...evidence,participantId:i.creatorSlot}))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call(evidence))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call({...evidence,participantId:i.creatorSlot}))},'INVALID');
  ${invoke(i,{...evidence,participantId:i.slot})}${manualPass(i,'guide_discovered',evidence.evidenceReference)}
  ${invoke(i,{type:'setParticipantStatus',id:i.slot,expectedRevision:1,status:'withdrawn',reason:'Replace traveller'})}
  ${invoke(i,{type:'addParticipant',id:i.other,runId:i.run,role:'traveller',cohortRole:'required_traveller',displayLabel:'New traveller'})}
  update kinnso_internal.pilot_participants set user_id=${q(i.other)},status='active',consent_version='participation-v1',consent_digest=kinnso_internal.pilot_consent_identity((select r from kinnso_internal.pilot_runs r where id=${q(i.run)})),consented_at=clock_timestamp() where id=${q(i.other)};
  select pg_temp.ok((select status<>'pass' from kinnso_internal.pilot_check_rows(${q(i.run)}) where code='guide_discovered'),'old traveller evidence not inherited');
  select pg_temp.denied(${q(i.ops)},${manualCall(i,'guide_discovered',evidence.evidenceReference)},'CONFLICT');
- select pg_temp.denied(${q(i.ops)},${q(call(i,{...evidence,participantId:i.slot}))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call({...evidence,participantId:i.slot}))},'INVALID');
  `;
 });
 check('creator withdrawal retires obligations atomically while preserving public guide history',i=>`${boundSeed(i)}
@@ -579,16 +579,16 @@ check('recovery evidence requires an owned trip and an in-window adoption of cur
  const evidence={type:'addEvidenceReference',runId:i.run,checkCode:'trip_recovered',entityType:'trip',entityId:i.other,participantId:i.slot,evidenceReference:reference};
  return `${boundSeed(i)}
  insert into public.trips(id,owner_user_id,title,timezone,head_revision_no) values(${q(i.other)},${q(i.traveller)},'Recovery trip','Asia/Tokyo',1);
- select pg_temp.denied(${q(i.ops)},${q(call(i,evidence))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call(evidence))},'INVALID');
  select pg_temp.rpc(${q(i.traveller)},${q(`select public.adopt_guide_to_trip(${q(i.guide)},1,${q(i.other)},1,${q(randomUUID())})`)});
- select pg_temp.denied(${q(i.ops)},${q(call(i,{...evidence,participantId:i.creatorSlot}))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call({...evidence,participantId:i.creatorSlot}))},'INVALID');
  update public.trips set owner_user_id=${q(i.creator)} where id=${q(i.other)};
- select pg_temp.denied(${q(i.ops)},${q(call(i,evidence))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call(evidence))},'INVALID');
  update public.trips set owner_user_id=${q(i.traveller)} where id=${q(i.other)};
  ${invoke(i,evidence)}${manualPass(i,'trip_recovered',reference)}
  update public.trip_stops set adopted_at=now()-interval '2 hours' where trip_id=${q(i.other)};
  select pg_temp.ok((select status<>'pass' from kinnso_internal.pilot_check_rows(${q(i.run)}) where code='trip_recovered'),'out-of-window adoption does not count');
- select pg_temp.denied(${q(i.ops)},${q(call(i,evidence))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call(evidence))},'INVALID');
  `;
 });
 check('merchant withdrawal retires its collaboration without withdrawing creator publications',i=>`${boundSeed(i)}
@@ -604,7 +604,7 @@ test('withdrawn creator can be replaced through invite and consent, then complet
  select pg_temp.ok((select count(*)=3 from kinnso_internal.pilot_content_intakes where run_id=${q(i.run)} and status='withdrawn'),'old intakes retained');
  select pg_temp.ok(not kinnso_internal.pilot_execution_complete(${q(i.run)}),'withdrawal removes readiness');
  ${invoke(i,{type:'addParticipant',id:replacement.creatorSlot,runId:i.run,role:'creator',cohortRole:'required_creator',displayLabel:'Replacement creator'})}
- create temp table replacement_invite as select pg_temp.rpc(${q(i.ops)},${q(call(i,{type:'createInvite',id:randomUUID(),participantId:replacement.creatorSlot,expectedRevision:1,expiresInHours:1}))}) value;
+ create temp table replacement_invite as select pg_temp.rpc(${q(i.ops)},${q(call({type:'createInvite',id:randomUUID(),participantId:replacement.creatorSlot,expectedRevision:1,expiresInHours:1}))}) value;
  select pg_temp.rpc(${q(replacement.creator)},format('select public.apply_kinnso_pilot_participant_command(%L,%L::jsonb)',gen_random_uuid(),jsonb_build_object('type','claimInvite','code',(select value->>'inviteCode' from replacement_invite))));
  select pg_temp.rpc(${q(replacement.creator)},${q(pc({type:'acceptConsent',noticeVersion:'participation-v1',noticeDigest:'a'.repeat(64),privacyNoticeVersion:'privacy-v1',privacyNoticeDigest:'b'.repeat(64)}))});
  ${invoke(i,{type:'setParticipantStatus',id:replacement.creatorSlot,expectedRevision:4,status:'active',reason:'Replacement consent verified'})}
@@ -626,7 +626,7 @@ test('withdrawn creator can be replaced through invite and consent, then complet
 });
 test('competing operators cannot supersede or revoke an invite from the same participant revision',async()=>{
  const i=ids();let seeded=false;
- const asActor=(actor,command)=>`begin;set local role authenticated;select set_config('request.jwt.claims',${json({sub:actor,role:'authenticated',session_id:actor})}::text,true);${call(i,command)};commit;`;
+ const asActor=(actor,command)=>`begin;set local role authenticated;select set_config('request.jwt.claims',${json({sub:actor,role:'authenticated',session_id:actor})}::text,true);${call(command)};commit;`;
  try{
   sql(`begin;${setup(i)}${seed(i)}update kinnso_internal.pilot_participants set user_id=null,status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};commit;`);seeded=true;
   const commands=[i.ops,i.owner].map(()=>({type:'createInvite',id:randomUUID(),participantId:i.slot,expectedRevision:1,expiresInHours:1}));
@@ -665,7 +665,7 @@ check('invite revoke is revision guarded and replay does not advance the slot tw
  return `${seed(i)}
  update kinnso_internal.pilot_participants set user_id=null,status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};
  ${invoke(i,{type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1})}
- select pg_temp.denied(${q(i.owner)},${q(call(i,{...revoke,expectedRevision:1}))},'CONFLICT');
+ select pg_temp.denied(${q(i.owner)},${q(call({...revoke,expectedRevision:1}))},'CONFLICT');
  select pg_temp.ok((select status='active' from kinnso_internal.pilot_invites where id=${q(i.invite)}),'stale revocation preserves issued invite');
  ${invoke(i,revoke,'ops',i.request)}
  ${invoke(i,revoke,'ops',i.request)}
@@ -680,7 +680,7 @@ select pg_temp.denied(${q(i.ops)},${approval(i.guide,i.intake,3,'Stale revision'
 select pg_temp.denied(${q(i.ops)},${approval(i.guide,i.intake,3,'Wrong digest',JSON.stringify({expectedContentDigest:'0'.repeat(64)}))},'CONFLICT');
 select pg_temp.ok((select revision=3 from kinnso_internal.pilot_content_intakes where id=${q(i.intake)}),'no stale approval');
 update kinnso_internal.pilot_participants set user_id=null,status='invited',consent_version=null,consented_at=null where id=${q(i.slot)};
-create temp table issued as select pg_temp.rpc(${q(i.ops)},${q(call(i,{type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1}))}) value;
+create temp table issued as select pg_temp.rpc(${q(i.ops)},${q(call({type:'createInvite',id:i.invite,participantId:i.slot,expectedRevision:1,expiresInHours:1}))}) value;
 create temp table readback as select pg_temp.rpc(${q(i.mod)},${q(`select public.get_kinnso_ops_pilot(${q(i.run)})`)}) value;
 select pg_temp.ok((select p->'activeInvite' = jsonb_build_object('id',inv.id,'status','active','expiresAt',inv.expires_at)
  from readback cross join lateral jsonb_array_elements(value->'participants') p
@@ -714,7 +714,7 @@ test('approval waiting on a concurrent draft update rejects the reviewed snapsho
   if(!locked) assert.fail((await change).err || "draft writer did not acquire its lock");
   review=asyncSql(`set application_name=${q(approver)};begin;set local role authenticated;
     select set_config('request.jwt.claims',${json({sub:i.ops,role:'authenticated',session_id:i.ops})}::text,true);
-    ${call(i,{type:'reviewContentIntake',id:i.intake,expectedRevision:3,decision:'approve',reason:'Reviewed before update',...reviewed})};commit;`);
+    ${call({type:'reviewContentIntake',id:i.intake,expectedRevision:3,decision:'approve',reason:'Reviewed before update',...reviewed})};commit;`);
   const [update, approvalResult]=await Promise.all([change,review]);
   assert.equal(update.status,0,update.err);
   assert.equal(approvalResult.status,3);
@@ -811,7 +811,7 @@ for(const change of ['pause','revoke','unbind']) test('support create waits for 
 
 check('external URL cannot be recorded as an opaque pilot evidence reference',i=>`
  ${seed(i)}
- select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'https://untrusted.example.test/private'}))},'INVALID');
+ select pg_temp.denied(${q(i.ops)},${q(call({type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'https://untrusted.example.test/private'}))},'INVALID');
  select pg_temp.ok(not exists(select 1 from kinnso_internal.pilot_evidence where run_id=${q(i.run)}),'no evidence write');
  select pg_temp.ok(not exists(select 1 from public.ops_audit_log where actor_ops_member_id=${q(i.ops)} and action='pilot.addEvidenceReference'),'no evidence audit write');
  ${invoke(i,{type:'addEvidenceReference',runId:i.run,checkCode:'physical_ios',entityType:'manual',entityId:i.run,evidenceReference:'ref:1'})}
@@ -856,7 +856,7 @@ check('FINAL all owned intakes are selectable and operator review contains subst
 `);
 check('FINAL premature participant completion denied and self withdrawal retires only pilot',i=>`
  ${contentSeed(i)}
- select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'setParticipantStatus',id:i.creatorSlot,expectedRevision:1,status:'completed',reason:'Too early'}))},'CONFLICT');
+ select pg_temp.denied(${q(i.ops)},${q(call({type:'setParticipantStatus',id:i.creatorSlot,expectedRevision:1,status:'completed',reason:'Too early'}))},'CONFLICT');
  select pg_temp.denied(${q(i.creator)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:2}))},'CONFLICT');
  select pg_temp.denied(${q(i.traveller)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:1}))},'CONFLICT');
  select pg_temp.rpc(${q(i.creator)},${q(pc({type:'withdrawParticipation',runId:i.run,participantId:i.creatorSlot,expectedRevision:1}))});
@@ -888,7 +888,7 @@ check('FINAL slot twenty-one denies without row receipt or audit',i=>{
  insert into kinnso_internal.pilot_participants(run_id,role,pilot_cohort_role,display_label)
  select ${q(i.run)},'traveller','observer','Observer '||n from generate_series(1,17) n;
  create temp table audit_before as select count(*) n from public.ops_audit_log;
- select pg_temp.denied(${q(i.ops)},${q(call(i,{type:'addParticipant',id:slot,runId:i.run,role:'traveller',cohortRole:'observer',displayLabel:'Excess'},'ops',request))},'CONFLICT');
+ select pg_temp.denied(${q(i.ops)},${q(call({type:'addParticipant',id:slot,runId:i.run,role:'traveller',cohortRole:'observer',displayLabel:'Excess'},request))},'CONFLICT');
  select pg_temp.ok((select count(*)=20 from kinnso_internal.pilot_participants where run_id=${q(i.run)}),'cap');
  select pg_temp.ok((select count(*) from public.ops_audit_log)=(select n from audit_before),'no audit');
  select pg_temp.ok(not exists(select 1 from kinnso_internal.requests where request_id=${q(request)}),'no receipt');`;

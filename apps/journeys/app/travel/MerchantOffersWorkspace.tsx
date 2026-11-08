@@ -7,7 +7,7 @@ type Offer={id:string;title:string;terms:string;discountKind:string;discountValu
 const empty={title:'',terms:'',discountKind:'percent',discountValue:'',commissionKind:'flat',commissionValue:'',validFrom:'',validTo:'',perVisitorLimit:'1',totalCap:'',missionId:null};
 
 export function MerchantOffersWorkspace({actorId,merchantId,onLockChange}:{actorId:string|null;merchantId:string;onLockChange?:(locked:boolean)=>void}){
- const{locale,t}=useApp(),[valid,setValid]=useState(true),[items,setItems]=useState<Offer[]|null>(null),[nextCursor,setNextCursor]=useState<string|null>(null),[loadingMore,setLoadingMore]=useState(false),[listError,setListError]=useState(''),[summary,setSummary]=useState({claimed:0,redeemed:0}),[draft,setDraft]=useState(empty),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
+ const{t}=useApp(),[valid,setValid]=useState(true),[items,setItems]=useState<Offer[]|null>(null),[nextCursor,setNextCursor]=useState<string|null>(null),[loadingMore,setLoadingMore]=useState(false),[listError,setListError]=useState(''),[summary,setSummary]=useState({claimed:0,redeemed:0}),[draft,setDraft]=useState(empty),[error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[unknown,setUnknown]=useState(false);
  const generation=useRef(0),intent=useRef<string|null>(null),listVersion=useRef(0),paging=useRef(false);
  const locked=busy||unknown;
  useEffect(()=>{onLockChange?.(locked);},[locked,onLockChange]);

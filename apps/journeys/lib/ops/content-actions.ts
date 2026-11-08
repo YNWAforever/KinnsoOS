@@ -2,7 +2,6 @@ const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const locales=new Set(['en','zh-HK']);
 const contentLocales=new Set(['en','zh-hk','zh-tw','zh-cn','ja','ko','th']);
 const sessionTypes=new Set(['destination_briefing','ask_a_creator','merchant_spotlight','new_creator_intro']);
-const sessionStatuses=new Set(['scheduled','live','ended','cancelled']);
 const merchantTiers=new Set(['rising','pro','elite']);
 const redemptionTypes=new Set(['code','link']);
 const testimonialRoles=new Set(['creator','traveller','merchant']);

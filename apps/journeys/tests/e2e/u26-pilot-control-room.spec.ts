@@ -207,14 +207,14 @@ test('pilot rehearsal completes; real-classified replay retains the four manual 
             'contentDigest',content_digest,'reviewedVersion',reviewed_guide_version,'reviewer',reviewed_by_ops_member_id,
             'reviewedAt',reviewed_at,'reviewReason',review_reason) from kinnso_internal.pilot_content_intakes where id='${intake.id}'`));
           for (const change of drift) {
-            const approved = await current();
+            await current();
             const prior = stored();
             expect(prior.draftRevision).toBe(draft.revision);
             expect(prior.contentDigest).toMatch(/^[a-f0-9]{64}$/);
             expect(prior.reviewer && prior.reviewedAt && prior.reviewReason).toBeTruthy();
             for (const [field, value] of Object.entries(change)) expect(prior[field]).not.toEqual(value);
             await reviewUI(intake.id,'reject','Synthetic rights change');
-            const rejected = await current();
+            await current();
             nextInput = { ...nextInput, ...change };
             await submitIntakeUI(nextInput,intake.id);
             const revised = await current();

@@ -17,7 +17,7 @@ test('operations invites and audits are retry-safe on the isolated target',async
  const run=randomUUID(),createdUsers=[],createdMembers=[],emails=[];
  try{
   const make=async prefix=>{const email=`ops-${prefix}-${run}@example.test`,password=randomBytes(18).toString('base64url');const made=await ok(admin.auth.admin.createUser({email,password,email_confirm:true}));createdUsers.push(made.user.id);emails.push(email);const client=createClient(process.env.SUPABASE_URL,process.env.SUPABASE_ANON_KEY,options);await ok(client.auth.signInWithPassword({email,password}));return{id:made.user.id,email,client};};
-  const owner=await make('owner'),member=await make('member'),invitee=await make('invitee'),wrong=await make('wrong'),revoked=await make('revoked');
+  const owner=await make('owner'),member=await make('member'),invitee=await make('invitee'),wrong=await make('wrong');
   const ownerMember=(await ok(admin.from('kinnso_ops_members').insert({user_id:owner.id,display_name:'Synthetic lifecycle owner',role:'owner',status:'active'}).select('id').single())).id;
   const targetMember=(await ok(admin.from('kinnso_ops_members').insert({user_id:member.id,display_name:'Synthetic lifecycle analyst',role:'analyst',status:'active'}).select('id').single())).id;
   createdMembers.push(ownerMember,targetMember);

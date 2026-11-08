@@ -34,7 +34,10 @@ test('revalidation route requires its secret and bounded native path',async t=>{
  const route=await load('../app/api/revalidate/route.ts',[[/^next\/cache$/,'next-cache','export function revalidatePath(value){globalThis.__revalidateCalls.push(value)}']]);
  const request=(body,secret)=>new Request('https://kinnso.test/api/revalidate',{method:'POST',headers:{'content-type':'application/json',...(secret?{'x-revalidate-secret':secret}:{})},body:JSON.stringify(body)});
  let response=await route.POST(request({path:'/en/articles'},'wrong'));assert.equal(response.status,401);assert.equal(globalThis.__revalidateCalls.length,0);
- for(const path of ['', '//evil.test', '/en/%0d%0aheader', '/en/articles?secret=1', '../private'])response=await route.POST(request({path},'revalidate-secret')),assert.equal(response.status,400,path);
+ for(const path of ['', '//evil.test', '/en/%0d%0aheader', '/en/articles?secret=1', '../private']) {
+  response=await route.POST(request({path},'revalidate-secret'));
+  assert.equal(response.status,400,path);
+ }
  response=await route.POST(request({path:'/en/articles'}));assert.equal(response.status,401);
  response=await route.POST(request({path:'/en/articles'},'revalidate-secret'));assert.equal(response.status,200);assert.deepEqual(globalThis.__revalidateCalls,['/en/articles']);
 });

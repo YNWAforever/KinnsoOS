@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import type { ArticleListing } from './article-listing.ts';
 import type { DestinationRelated, Section } from './destination-related.ts';
 import { publicLabels } from './public-labels.ts';
 import type { PublicDestination } from './public-destinations.ts';

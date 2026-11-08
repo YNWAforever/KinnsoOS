@@ -224,7 +224,7 @@ test('redeemed perks recover after response loss and reload and retain each reve
  const redeemed=new Set<string>([editToken]);
  const wire:{perkId:string;requestId:string}[]=[];
  await mount(page,'/perks',async route=>{
-  if(route.request().method()==='GET')return route.fulfill({json:{ok:true,data:{tier:'rising',items:perks.map(({value,...perk})=>({...perk,eligible:true,redeemed:redeemed.has(perk.id)}))}}});
+  if(route.request().method()==='GET')return route.fulfill({json:{ok:true,data:{tier:'rising',items:perks.map(({id,title,redemptionType})=>({id,title,redemptionType,eligible:true,redeemed:redeemed.has(id)}))}}});
   const input=route.request().postDataJSON();
   wire.push(input);redeemed.add(input.perkId);
   if(wire.length===1)return route.abort('failed');

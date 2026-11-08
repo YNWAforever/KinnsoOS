@@ -13,7 +13,7 @@ const reserved=new Set(['kinnso-v3','kinnsoos-pilot-20261013','kinnsoos-trip-it-
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const digest=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 
-function loopback(value,name){
+function loopback(value){
  let url;try{url=new URL(value)}catch{fail('TARGET_INVALID')}
  if(url.protocol!=='http:'||url.hostname!=='127.0.0.1'||url.pathname!=='/'||url.username||url.password||url.search||url.hash||!url.port)fail('TARGET_INVALID');
  if(!/^\d{2,5}$/.test(url.port)||Number(url.port)<1||Number(url.port)>65535)fail('TARGET_INVALID');
@@ -27,8 +27,8 @@ export function publicTargetConfiguration(env=process.env){
  if(typeof dbPort!=='string'||!/^\d{2,5}$/.test(dbPort)||Number(dbPort)<1||Number(dbPort)>65535)fail('TARGET_DB_PORT_INVALID');
  return {
   project,
-  apiOrigin:loopback(env.KINNSO_PUBLIC_IT_API_ORIGIN,'api'),
-  appOrigin:loopback(env.KINNSO_PUBLIC_IT_APP_ORIGIN,'app'),
+  apiOrigin:loopback(env.KINNSO_PUBLIC_IT_API_ORIGIN),
+  appOrigin:loopback(env.KINNSO_PUBLIC_IT_APP_ORIGIN),
   dbPort,
   network:'supabase_network_'+project,
   volume:'supabase_db_'+project,

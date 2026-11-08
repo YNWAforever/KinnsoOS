@@ -9,7 +9,7 @@ verifyTestTarget();
 const admin=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}});
 const ok=async<T=any>(promise:PromiseLike<any>):Promise<T>=>{const result=await promise;expect(result.error).toBeNull();return result.data as T;};
 
-test('operations session, perk, testimonial and enquiry administration is connected and retained for review',async({page,baseURL},testInfo)=>{
+test('operations session, perk, testimonial and enquiry administration is connected and retained for review',async({page},testInfo)=>{
  test.setTimeout(180_000);page.setDefaultTimeout(12_000);page.setDefaultNavigationTimeout(20_000);
  const runId=randomUUID(),password='Synthetic!'+randomUUID();
  const operator=await ok<{user:{id:string;email:string}}>(admin.auth.admin.createUser({email:`synthetic-ops-content-${runId}@example.test`,password,email_confirm:true}));
