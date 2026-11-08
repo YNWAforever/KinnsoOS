@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-08T21:15:47.094Z",
+  "slice": "L2 privacy and data rights (Phase 4)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "d033470e5075da608b25a4aa1c0b224d20c095f0",
+    "releaseTree": "30ab1fc1f7ff0a5884118d3b5035df7ee2a87c49",
+    "parent": "52372700b7e748c302589bfa19334960f457a2d7",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42521545875,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "project": "scryfkefedzuetfdtrvl",
+    "migration": "20261109160000_data_rights.sql",
+    "baseline": {
+      "ledger": 244,
+      "head": "20261109150000"
+    },
+    "post": {
+      "ledger": 245,
+      "head": "20261109160000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_DATA_RIGHTS_20261109",
+    "verified": {
+      "rpcs": [
+        "kinnso_export_account_data()",
+        "kinnso_delete_ai_conversations()",
+        "kinnso_delete_creator_drafts()",
+        "kinnso_privacy_request(text,text,text)",
+        "kinnso_my_privacy_requests()",
+        "kinnso_ops_privacy_requests(integer)",
+        "kinnso_ops_update_privacy_request(uuid,text,text)"
+      ],
+      "table": "kinnso_internal.privacy_requests (empty, no client grants)",
+      "anonLeak": false,
+      "publishedGuidesUnchanged": 9
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_9AKHmqo1wFZDYiRtJA3Q1B79omVR",
+    "staged": "dpl_2R9oXrt4kzGLvuRCz9GDqnSnYhrC",
+    "promoted": "dpl_2R9oXrt4kzGLvuRCz9GDqnSnYhrC",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": "200",
+      "opsReadinessAnonymous": "307 redirect to sign-in (gated as designed)",
+      "accountDataPage": "200 on the promoted deployment",
+      "anonymousEndpoints": {
+        "export": 401,
+        "requests": 401,
+        "opsQueue": 401,
+        "launchPacket": 401
+      }
+    },
+    "rollbackTargets": [
+      "dpl_9AKHmqo1wFZDYiRtJA3Q1B79omVR",
+      "dpl_9hCWnEngh93PqmBvfuMLsukyKCMf"
+    ]
+  },
+  "delivered": {
+    "export": "JSON with spaces/chats/messages, guides, drafts, attestations, request history",
+    "deletion": "AI conversations (spaces cascading threads/messages) plus hourly turn counters, confirmation-gated",
+    "requestChannel": "recorded requests with kind/scope/note, user history and ops queue with status + resolution note",
+    "retention": "tied to behaviour: chats persist until deleted, hourly counters expire, exports are not stored server-side",
+    "launchPacket": "GET /api/ops/launch/packet + download link — verdict, eight gates, decisions, blockers, deployment identity"
+  },
+  "phase4Status": {
+    "L1": "done (deployed)",
+    "L2": "done (this release)",
+    "L3": "blocked on owner: set CRON_SECRET + KINNSO_ALERT_WEBHOOK_URL and redeploy for real alert delivery; backup/restore must be exercised or formally waived",
+    "L4": "blocked on owner: physical device and screen-reader passes can only be recorded by the launch owner",
+    "exit": "launch-ready verdict requires the owner to label fixture content, attest or waive privacy, and record device acceptance in /ops/readiness"
+  },
+  "openItems": [
+    "Export is synchronous JSON; very large accounts would need a background job.",
+    "Deletion is permanent with no undo (stated before confirmation).",
+    "Published guides are deliberately excluded from bulk deletion.",
+    "Device/AT and the launch decision itself are owner actions the product records but cannot verify."
+  ]
+}
