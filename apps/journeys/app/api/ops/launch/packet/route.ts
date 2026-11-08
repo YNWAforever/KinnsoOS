@@ -13,8 +13,12 @@ export async function GET(request: Request) {
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_ops_launch_state');
+    const [response, devicesResponse] = await Promise.all([
+      client.rpc('kinnso_ops_launch_state'),
+      client.rpc('kinnso_ops_device_acceptance'),
+    ]);
     if (response.error) throw new Error(response.error.message);
+    const devices = devicesResponse.error ? null : (devicesResponse.data as { total: number; passed: number; failed: number; complete: boolean });
     const state = response.data as {
       content: { published: number; synthetic: number; unverified: number; verified: number; ready: boolean };
       signoffs: Record<string, { status: string; note: string; signedAt: string; expiresAt?: string | null; stale?: boolean }>;
@@ -31,6 +35,16 @@ export async function GET(request: Request) {
     ];
     const human = ['rollback', 'backup', 'privacy', 'accessibility', 'devices', 'payments'].map((gate) => {
       const row = signoff(gate);
+      if (gate === 'devices' && !row) {
+        return {
+          gate,
+          status: devices?.complete ? 'accepted' : 'pending',
+          decision: devices?.complete ? 'matrix-complete' : null,
+          note: devices ? `${devices.passed}/${devices.total} passing device results recorded` : 'device acceptance not readable',
+          signedAt: null,
+          expiresAt: null,
+        };
+      }
       return {
         gate,
         status: row

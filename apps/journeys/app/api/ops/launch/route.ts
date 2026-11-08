@@ -14,7 +14,9 @@ const GATES = ['rollback', 'backup', 'privacy', 'accessibility', 'devices', 'pay
 type Gate = (typeof GATES)[number];
 
 /** Human launch gates and how they are satisfied by automation. */
-function evaluate(state: LaunchState, env: Record<string, string | undefined>) {
+type DeviceSummary = { total: number; passed: number; failed: number; complete: boolean };
+
+function evaluate(state: LaunchState, env: Record<string, string | undefined>, devices: DeviceSummary | null = null) {
   const signoff = (gate: Gate) => state.signoffs[gate]?.status ?? null;
   const satisfied = (gate: Gate) => {
     const latest = state.signoffs[gate];
@@ -38,22 +40,48 @@ function evaluate(state: LaunchState, env: Record<string, string | undefined>) {
       detail: alertsBound ? 'webhook and scheduler secret configured' : 'KINNSO_ALERT_WEBHOOK_URL / CRON_SECRET not configured',
       signedAt: null,
     },
-    ...GATES.map((gate) => ({
-      gate,
-      kind: 'signoff',
-      status: satisfied(gate)
+    ...GATES.map((gate) => {
+      if (gate === 'devices') {
+        const waiver = state.signoffs.devices;
+        const waiverSatisfied = waiver && waiver.status === 'waived' && !waiver.stale;
+        const rejected = waiver?.status === 'rejected';
+        if (waiverSatisfied) {
+          return { gate, kind: 'signoff', status: 'accepted', detail: waiver.note, signedAt: waiver.signedAt, expiresAt: waiver.expiresAt ?? null };
+        }
+        if (rejected) {
+          return { gate, kind: 'signoff', status: 'rejected', detail: waiver.note, signedAt: waiver.signedAt, expiresAt: waiver.expiresAt ?? null };
+        }
+        if (waiver?.stale) {
+          return { gate, kind: 'signoff', status: 'blocked', detail: 'waiver expired', signedAt: waiver.signedAt, expiresAt: waiver.expiresAt ?? null };
+        }
+        return {
+          gate,
+          kind: 'automatic',
+          status: devices?.complete ? 'accepted' : 'pending',
+          detail: devices
+            ? `${devices.passed}/${devices.total} passing device results recorded${devices.failed ? `, ${devices.failed} failing` : ''}`
+            : 'device acceptance not readable',
+          signedAt: null,
+          expiresAt: null,
+        };
+      }
+      return {
+        gate,
+        kind: 'signoff',
+        status: satisfied(gate)
         ? 'accepted'
         : state.signoffs[gate]?.stale
           ? 'blocked'
           : signoff(gate) === 'rejected'
             ? 'rejected'
             : 'pending',
-      detail: state.signoffs[gate]?.stale
-        ? `waiver expired ${state.signoffs[gate]?.expiresAt ? new Date(state.signoffs[gate].expiresAt).toISOString().slice(0, 10) : 'without a review date'}`
-        : state.signoffs[gate]?.note ?? '',
-      signedAt: state.signoffs[gate]?.signedAt ?? null,
-      expiresAt: state.signoffs[gate]?.expiresAt ?? null,
-    })),
+        detail: state.signoffs[gate]?.stale
+          ? `waiver expired ${state.signoffs[gate]?.expiresAt ? new Date(state.signoffs[gate].expiresAt).toISOString().slice(0, 10) : 'without a review date'}`
+          : state.signoffs[gate]?.note ?? '',
+        signedAt: state.signoffs[gate]?.signedAt ?? null,
+        expiresAt: state.signoffs[gate]?.expiresAt ?? null,
+      };
+    }),
   ];
   // Payments is out of scope for the free launch: it must be explicitly accepted or
   // waived to count, never silently assumed as done.
@@ -70,18 +98,21 @@ export async function GET(request: Request) {
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const [readiness, response] = await Promise.all([
+    const [readiness, response, devicesResponse] = await Promise.all([
       contentReadiness(),
       client.rpc('kinnso_ops_launch_state'),
+      client.rpc('kinnso_ops_device_acceptance'),
     ]);
     if (response.error) throw new Error(response.error.message);
     const state = response.data as LaunchState;
-    const evaluated = evaluate(state, process.env);
+    const devices = devicesResponse.error ? null : (devicesResponse.data as DeviceSummary);
+    const evaluated = evaluate(state, process.env, devices);
     return reply({
       ok: true,
       data: {
         ...evaluated,
         content: state.content,
+        devices,
         readiness: {
           published: readiness.published,
           verified: readiness.verified,

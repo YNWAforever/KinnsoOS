@@ -33,6 +33,7 @@ import {OpsSystemHealth} from './OpsSystemHealth';
 import {LaunchDecision} from './LaunchDecision';
 import {DataRights} from './DataRights';
 import {PrivacyQueue} from './PrivacyQueue';
+import {DeviceAcceptance} from './DeviceAcceptance';
 import {TelemetryConsent} from './TelemetryConsent';
 import {useDraftNavigation} from './UnsavedDraftGuard';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
@@ -691,7 +692,7 @@ export function Workbench({
     else if(path==='reports'||path==='ops/reports')content=<ReportWorkspace actorId={actor?.id??null} enabled={path==='reports'?features.notifications===true:features.ops===true} opsMode={path==='ops/reports'}/>;
     else if(path==='support'||path==='ops/support')content=<SupportWorkspace actorId={actor?.id??null} enabled={features.notifications===true} opsMode={path==='ops/support'}/>;
     else if(path==='account/data')content=<DataRights/>;
-    else if(path==='ops/readiness')content=<><LaunchDecision/><OpsSystemHealth/><ContentReadiness/><OpsContentHygiene/><PrivacyQueue/></>;
+    else if(path==='ops/readiness')content=<><LaunchDecision/><OpsSystemHealth/><ContentReadiness/><OpsContentHygiene/><DeviceAcceptance/><PrivacyQueue/></>;
     else if(path==='ops/monitoring')content=<MonitoringWorkspace actorId={actor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/merchants')content=<MerchantApplicationReviewPage key={workspaceActor?.id} actorId={workspaceActor?.id??null} enabled={features.ops===true}/>;
     else if(path==='ops/settlements')content=<GatedCapabilityWorkspace actorId={workspaceActor?.id??null} kind="operations-settlements"/>;

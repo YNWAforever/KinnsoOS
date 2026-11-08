@@ -81,6 +81,7 @@
     "app/api/ops/content-readiness/route.ts",
     "app/api/ops/content/route.ts",
     "app/api/ops/dashboard/route.ts",
+    "app/api/ops/devices/route.ts",
     "app/api/ops/guides/[id]/verification/route.ts",
     "app/api/ops/guides/route.ts",
     "app/api/ops/health/route.ts",
@@ -170,6 +171,7 @@
     "app/travel/CreatorSessionsWorkspace.tsx",
     "app/travel/CreatorWorkspace.tsx",
     "app/travel/DataRights.tsx",
+    "app/travel/DeviceAcceptance.tsx",
     "app/travel/FinanceWorkspace.tsx",
     "app/travel/GatedCapabilityWorkspace.tsx",
     "app/travel/GuestPlanner.tsx",
@@ -980,7 +982,8 @@
     "tests/contracts/20261109140000_health_alerting.sql": "supabase/migrations/20261109140000_health_alerting.sql",
     "tests/contracts/20261109150000_launch_gates.sql": "supabase/migrations/20261109150000_launch_gates.sql",
     "tests/contracts/20261109160000_data_rights.sql": "supabase/migrations/20261109160000_data_rights.sql",
-    "tests/contracts/20261109170000_waiver_expiry.sql": "supabase/migrations/20261109170000_waiver_expiry.sql"
+    "tests/contracts/20261109170000_waiver_expiry.sql": "supabase/migrations/20261109170000_waiver_expiry.sql",
+    "tests/contracts/20261109180000_device_acceptance.sql": "supabase/migrations/20261109180000_device_acceptance.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
