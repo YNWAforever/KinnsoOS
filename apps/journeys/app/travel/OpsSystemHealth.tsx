@@ -19,6 +19,8 @@ export function OpsSystemHealth({ className }: { className?: string } = {}) {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<'access-required' | 'unavailable' | null>(null);
   const [busy, setBusy] = useState(false);
+  const [testBusy, setTestBusy] = useState(false);
+  const [testResult, setTestResult] = useState<'idle' | 'delivered' | 'failed' | 'not-configured'>('idle');
 
   const load = useCallback(async () => {
     setBusy(true);
@@ -56,6 +58,18 @@ export function OpsSystemHealth({ className }: { className?: string } = {}) {
     void load();
   }, [load]);
 
+  const sendTest = useCallback(async () => {
+    setTestBusy(true);
+    try {
+      const response = await fetch('/api/ops/alerts/test', { method: 'POST' });
+      setTestResult(response.ok ? 'delivered' : response.status === 503 ? 'not-configured' : 'failed');
+    } catch {
+      setTestResult('failed');
+    } finally {
+      setTestBusy(false);
+    }
+  }, []);
+
   const label = t('System health', '系統健康');
   const statusText = (status: Health['status']) =>
     status === 'ok' ? t('Healthy', '正常') : status === 'degraded' ? t('Degraded', '降級') : t('Failing', '故障');
@@ -72,9 +86,14 @@ export function OpsSystemHealth({ className }: { className?: string } = {}) {
     <section className="k-card" aria-labelledby="ops-system-health-title" data-testid="ops-system-health" data-state={state}>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
         <h2 id="ops-system-health-title" style={{ margin: 0 }}>{label}</h2>
-        <button type="button" className="k-btn" onClick={() => void load()} disabled={busy} data-testid="ops-health-refresh">
-          {busy ? t('Checking…', '檢查中…') : t('Check now', '立即檢查')}
-        </button>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+          <button type="button" className="k-btn" onClick={() => void load()} disabled={busy} data-testid="ops-health-refresh">
+            {busy ? t('Checking…', '檢查中…') : t('Check now', '立即檢查')}
+          </button>
+          <button type="button" className="k-btn" onClick={() => void sendTest()} disabled={testBusy} data-testid="ops-health-test">
+            {testBusy ? t('Sending…', '傳送中…') : t('Send test alert', '傳送測試告警')}
+          </button>
+        </div>
       </div>
       {state === 'loading' && <p role="note" aria-live="polite" data-testid="ops-health-loading">{t('Running live checks…', '正在執行即時檢查…')}</p>}
       {state === 'error' && (
@@ -100,8 +119,17 @@ export function OpsSystemHealth({ className }: { className?: string } = {}) {
               </li>
             ))}
           </ul>
+          {testResult !== 'idle' && (
+            <p role="status" data-testid="ops-health-test-result" data-result={testResult}>
+              {testResult === 'delivered'
+                ? t('Test alert delivered to the configured destination.', '測試告警已送達設定的目的地。')
+                : testResult === 'not-configured'
+                  ? t('No alert destination is configured yet, so nothing was sent.', '尚未設定告警目的地，未送出任何內容。')
+                  : t('The test alert could not be delivered. Check the destination and retry.', '測試告警未能送達，請檢查目的地後重試。')}
+            </p>
+          )}
           <p className="os-note" role="note">
-            {t('These checks run inside this deployment. External alert delivery is not bound yet.', '這些檢查在此部署內執行；外部告警尚未接通。')}
+            {t('These checks run inside this deployment. External alert delivery is verified only when a destination is configured.', '這些檢查在此部署內執行；只有設定了目的地，外部告警才算接通。')}
           </p>
         </>
       )}
