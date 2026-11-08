@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-08T22:34:56.757Z",
+  "slice": "Waiver expiry — \"no stale waivers\" enforcement",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "3e5014de23945a7393e89d9916819feb50c235f0",
+    "releaseTree": "351ef65ed5dbe3e6bb59bd0036f01f38b70f82b5",
+    "parent": "3993c6bed034c584e33c31d8321b89ff4e42b457",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42528325486,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "project": "scryfkefedzuetfdtrvl",
+    "migration": "20261109170000_waiver_expiry.sql",
+    "baseline": {
+      "ledger": 245,
+      "head": "20261109160000"
+    },
+    "post": {
+      "ledger": 246,
+      "head": "20261109170000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_WAIVER_EXPIRY_20261109",
+    "verified": {
+      "column": "kinnso_internal.launch_signoffs.expires_at",
+      "rpc": "kinnso_ops_sign_off(text,text,text,date)",
+      "oldRpcRemoved": true,
+      "publishedGuidesUnchanged": 9
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_9k2hmX8F8UzzVVdChuUeAxMbQqjy",
+    "staged": "dpl_6qMWd2dkZ1A7ayFA1NQvbVubd3xF",
+    "promoted": "dpl_6qMWd2dkZ1A7ayFA1NQvbVubd3xF",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": 200,
+      "spacesPage": "200 on the promoted deployment",
+      "alertInbox": "token-gated (401 without, 200 with)",
+      "cronSelfTest": "credential-gated (401 without, delivered:true with)",
+      "opsSelfTestAnonymous": 403
+    },
+    "rollbackTargets": [
+      "dpl_9k2hmX8F8UzzVVdChuUeAxMbQqjy",
+      "dpl_2R9oXrt4kzGLvuRCz9GDqnSnYhrC"
+    ]
+  },
+  "behaviour": {
+    "waiverRule": "waivers require a future review date within 90 days; expired waivers block the gate again",
+    "apiMapping": "missing/past/too-far expiry → 400; stale waiver → gate blocked, verdict hold, present in launch packet blockers",
+    "ui": "required review-date control for waivers, recorded date shown per gate, stale gates rendered as blocked"
+  },
+  "phase4Status": {
+    "L1": "done + \"no stale waivers\" now mechanically enforced (this release)",
+    "L2": "done, deployed",
+    "L3": "code + production transport verified; owner destination and platform PITR decision remain",
+    "L4": "owner action: physical devices and screen readers",
+    "exit": "launch-ready verdict still requires owner sign-offs; the product now refuses to keep a stale waiver satisfied"
+  }
+}
