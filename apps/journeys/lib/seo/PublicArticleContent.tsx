@@ -1,5 +1,5 @@
 import type {PublicArticle} from './public-article';
-import {articleCanonical,articleStructuredData} from './article-presentation';
+import {articleStructuredData} from './article-presentation';
 import {contentLanguage,articleQuestions,type PublicLanguage} from './public-language';
 import Link from 'next/link';
 import {articleLabels} from './article-labels';
@@ -20,6 +20,5 @@ export function PublicArticleContent({article,locale}:{article:PublicArticle;loc
     {block.images.map((image,index)=><figure key={index}><img src={image.url} alt={image.description} loading="lazy" style={{maxWidth:'100%',height:'auto'}}/>{image.description&&<figcaption>{image.description}</figcaption>}</figure>)}
    </section>)}
    {article.faqs.length>0&&<section><h2>{articleQuestions[locale]}</h2><dl>{article.faqs.map((faq,index)=><div key={index}><dt>{faq.question}</dt><dd>{faq.answer}</dd></div>)}</dl></section>}
-   {['en','zh-HK'].includes(locale)&&<a className="public-content-link" href={articleCanonical(article)}>{locale==='en'?'View original article':'查看原文'}</a>}
   </article></>;
 }

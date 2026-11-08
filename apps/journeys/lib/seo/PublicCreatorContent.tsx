@@ -14,5 +14,6 @@ export function PublicCreatorContent({creator,locale}:{creator:PublicCreator;loc
    {page>1&&<Link className="public-content-link" href={`${profile}?page=${page-1}`}>{labels.creators.previous}</Link>}
    {creator.hasMore&&page<10000&&<Link className="public-content-link" href={`${profile}?page=${page+1}`}>{labels.creators.next}</Link>}
   </nav>}
+  <Link className="public-content-link" href={`/${locale}/explore`}>{locale==='en'?'Explore published guides':locale==='zh-HK'?'探索已發布攻略':labels.creators.guidesHeading}</Link>
  </article>;
 }

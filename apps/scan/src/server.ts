@@ -5,11 +5,10 @@ import { cors } from 'hono/cors'
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '@kinnso/db'
 import { loadConfig } from './config'
-import { rateLimitDecision, RunLedger, type JobRecord } from './policy'
 import { runScan, type ScanDeps } from './pipeline'
 import { CompositeFetcher, FakeFetcher } from './fetchers'
 import { ChatCompletionsClient, FakeLlm } from './llm'
-import { handleScanRetry } from './scan-server'
+import { handleScan, handleScanRetry } from './scan-server'
 import { handleVerifySubmission, handleVerifyRetry } from './verify-server'
 import { sweepExpiredJobs } from './sweeper'
 
@@ -43,11 +42,6 @@ if (cfg.fixtureMode) {
 function makeDeps(): ScanDeps {
   return { db, fetcher, llm, model: cfg.llmModel }
 }
-
-// Process-wide ledger of launched verification runs — backs the per-creator
-// daily cap, which cannot come from row counts alone because a retry reuses its
-// row. See RunLedger for why in-process is the right trade here.
-const verificationLedger = new RunLedger()
 
 // ---------------------------------------------------------------------------
 // Stale-job sweep
@@ -138,83 +132,8 @@ app.post('/scan', async (c) => {
   const user = await getVerifiedUser(c.req.header('Authorization'))
   if (!user) return c.json({ error: 'unauthorized' }, 401)
 
-  const creatorId = user.id
-
-  // 2. Load existing jobs for rate-limit check
-  const since = new Date(Date.now() - 25 * 60 * 60 * 1000).toISOString() // 25h buffer
-  const { data: existingJobs, error: jobsErr } = await db
-    .from('creator_scan_jobs')
-    .select('id, creator_id, status, created_at, updated_at')
-    .eq('creator_id', creatorId)
-    .gte('created_at', since)
-    .order('created_at', { ascending: false })
-
-  if (jobsErr) {
-    console.error('[scan] failed to load existing jobs for rate-limit check', jobsErr.message)
-    return c.json({ error: 'internal error' }, 500)
-  }
-
-  // Also include any non-terminal jobs older than 25h (active guard)
-  const { data: activeJobs } = await db
-    .from('creator_scan_jobs')
-    .select('id, creator_id, status, created_at, updated_at')
-    .eq('creator_id', creatorId)
-    .in('status', ['queued', 'fetching', 'analyzing'])
-
-  const allJobs: JobRecord[] = [
-    ...((existingJobs as JobRecord[]) ?? []),
-    ...((activeJobs as JobRecord[]) ?? []).filter(
-      (j) => !existingJobs?.some((e) => e.id === j.id)
-    ),
-  ]
-
-  const limitCheck = rateLimitDecision(allJobs)
-  if (limitCheck.limited) {
-    return c.json({ error: 'rate limited', reason: limitCheck.reason }, 429)
-  }
-
-  // 3. Require at least one handle
-  const { data: handles, error: handlesErr } = await db
-    .from('creator_social_handles')
-    .select('platform, handle')
-    .eq('creator_id', creatorId)
-
-  if (handlesErr) return c.json({ error: 'internal error' }, 500)
-  if (!handles || handles.length === 0) {
-    return c.json({ error: 'no social handles found for this creator' }, 400)
-  }
-
-  // 4. Insert job
-  const platforms = Object.fromEntries(handles.map((h) => [h.platform, 'pending']))
-  const { data: job, error: insertErr } = await db
-    .from('creator_scan_jobs')
-    .insert({
-      creator_id: creatorId,
-      status: 'queued',
-      progress: { platforms } as never,
-    })
-    .select('id')
-    .single()
-
-  if (insertErr || !job) {
-    // A unique-violation (23505) on the partial unique index means another active
-    // job already exists for this creator — a concurrent POST /scan that raced past
-    // the app-level active-job check. Map it to 429, matching that check's contract.
-    if (insertErr?.code === '23505') {
-      return c.json({ error: 'rate limited', reason: 'active_job_exists' }, 429)
-    }
-    console.error('[scan] failed to insert job', insertErr?.message)
-    return c.json({ error: 'internal error' }, 500)
-  }
-
-  const jobId = job.id
-
-  // 5. Return 202 immediately, then run pipeline in background (fire-and-forget)
-  const response = c.json({ jobId }, 202)
-  runScan(makeDeps(), jobId).catch((err: unknown) => {
-    console.error(`[scan] unhandled pipeline error for job ${jobId}`, err)
-  })
-  return response
+  const result = await handleScan({ db, userId: user.id, run: (id) => runScan(makeDeps(), id) })
+  return c.json(result.body, result.status as never)
 })
 
 // POST /scan/:jobId/retry — retry a failed scan job
@@ -240,7 +159,7 @@ app.post('/verify-submission', async (c) => {
   if (!submissionId) return c.json({ error: 'submissionId is required' }, 400)
 
   const result = await handleVerifySubmission(
-    { db, fetcher, userId: user.id, ledger: verificationLedger },
+    { db, fetcher, userId: user.id },
     { submissionId },
   )
   return c.json(result.body, result.status as never)
@@ -253,7 +172,7 @@ app.post('/verify-submission/:jobId/retry', async (c) => {
 
   const jobId = c.req.param('jobId')
   const result = await handleVerifyRetry(
-    { db, fetcher, userId: user.id, ledger: verificationLedger },
+    { db, fetcher, userId: user.id },
     { jobId },
   )
   return c.json(result.body, result.status as never)

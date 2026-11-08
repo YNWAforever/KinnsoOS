@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-31T11:07:12.276Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3500",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [],
+  "failures": [
+    {
+      "name": "Review: another proposal clears an unsaved brief even when its URL is unchanged",
+      "error": "Error: expect(locator).toBeEnabled() failed\n\nLocator: getByRole('button', { name: '讀取資料與證據', exact: true })\nExpected: enabled\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.enabled\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取資料與證據', exact: true })\n"
+    },
+    {
+      "name": "Review: allowed owner-to-marketing role change accepts a freshly read M4 brief",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '已保存並讀回', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '已保存並讀回', exact: true })\n"
+    },
+    {
+      "name": "Review: original close command retains paused status and original filter visibility",
+      "error": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: true\nReceived: false"
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

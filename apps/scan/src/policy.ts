@@ -62,31 +62,6 @@ export function isJobActive(job: JobLiveness, now: number): boolean {
 }
 
 /**
- * Returns whether a new scan should be rate-limited.
- *
- * Rules (per spec §7):
- *   - Block if any job is non-terminal (queued|fetching|analyzing) AND still
- *     live; a job stranded by a restart (see JOB_STALE_AFTER_MS) does not count.
- *   - Block if ≥ 3 jobs were created in the trailing 24h.
- *
- * @param jobs - ALL jobs for this creator, ordered newest-first (at most the last 24h + any active).
- * @param now  - Injected clock, so the staleness window is deterministic in tests.
- */
-export function rateLimitDecision(
-  jobs: JobRecord[],
-  now: number = Date.now()
-): { limited: boolean; reason?: string } {
-  const hasActive = jobs.some((j) => isJobActive(j, now))
-  if (hasActive) return { limited: true, reason: 'active_job_exists' }
-
-  const since = new Date(now - 24 * 60 * 60 * 1000).toISOString()
-  const recentCount = jobs.filter((j) => j.created_at >= since).length
-  if (recentCount >= 3) return { limited: true, reason: 'daily_quota_exceeded' }
-
-  return { limited: false }
-}
-
-/**
  * Returns whether the verified user is allowed to retry a job.
  *
  * Rules:
@@ -109,91 +84,6 @@ export function canRetry(
   return { allowed: true, httpStatus: 200 }
 }
 
-// ---------------------------------------------------------------------------
-// Mission verification limits
-// ---------------------------------------------------------------------------
-
-/**
- * Concurrency cap on live verification jobs per creator. Each run costs up to
- * two upstream calls (RapidAPI/YouTube) × four attempts, so concurrency is a
- * direct multiplier on paid-API spend and on this single worker's memory.
- * Three is comfortably above the realistic case (a creator submitting proof for
- * a handful of milestones at once) and far below anything that hurts.
- */
-export const MAX_ACTIVE_VERIFICATIONS = 3
-
-/** Trailing-24h ceiling on verification RUNS per creator. */
-export const MAX_VERIFICATIONS_PER_DAY = 20
-
-/**
- * Returns whether a verification run should be rate-limited.
- *
- * Mirrors `rateLimitDecision`, with one deliberate difference: verification
- * allows limited concurrency (a creator legitimately has several submissions in
- * flight) where a scan allows none.
- *
- * @param activeCount - Live (non-terminal, non-stale) verification jobs owned by this creator.
- * @param dayCount    - Verification runs LAUNCHED for this creator in the trailing 24h.
- */
-export function verificationRateLimitDecision(
-  activeCount: number,
-  dayCount: number
-): { limited: boolean; reason?: string } {
-  if (activeCount >= MAX_ACTIVE_VERIFICATIONS) {
-    return { limited: true, reason: 'too_many_active_jobs' }
-  }
-  if (dayCount >= MAX_VERIFICATIONS_PER_DAY) {
-    return { limited: true, reason: 'daily_quota_exceeded' }
-  }
-  return { limited: false }
-}
-
-/**
- * Sliding-window count of verification runs actually launched by THIS process.
- *
- * The daily cap cannot be derived from `mission_verification_jobs` alone: a
- * retry RESETS the existing row rather than inserting one, so a creator with a
- * single submission can hold the row count at 1 while spending an unbounded
- * number of upstream calls. Counting launches instead of rows is precisely what
- * makes the cap bite on the retry path — the hole this class exists to close.
- *
- * Deliberately in-process: a durable counter would need a schema change, and a
- * restart that clears this map also kills the runs it was bounding. It is a
- * spend ceiling, not an audit trail — the DB-derived concurrency check is the
- * part that survives a restart.
- */
-export class RunLedger {
-  private readonly runs = new Map<string, number[]>()
-
-  constructor(
-    private readonly windowMs: number = 24 * 60 * 60 * 1000,
-    /** Hard bound on tracked keys so the map cannot grow without limit. */
-    private readonly maxKeys: number = 10_000
-  ) {}
-
-  /** Records one launched run for `key` (a creator id). */
-  record(key: string, now: number = Date.now()): void {
-    const kept = this.within(key, now)
-    kept.push(now)
-    this.runs.set(key, kept)
-    // Keys come from verified bearer tokens, so they cannot be minted at will —
-    // but evict the oldest entry anyway rather than trust that forever.
-    if (this.runs.size > this.maxKeys) {
-      const oldest = this.runs.keys().next()
-      if (!oldest.done) this.runs.delete(oldest.value)
-    }
-  }
-
-  /** Runs recorded for `key` inside the trailing window. */
-  count(key: string, now: number = Date.now()): number {
-    const kept = this.within(key, now)
-    if (kept.length === 0) this.runs.delete(key)
-    else this.runs.set(key, kept)
-    return kept.length
-  }
-
-  private within(key: string, now: number): number[] {
-    const cutoff = now - this.windowMs
-    return (this.runs.get(key) ?? []).filter((t) => t > cutoff)
-  }
-}
+// Launch concurrency and trailing-24h ceilings live exclusively in
+// reserve_worker_launch (20261029090000). Job rows are liveness, not a launch
+// ledger: retries reuse them. Do not reintroduce an application-side quota check.

@@ -15,7 +15,7 @@ function chainable(result: unknown) {
 }
 
 describe('listSavedGuides', () => {
-  it('maps the guide_saves -> guides embed to real Guide objects, dropping rows with no joinable guide', async () => {
+  it('maps the guide_saves -> guides embed and keeps a save whose guide is no longer readable', async () => {
     supabaseMock.from.mockReturnValue(
       chainable({
         data: [
@@ -33,6 +33,7 @@ describe('listSavedGuides', () => {
 
     expect(rows).toEqual([
       { guideId: 'g1', guide: { slug: 'kyoto-tea', title: 'Kyoto Tea Houses', city: 'Kyoto', cover: 'https://x/kyoto.jpg', saves: 6, creatorHandle: 'teafan' } },
+      { guideId: 'g2', guide: null },
     ])
   })
 

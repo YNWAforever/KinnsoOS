@@ -42,7 +42,7 @@ async function component(name='TripWorkspace',{locale='en',props={},ports={},sea
   if(path==='../../lib/trips/input-validation')return schedule;
   if(path==='../../lib/guides/adoption-intent')return adoptionIntent;
   if(path==='../../lib/guides/repository')return{guides:ports.guides??{get:async()=>({ok:false,code:'NOT_FOUND',retryable:false})}};
-  if(['./ImportPreview','./RecordCapture','./SharePreview','./TripWarnings','./TodayItinerary','./PendingAdoptionRecovery','../../lib/trips/export'].includes(path))return{};
+  if(['./ImportPreview','./RecordCapture','./SharePreview','./TripWarnings','./TodayItinerary','./PendingAdoptionRecovery','./TripIndexShareHolds','../../lib/trips/export'].includes(path))return{};
   throw Error(path);
  }}));
  function render(){cursor=0;changed=false;tree=module.exports[name](inputProps);for(const e of effects)if(e?.pending){e.pending=false;e.cleanup?.();e.cleanup=e.work();}}

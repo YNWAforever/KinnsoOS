@@ -3,7 +3,7 @@ import { useRef,useState,useSyncExternalStore } from 'react'
 import { publishStructuredGuide,withdrawStructuredGuide } from '@/lib/guides/versions'
 export type StructuredContent={days:{offset:number;title:string;stops:{title:string;description:string;placeId:string|null;startMinuteOfDay:number|null;durationMinutes:number|null}[]}[]}
 const subscribe=()=>()=>{}
-export function StructuredGuideForm({id,locale,initialVersion=0,initialContent=null}:{id:string;locale:string;initialVersion?:number;initialContent?:StructuredContent|null}) {
+export function StructuredGuideForm({id,locale,initialVersion=0,initialContent=null,withdrawOnly=false}:{id:string;locale:string;initialVersion?:number;initialContent?:StructuredContent|null;withdrawOnly?:boolean}) {
  const [days,setDays]=useState<StructuredContent['days']>(()=>initialContent?initialContent.days.map(day=>({offset:day.offset,title:day.title,stops:day.stops.map(stop=>({title:stop.title,description:stop.description,placeId:stop.placeId,startMinuteOfDay:stop.startMinuteOfDay,durationMinutes:stop.durationMinutes}))})):[{offset:0,title:'',stops:[{title:'',description:'',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}])
  const [version,setVersion]=useState(initialVersion),[message,setMessage]=useState(''),[busy,setBusy]=useState(false)
  const intent=useRef<{key:string;requestId:string}|null>(null)
@@ -21,6 +21,7 @@ export function StructuredGuideForm({id,locale,initialVersion=0,initialContent=n
   finally {setBusy(false)}
  }
  async function withdraw(){if(busy||!ready)return;setBusy(true);try{const result=await withdrawStructuredGuide(id,locale);setMessage(result.ok?(zh?'已撤回新套用，私人筆記保留。':'New adoptions withdrawn; private notes retained.'):(zh?'撤回失敗。':'Withdrawal failed.'))}catch{setMessage(zh?'未確認撤回，請重試。':'Withdrawal was not confirmed. Please retry.')}finally{setBusy(false)}}
+ if(withdrawOnly)return <section><button type="button" disabled={busy||!ready} onClick={withdraw}>{zh?'撤回套用':'Withdraw adoption'}</button><p role="status">{message}</p></section>
  return <section data-testid="structured-editor" data-ready={ready}><h2>{zh?'結構化行程版本':'Structured itinerary version'}</h2>
  <p>{zh?'摘要不會變成站點。請輸入你有權公開的行程內容。':'Summary text is never converted into stops. Enter itinerary content you have rights to publish.'}</p>
  {days.map((day,index)=><fieldset key={index}><legend>{zh?'第':'Day '}{index+1}{zh?'日':''}</legend>

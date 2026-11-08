@@ -1,0 +1,16 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {summarizeCases,makeBlockedResults} from './results.mjs';
+const manifest={version:1,expanded:true,cases:[{id:'NA04.rls',task:'NA04',required:true,evidenceLevel:'L1',implemented:true}]};
+const passed={id:'NA04.rls',status:'PASS',evidenceLevel:'L1',runId:'run',sourceHash:'a'.repeat(64),targetReceiptHash:'b'.repeat(64),schemaReceiptHash:'c'.repeat(64),startedAt:'2026-11-01T06:00:00Z',endedAt:'2026-11-01T06:00:01Z',expected:'no foreign rows',actual:'no foreign rows',evidenceFiles:['case.json']};
+const context={runId:'run',sourceHash:'a'.repeat(64),targetReceiptHash:'b'.repeat(64),schemaReceiptHash:'c'.repeat(64),cleanupStatus:'PASS'};
+test('zeroCasesCannotPass',()=>assert.notEqual(summarizeCases({cases:[]},[],context).status,'LOCAL_NATIVE_DB_ACCEPTANCE_PASS'));
+test('missingCaseFails',()=>assert.equal(summarizeCases(manifest,[],context).status,'INCOMPLETE'));
+test('skippedCaseStaysNotRun',()=>assert.equal(summarizeCases(manifest,[{...passed,status:'SKIP'}],context).status,'INCOMPLETE'));
+test('mockCannotSatisfyDbCase',()=>assert.equal(summarizeCases(manifest,[{...passed,evidenceLevel:'L0'}],context).status,'INVALID_EVIDENCE'));
+test('cleanupFailureBlocksComplete',()=>assert.equal(summarizeCases(manifest,[passed],{...context,cleanupStatus:'FAIL'}).status,'BLOCKED'));
+test('duplicate or unknown case IDs cannot pass',()=>{assert.equal(summarizeCases(manifest,[passed,passed],context).status,'INVALID_EVIDENCE');assert.equal(summarizeCases(manifest,[passed,{...passed,id:'other'}],context).status,'INVALID_EVIDENCE');});
+test('native pass needs run, source, target and schema receipts plus actual observation',()=>{for(const delta of [{runId:'foreign'},{sourceHash:'f'.repeat(64)},{targetReceiptHash:null},{schemaReceiptHash:null},{actual:''},{evidenceFiles:[]},{endedAt:'invalid'}])assert.equal(summarizeCases(manifest,[{...passed,...delta}],context).status,'INVALID_EVIDENCE');});
+test('unimplemented manifest case cannot claim pass',()=>{assert.equal(summarizeCases({cases:[{...manifest.cases[0],implemented:false}]},[passed],context).status,'INVALID_EVIDENCE');});
+test('unexpanded case families are an incomplete specification, never native acceptance',()=>{assert.equal(summarizeCases({...manifest,expanded:false},[passed],context).status,'INCOMPLETE');});
+test('complete, consistent native case set may pass; blocked remains blocked',()=>{assert.equal(summarizeCases(manifest,[passed],context).status,'LOCAL_NATIVE_DB_ACCEPTANCE_PASS');const results=makeBlockedResults(manifest,'INSUFFICIENT_RAM',context);assert.equal(results[0].status,'BLOCKED');assert.equal(summarizeCases(manifest,results,context).status,'BLOCKED');});

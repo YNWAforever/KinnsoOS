@@ -11,10 +11,10 @@
 -- 0011 exactly -- "unspecified" is a valid, common state, so it stays nullable with no default.
 
 alter table public.missions
-  add column deliverables text[] not null default '{}',
-  add column requirements text[] not null default '{}',
-  add column dos text[] not null default '{}',
-  add column donts text[] not null default '{}',
-  add column key_messages text[] not null default '{}',
-  add column reference_links text[] not null default '{}',
-  add column effort text check (effort in ('low', 'medium', 'high'));
+  add column if not exists deliverables text[] not null default '{}',
+  add column if not exists requirements text[] not null default '{}',
+  add column if not exists dos text[] not null default '{}',
+  add column if not exists donts text[] not null default '{}',
+  add column if not exists key_messages text[] not null default '{}',
+  add column if not exists reference_links text[] not null default '{}',
+  add column if not exists effort text check (effort in ('low', 'medium', 'high'));

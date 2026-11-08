@@ -1,0 +1,215 @@
+{
+  "checkedAt": "2026-10-31T10:35:20.965782+00:00",
+  "timezone": "Asia/Hong_Kong",
+  "scope": "LOCAL_EXAMPLES_ONLY",
+  "platform": {
+    "os": "Windows",
+    "node": "v24.18.0",
+    "browser": "Windows / Chromium 145.0.7632.6",
+    "viewports": [
+      390,
+      1280
+    ]
+  },
+  "runtime": {
+    "UpdatedAt": "2026-10-31T10:34:12.8087906Z",
+    "URL": "http://127.0.0.1:3499/zh-HK/",
+    "Mode": "EXAMPLES_ONLY",
+    "PID": 19904,
+    "ResetOnRestart": true
+  },
+  "sourceRevision": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "sourceFingerprint": "dd2c4a766775a5f37c9fdc4581d127c82525291b477abdbc4f44bdd0ad8eb887",
+  "filesSha256": {
+    "apps/journeys/app/workroom/TravellerTaskFlow.tsx": "d1835578a611d453a9259a95fdb20b8682ebf896c4d2883f332c785d4ea4ccee",
+    "apps/journeys/app/workroom/traveller-tasks.css": "05622d29c58558726bf9698da08e97eec4ee961c024af811633591479c18f048",
+    "apps/journeys/app/workroom/WorkroomShell.tsx": "f6880bbfc0feac75bf8ada3601519995a18a9f79350aa805c546cb0defa139e0",
+    "apps/journeys/lib/studio/traveller-tasks.ts": "91969b6e4824866048dc9c23932611b900a75f0f7da89b07c1c64fefd14b496f",
+    "apps/journeys/lib/studio/traveller-execution.ts": "49898b982cbe94313f63a173f524ed93d3c199e30aa67492d3cf9da075a1ef04",
+    "apps/journeys/tests/studio-traveller-tasks.test.mjs": "70d4d6d0439370184190c14da8112e786cdbf516785ff628b83cd2f3931579c7",
+    "apps/journeys/scripts/source-manifest.json": "3e4a0e4845c676cb0780d0706e4a7bd76e3d53ad27d59c95ad437a6098e975fe",
+    "docs/prototypes/conversation-studio-local/entry.tsx": "b90771a7ab024ce4cae1f4a65632ed2c877b4efcddaf9d4af9c21ff274aba521",
+    "docs/prototypes/conversation-studio-local/server.mjs": "1fd4a327a339cf94f21a0e0ce4fd1a7b1c87aa9839079fa5ce608f081d6c1113",
+    "docs/prototypes/conversation-studio-local/mock-backend.mjs": "28755575549aae2b35ac693a6cbe908a963516483c8f604536b88f1e522055c4",
+    "docs/prototypes/conversation-studio-local/traveller-backend.mjs": "722bdc4c2f33b1cc4b9bda7979460d6b50d8b3cec01f254e0ee1bc87a31b44b6",
+    "docs/prototypes/conversation-studio-local/traveller-store.ts": "a08aa78dbde1319cf9b3f030b9f1ec4542145b2599b9766d6f12d61776b7137e",
+    "docs/prototypes/conversation-studio-local/memory-cache.ts": "87e4d9dbaff12d3237fc9abfcac431730ec793d3c0c1808fe008ab8b7e4dcef1",
+    "docs/prototypes/conversation-studio-local/memory-cache-backend.mjs": "e6eb2d206a16f335d21cfac55cc6f299b40124aa72cf464b60c9f8e9fefc3e2f",
+    "docs/prototypes/conversation-studio-local/traveller-flows.mjs": "829cba8794fab5c61ef1de4673fd79d021cdbf1f1356471d081517b1fbb1a714"
+  },
+  "sourceArchive": {
+    "checkedAt": "2026-10-31T10:35:20.896359+00:00",
+    "archive": "apps/journeys/public/source/kinnsoos-source.zip",
+    "sha256": "d8475bbd71f4bfa1499bf58305079f5b130f9be71dd724ae6451adbe2bc020e6",
+    "entries": 636,
+    "mismatches": [],
+    "sourceRevision": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+    "dirty": true
+  },
+  "travellerBrowser": {
+    "checkedAt": "2026-10-31T10:32:19.715Z",
+    "timezone": "Asia/Hong_Kong",
+    "platform": "Windows / Chromium 145.0.7632.6",
+    "baseUrl": "http://127.0.0.1:3500",
+    "mode": "LOCAL_EXAMPLES_ONLY",
+    "passed": [
+      "T1 shared homepage → private brief → original trip editor",
+      "T2 bookmarked guide exact adoption preserves old notes and v1 after author update",
+      "T2 summary-only and changed guide version refuse adoption",
+      "T3 explicit public projection → anonymous share → revoke and deny old token",
+      "T3 changing trip after confirmation blocks stale share",
+      "T4 private grouping suggestions and explicit bookmark removal → original saved list",
+      "T5 private note + sample image finalization/attachment; T3 image opt-in",
+      "Lost adoption acknowledgement reload reuses same request with no duplicate days",
+      "Unreceived share request reload retries original intent; no duplicate links",
+      "Finalize failure never claims image saved; retry attaches same sample once",
+      "Private brief isolation, source withdrawal, actor clearing and mobile widths",
+      "Unreceived brief save recovers the staged complete payload after reload",
+      "Lost share and revoke acknowledgements reuse their original identities",
+      "Readback mismatch after a successful write remains unknown until verified",
+      "Only selected sample media is anonymously readable and revoked with its token",
+      "Review: actor invalidation during photo preparation prevents finalize",
+      "Review: staging ACK loss keeps an opaque recoverable run reference",
+      "Review: T4 can explicitly remove a withdrawn bookmark",
+      "Review: original editor retries the same deletion after lost ACK",
+      "Review: original editor private cache is memory-only and reset clears pending edits",
+      "Original pending editor command survives reload in session memory without IndexedDB",
+      "Legacy preview cache is cleared and the original create-trip form remains usable"
+    ],
+    "failures": [],
+    "externalRequests": [],
+    "pageErrors": [],
+    "migrations": "NOT_RUN",
+    "deployment": "NONE",
+    "realConnections": "NONE"
+  },
+  "creatorRegression": {
+    "checkedAt": "2026-10-31T10:32:04.692Z",
+    "timezone": "Asia/Hong_Kong",
+    "platform": "Windows / Chromium 145.0.7632.6",
+    "baseUrl": "http://127.0.0.1:3500",
+    "mode": "LOCAL_EXAMPLES_ONLY",
+    "passed": [
+      "C2 saved check → original editor correction → fresh check and reopen",
+      "C3 evidence and missing metrics → private report → results library",
+      "C4 revision → explicit delivery preview → original submitted review record",
+      "C4 invited participant cannot generate an actionable revision report",
+      "C5 concrete diff → original save and publish v2 → adopted v1 stays unchanged",
+      "Unknown report ACK keeps UUID and payload, then readback restores report",
+      "Lost report ACK can be checked after reload without storing report text in browser storage",
+      "C4 lost submission ACK is retried with exactly the same command after reload",
+      "Editing a confirmed C5 proposal invalidates the confirmation and requires saving again",
+      "An unreceived report POST recovers its immutable intent after reload",
+      "Stopping a source clears reports and prevents saved receipt recovery",
+      "C4 rejects duplicate or more than five evidence links through the original validator",
+      "Refreshing C4 or C5 evidence preserves authored changes for comparison",
+      "Task report ownership, separate discussions, mobile width and account clearing"
+    ],
+    "failures": [],
+    "externalRequests": [],
+    "pageErrors": [],
+    "migrations": "NOT_RUN",
+    "deployment": "NONE",
+    "realConnections": "NONE"
+  },
+  "c1Regression": {
+    "checkedAt": "2026-10-31T10:31:48.661Z",
+    "timezone": "Asia/Hong_Kong",
+    "platform": "Windows / Chromium 145.0.7632.6",
+    "mode": "LOCAL_EXAMPLES_ONLY",
+    "result": "PASS",
+    "checks": [
+      "Shared homepage and all three role entrances",
+      "Example documents, explicit selection, discussion and expandable evidence",
+      "Separate brief, explicit public projection, D2 excluded, original guide editor",
+      "Guide edit and confirmed save; no publication before confirmation; simulated publication readback",
+      "Example state is separate between browser sessions (not real Auth/RLS)",
+      "Reload of example state and explicit reset",
+      "Mobile/desktop home, no page errors, no external requests"
+    ],
+    "pageErrors": [],
+    "externalRequests": [],
+    "databaseMigrations": "NOT_RUN",
+    "realConnections": "NONE",
+    "deployment": "NONE"
+  },
+  "journeysTests": {
+    "tests": 1322,
+    "pass": 1321,
+    "fail": 0,
+    "skipped": 1
+  },
+  "typecheck": "PASS",
+  "build": "PASS_WITH_BACKEND_ENV_EMPTY",
+  "independentReview": {
+    "reviewer": "01a19175-1114-7d11-9526-24d5208ed1c9",
+    "findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 5
+    },
+    "addressed": 5,
+    "deferred": 0,
+    "method": "source inspection and isolated mocked probe; fixes verified in isolated browser sessions",
+    "regression": {
+      "checkedAt": "2026-10-31T10:30:19.824Z",
+      "timezone": "Asia/Hong_Kong",
+      "platform": "Windows / Chromium 145.0.7632.6",
+      "baseUrl": "http://127.0.0.1:3500",
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "passed": [
+        "Review: actor invalidation during photo preparation prevents finalize",
+        "Review: staging ACK loss keeps an opaque recoverable run reference",
+        "Review: T4 can explicitly remove a withdrawn bookmark",
+        "Review: original editor retries the same deletion after lost ACK",
+        "Review: original editor private cache is memory-only and reset clears pending edits"
+      ],
+      "failures": [],
+      "externalRequests": [],
+      "pageErrors": [],
+      "migrations": "NOT_RUN",
+      "deployment": "NONE",
+      "realConnections": "NONE"
+    }
+  },
+  "livePreview": {
+    "checkedAt": "2026-10-31T10:34:21.822Z",
+    "timezone": "Asia/Hong_Kong",
+    "platform": "Windows / Chromium 145.0.7632.6",
+    "baseUrl": "http://127.0.0.1:3499",
+    "mode": "LOCAL_EXAMPLES_ONLY",
+    "passed": [
+      "T3 explicit public projection → anonymous share → revoke and deny old token"
+    ],
+    "failures": [],
+    "externalRequests": [],
+    "pageErrors": [],
+    "migrations": "NOT_RUN",
+    "deployment": "NONE",
+    "realConnections": "NONE"
+  },
+  "logSha256": {
+    "traveller-browser.log": "3cf79f1088f67206f650bc2c1fa4084b6904587653272ab5b7940b71183db483",
+    "traveller-creator-regression.log": "05cdbb95196edf47dbde218556010bc38a78f5890062391716d386f36f0dd9ee",
+    "traveller-c1-regression.log": "4fe6bc55c9d8a8bd8a4d2e1d9a72f1cdb0c626f56ba453000166f67bbd5a7e13",
+    "traveller-journeys-tests.log": "c02f8cb949acb283b774fd3ec632231c62d5468b060954aa001cdec6b44efefc",
+    "traveller-typecheck.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "traveller-build.log": "2e39d4b392c965c0ac895a0ff3bcea60a52a71d8ff44d7a0a64ed204e25cb7c2",
+    "traveller-review-red.json": "7e7442de3ca6e1d68d33d97c759a4e1d704293600ff90b78909cf582e7d70d04",
+    "traveller-review-green.json": "f7458719474be55bd8ee01fa2ff6ec9af83a2f6c0fd25541e10b365850a43fb5",
+    "traveller-live-preview-check.json": "0014cf60e4f2713856e58caf9df5a3bdc29f018aa80fd0235a1daed4c4a9f0c9"
+  },
+  "boundaries": {
+    "databaseMigrations": "NOT_RUN",
+    "deployment": "NONE",
+    "realConnections": "NONE",
+    "productionCredentials": "NOT_USED",
+    "persistentPrivateBrowserCache": "PREVIEW_REPLACED_WITH_SESSION_MEMORY; known legacy cache cleared",
+    "realAuthRlsRpc": "NOT_VERIFIED",
+    "realMediaUpload": "NOT_VERIFIED; fixed fixture bytes only",
+    "realShareKeyringAndHostedRead": "NOT_VERIFIED",
+    "thirdPartyContentRights": "UNRESOLVED; self-authored examples only",
+    "booking": "OFF",
+    "payment": "OFF"
+  }
+}

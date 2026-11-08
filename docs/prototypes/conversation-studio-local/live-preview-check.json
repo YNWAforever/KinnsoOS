@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-31T09:40:44.551Z",
+  "url": "http://127.0.0.1:3499/zh-HK/",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "result": "PASS",
+  "sharedHome": true,
+  "c2ToC5Entrances": true,
+  "c3ReportSaveReadback": true,
+  "externalRequests": [],
+  "health": {
+    "mode": "EXAMPLES_ONLY",
+    "persistent": false,
+    "realConnections": false
+  }
+}

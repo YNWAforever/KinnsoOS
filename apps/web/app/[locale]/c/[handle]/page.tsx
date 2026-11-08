@@ -16,6 +16,8 @@ import { creatorProfileJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
 import { JsonLd } from '@/components/JsonLd'
 import { AnalyticsEntityView } from '@/components/kinnso/analytics/AnalyticsEntityView'
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

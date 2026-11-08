@@ -1,0 +1,1489 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:kinnso:sme:read:v1",
+  "title": "Kinnso SME read v1 local contract; not MCP protocol acceptance",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_connection_status_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_connection_status_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_connection_status_v1_result"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_link_attestation_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_link_attestation_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_link_attestation_v1_result"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_merchant_context_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_merchant_context_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_merchant_context_v1_result"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_confirmed_offers_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_confirmed_offers_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_confirmed_offers_v1_result"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_offer_evidence_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_offer_evidence_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_offer_evidence_v1_result"
+        }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tool",
+        "input",
+        "result"
+      ],
+      "properties": {
+        "tool": {
+          "const": "sme_validate_offer_refs_v1"
+        },
+        "input": {
+          "$ref": "#/$defs/sme_validate_offer_refs_v1_input"
+        },
+        "result": {
+          "$ref": "#/$defs/sme_validate_offer_refs_v1_result"
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "OfferEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offerId",
+        "revision",
+        "hash",
+        "sourceLocationId",
+        "appliedLocationId",
+        "title",
+        "details",
+        "terms",
+        "validFrom",
+        "validUntil",
+        "priceAmount",
+        "currency",
+        "claims",
+        "prohibitedTerms",
+        "observedAt",
+        "sourceStatus",
+        "rightsState"
+      ],
+      "properties": {
+        "offerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "sourceLocationId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "appliedLocationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "details": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "terms": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 10000
+        },
+        "validFrom": {
+          "type": "string",
+          "format": "date"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "date"
+        },
+        "priceAmount": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(0|[1-9][0-9]{0,9})(\\.[0-9]{1,2})?$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "enum": [
+                "HKD",
+                "TWD"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "maxItems": 20,
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "prohibitedTerms": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "maxItems": 20,
+          "minItems": 0,
+          "uniqueItems": true
+        },
+        "observedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "sourceStatus": {
+          "enum": [
+            "confirmed",
+            "expired",
+            "archived"
+          ]
+        },
+        "rightsState": {
+          "const": "unverified_for_kinnso_reuse"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "priceAmount": {
+                "type": "null"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "currency": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "currency": {
+                "enum": [
+                  "HKD",
+                  "TWD"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "sme_connection_status_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {}
+    },
+    "sme_connection_status_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "status",
+                "scopes",
+                "scopeVersion",
+                "locationIds",
+                "lastVerifiedAt"
+              ],
+              "properties": {
+                "status": {
+                  "enum": [
+                    "active",
+                    "reconnect",
+                    "revoked",
+                    "unverified"
+                  ]
+                },
+                "scopes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "maxItems": 10,
+                  "minItems": 0,
+                  "uniqueItems": true
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "locationIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "maxItems": 20,
+                  "minItems": 0,
+                  "uniqueItems": true
+                },
+                "lastVerifiedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "sme_link_attestation_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nonce",
+        "companyBindingHash",
+        "locationIds"
+      ],
+      "properties": {
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "companyBindingHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "locationIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "sme_link_attestation_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "proof",
+                "expiresAt"
+              ],
+              "properties": {
+                "proof": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 8000
+                },
+                "expiresAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "sme_merchant_context_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locationId",
+        "locale"
+      ],
+      "properties": {
+        "locationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "locale": {
+          "enum": [
+            "en",
+            "zh-HK",
+            "zh-TW"
+          ]
+        }
+      }
+    },
+    "sme_merchant_context_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "publicName",
+                "websiteUrl",
+                "market",
+                "locationId",
+                "availableFields",
+                "observedAt"
+              ],
+              "properties": {
+                "publicName": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "websiteUrl": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "uri",
+                      "pattern": "^https://"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "market": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "availableFields": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "maxItems": 20,
+                  "minItems": 0,
+                  "uniqueItems": true
+                },
+                "observedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "sme_confirmed_offers_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "locationId"
+      ],
+      "properties": {
+        "locationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "cursor": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50,
+          "default": 20
+        }
+      }
+    },
+    "sme_confirmed_offers_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "items",
+                "nextCursor"
+              ],
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/OfferEvidence"
+                  },
+                  "maxItems": 50,
+                  "minItems": 0,
+                  "uniqueItems": true
+                },
+                "nextCursor": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "maxLength": 300
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "sme_offer_evidence_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "offerId",
+        "expectedRevision",
+        "locationId"
+      ],
+      "properties": {
+        "offerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "expectedRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "locationId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        }
+      }
+    },
+    "sme_offer_evidence_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "$ref": "#/$defs/OfferEvidence"
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    },
+    "sme_validate_offer_refs_v1_input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "refs"
+      ],
+      "properties": {
+        "refs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "offerId",
+              "revision",
+              "hash",
+              "locationId"
+            ],
+            "properties": {
+              "offerId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              "revision": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "locationId": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "uniqueItems": true
+        }
+      }
+    },
+    "sme_validate_offer_refs_v1_result": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "code",
+            "retryable"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "const": "error"
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "code": {
+              "enum": [
+                "NOT_CONNECTED",
+                "FORBIDDEN",
+                "UNAVAILABLE",
+                "SOURCE_CHANGED",
+                "INVALID",
+                "RATE_LIMITED",
+                "TIMEOUT",
+                "UNSUPPORTED"
+              ]
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "retryAfterSeconds": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 3600
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "schemaVersion",
+            "status",
+            "requestId",
+            "observedAt",
+            "scope",
+            "data",
+            "warnings"
+          ],
+          "properties": {
+            "schemaVersion": {
+              "const": "kinnso.sme.read.v1"
+            },
+            "status": {
+              "enum": [
+                "ready",
+                "empty",
+                "partial"
+              ]
+            },
+            "requestId": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "observedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "scope": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "workspaceId",
+                "locationId",
+                "scopeVersion"
+              ],
+              "properties": {
+                "workspaceId": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "locationId": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "scopeVersion": {
+                  "type": "integer",
+                  "minimum": 1
+                }
+              }
+            },
+            "data": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "items"
+              ],
+              "properties": {
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "offerId",
+                      "state",
+                      "checkedAt"
+                    ],
+                    "properties": {
+                      "offerId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200
+                      },
+                      "state": {
+                        "enum": [
+                          "current",
+                          "changed",
+                          "expired",
+                          "archived",
+                          "unavailable"
+                        ]
+                      },
+                      "currentRevision": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "checkedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                      }
+                    }
+                  },
+                  "maxItems": 20,
+                  "minItems": 0,
+                  "uniqueItems": true
+                }
+              }
+            },
+            "warnings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "code"
+                ],
+                "properties": {
+                  "code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "field": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "maxItems": 20,
+              "minItems": 0,
+              "uniqueItems": true
+            }
+          }
+        }
+      ]
+    }
+  },
+  "x-source-hash": "SHA-256 UTF-8 canonical JSON of sorted fact keys: offerId,revision,sourceLocationId,title,details,terms,validFrom,validUntil,priceAmount,currency,claims,prohibitedTerms; non-null decimal normalized to two places; excludes observation, applied location and derived status."
+}

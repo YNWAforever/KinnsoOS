@@ -4,6 +4,7 @@ import {readFile} from 'node:fs/promises';
 import {createContext,runInContext} from 'node:vm';
 import {transform} from 'esbuild';
 import {canonicalUrl} from '../lib/agent/result-contract.ts';
+import * as navigation from '../lib/canonical.ts';
 
 // Exercise the actual component's handlers and effect dependencies without a browser,
 // network, DOM polyfill or copied implementation. Hook scheduling is explicit so a
@@ -30,6 +31,7 @@ function workspace(props,request=async()=>({ok:false,code:'UNAVAILABLE'}),option
   if(name==='../../lib/agent/repository')return{agentRequest:request};
   if(name==='../../lib/trips/repository')return{trips:options.tripPorts??{apply:async()=>{throw Error('unexpected write');},get:async()=>{throw Error('unexpected read');}}};
   if(name==='../../lib/agent/result-contract')return{canonicalUrl};
+  if(name==='../../lib/canonical')return navigation;
   throw Error('Unexpected dependency '+name);
  }});runInContext(options.page?compiledPage.code:compiled.code,context);const Component=options.page?module.exports.AgentPage:module.exports.default;
  function render(next=latestProps,flush=true){latestProps=next;changed=false;cursor=0;tree=Component(latestProps);if(flush){for(let attempts=0;attempts<10;attempts++){for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;changed=false;cursor=0;tree=Component(latestProps);}}return tree;}
@@ -41,6 +43,14 @@ const trip={id:'22222222-2222-4222-8222-222222222222',revision:4,days:[],title:'
 const props={actorId:actor,roles:['traveller'],initialTrip:trip,connected:true};
 const query='A private source question';
 function enter(instance,value=query){const field=instance.find('textarea');field.props.onChange({target:{value},currentTarget:{value}});instance.render();}
+test('assistant citations retain source titles without linking to the legacy app',async()=>{
+ const instance=workspace(props,async()=>({ok:true,data:{answer:'Published sources',sources:[{url:'https://remix-kinnso-web.vercel.app/en/studio',title:'Legacy source',verifiedAt:null},{url:'https://example.com/info',title:'Visit information',verifiedAt:null}],proposedActions:[],capabilityMode:'sources_only',providerStatus:'unconfigured',evidenceState:'grounded'}}));
+ enter(instance);instance.find('button').props.onClick();await new Promise(resolve=>setImmediate(resolve));instance.render();
+ const links=instance.elements().filter(node=>node.type==='a');
+ assert.ok(!links.some(node=>node.props.href.includes('remix-kinnso-web')));
+ assert.ok(links.some(node=>node.props.href==='https://example.com/info'));
+ assert.ok(instance.elements().some(node=>JSON.stringify(node.props.children??'').includes('Legacy source')));
+});
 test('query stays controlled and enables preview across an equivalent backend snapshot replacement',()=>{
  const instance=workspace(props);enter(instance);assert.equal(instance.find('textarea').props.value,query);
  instance.render({...props,initialTrip:structuredClone(trip),roles:[...props.roles]});

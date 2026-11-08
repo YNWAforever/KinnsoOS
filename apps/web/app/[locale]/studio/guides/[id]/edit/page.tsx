@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { GuideForm } from '@/components/kinnso/GuideForm'
 import { StructuredGuideForm,type StructuredContent } from '@/components/kinnso/StructuredGuideForm'
 import { updateGuideAction } from '@/lib/guides/actions'
+import {StudioBoundGuideForm} from '@/components/kinnso/StudioBoundGuideForm'
+import type {GuideDraft} from '@kinnso/journeys/lib/creators/contracts'
 import type { GuideInput } from '@/lib/guides/types'
 
 export default async function StudioEditGuidePage({
@@ -18,15 +20,23 @@ export default async function StudioEditGuidePage({
   const messages = await getDictionary(locale as Locale)
 
   const supabase = await createSupabaseServerClient()
-  await requireCreatorPage(supabase, locale as Locale, 'creator')
+  const { user } = await requireCreatorPage(supabase, locale as Locale, 'creator')
 
-  // RLS scopes to owner; a non-owner / missing id yields null -> notFound.
+  // Published guides are publicly readable, so an id match alone is not ownership.
+  // Restrict the editor to the signed-in creator; anyone else gets the same 404
+  // as a missing id.
   const { data: guide } = await supabase
     .from('guides')
     .select('id, title, city, cover_url, summary')
     .eq('id', id)
+    .eq('creator_id', user.id)
     .maybeSingle()
   if (!guide) notFound()
+
+  const privateDraft=await supabase.rpc('get_kinnso_guide_draft',{p_draft_id:id})
+  if(privateDraft.error)return <p role="status">{locale==='zh-hk'?'未能核對來源或草稿權限，請重新登入或稍後重試。':'Draft or source permissions could not be checked. Sign in again or retry later.'}</p>
+  const sourceDraft=privateDraft.data as unknown as GuideDraft|null
+  if(sourceDraft?.studio)return <StudioBoundGuideForm key={user.id+id} initial={sourceDraft} actorId={user.id} locale={locale}/>
 
   const initial: GuideInput = {
     title: guide.title,

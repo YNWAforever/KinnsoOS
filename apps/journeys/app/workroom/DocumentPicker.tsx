@@ -1,0 +1,11 @@
+'use client';
+import {useState} from 'react';
+import {useApp} from '../travel/ui';
+import type {SourceDocument} from '../../lib/studio/contracts';
+export function DocumentPicker({sources,selected,onSelect,onAdd,onRestrict,locked=false}:{sources:SourceDocument[];selected:string[];onSelect:(ids:string[])=>void;onAdd:(title:string,text:string,own:boolean)=>Promise<void>;onRestrict:(id:string)=>void;locked?:boolean}){
+ const {t}=useApp(),[title,setTitle]=useState(''),[text,setText]=useState(''),[own,setOwn]=useState(false),[adding,setAdding]=useState(false);
+ return <section className="cs-card" aria-label={t('Choose documents','選擇文件')}><h2>{t('Bring the notes you want to use','選擇這次要用的文件')}</h2><p className="cs-note">{t('Only selected text is used. Paste your own notes; no account connection is needed.','只會使用你選取的文字。貼上自己的筆記即可開始，無需連接帳號。')}</p>
+ <fieldset disabled={locked||adding}><label>{t('Document name','文件名稱')}<input maxLength={200} value={title} onChange={e=>setTitle(e.target.value)}/></label><label>{t('Document text','文件文字')}<textarea rows={4} maxLength={4000} value={text} onChange={e=>setText(e.target.value)}/></label><label><input type="checkbox" checked={own} onChange={e=>setOwn(e.target.checked)}/>{t('This is my original text and I have the right to use it.','這是我的原創文字，我有權使用。')}</label><p className="cs-note">{t('This is your declaration, not third-party rights verification. Documents remain private.','這是你的聲明，不代表第三方權利已核實。文件預設私人。')}</p><button className="k-btn" disabled={!title.trim()||!text.trim()} onClick={async()=>{setAdding(true);try{await onAdd(title,text,own);setTitle('');setText('');setOwn(false);}finally{setAdding(false);}}}>{t('Add document','加入文件')}</button></fieldset>
+ {sources.map(s=><div className="cs-document" key={s.id}><label><input type="checkbox" disabled={locked||s.status!=='active'} checked={selected.includes(s.id)} onChange={e=>onSelect(e.target.checked?[...selected,s.id]:selected.filter(id=>id!==s.id))}/><span>{s.title} <small>· {s.status==='restricted'?'已停用':s.rights==='own'?'本人原創聲明':s.rights==='licensed'?'商戶授權示例':'權利未驗證'} · 私人</small></span></label><button className="k-btn" disabled={locked||s.status!=='active'} onClick={()=>onRestrict(s.id)}>{t('Stop using this source','停用這份來源')}</button></div>)}
+ </section>;
+}

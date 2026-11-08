@@ -20,6 +20,7 @@ for(const locale of ['en','zh-HK'])test('public creator SSR separates unknown au
  assert.match(html,new RegExp('<a[^>]*lang=""[^>]*href="/'+locale+'/g/'+id+'"[^>]*>Original guide title</a>|<a[^>]*href="/'+locale+'/g/'+id+'"[^>]*lang=""[^>]*>Original guide title</a>'));
  assert.ok(html.includes('<h2>'+(locale==='en'?'Published guides':'已發布攻略')+'</h2>'));
  assert.ok(html.includes('aria-label="'+(locale==='en'?'Public creator profile':'創作者公開檔案')+'"'));
+ assert.ok(html.includes(`href="/${locale}/explore"`));
  assert.ok(html.includes(`href="/${locale}/c/real-creator?page=2"`));assert.ok(!html.includes('remix-kinnso-web'));
  assert.ok(!html.includes('<script>'));
  const empty=renderToStaticMarkup(component.exports.PublicCreatorContent({creator:{...creator,bio:'',guides:[],hasMore:false},locale}));

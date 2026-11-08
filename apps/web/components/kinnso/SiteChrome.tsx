@@ -45,7 +45,7 @@ export function SiteChrome({
       <main id="main-content" className="flex-1" tabIndex={-1}>
         {children}
       </main>
-      <Footer locale={locale} bookingLive={bookingLive} t={footer} />
+      <Footer locale={locale} bookingLive={bookingLive} signedIn={role !== 'anon'} t={footer} />
       <AnalyticsConsentBanner locale={locale} t={analytics} />
     </>
   )

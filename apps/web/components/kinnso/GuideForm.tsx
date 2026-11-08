@@ -95,6 +95,7 @@ export function GuideForm({ t, mode, initial, backHref, onSubmit }: Props) {
         <h1 className="text-3xl font-black tracking-tight text-kinnso-ink md:text-4xl">
           {mode === 'new' ? t.formNewHeading : t.formEditHeading}
         </h1>
+        <p className="mt-3 max-w-2xl text-sm text-kinnso-muted">{t.summaryBoundary}</p>
 
         <TicketCard className="mt-8 grid gap-5 p-6">
           <label htmlFor="guide-title" className="grid gap-1.5">

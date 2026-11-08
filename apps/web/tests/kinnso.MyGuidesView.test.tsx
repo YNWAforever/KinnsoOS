@@ -32,5 +32,7 @@ describe('MyGuidesView', () => {
   it('shows the empty state when there are no guides', () => {
     render(<MyGuidesView locale="en" t={en.studioGuides} guides={[]} />)
     expect(screen.getByText(en.studioGuides.emptyTitle)).toBeTruthy()
+    expect(screen.getByText(en.studioGuides.emptyBody)).toBeTruthy()
+    expect(screen.getAllByRole('link', { name: en.studioGuides.newButton }).some((link) => link.getAttribute('href') === '/en/studio/guides/new')).toBe(true)
   })
 })

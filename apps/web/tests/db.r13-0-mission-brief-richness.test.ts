@@ -9,16 +9,16 @@ const sql = readFileSync(
 
 describe('R13.0 mission brief richness schema', () => {
   it('adds six empty-array-default text[] columns for the brief lists', () => {
-    expect(sql).toContain("add column deliverables text[] not null default '{}'")
-    expect(sql).toContain("add column requirements text[] not null default '{}'")
-    expect(sql).toContain("add column dos text[] not null default '{}'")
-    expect(sql).toContain("add column donts text[] not null default '{}'")
-    expect(sql).toContain("add column key_messages text[] not null default '{}'")
-    expect(sql).toContain("add column reference_links text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists deliverables text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists requirements text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists dos text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists donts text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists key_messages text[] not null default '{}'")
+    expect(sql).toContain("add column if not exists reference_links text[] not null default '{}'")
   })
 
   it('adds a nullable effort enum constrained to low/medium/high', () => {
-    expect(sql).toContain('add column effort text')
+    expect(sql).toContain('add column if not exists effort text')
     expect(sql).toContain("check (effort in ('low', 'medium', 'high'))")
   })
 

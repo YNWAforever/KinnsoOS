@@ -8,6 +8,25 @@ Node >=22.13.0. `npm ci` then `npm run dev`. Open `http://localhost:3000/zh-HK` 
 
 `npm test` runs boundary, feasibility, import and retained demo model tests. `npm run typecheck` checks the application. `npm run build` creates the production Next.js build and corresponding source download. `npm start` serves that build. `npm run test:integration` and `npm run test:e2e` require the separately guarded synthetic local backend; they fail when its URL or project does not match. Browser evidence is local and ignored by Git.
 
+## Lint
+
+In the monorepo, run `pnpm lint` from the repository root. It runs repository ESLint
+and both app tasks through Turbo, including `pnpm --filter @kinnso/journeys lint`.
+For the standalone source archive, use `npm ci` then `npm run lint`.
+
+Journeys checks TypeScript/JavaScript application code, scripts and tests. Unused
+bindings are errors (intentionally unused `_` bindings and caught errors are allowed);
+React Hook dependency findings remain warnings. `eslint-suppressions.json` records
+the existing unused-binding counts per file so new violations fail without changing
+product code. When removing old violations, run `pnpm exec eslint . --prune-suppressions`
+inside this app and commit the reduced baseline. Do not regenerate or expand it to
+make new violations pass.
+
+To verify coverage locally, temporarily add `const aud09UnusedBinding = 1;` to a
+Journeys `.ts` or `.tsx` file and run root `pnpm lint`: it must fail with
+`@typescript-eslint/no-unused-vars`. Remove the binding and rerun to return to green.
+Keep that deliberate failure out of committed source.
+
 ## Feature states
 
 | Surface | Status |
@@ -24,6 +43,39 @@ Node >=22.13.0. `npm ci` then `npm run dev`. Open `http://localhost:3000/zh-HK` 
 One unresolved edit is retained per trip on the device. Retry or review it before
 saving another operation. Logout and account changes clear mounted private views
 and account caches; offline maps and photos are unavailable.
+
+The homepage's **Plan my trip** task can turn a reviewed manual brief into a
+device itinerary with one to thirty days. Choose **Prepare a trip draft**, name
+each day and enter its stops, date/time zone and note. Days can be reordered or
+removed after confirmation. Each day supports one to twenty stops, with at most
+two hundred stops in total. Review the complete itinerary and confirm
+**Save itinerary on this device**.
+Open **View saved device trips** to reopen, edit or delete it through the existing
+trip workspace. Device drafts are readable by anyone using the browser. Account
+import still requires sign-in and a separate confirmation.
+
+Saved manual copies also allow editing the trip title, optional start date,
+time zone and day titles. Invalid details keep the last saved copy intact.
+Device saves require a matching storage readback before confirming success or
+enabling account import; an unconfirmed read retains edits for same-copy retry.
+
+Saved manual trips support adding, moving and removing days and stops. Moving
+stops keeps their notes and times attached. Choose **Move to day** and confirm
+**Move stop to day** to append a stop to another day; focus follows the moved
+stop. Choosing a destination does not edit the trip. Moving stops between days
+preserves existing dates; day changes renumber dates from the start date.
+Removal requires confirmation and affects the saved copy only after Save.
+The editor supports thirty days, fifty stops per day and two hundred total.
+Empty days and unfinished stop names can stay in device working copies; account
+import retains its existing completeness checks. Guide-derived structural data
+is not changed. Temporary editor keys are not stored or sent to parent workflows.
+
+Saved manual stops also support optional start times (`HH:mm`, 00:00–23:59) and
+whole-minute durations (1–1440). Times use the trip's time zone. Blank fields
+mean unknown; midnight is `00:00`. Partial input stays with its stop when moved,
+and invalid input blocks Save and save-and-leave without changing the saved
+copy. Correct or clear the field, then Save. Reopening restores the saved times;
+temporary input text is not stored or sent to parent workflows.
 
 ## Catalog configuration
 

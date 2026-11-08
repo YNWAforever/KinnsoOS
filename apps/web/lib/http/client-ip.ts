@@ -1,4 +1,5 @@
 import { headers } from 'next/headers'
+import { isIP } from 'node:net'
 
 /**
  * Vercel-provided caller IP for rate limiting. Direct Vercel deployments
@@ -7,7 +8,14 @@ import { headers } from 'next/headers'
  * Local/non-Vercel callers retain the existing fallbacks; a Verified Proxy
  * deployment must review its configured trusted client-IP header first.
  */
-export async function getClientIp(): Promise<string> {
+export async function getClientIp(options: { trustedOnly?: boolean } = {}): Promise<string> {
+  if (options.trustedOnly) {
+    // Only Vercel's overwritten header is trusted for paid-request quotas. Other
+    // deployments share a conservative bucket until a trusted ingress is defined.
+    if (process.env.VERCEL !== '1') return 'unknown'
+    const value = (await headers()).get('x-vercel-forwarded-for')?.split(',')[0].trim()
+    return value && isIP(value) ? value : 'unknown'
+  }
   const h = await headers()
   const vercelForwardedFor = h.get('x-vercel-forwarded-for')
   if (vercelForwardedFor) return vercelForwardedFor.split(',')[0].trim()

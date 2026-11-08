@@ -40,6 +40,39 @@ jobs:
             apps/journeys/evidence/service-state-browser/
             apps/journeys/evidence/public-entry-browser/
             apps/journeys/evidence/ci/browser-mirror.json
+  studio-planning:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/journeys
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/journeys/package-lock.json
+      - run: npm ci
+      - name: Select the official Ubuntu archive on the owned GitHub runner
+        env:
+          KINNSO_CI_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: node scripts/ci-browser-mirror.mjs
+      - name: Install the locked Chromium runtime
+        run: npm exec playwright install -- --with-deps chromium
+      - name: Homepage to saved-trip flows on a backend-disabled Next server
+        run: npm exec playwright test -- --config=playwright.home.config.ts
+      - name: Conversation Studio creator flows with boundary fixtures
+        run: npm exec playwright test -- --config=playwright.studio.config.ts
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: journeys-studio-planning-results
+          path: |
+            apps/journeys/test-results/home-continuation/
+            docs/implementation/evidence/conversation-studio/browser-results.json
+            docs/implementation/evidence/conversation-studio/browser/
+            apps/journeys/evidence/ci/browser-mirror.json
   verify:
     runs-on: ubuntu-latest
     defaults:
@@ -53,7 +86,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
-      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: '3.12'
       - run: python -m unittest discover -s tests -p source_package_test.py
@@ -114,7 +147,7 @@ jobs:
           chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
           printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Authenticate Supabase image downloads
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -179,7 +212,7 @@ jobs:
           chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
           printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Authenticate Supabase image downloads
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -245,7 +278,7 @@ jobs:
           chmod 700 "$RUNNER_TEMP/kinnso-ghcr"
           printf 'DOCKER_CONFIG=%s/kinnso-ghcr\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
       - name: Authenticate Supabase image downloads
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}

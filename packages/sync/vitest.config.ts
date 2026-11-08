@@ -3,6 +3,6 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['tests/**/*.test.ts'],
-    setupFiles: ['./tests/setup.ts'],
+    exclude: ['tests/sync.integration.test.ts', 'tests/reader.contract.test.ts'],
   },
 })

@@ -14,7 +14,7 @@ function chainable(result: unknown) {
 }
 
 describe('listSavedExperiences', () => {
-  it('maps the experience_saves -> experiences embed, dropping rows with no joinable experience', async () => {
+  it('maps the experience_saves -> experiences embed and keeps a save whose experience is no longer readable', async () => {
     supabaseMock.from.mockReturnValue(
       chainable({
         data: [
@@ -32,6 +32,7 @@ describe('listSavedExperiences', () => {
 
     expect(rows).toEqual([
       { experienceId: 'e1', slug: 'sunset-tour', title: 'Sunset junk boat tour', city: 'Hong Kong', priceAmount: 480, currency: 'HKD', coverUrl: null, savesCount: 3 },
+      { experienceId: 'e2', unavailable: true },
     ])
   })
 

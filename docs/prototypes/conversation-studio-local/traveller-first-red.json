@@ -1,0 +1,84 @@
+{
+  "checkedAt": "2026-10-31T10:11:40.975Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3500",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [
+    "Unreceived share request reload retries original intent; no duplicate links",
+    "Finalize failure never claims image saved; retry attaches same sample once",
+    "Private brief isolation, source withdrawal, actor clearing and mobile widths"
+  ],
+  "failures": [
+    {
+      "name": "T1 shared homepage → private brief → original trip editor",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: /探索、規劃及記錄旅程/ })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('heading', { name: /探索、規劃及記錄旅程/ })\n"
+    },
+    {
+      "name": "T2 bookmarked guide exact adoption preserves old notes and v1 after author update",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "T2 summary-only and changed guide version refuse adoption",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "T3 explicit public projection → anonymous share → revoke and deny old token",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "T3 changing trip after confirmation blocks stale share",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "T4 private grouping suggestions and explicit bookmark removal → original saved list",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "T5 private note + sample image finalization/attachment; T3 image opt-in",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    },
+    {
+      "name": "Lost adoption acknowledgement reload reuses same request with no duplicate days",
+      "error": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('button', { name: '讀取來源與開始討論', exact: true })\nExpected: visible\nTimeout: 7000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 7000ms\n  - waiting for getByRole('button', { name: '讀取來源與開始討論', exact: true })\n"
+    }
+  ],
+  "externalRequests": [],
+  "pageErrors": [
+    {
+      "name": "T1 shared homepage → private brief → original trip editor",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T2 bookmarked guide exact adoption preserves old notes and v1 after author update",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T2 summary-only and changed guide version refuse adoption",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T3 explicit public projection → anonymous share → revoke and deny old token",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T3 changing trip after confirmation blocks stale share",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T4 private grouping suggestions and explicit bookmark removal → original saved list",
+      "error": "process is not defined"
+    },
+    {
+      "name": "T5 private note + sample image finalization/attachment; T3 image opt-in",
+      "error": "process is not defined"
+    },
+    {
+      "name": "Lost adoption acknowledgement reload reuses same request with no duplicate days",
+      "error": "process is not defined"
+    }
+  ],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

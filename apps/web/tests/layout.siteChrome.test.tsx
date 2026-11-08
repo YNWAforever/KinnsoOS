@@ -68,6 +68,17 @@ describe('[locale]/layout mounts the global shell', () => {
   it('ISR-revalidates product state every 5 minutes', () => {
     expect(revalidate).toBe(300)
   })
+  it('shows the footer Saved link to a signed-in traveller while booking is off', async () => {
+    viewerRole.value = 'traveler'
+    const ui = await LocaleLayout({
+      children: <div>BODY</div>,
+      params: Promise.resolve({ locale: 'en' }),
+    })
+    render(<>{ui.props.children.props.children}</>)
+    expect(screen.getByRole('link', { name: en.footer.lSaved }).getAttribute('href')).toBe('/en/trips#saved')
+    expect(screen.queryByRole('link', { name: en.footer.lTrips })).toBeNull()
+  })
+
   it('passes bookingLive from product state to the footer', async () => {
     productState.bookingLive = true
     const ui = await LocaleLayout({

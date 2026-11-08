@@ -1,5 +1,7 @@
 'use client';
 import Link from 'next/link';
+import type {StudioGuideIntent} from '../../lib/studio/guide-editor';
+import type {StudioGuideBinding} from '../../lib/studio/contracts';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { useApp } from './ui';
@@ -8,14 +10,20 @@ import { PLATFORMS } from '../../lib/creators/handles';
 import { subscribeAccountInvalidation } from '../../lib/trips/local-drafts';
 import {CreatorCollaborationTasks} from './CreatorCollaborationTasks';
 import {WorkspaceServiceState} from './WorkspaceServiceState';
+import {useUnsavedDraftGuard} from './UnsavedDraftGuard';
 import {publicationReadiness,formatTimeOfDay,parseTimeOfDay,moveDay,moveStop,removeStop,moved} from '../../lib/creators/editor-operations';
 
 export function CreatorWorkspace({ path, actorId, enabled }: { path: string; actorId: string | null; enabled: boolean }) {
  const { t, href, locale } = useApp();
- const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true);
+ const [progress, setProgress] = useState<CreatorProgress | null>(null), [error, setError] = useState(''), [validAccount, setValidAccount] = useState(true), [confirmOpen, setConfirmOpen] = useState(false);
  const [readVersion,setReadVersion]=useState(0);
+ function markProfileConfirmed() {
+  setConfirmOpen(false);
+  // The confirm command writes creator_dna.final. creators.status active (step done) does not.
+  setProgress(current => current ? { ...current, step: 'done', profilePublished: true } : current);
+ }
  useEffect(() => {
-  setProgress(null); setError(''); setValidAccount(true);
+  setProgress(null); setError(''); setValidAccount(true); setConfirmOpen(false);
   if (!actorId || !enabled) return;
   let active = true; let timer: ReturnType<typeof setTimeout>;
   const unsubscribe = subscribeAccountInvalidation(next => { if (next !== actorId) { active = false; setProgress(null); setValidAccount(false); } });
@@ -31,15 +39,17 @@ export function CreatorWorkspace({ path, actorId, enabled }: { path: string; act
  if (!actorId || !validAccount) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><Link className="k-btn primary" href={`/${locale}/sign-in?next=${encodeURIComponent(href(path))}`}>{t('Sign in to continue', '登入後繼續')}</Link></section>;
  if (error) return <section className="k-page"><h1>{t('Your creator studio', '你的創作工作室')}</h1><WorkspaceServiceState locale={locale} code={error} retryState="read" returnPath={href(path)} onRetry={()=>setReadVersion(value=>value+1)}/></section>;
  if (!progress) return <p className="k-page" role="status">{t('Loading your studio…', '正在載入工作室…')}</p>;
- if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={() => setProgress({ ...progress, step: 'done' })}/>;
+ if (progress.step !== 'done') return <CreatorOnboarding progress={progress} onDone={markProfileConfirmed}/>;
  const editor = path === 'studio/guides/new' || path === 'studio/adventures/new' || path.endsWith('/edit');
- return editor ? <CreatorEditor key={path} path={path}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}<CreatorGuides/></>;
+ const unpublished = progress.profilePublished === false;
+ const showConfirm = unpublished && confirmOpen;
+  return editor ? <CreatorEditor key={path} path={path} actorId={actorId}/> : <>{path==='studio'&&<CreatorCollaborationTasks actorId={actorId} enabled={enabled} onDenied={code=>{setProgress(null);setError(code);if(code==='AUTH_REQUIRED')setValidAccount(false);}}/>}{unpublished&&<p role="status">{t('This account can author guides. No published creator profile is on file. Drafts stay private until you publish a version.','此帳戶可以創作攻略。尚未有已發布的創作者檔案。草稿在你發布版本前保持私人。')}</p>}{unpublished&&(showConfirm?<button type="button" className="k-btn" onClick={()=>setConfirmOpen(false)}>{t('Back to guides','返回攻略')}</button>:<button type="button" className="k-btn" onClick={()=>setConfirmOpen(true)}>{t('Review and confirm creator profile','核對並確認創作者檔案')}</button>)}<CreatorOnboarding progress={progress} onDone={markProfileConfirmed} open={showConfirm}/><CreatorGuides hidden={showConfirm}/></>;
 }
 
-function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; onDone: () => void }) {
+function CreatorOnboarding({ progress, onDone, open = true }: { progress: CreatorProgress; onDone: () => void; open?: boolean }) {
  const { t } = useApp(), router = useRouter();
  const [profile, setProfile] = useState<Profile>(progress.profile ?? emptyProfile()), [confirmed, setConfirmed] = useState(false), [busy, setBusy] = useState(false), [message, setMessage] = useState('');
- const [handles, setHandles] = useState(Object.fromEntries(progress.handles.map(h => [h.platform, h.handle])));
+ const [handles, setHandles] = useState(Object.fromEntries((progress.handles ?? []).map(h => [h.platform, h.handle])));
  const intent = useRef<{ key: string; requestId: string } | null>(null), [pending, setPending] = useState(false);
  const edited = useRef(false), suggestionKey = useRef(JSON.stringify(progress.profile));
  useEffect(() => { const key = JSON.stringify(progress.profile); if (!edited.current && !pending && !busy && key !== suggestionKey.current) { setProfile(progress.profile); setConfirmed(false); suggestionKey.current = key; } }, [progress.profile, pending, busy]);
@@ -54,6 +64,7 @@ function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; on
   setBusy(true); const r = await creators.handles(PLATFORMS.filter(p => handles[p]?.trim()).map(platform => ({ platform, handle: handles[platform] })));
   setBusy(false); setMessage(r.ok ? t('Social handles saved.', '社交帳號已保存。') : t('Could not save handles. Check their format and retry.', '未能保存帳號，請檢查格式並重試。'));
  }
+ if (!open) return null;
  return <section className="k-page os-editor"><p className="k-eyebrow">{t('CREATOR ONBOARDING', '創作者設定')}</p><h1>{t('Tell travellers about your work.', '向旅人介紹你的創作。')}</h1>
   <p role="status">{progress.jobStatus ? t(`Analysis status: ${progress.jobStatus}.`, `分析狀態：${progress.jobStatus}。`) : t('You can complete your profile manually.', '你可以自行填寫並確認檔案。')}</p>
   <p>{t('Review all suggestions before publishing. You can continue manually while analysis is unavailable.', '發布前請核對所有建議。分析服務未能使用時，你仍可自行完成。')}</p>
@@ -66,10 +77,11 @@ function CreatorOnboarding({ progress, onDone }: { progress: CreatorProgress; on
  </section>;
 }
 
-function CreatorGuides() {
+function CreatorGuides({ hidden = false }: { hidden?: boolean }) {
  const { t, href } = useApp(), [items, setItems] = useState<GuideDraft[]>([]), [cursor, setCursor] = useState<string | null>(null), [message, setMessage] = useState(''), [loaded, setLoaded] = useState(false);
  async function load(after?: string) { const r = await creators.list(after); if (r.ok) { setItems(previous => after ? [...previous, ...r.data.items] : r.data.items); setCursor(r.data.nextCursor); setLoaded(true); setMessage(''); } else setMessage(t('Your guides could not be loaded. Retry.', '未能載入你的攻略，請重試。')); }
  useEffect(() => { let active = true; creators.list().then(r => { if (!active) return; if (r.ok) { setItems(r.data.items); setCursor(r.data.nextCursor); setLoaded(true); } else setMessage('Could not load guides.'); }); return () => { active = false; }; }, []);
+ if (hidden) return null;
  return <section className="k-page"><div className="k-section-title"><h1>{t('Your authored guides', '你的創作攻略')}</h1><Link className="k-btn primary" href={href('studio/guides/new')}>{t('Create guide', '建立攻略')}</Link></div><p>{t('Drafts are private. Published versions can be adopted into traveller trips.', '草稿屬私人內容，已發布版本可供旅人套用到行程。')}</p>
   {!loaded && !message && <p role="status">{t('Loading guides…', '正在載入攻略…')}</p>}{loaded && !items.length && <p>{t('Start with your first authored route.', '由你的第一份創作路線開始。')}</p>}
   <div className="k-card-grid">{items.map(d => <article className="os-guide" key={d.id}><div className="os-guide-body"><h2>{d.payload.title || t('Untitled guide', '未命名攻略')}</h2><p>{d.payload.summary}</p><span>{d.status === 'published' ? t(`Published version ${d.publishedVersion}`, `已發布第 ${d.publishedVersion} 版`) : t('Private draft', '私人草稿')}</span><Link className="k-btn" href={href('studio/guides/' + d.id + '/edit')}>{t('Edit guide', '編輯攻略')}</Link></div></article>)}</div>
@@ -79,7 +91,7 @@ function CreatorGuides() {
 
 type EditorState={payload:DraftPayload;keys:{day:string;stops:string[]}[]};
 function editorState(payload:DraftPayload,key:(day:number,stop?:number)=>string):EditorState{return{payload,keys:payload.content.days.map((d,i)=>({day:key(i),stops:d.stops.map((_,j)=>key(i,j))}))};}
-function CreatorEditor({ path }: { path: string }) {
+function CreatorEditor({ path, actorId=null }: { path: string; actorId?: string|null }) {
  const { t, href } = useApp(), router = useRouter();
  const isNew = path.endsWith('/new');
  const editorId=useId();
@@ -89,8 +101,9 @@ function CreatorEditor({ path }: { path: string }) {
  const [revision, setRevision] = useState(0), [version, setVersion] = useState(0), [loaded, setLoaded] = useState(isNew), [busy, setBusy] = useState(false), [pending, setPending] = useState(false), [conflict, setConflict] = useState(false), [preview, setPreview] = useState(false), [message, setMessage] = useState('');
  const [actionError, setActionError] = useState<{ action: 'save' | 'publish' | 'withdraw'; message: string } | null>(null);
  const [saveRejected,setSaveRejected]=useState(false);
+ const [studio,setStudio]=useState<StudioGuideBinding|null>(null),[confirmation,setConfirmation]=useState<{action:'save'|'publish';payload:string}|null>(null),[confirmed,setConfirmed]=useState(false),[recovering,setRecovering]=useState(false);
  const saved = useRef(JSON.stringify(emptyDraft())), head = useRef(0), busyRef = useRef(false), lifetime = useRef(0);
- const intent = useRef<{ action: 'save' | 'publish' | 'withdraw'; requestId: string; revision: number; payload: DraftPayload; editRevision:number } | null>(null);
+ const intent = useRef<(StudioGuideIntent&{editRevision:number}) | null>(null);
  useEffect(() => {
   lifetime.current++;
   if (intent.current) {
@@ -99,33 +112,44 @@ function CreatorEditor({ path }: { path: string }) {
   }
   return () => { lifetime.current++; };
  }, []);
- function accept(d: GuideDraft,replace=true) { const p = { ...d.payload, content: d.payload.content ?? emptyDraft().content }; saved.current = JSON.stringify(p); head.current = d.revision; if(replace){const next=editorState(p,()=>crypto.randomUUID());currentEditor.current=next;setEditor(next);setUndo(null);} setRevision(d.revision); setVersion(d.publishedVersion); setLoaded(true); setConflict(d.sourceChanged); }
+ function accept(d: GuideDraft,replace=true) { setStudio(d.studio??null); const p = { ...d.payload, content: d.payload.content ?? emptyDraft().content }; saved.current = JSON.stringify(p); head.current = d.revision; if(replace){const next=editorState(p,()=>crypto.randomUUID());currentEditor.current=next;setEditor(next);setUndo(null);} setRevision(d.revision); setVersion(d.publishedVersion); setLoaded(true); setConflict(d.sourceChanged); }
  function acceptAck(d:GuideDraft,commandEdit:number){const latest=editRevision.current===commandEdit;accept(d,false);if(latest){const next={...currentEditor.current,payload:d.payload};currentEditor.current=next;setEditor(next);}return latest;}
  useEffect(() => {
   if (isNew) { setId(crypto.randomUUID()); return; }
   let active = true; creators.get(path.split('/')[2]).then(r => { if (!active) return; if (r.ok) accept(r.data); else setMessage(r.code === 'NOT_FOUND' ? t('Guide not found.', '找不到攻略。') : t('Could not load the draft. Refresh to retry.', '未能載入草稿，請重新整理。')); });
   return () => { active = false; };
  }, [path, isNew]);
- async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false) {
-  if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return;
-  const command = intent.current ?? { action, requestId: crypto.randomUUID(), revision: head.current, payload:currentEditor.current.payload,editRevision:editRevision.current };
-  const startedLifetime = lifetime.current;
-  intent.current = command; busyRef.current = true; setBusy(true);
-  setSaveRejected(false);
-  const r = command.action === 'save' ? await creators.save(id, command.revision, command.requestId, command.payload) : command.action === 'publish' ? await creators.publish(id, command.revision, command.requestId) : await creators.withdraw(id);
-  if (lifetime.current !== startedLifetime) return;
+  useEffect(()=>{if(!studio||!actorId||!id)return;let active=true;void import('../../lib/studio/guide-editor').then(module=>{if(active&&module.pendingStudioGuide(actorId,id)){setRecovering(true);setPending(true);setMessage(t('An earlier action needs an outcome check.','上次操作需要核對結果。'));}});return()=>{active=false;};},[studio?.artifactId,actorId,id]);
+  async function run(action: 'save' | 'publish' | 'withdraw', reviewedCurrentVersion = false, studioConfirmed=false):Promise<boolean> {
+   if (!id || busyRef.current || (conflict && !reviewedCurrentVersion)) return false;
+   if(studio&&action!=='withdraw'&&(!actorId||(!intent.current&&!studioConfirmed)))return false;
+   const command = intent.current ?? { action, requestId: crypto.randomUUID(), preparationId:crypto.randomUUID(), revision: head.current, payload:JSON.parse(JSON.stringify(currentEditor.current.payload)) as DraftPayload,editRevision:editRevision.current };
+   const startedLifetime = lifetime.current;
+   intent.current = command; busyRef.current = true; setBusy(true);
+   setSaveRejected(false);
+   const r = studio&&actorId&&command.action!=='withdraw' ? await import('../../lib/studio/guide-editor').then(module=>module.runStudioGuideAction(actorId,id,command)).catch(()=>({ok:false as const,code:'UNAVAILABLE' as const,retryable:true})) : command.action === 'save' ? await creators.save(id, command.revision, command.requestId, command.payload) : command.action === 'publish' ? await creators.publish(id, command.revision, command.requestId) : await creators.withdraw(id);
+   if (lifetime.current !== startedLifetime) return false;
   busyRef.current = false; setBusy(false);
   if (!r.ok) {
+    if(studio&&['AUTH_REQUIRED','FORBIDDEN','RESTRICTED'].includes(r.code)){setLoaded(false);const blank=editorState(emptyDraft(),()=>crypto.randomUUID());currentEditor.current=blank;setEditor(blank);setPreview(false);setConfirmation(null);setUndo(null);setMessage(t('Account or source access changed. Reload and select permitted sources.','帳戶或來源權限已改變，請重新載入並選擇有權使用的資料。'));intent.current=null;setPending(false);return false;}
    setPending(r.retryable); setConflict(r.code === 'CONFLICT'); if (!r.retryable) intent.current = null;
    if(command.action==='save'&&!r.retryable)setSaveRejected(true);
    setMessage('');
-   setActionError({ action: command.action, message: r.code === 'PILOT_REVIEW_REQUIRED' ? t('This draft needs pilot review before publication. Your draft is kept.', '這份草稿須通過試點審核才能發布，草稿已保留。') : r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return;
+   setActionError({ action: command.action, message: r.code === 'PILOT_REVIEW_REQUIRED' ? t('This draft needs pilot review before publication. Your draft is kept.', '這份草稿須通過試點審核才能發布，草稿已保留。') : r.code === 'CONFLICT' ? t('Another version was saved. Review the saved draft before retrying.', '已有另一版本保存，請核對已保存草稿後再試。') : r.code === 'INVALID' ? command.action==='publish'?t('Complete the authored route before publication. Your input is kept.', '發布前請完成創作路線，輸入已保留。'):t('The draft was not saved. Check the supported fields or retry; keep this tab open.','草稿未能保存，請檢查支援欄位或重試，並保持此頁開啟。') : t('The action was not confirmed. Your input is kept; retry the same action.', '操作尚未確認，輸入已保留，請重試同一操作。') }); return false;
   }
-  intent.current = null; setPending(false);
+  intent.current = null; setPending(false);setConfirmation(null);setConfirmed(false);
   setActionError(previous => previous?.action === command.action ? null : previous);
-  if (command.action === 'save') { const latest=acceptAck(r.data as GuideDraft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (isNew&&latest) window.history.replaceState(null,'',href('studio/guides/' + id + '/edit')); }
+  if (command.action === 'save') { const draft=r.data as GuideDraft; const latest=acceptAck(draft,command.editRevision); setMessage(latest?t('Draft saved.', '草稿已保存。'):t('Earlier edits saved; newer changes pending.','較早修改已保存，新修改仍待保存。')); if (latest) canonicalizeSavedGuide(); return latest&&!draft.sourceChanged; }
   if (command.action === 'publish') { const result = r.data as { draft: GuideDraft }; const latest=acceptAck(result.draft,command.editRevision); setMessage(latest?t('Version published. Existing traveller copies stay unchanged.', '版本已發布，既有旅人行程保留原樣。'):t('Saved version published; your newer draft edits are kept.','已保存版本已發布，較新的草稿修改仍保留。')); }
   if (command.action === 'withdraw') setMessage(t('New adoptions withdrawn; traveller notes retained.', '已撤回新套用，旅人筆記保留。'));
+  return false;
+ }
+ function canonicalizeSavedGuide(){
+  // Every save entry point uses this live guard, including the 900ms autosave.
+  // Continue editing can retry this after clearing the pending leave.
+  // Only fully acknowledged input may change the URL and remount the editor.
+  if(isNew&&id&&head.current>0&&!busyRef.current&&!intent.current&&!isLeavePending()&&JSON.stringify(currentEditor.current.payload)===saved.current)
+   window.history.replaceState(window.history.state,'',href('studio/guides/'+id+'/edit'));
  }
  const readiness=publicationReadiness(payload),fieldPrefix='guide-'+useId();
  function issueField(issue:typeof readiness.issues[number]){return fieldPrefix+'-'+(issue.code==='stopTitle'?`stop-${issue.day}-${issue.stop}`:issue.code==='stops'?`stops-${issue.day}`:issue.code);}
@@ -138,9 +162,20 @@ function CreatorEditor({ path }: { path: string }) {
   return issue.code==='stops'?t(`Day ${day}: add an authored stop`,`第 ${day} 日：加入創作站點`):t(`Day ${day}, stop ${issue.stop!+1}: add a name`,`第 ${day} 日，站點 ${issue.stop!+1}：填寫名稱`);
  }
  const dirty = JSON.stringify(payload) !== saved.current;
+ // The delayed autosave can be cancelled by unmount. Leave only after the
+ // latest edit revision is acknowledged; retrying another command is not a save.
+ const isLeavePending=useUnsavedDraftGuard({kind:'creator',onContinueEditing:canonicalizeSavedGuide,scopeKey:'creator-guide:'+id,dirty:loaded&&(dirty||pending),busy,saveLatest:async()=>{
+  if(intent.current&&intent.current.action!=='save')return false;
+  return run('save');
+ }});
+ useEffect(()=>{
+  const prevent=(event:BeforeUnloadEvent)=>{if(dirty||busy||pending){event.preventDefault();event.returnValue='';}};
+  window.addEventListener('beforeunload',prevent);
+  return()=>window.removeEventListener('beforeunload',prevent);
+ },[dirty,busy,pending]);
  const status = busy ? intent.current?.action === 'publish' ? t('Publishing version…', '正在發布版本…') : intent.current?.action === 'withdraw' ? t('Withdrawing adoption…', '正在撤回套用…') : t('Saving draft…', '正在保存草稿…')
   : message || (dirty ? t('Draft changes pending.', '草稿修改待保存。') : revision > 0 ? t('Draft saved.', '草稿已保存。') : t('Draft not saved yet.', '草稿尚未保存。'));
- function transform(update:(previous:EditorState)=>EditorState,removedKey?:string){if(pending||conflict)return;const previous=currentEditor.current;const next=update(previous);if(next===previous)return;setUndo(removedKey?{editor:previous,focusKey:removedKey}:null);setSaveRejected(false);editRevision.current++;currentEditor.current=next;setEditor(next);setMessage('');}
+ function transform(update:(previous:EditorState)=>EditorState,removedKey?:string){if(pending||conflict)return;setConfirmation(null);setConfirmed(false);const previous=currentEditor.current;const next=update(previous);if(next===previous)return;setUndo(removedKey?{editor:previous,focusKey:removedKey}:null);setSaveRejected(false);editRevision.current++;currentEditor.current=next;setEditor(next);setMessage('');}
  function edit(update: (previous: DraftPayload) => DraftPayload) {transform(previous=>({...previous,payload:update(previous.payload)}));}
  function focusAfterEdit(selector:string){
   const origin=document.activeElement,startedLifetime=lifetime.current;
@@ -154,7 +189,7 @@ function CreatorEditor({ path }: { path: string }) {
  function focusItem(key:string){focusAfterEdit(`[data-editor-focus="${CSS.escape(key)}"]`);}
  function reorderDay(from:number,to:number){const key=currentEditor.current.keys[from].day;transform(e=>({payload:{...e.payload,content:moveDay(e.payload.content,from,to)},keys:moved(e.keys,from,to)}));focusItem(key);}
  function reorderStop(day:number,from:number,to:number){const key=currentEditor.current.keys[day].stops[from];transform(e=>({payload:{...e.payload,content:moveStop(e.payload.content,day,from,to)},keys:e.keys.map((k,i)=>i===day?{...k,stops:moved(k.stops,from,to)}:k)}));focusItem(key);}
- useEffect(() => { if (!loaded || !id || !dirty || busy || pending || conflict || saveRejected) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict, saveRejected]);
+ useEffect(() => { if (studio || !loaded || !id || !dirty || busy || pending || conflict || saveRejected) return; const timer = setTimeout(() => { void run('save'); }, 900); return () => clearTimeout(timer); }, [payload, loaded, id, busy, pending, conflict, saveRejected, studio]);
  function changeStop(day: number, stop: number, patch: Partial<DraftPayload['content']['days'][number]['stops'][number]>) { edit(p => ({ ...p, content: { days: p.content.days.map((d, i) => i === day ? { ...d, stops: d.stops.map((s, j) => j === stop ? { ...s, ...patch } : s) } : d) } })); }
  return <section className="k-page os-editor" data-testid="creator-editor"><Link href={href('studio/guides')}>{t('Back to guides', '返回攻略')}</Link><h1>{t('Author your route', '創作你的路線')}</h1><p>{t('Write only itinerary content you have rights to publish. Summary text is never converted into stops.', '只填寫你有權公開的行程內容，摘要不會自動變成站點。')}</p>
   {!loaded ? <p role="status">{message || t('Loading draft…', '正在載入草稿…')}</p> : <>
@@ -176,14 +211,20 @@ function CreatorEditor({ path }: { path: string }) {
    {!payload.content.days.length&&<p>{t('No days. Add a day before publishing.','尚未加入日期，發布前請加入日期。')}</p>}
    <button id={fieldPrefix+'-days'} className="k-btn" disabled={pending || conflict || payload.content.days.length >= 30 || payload.content.days.some(d=>d.offset>=364)} onClick={() => transform(e=>({payload:{...e.payload,content:{days:[...e.payload.content.days,{...emptyDraft().content.days[0],offset:Math.max(-1,...e.payload.content.days.map(d=>d.offset))+1}]}},keys:[...e.keys,{day:crypto.randomUUID(),stops:[crypto.randomUUID()]}]}))}>{t('Add day', '加入一天')}</button>
    {undo&&<><button type="button" className="k-btn" data-editor-undo disabled={pending||conflict} onClick={()=>{const restored=undo;transform(()=>restored.editor);focusItem(restored.focusKey);}}>{t('Undo last deletion','復原上次刪除')}</button><p>{t('Undo is available until the next edit.','下一次修改前可復原此刪除。')}</p></>}
-   <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('save')}>{t('Save draft', '保存草稿')}</button><button className="k-btn" onClick={() => setPreview(!preview)}>{t('Preview', '預覽')}</button>
-   <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1 || readiness.issues.length > 0} onClick={() => run('publish')}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
-   {pending && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
-   {conflict && <><p role="alert">{t('A newer source version or draft exists. Your input is retained. Review the published guide and reload the saved draft before continuing.', '已有較新的來源版本或草稿，輸入仍保留。請先核對已發布攻略及重新載入已保存草稿。')}</p><button className="k-btn" onClick={async () => { const r = await creators.get(id!); if (r.ok) accept(r.data); }}>{t('Reload saved draft (replace this form)', '載入已保存草稿（替換此表格）')}</button><button className="k-btn" disabled={busy} onClick={() => run('save', true)}>{t('I reviewed the current version; save this draft', '我已核對目前版本，保存此草稿')}</button></>}
+   <button className="k-btn" disabled={busy || pending || conflict} onClick={() => {if(studio){setConfirmation({action:'save',payload:JSON.stringify(payload)});setConfirmed(false);setPreview(true);}else return run('save');}}>{t('Save draft', '保存草稿')}</button><button className="k-btn" onClick={() => setPreview(!preview)}>{t('Preview', '預覽')}</button>
+   <button className="k-btn primary" disabled={busy || pending || conflict || dirty || revision < 1 || readiness.issues.length > 0} onClick={() => {if(studio){setConfirmation({action:'publish',payload:JSON.stringify(payload)});setConfirmed(false);setPreview(true);}else return run('publish');}}>{t('Publish structured version', '發布結構化版本')}</button>{version > 0 && <button className="k-btn" disabled={busy || pending || conflict} onClick={() => run('withdraw')}>{t('Withdraw adoption', '撤回套用')}</button>}
+   {studio&&<p>{t('This draft pins its source brief version. Later brief edits stay separate. Every save and publication checks source permission and requires confirmation.','此草稿保留交接時的 brief 版本；後續 brief 修改會分開保存。每次保存及發布仍會核對來源權限，並由你確認。')} <Link href={href('workroom/t/'+studio.threadId)}>{t('Open source brief','開啟來源 brief')}</Link></p>}
+   {confirmation&&<section aria-label={t('Confirm complete content','確認完整內容')}><h2>{confirmation.action==='publish'?t('Confirm public publication','確認公開發布'):t('Confirm private draft save','確認私人草稿保存')}</h2><p>{t('Review the complete preview below, including destination, descriptions and times. Publication is a separate action from saving.','請核對下方完整預覽，包括目的地、描述及時間。保存後仍須另外確認發布。')}</p><label><input type="checkbox" checked={confirmed} onChange={event=>setConfirmed(event.target.checked)}/>{t('I reviewed this content and have permission to use every included item.','我已核對完整內容，並有權使用每項已包含的資料。')}</label><button className="k-btn primary" disabled={!confirmed||busy||confirmation.payload!==JSON.stringify(payload)} onClick={()=>void run(confirmation.action,false,true)}>{confirmation.action==='publish'?t('Confirm publication now','確認現在發布'):t('Confirm save','確認保存')}</button><button className="k-btn" onClick={()=>setConfirmation(null)}>{t('Cancel','取消')}</button></section>}
+   {recovering&&actorId&&id&&<button className="k-btn" disabled={busy} onClick={async()=>{const generation=lifetime.current,edits=editRevision.current;setBusy(true);const module=await import('../../lib/studio/guide-editor');const result=await module.recoverStudioGuide(actorId,id);if(generation!==lifetime.current)return;setBusy(false);if(result.ok){acceptAck('draft' in result.data?result.data.draft:result.data,edits);setRecovering(false);setPending(false);setMessage(t('Earlier action checked against saved content.','已按保存內容核對上次操作。'));}else{setMessage(t('Outcome could not be verified. Keep the same request; no success is claimed.','未能核實結果。保留同一請求，尚未確認成功。'));if(!result.retryable){setRecovering(false);setPending(false);setLoaded(false);setEditor(editorState(emptyDraft(),()=>crypto.randomUUID()));setPreview(false);}}}}>{t('Check earlier action','核對上次操作')}</button>}
+   {pending && !recovering && <button className="k-btn primary" disabled={busy} onClick={() => run(intent.current?.action ?? 'save')}>{t('Retry same action', '重試同一操作')}</button>}
+   {conflict && <><p role="alert">{t('A newer source version or draft exists. Your input is retained. Review the published guide and reload the saved draft before continuing.', '已有較新的來源版本或草稿，輸入仍保留。請先核對已發布攻略及重新載入已保存草稿。')}</p><button className="k-btn" onClick={async () => { const r = await creators.get(id!); if (r.ok) accept(r.data); }}>{t('Reload saved draft (replace this form)', '載入已保存草稿（替換此表格）')}</button><button className="k-btn" disabled={busy} onClick={() => {if(studio){setConfirmation({action:'save',payload:JSON.stringify(payload)});setConfirmed(false);setPreview(true);}else void run('save', true);}}>{t('I reviewed the current version; save this draft', '我已核對目前版本，保存此草稿')}</button></>}
    {actionError && <p role="alert">{actionError.message}</p>}
    <p role="status">{status}</p>
    {version > 0 && <Link className="k-btn" href={href('g/' + id)}>{t('View published guide', '查看已發布攻略')}</Link>}
-   {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={editor.keys[i].day}><h3>{d.title || t(`Day ${d.offset + 1}`, `第 ${d.offset + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={editor.keys[i].stops[j]}><h4>{s.title}</h4><p>{s.description}</p></div>)}</article>)}</section>}
+   {preview && <section aria-label={t('Guide preview', '攻略預覽')}><h2>{payload.title}</h2><p>{payload.city}</p><p>{payload.summary}</p>{payload.content.days.map((d, i) => <article key={editor.keys[i].day}><h3>{d.title || t(`Day ${d.offset + 1}`, `第 ${d.offset + 1} 日`)}</h3>{d.stops.map((s, j) => <div key={editor.keys[i].stops[j]}><h4>{s.title}</h4><p>{s.description}</p><p>{t('Start','開始')} {formatTimeOfDay(s.startMinuteOfDay)||'—'} · {t('Minutes','分鐘')} {s.durationMinutes??'—'}{s.placeId&&<> · {s.placeId}</>}</p></div>)}</article>)}</section>}
   </>}
  </section>;
 }
+
+// Export a stable entry for the local acceptance fixture; production uses CreatorWorkspace.
+export const StudioCreatorEditor=CreatorEditor;

@@ -12,6 +12,8 @@ import { merchantProfileJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
 import { JsonLd } from '@/components/JsonLd'
 import { PublicMerchantProfileView } from '@/components/kinnso/pages/PublicMerchantProfileView'
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

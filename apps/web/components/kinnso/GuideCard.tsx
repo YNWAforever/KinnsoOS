@@ -5,10 +5,12 @@ import { EntityMedia } from '@/components/kinnso/media/EntityMedia';
 import type { Guide } from '@/lib/guides/types';
 import type { Locale } from "@/lib/i18n/config";
 
-const GuideCard = ({ g, locale, savesLabel = 'Saves', isSaved, onSaveToggle }: {
+const GuideCard = ({ g, locale, savesLabel = 'Saves', isSaved, onSaveToggle, actionLabel }: {
   g: Guide; locale: Locale; savesLabel?: string
   isSaved?: boolean
   onSaveToggle?: () => void
+  /** Accessible name when this control removes a saved guide. */
+  actionLabel?: string
 }) => (
   <div className="group relative">
     <Link href={`/${locale}/g/${g.slug}`} aria-label={g.title} className="block">
@@ -40,7 +42,7 @@ const GuideCard = ({ g, locale, savesLabel = 'Saves', isSaved, onSaveToggle }: {
         className="absolute bottom-5 right-5 z-10 inline-flex items-center gap-1 text-xs text-kinnso-muted"
       >
         <Bookmark aria-hidden="true" className={isSaved ? 'h-3 w-3 fill-current' : 'h-3 w-3'} />
-        <span className="sr-only">{savesLabel}</span>
+        <span className="sr-only">{actionLabel ?? savesLabel}</span>
       </button>
     ) : null}
   </div>

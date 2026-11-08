@@ -1,7 +1,7 @@
 import {createHash} from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
 import sharp from 'sharp'
-import {backendTarget,mediaRuntimeConfigured} from '../contracts/capabilities'
+import {backendTarget,isLocalMediaOrigin,mediaRuntimeConfigured} from '../contracts/capabilities'
 type Env=Record<string,string|undefined>
 export function unifiedMediaEnvironment(env:Env):Env {
  const target=backendTarget(env),key=env.KINNSO_SUPABASE_SECRET_KEY
@@ -16,7 +16,7 @@ export function unifiedMediaEnvironment(env:Env):Env {
 function clients(env:Env,token?:string) {
  const origin=env.SUPABASE_URL??env.NEXT_PUBLIC_SUPABASE_URL
  if(!origin||origin!==env.KINNSO_APPROVED_SUPABASE_ORIGIN)throw new Error('UNAVAILABLE')
- const parsed=new URL(origin);if(parsed.protocol!=='https:'&&!(env.KINNSO_TEST_TARGET==='local'&&(parsed.origin==='http://127.0.0.1:58421'||env.CI==='true'&&env.KINNSO_TEST_PROJECT==='kinnso-v3'&&parsed.origin==='http://127.0.0.1:54421')))throw new Error('UNAVAILABLE')
+ const parsed=new URL(origin);if(parsed.protocol!=='https:'&&!(env.KINNSO_TEST_TARGET==='local'&&isLocalMediaOrigin(parsed.origin,env)))throw new Error('UNAVAILABLE')
  return{user:createClient(origin,env.SUPABASE_ANON_KEY??env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,{auth:{persistSession:false,autoRefreshToken:false},global:{headers:token?{Authorization:'Bearer '+token}:{}}}),service:createClient(origin,env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false,autoRefreshToken:false}})}
 }
 export function validateImageBytes(bytes:Uint8Array,mime:string) {

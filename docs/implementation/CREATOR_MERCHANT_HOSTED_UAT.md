@@ -1,6 +1,6 @@
 # Creator/Merchant hosted role acceptance — P05
 
-Status: **BLOCKED_TARGET**. These are acceptance cases awaiting a designated, configured staging target and approved synthetic actors. Local/CI fixtures, preview READY and a config exit are separate evidence. No hosted actor has been created or assigned a role by this work.
+Status: **BLOCKED_START_GATE / NOT_RUN**. The [2026-10-27 Phase B overlay](PHASE_B_HPS_PREPARATION_2026-10-27.md) identifies the existing target as **SHARED_PRODUCTION**, mirrors selected synthetic creators/guides/Ops, and maps the remaining Auth/policy gaps. It is not isolated staging or authorization to start hosted cases. Merchant/traveller/outsider Auth create-vs-SKIP is unresolved, policy/mailbox inputs are OWNER_REQUIRED, and public synthetic publication needs separate Approve. Local/CI fixtures, preview READY and a config exit are separate evidence. No hosted actor has been created or assigned a role by this preparation.
 
 Every private observation must include `{sourceSha, deploymentId, environment, schemaFingerprint, actorRole, scenarioId, expected, observed, evidence, status}`. Store account identifiers, credentials, original private evidence and contact details privately. Preserve failed and not-run cases. This public matrix has no observed successes.
 

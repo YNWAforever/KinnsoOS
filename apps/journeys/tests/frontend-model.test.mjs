@@ -176,6 +176,25 @@ test('authorization runs before cached clone/save/publish/payout results are rep
   error(() => m.clone('kyoto-slow-days', 'Cached trip', '', 'clone'), 'SIGN_IN_REQUIRED');
 });
 
+test('route search matches every word across both languages', () => {
+  const kyoto = m.fixtures.find(item => item.slug === 'kyoto-slow-days');
+  assert.equal(m.matchesRouteSearch(kyoto, 'slow 京都'), true);
+  assert.equal(m.matchesRouteSearch(kyoto, 'Slow travel'), true);
+  assert.equal(m.matchesRouteSearch(kyoto, '慢旅行'), true);
+  assert.equal(m.matchesRouteSearch(kyoto, 'kyoto missing-word'), false);
+  assert.equal(m.matchesRouteSearch(kyoto, '   '), true);
+});
+
+test('a bookmarked route can be removed after its source is withdrawn', () => {
+  const publication = m.publish(clone(), 'publish-then-withdraw');
+  m.bookmark(publication.slug, 'save-before-withdraw');
+  m.withdraw(publication.slug, 'withdraw-saved-source');
+  assert.equal(m.findPublic(m.read(), publication.slug), undefined);
+  assert.deepEqual(m.bookmark(publication.slug, 'remove-withdrawn-save'), []);
+  assert.equal((m.read().bookmarks[m.read().session.id] || []).includes(publication.slug), false);
+  error(() => m.bookmark(publication.slug, 'save-withdrawn-again'), 'SOURCE_UNAVAILABLE');
+});
+
 test('idempotency namespaces keep bookmarks and withdrawals independent', () => {
   const publication = m.publish(clone(), 'publish');
   m.bookmark(publication.slug, 'shared-key');

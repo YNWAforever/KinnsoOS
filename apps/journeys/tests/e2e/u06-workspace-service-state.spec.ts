@@ -1,6 +1,21 @@
-import {test,expect} from '@playwright/test';
+import {test,expect,type Page} from '@playwright/test';
 import {build} from 'esbuild';
 import {resolve} from 'node:path';
+
+/** Chromium sometimes rejects a full-page capture after fonts load. Retry that protocol error only; the image is still required. */
+async function fullPagePng(page: Page) {
+ let failure: unknown;
+ for (let attempt = 0; attempt < 3; attempt++) {
+  try { return await page.screenshot({fullPage:true}); }
+  catch (error) {
+   failure = error;
+   const message = error instanceof Error ? error.message : String(error);
+   if (attempt === 2 || !message.includes('Unable to capture screenshot')) throw error;
+   await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+  }
+ }
+ throw failure;
+}
 
 let script='';
 test.beforeAll(async()=>{
@@ -30,7 +45,7 @@ for(const locale of ['en','zh-HK']){
   await expect(retry).toBeFocused();await page.keyboard.press('Enter');
   await expect(page.getByLabel('Retries',{exact:true})).toHaveText('1');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=document.documentElement.clientWidth)).toBe(true);
-  await testInfo.attach(`service-state-${locale}-320-200pct`,{body:await page.screenshot({fullPage:true}),contentType:'image/png'});
+  await testInfo.attach(`service-state-${locale}-320-200pct`,{body:await fullPagePng(page),contentType:'image/png'});
  });
  for(const code of ['AUTH_REQUIRED','FORBIDDEN','CONFLICT'])test(`P03 ${locale}: ${code} exposes the appropriate recovery action`,async({page})=>{
   await page.setContent('<main id="fixture"></main>');

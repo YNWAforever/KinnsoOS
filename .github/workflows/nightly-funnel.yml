@@ -27,7 +27,7 @@ jobs:
         # funnel stops short of Stripe. That is what earns this the remote-target opt-in
         # the shared Playwright config otherwise refuses.
         env:
-          E2E_BASE_URL: https://remix-kinnso-web.vercel.app
+          E2E_BASE_URL: https://kinnso-os.vercel.app
           E2E_ALLOW_REMOTE_TARGET: '1'
           BOOKING_LIVE: 'false'
           PLAYWRIGHT_JSON_OUTPUT_NAME: ${{ github.workspace }}/apps/e2e/nightly-funnel.json
@@ -39,7 +39,7 @@ jobs:
           --report apps/e2e/nightly-funnel.json
           --output .ci-evidence/nightly-funnel/receipt.json
           --outcome '${{ steps.readonly_check.outcome }}'
-          --target https://remix-kinnso-web.vercel.app
+          --target https://kinnso-os.vercel.app
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
@@ -62,7 +62,7 @@ jobs:
       - name: Crawl every sitemap URL independently of funnel
         id: readonly_check
         env:
-          BASE_URL: https://remix-kinnso-web.vercel.app
+          BASE_URL: https://kinnso-os.vercel.app
           KINNSO_CRAWL_REPORT: ${{ github.workspace }}/.ci-evidence/nightly-sitemap/report.json
         run: |
           set -euo pipefail
@@ -75,7 +75,7 @@ jobs:
           --report .ci-evidence/nightly-sitemap/report.json
           --output .ci-evidence/nightly-sitemap/receipt.json
           --outcome '${{ steps.readonly_check.outcome }}'
-          --target https://remix-kinnso-web.vercel.app
+          --target https://kinnso-os.vercel.app
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

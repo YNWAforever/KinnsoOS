@@ -1,8 +1,10 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { canonicalRoot } from "../lib/canonical.ts";
-test("consolidated site receives a supported locale without accepting a foreign origin", () => {
-  assert.equal(canonicalRoot("zh-HK"), "https://kinnso-os.vercel.app/zh-HK");
-  assert.equal(canonicalRoot("en"), "https://kinnso-os.vercel.app/en");
-  assert.equal(new URL(canonicalRoot("https://evil.example")).origin, "https://kinnso-os.vercel.app");
+test("navigation roots stay on the current site and normalize the Hong Kong locale", () => {
+  for (const [locale, expected] of [["en", "/en"], ["zh-HK", "/zh-HK"], ["zh-hk", "/zh-HK"], ["https://evil.example", "/en"]]) {
+    const root = canonicalRoot(locale);
+    assert.equal(root, expected);
+    assert.equal(new URL(root + '/studio', 'https://kinnso-os.vercel.app').origin, 'https://kinnso-os.vercel.app');
+  }
 });

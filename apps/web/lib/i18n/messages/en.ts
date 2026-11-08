@@ -262,6 +262,8 @@ export interface TravelerTripsMessages {
   reviewedLabel: string
   unsaveFailed: string
   unsaveSignIn: string
+  unsaveLabel: string
+  savedSourceUnavailable: string
 }
 
 export interface MerchantsDirectoryMessages {
@@ -465,6 +467,12 @@ export interface Messages {
     readBackHeading: string
     readBackIntro: string
     enterStudio: string
+    activatedHeading: string
+    activatedBody: string
+    activatedGuideCta: string
+    activatedGuideNote: string
+    activatedReviewDraft: string
+    activatedContinueSetup: string
   }
   studio: {
     introHeading: string
@@ -975,6 +983,7 @@ export interface Messages {
   studioGuides: {
     listPill: string; listHeading: string; listSubtitle: string
     newButton: string; emptyTitle: string; emptyBody: string
+    summaryBoundary: string
     statusDraft: string; statusPublished: string
     edit: string; delete: string; deleteConfirm: string
     formNewHeading: string; formEditHeading: string
@@ -1382,6 +1391,22 @@ export interface Messages {
     saveFailed: string
     statusUnavailable: string
   }
+  guideSource: {
+    label: string
+    summaryKind: string
+    itineraryKind: string
+    author: string
+    version: string
+    publishedAt: string
+    daysStops: string
+    originalLanguage: string
+    verificationDate: string
+    unknown: string
+    disclaimer: string
+    summaryNoAdopt: string
+    summaryInspiration: string
+    unavailable: string
+  }
   experienceSave: {
     save: string
     saved: string
@@ -1681,6 +1706,12 @@ const messages: Messages = {
     readBackHeading: 'Your profile is live',
     readBackIntro: 'Here is your published creator DNA.',
     enterStudio: 'Go to Creator Studio',
+    activatedHeading: 'Your creator account is active',
+    activatedBody: 'No published creator profile is on file. Studio home stays closed until a profile is published. This page does not publish one, and an unpublished draft is not a live profile.',
+    activatedGuideCta: 'Write a guide',
+    activatedGuideNote: 'You can save a private guide draft now. A reading summary is not a structured itinerary, and publishing a guide does not by itself list you in the public creator directory.',
+    activatedReviewDraft: 'Review unpublished draft',
+    activatedContinueSetup: 'Continue profile setup',
   },
   studio: {
     introHeading: 'Add your handles to begin',
@@ -2278,7 +2309,8 @@ const messages: Messages = {
     listSubtitle: 'Draft, publish, and manage the travel guides you share on KINNSO.',
     newButton: 'New guide',
     emptyTitle: 'No guides yet',
-    emptyBody: 'Publish your first guide and it will appear in Explore.',
+    emptyBody: 'Save a private draft first. A published summary can appear in Explore. It is not a structured itinerary, and it does not by itself list you in the public creator directory.',
+    summaryBoundary: 'This form saves a reading summary only. It does not create structured days or stops. Travellers cannot adopt a summary into a trip. Publishing a summary can show it in Explore, and does not list you in the public creator directory.',
     statusDraft: 'Draft',
     statusPublished: 'Published',
     edit: 'Edit',
@@ -2781,6 +2813,8 @@ const messages: Messages = {
     reviewedLabel: 'Reviewed',
     unsaveFailed: 'That did not remove it. Please try again.',
     unsaveSignIn: 'Sign in to finish removing',
+    unsaveLabel: 'Remove from saved',
+    savedSourceUnavailable: 'This saved item is no longer available.',
   },
   merchantsOps: {
     title: 'Merchants',
@@ -3057,6 +3091,22 @@ const messages: Messages = {
     signInToSave: 'Sign in to save',
     saveFailed: 'That did not save. Please try again.',
     statusUnavailable: 'Saved status could not be checked. Retry',
+  },
+  guideSource: {
+    label: 'Guide source',
+    summaryKind: 'Reading summary — no structured itinerary',
+    itineraryKind: 'Structured itinerary',
+    author: 'Author',
+    version: 'Published version',
+    publishedAt: 'Published at',
+    daysStops: 'Days / stops',
+    originalLanguage: 'Original content language',
+    verificationDate: 'Place verification date',
+    unknown: 'Not recorded',
+    disclaimer: 'Publication time is not a verification date. Check current place facts and their sources before travel. Author content is not automatically translated.',
+    summaryNoAdopt: 'This is a summary guide. It has no structured itinerary to apply.',
+    summaryInspiration: 'Use this as inspiration, then add your own days and stops. Nothing is copied automatically.',
+    unavailable: 'Guide source could not be confirmed. This page does not list stops or offer an adopt action.',
   },
   experienceSave: {
     save: 'Save',

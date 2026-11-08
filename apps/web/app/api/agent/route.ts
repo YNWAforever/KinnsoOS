@@ -3,10 +3,10 @@ import { streamText, stepCountIs, convertToModelMessages, type UIMessage } from 
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { isAgentConfigured } from '@/lib/agent/config'
 import { resolveConfiguredProductState } from '@/lib/product-state'
-import { AGENT_MODEL, AGENT_RATE_LIMIT } from '@/lib/agent/policy'
+import { AGENT_MODEL } from '@/lib/agent/policy'
 import { makeAgentTools } from '@/lib/agent/tools'
 import { appendAgentMessage, type AgentIdentity } from '@/lib/agent/queries'
-import { getClientIp } from '@/lib/http/client-ip'
+import { checkServerRateLimit } from '@/lib/http/server-rate-limit'
 import { isLocale, type Locale } from '@/lib/i18n/config'
 import { validateChatMessages } from '@/lib/ai/chat-messages'
 
@@ -85,14 +85,9 @@ export async function POST(req: Request) {
     identity = { anonSessionId }
   }
 
-  const ip = await getClientIp()
-  const { data: allowed, error: rateLimitError } = await supabase.rpc('check_and_increment_agent_rate_limit', {
-    p_ip: ip,
-    p_max_requests: AGENT_RATE_LIMIT.maxRequests,
-    p_window_seconds: AGENT_RATE_LIMIT.windowSeconds,
-  })
-  if (rateLimitError) {
-    console.error('[agent] rate limit check failed', rateLimitError)
+  const { allowed, failed } = await checkServerRateLimit('agent')
+  if (failed) {
+    console.error('[agent] rate limit check failed')
     return NextResponse.json({ error: 'rate_limit_check_failed' }, { status: 500 })
   }
   if (!allowed) return NextResponse.json({ error: 'rate_limited' }, { status: 429 })

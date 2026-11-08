@@ -59,6 +59,7 @@ describe('DnaReviewForm', () => {
     fireEvent.change(screen.getByLabelText(t.niches), { target: { value: 'travel, food' } })
     fireEvent.click(screen.getByRole('button', { name: t.publish }))
     await waitFor(() => expect(onPublished).toHaveBeenCalledTimes(1))
+    expect(onPublished).toHaveBeenCalledWith(expect.objectContaining({ bio: 'Updated bio', niches: ['travel', 'food'] }))
 
     expect(from).toHaveBeenCalledWith('creator_dna')
     expect(from).toHaveBeenCalledWith('creators')

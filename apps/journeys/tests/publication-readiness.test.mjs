@@ -25,8 +25,8 @@ async function editor(payload,locale='en'){
  const states=[],refs=[],effects=[],writes=[];let cursor=0,tree;
  const hooks={useId:()=>':readiness:',useState(v){const i=cursor++;if(!(i in states))states[i]=typeof v==='function'?v():v;return[states[i],v=>states[i]=typeof v==='function'?v(states[i]):v];},useRef(v){const i=cursor++;return refs[i]??(refs[i]={current:v});},useEffect(work,deps){const i=cursor++,old=effects[i];if(!old||deps.some((v,j)=>!Object.is(v,old.deps[j])))effects[i]={work,deps,pending:true};}};
  const jsx=(type,props)=>({type,props}),module={exports:{}};
- runInContext(compiled.code,createContext({module,exports:module.exports,crypto,setTimeout:()=>0,clearTimeout(){},require:name=>{
-  if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}})};
+ runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},setTimeout:()=>0,clearTimeout(){},require:name=>{
+  if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};if(name==='next/navigation')return{useRouter:()=>({refresh(){}})};
   if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==='zh-HK'?zh:en,href:p=>'/'+locale+'/'+p})};
   if(name==='../../lib/creators/contracts')return{emptyDraft:()=>ready(),creators:{get:async()=>({ok:true,data:{id:'guide',payload,revision:1,publishedVersion:0,sourceChanged:false}}),publish:async(...args)=>{writes.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}}};
   if(name==='../../lib/creators/editor-operations')return ops;

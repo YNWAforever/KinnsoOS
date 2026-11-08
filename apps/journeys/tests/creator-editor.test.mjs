@@ -33,8 +33,8 @@ for(const item of ['day','stop'])for(const focusState of ['control','chosen-fiel
   const origin={matches:selector=>selector===':disabled'&&focusState==='disabled-control-blur'},chosenField={},body={},document={activeElement:origin,body,querySelector:()=>movedField},movedField={focus(){document.activeElement=movedField;}};
   const blank=()=>({title:'',city:'',summary:'',content:{days:[0,2].map(offset=>({offset,title:`Day ${offset}`,stops:['First','Second'].map(description=>({title:'Same',description,placeId:null,startMinuteOfDay:null,durationMinutes:null}))}))}});
   const jsx=(type,props)=>({type,props}),module={exports:{}};
-  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,document,CSS:{escape:key=>key},requestAnimationFrame:callback=>frames.push(callback),setTimeout:()=>0,clearTimeout(){},require:name=>{
-   if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+  runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},document,CSS:{escape:key=>key},requestAnimationFrame:callback=>frames.push(callback),setTimeout:()=>0,clearTimeout(){},require:name=>{
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
@@ -61,10 +61,10 @@ for(const locale of [null,'en','zh-HK'])test(locale ? 'pilot publish preserves t
  const blank=()=>({title:'',city:'',summary:'',content:{days:[{offset:0,title:'',stops:[{title:'',description:'',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}]}});
  const payload={...blank(),title:'Retained input',city:'Hong Kong',summary:'Summary'}; payload.content.days[0].stops[0].title='Stop';
  const jsx=(type,props)=>({type,props}),module={exports:{}};
- runInContext(compiled.code,createContext({module,exports:module.exports,crypto,
+ runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},
   setTimeout:fn=>{const timer={fn,active:true};timers.push(timer);return timer;},clearTimeout:timer=>timer.active=false,
   require:name=>{
-   if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
+   if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
    if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:(en,zh)=>locale==="zh-HK"?zh:en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{get:async()=>({ok:true,data:{payload,revision:3,publishedVersion:0,sourceChanged:false}}),publish:(...args)=>new Promise(resolve=>writes.push({args,resolve})),save:(...args)=>new Promise(resolve=>writes.push({args,resolve}))}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};

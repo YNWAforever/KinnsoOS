@@ -1,0 +1,14 @@
+{
+  "project": "kinnsoos-native-acceptance-20261101",
+  "apiOrigin": "http://127.0.0.1:60021",
+  "ports": {"api": 60021, "db": 60022, "shadow": 60020},
+  "cliVersion": "2.107.0",
+  "postgresMajor": 17,
+  "minimumFreeMemoryBytes": 4294967296,
+  "minimumFreeDiskBytes": 10737418240,
+  "networkInternal": true,
+  "loopbackOnly": true,
+  "seed": false,
+  "realProviders": false,
+  "preservePorts": [3499]
+}

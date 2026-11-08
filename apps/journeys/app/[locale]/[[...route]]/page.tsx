@@ -30,9 +30,11 @@ import {readDestinationListing,readPublicDestination,destinationIndexMetadata,de
 import {readDestinationRelated} from '../../../lib/seo/destination-related';
 import {PublicDestinationIndex,PublicDestinationDetail,PublicDestinationUnavailable} from '../../../lib/seo/PublicDestinationContent';
 import {serverClient} from '../../../lib/supabase/server';
+import {connectedCatalogRedirect} from '../../../lib/catalog-results';
 import {readPrivateTripHeading} from '../../../lib/trips/private-heading';
 import{readPrivateMerchantEntry}from '../../../lib/merchants/private-entry';
 import{readPrivateCreatorMissionEntry}from '../../../lib/creators/private-mission-entry';
+import {parseAuthIntent,authPath} from '../../../lib/auth/auth-intent';
 type Props = { params: Promise<{ locale: string; route?: string[] }>;searchParams?:Promise<Record<string,string|string[]|undefined>> };
 const publishedGuide=cache(async(reference:string)=>{
  const id=isGuideSlug(reference)?await resolvePublishedGuideId(reference,process.env):reference;
@@ -196,7 +198,15 @@ export default async function Page({ params,searchParams }: Props) {
     path.startsWith("legacy/")
   )
     notFound();
+  const catalogTarget = connectedCatalogRedirect(locale, path, demo, entryQuery);
+  if (catalogTarget) redirect(catalogTarget);
   const actor=demo?null:await currentActor();
+  // Invitation pages handle their own signed-out flow without forwarding
+  // a private invitation fragment to the sign-in route.
+  if (!demo && !actor && !['merchant/invitation','ops/accept-invite'].includes(path) && /^(?:(?:studio|merchant|ops)(?:\/|$)|merchants\/dashboard(?:\/|$)|admin$)/.test(path)) {
+    const next = `/${locale}/${path}${publicQuery.size?'?'+publicQuery:''}`;
+    redirect(authPath(parseAuthIntent(new URLSearchParams({next}),locale),'sign-in'));
+  }
   const requestedCompany=typeof entryQuery?.company==='string'?entryQuery.company:null;
   const merchantEntry=!demo&&actor&&path==='merchant'&&capabilities(process.env).merchant.mode==='connected'
     ?await readPrivateMerchantEntry(await serverClient(),actor.id,requestedCompany):null;
@@ -215,7 +225,7 @@ export default async function Page({ params,searchParams }: Props) {
         tripHeading={tripHeading}
         merchantEntry={merchantEntry}
         creatorMissionEntry={creatorMissionEntry}
-        features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',pilot:capabilities(process.env).pilot.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
+        features={{conversation:capabilities(process.env).conversation.mode==='connected',creatorBriefHandoff:capabilities(process.env).creatorBriefHandoff.mode==='connected',catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',pilot:capabilities(process.env).pilot.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}
       />
     </Suspense>
   );

@@ -1,6 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { queryCatalog, parseCatalogQuery, safeCover } from "../lib/catalog.ts";
+import { catalogResultsPath, connectedCatalogRedirect } from "../lib/catalog-results.ts";
 const env = {
   KINNSO_SUPABASE_URL: "https://example.supabase.co",
   KINNSO_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
@@ -148,6 +149,46 @@ test("only approved HTTPS image host passes cover validation", () => {
   ])
     assert.equal(safeCover(value), null);
 });
+test("a multi-word guide title stays one quoted search pattern", async () => {
+  await queryCatalog({ q: "Quiet Kyoto" }, env, async (input) => {
+    const pattern = new URL(input).searchParams.get("or");
+    assert.equal(
+      pattern,
+      '(title.ilike."*Quiet Kyoto*",city.ilike."*Quiet Kyoto*",summary.ilike."*Quiet Kyoto*")',
+    );
+    return Response.json([]);
+  });
+});
+test("a single-word search keeps the unquoted ilike wildcard", async () => {
+  await queryCatalog({ q: "coffee" }, env, async (input) => {
+    const url = new URL(input);
+    assert.equal(
+      url.searchParams.get("or"),
+      "(title.ilike.*coffee*,city.ilike.*coffee*,summary.ilike.*coffee*)",
+    );
+    return Response.json([]);
+  });
+});
+test("a city filter and a single-word query stay separate PostgREST clauses", async () => {
+  await queryCatalog({ q: "Kyoto", city: "Kyoto" }, env, async (input) => {
+    const url = new URL(input);
+    assert.equal(url.searchParams.get("city"), "eq.Kyoto");
+    assert.equal(
+      url.searchParams.get("or"),
+      "(title.ilike.*Kyoto*,city.ilike.*Kyoto*,summary.ilike.*Kyoto*)",
+    );
+    return Response.json([]);
+  });
+});
+test("connected catalog search stays on explore and a library URL keeps its query", () => {
+  assert.equal(catalogResultsPath("/en/explore"), "explore");
+  assert.equal(catalogResultsPath("/zh-HK/destinations/kyoto"), "explore");
+  assert.equal(catalogResultsPath("/en/demo/library"), "library");
+  assert.equal(connectedCatalogRedirect("en", "library", false, { q: "Quiet Kyoto", page: "2" }), "/en/explore?q=Quiet+Kyoto&page=2");
+  assert.equal(connectedCatalogRedirect("zh-HK", "library", false, undefined), "/zh-HK/explore");
+  assert.equal(connectedCatalogRedirect("en", "library", true, { q: "Kyoto" }), null);
+  assert.equal(connectedCatalogRedirect("en", "explore", false, { q: "Kyoto" }), null);
+});
 test("search filter cannot alter published status or include PostgREST syntax", async () => {
   const result=await queryCatalog(
     { q: "東京,(status.eq.draft)", city: "Hong Kong", page: 1 },
@@ -155,10 +196,10 @@ test("search filter cannot alter published status or include PostgREST syntax", 
     async (input) => {
       const url = new URL(input);
       assert.equal(url.searchParams.get("status"), "eq.published");
-      assert.equal(url.searchParams.get("city"), "eq.Hong Kong");
+      assert.equal(url.searchParams.get("city"), 'eq."Hong Kong"');
       assert.equal(
         url.searchParams.get("or"),
-        "(title.ilike.*東京 status eq draft*,city.ilike.*東京 status eq draft*,summary.ilike.*東京 status eq draft*)",
+        '(title.ilike."*東京 status eq draft*",city.ilike."*東京 status eq draft*",summary.ilike."*東京 status eq draft*")',
       );
       return Response.json([]);
     },

@@ -1,0 +1,7 @@
+import {discoveryRepository} from '../../../apps/journeys/lib/discovery/repository';
+export async function discoveryRequest<T>(path:string,method='GET',body?:unknown):Promise<T>{
+ if(typeof location==='undefined'||location.hostname!=='127.0.0.1'||!['3499','3500','3501'].includes(location.port))throw Error('UNAVAILABLE');
+ const response=await fetch('/__preview/discovery'+path,{method,headers:body===undefined?undefined:{'Content-Type':'application/json'},body:body===undefined?undefined:JSON.stringify(body),credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000)});
+ const value=await response.json();if(!response.ok)throw Error(value.code??'UNAVAILABLE');return value as T;
+}
+export const localDiscoveryStore={...discoveryRepository(discoveryRequest),tripSuggestion:(input:{intentId:string;publicationId:string})=>discoveryRequest<import('../../../apps/journeys/lib/discovery/contracts').TripSuggestionResult>('/trip-suggestion','POST',input),resolveSources:(input:import('../../../apps/journeys/lib/discovery/contracts').MatchedSourceInput)=>discoveryRequest<import('../../../apps/journeys/lib/discovery/contracts').MatchedSourcesResult>('/sources','POST',input),demo:{companies:()=>discoveryRequest<{id:string;name:string;role:string;locationId:string}[]>('/companies'),attestLink:(id:string)=>discoveryRequest<string>('/attest','POST',{id}),refreshOffers:(id:string)=>discoveryRequest<import('../../../apps/journeys/lib/discovery/contracts').DiscoveryReadResult>('/refresh','POST',{id})}};

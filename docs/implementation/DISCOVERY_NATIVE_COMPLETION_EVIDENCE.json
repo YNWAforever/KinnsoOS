@@ -1,0 +1,417 @@
+{
+  "version": 1,
+  "status": "LOCAL_COMPLETION_CANDIDATE_READY_FOR_REVIEW_NATIVE_ACCEPTANCE_BLOCKED",
+  "timeUtc": "2026-10-31T21:22:53.075280+00:00",
+  "timeHkt": "2026-11-01T05:22:53.075280+08:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "node": "v24.18.0",
+  "kinnsoBase": "b6291cf40ae0849c5e9eeea6cbb1b725136b4f54",
+  "sourceFingerprint": "6b1336db5e1c6f703cb36cf83edac3a480afcae417294d400b739cdeb80e57e6",
+  "sme": {
+    "base": "df6f9a61095129d4f107a17cdcf159556457b940",
+    "branch": "codex/kinnso-mcp-native-20261101",
+    "files": {
+      "lib/repositories/offers.ts": "c3103a76a7ff8700061b8efd81ca44ee3126a5e9dd12c21944c4602e963ac8f9",
+      "app/api/mcp/route.ts": "d8642533e5f4f2f97dd91dc289b7331fa65ba64b0d797bf38114b40c1f9475a7",
+      "contracts/kinnso/read-v1.schema.json": "25fc00f1f448614884bdb7aa76be804bd82a74a5dba5dd8979da147b6554f7d2",
+      "lib/mcp/authorize.ts": "f74e76cab3b987f7d535c5f3efc5a768ff5b7e373d094f3d7365292cf226d0fd",
+      "lib/mcp/contracts.ts": "864ed474758193adbfb8656724429cbc473cf2b11177232a3332962139566ed6",
+      "lib/mcp/repository.test.mjs": "e016dd96746ba390ffea7ae2f160da5b36ffa94c1b719564ced367c137971876",
+      "lib/mcp/server.test.mjs": "944baffbc72bc5fc6d911c290649aaf5ca32c8577da356cd94bdfa468237e6fa",
+      "lib/mcp/server.ts": "1611029bc2bafddb6e6fc7aaa5790391cafb4809d19d8f3198ed10da184a3d18",
+      "lib/mcp/tools.ts": "eef25fa4745b28230163b99fc38687f80d446024ba47dd6854c2a2086b60b40b",
+      "lib/repositories/mcp-read-native.ts": "c2b677c267a72a765ee350e3956b1c14ff1f18438a7933bbe7a72600956f8963",
+      "lib/repositories/mcp-read-sql.test.ts": "cac6bbf1a0976efb993cc7673d37952751612b49c093537d765fa5921569ac27",
+      "lib/repositories/mcp-read.ts": "7cdd759bbeb70d8556760905b42a8d7359e44d91b1f44954bad711e73482d6a2",
+      "tsconfig.mcp.json": "c04e702e6842673b1c4d29d7a5b7e5afbe66cbb864fd8cabbe73054c75fcc9b5"
+    },
+    "patch": "docs/implementation/SMEASSISTANT_N02_COMPLETION_REVIEW.patch",
+    "patchSha256": "8728b2cd0c025b598017f02ef0ac471683e4dff7278a3df090d5bb61daa008d1",
+    "mcpContractParity": true
+  },
+  "constraints": {
+    "sqlExecuted": false,
+    "migrationsApplied": false,
+    "deployed": false,
+    "realConnections": false,
+    "productionCredentialsUsed": false,
+    "user3499Reset": false,
+    "committedOrPushed": false
+  },
+  "schema": {
+    "state": "DRAFT_UNAPPLIED_UNEXECUTED",
+    "newFiles": {
+      "20261101100000_discovery_native_commands.sql": "bdfea2a2593eac83a14088c6e2921754b08b0f41cd079e9aff143ee0afd90681",
+      "20261101100100_discovery_native_readers.sql": "6055d7f0fc11716b60cc59095e09ba92da33ceeb979221f26c06379a1da6edec",
+      "20261101100200_discovery_native_transactions.sql": "95e2c6e2026ecff5608c86bb7976bb96bf3c37117e1416750108ac79d0552717",
+      "20261101100300_discovery_original_writer_guards.sql": "6b0f7602dd41a96c78fc3861a12bd604c94a895539df9f18010194603bca3d8f",
+      "20261101100400_discovery_command_context.sql": "f4bf01add3ceb2dbc9587252eda88168f40c479227803e6ed183b6e76018c2e0",
+      "20261101100500_discovery_source_refresh.sql": "8b80bcb6cd3c04ed67e94e5bee95c52766ed0c4c939570c8c9e5ffe9f22f8b8a",
+      "20261101100600_discovery_field_lineage.sql": "2e8f2c0a149cb2ef556722186ae86ace53c602c43424f2698676ede58f85544b",
+      "20261101100700_discovery_editor_lineage.sql": "1774f7ce981184c09d11ca860de684a608f5fc8d253261d63d164864e5e35ab5"
+    },
+    "priorCandidates": [
+      "20261101090000_discovery_metadata.sql",
+      "20261101090100_discovery_source_grants.sql"
+    ],
+    "generatedDbTypes": "NOT_GENERATED",
+    "syntaxAndSemantics": "NOT_EXECUTED"
+  },
+  "mcp": {
+    "scope": "injected_local_adapter_ports_only",
+    "sdkAndOfficialHttpProtocol": "NOT_IMPLEMENTED_OR_RUN",
+    "liveIssuerAudienceVerifier": "NOT_IMPLEMENTED",
+    "durableScopeEpoch": "NOT_IMPLEMENTED",
+    "nonceProofSql": "PREPARED_UNAPPLIED",
+    "keyAndRightsRegistries": "EMPTY_DEFAULT_CLOSED",
+    "httpRoute": "503_UNAVAILABLE",
+    "bookingAndPayment": "OFF"
+  },
+  "tests": {
+    "journeysNode": {
+      "tests": 1424,
+      "pass": 1423,
+      "fail": 0,
+      "skipped": 1,
+      "command": "node --experimental-strip-types --test tests/*.test.mjs",
+      "log": "node-final.log",
+      "logSha256": "8c8c6176a8e1f0d7b8652622b5fe544fe91a0fad4d1412b68dd2882506cc1e4d",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.790644+00:00"
+    },
+    "targeted": {
+      "tests": 18,
+      "pass": 18,
+      "fail": 0,
+      "skipped": 0,
+      "command": "node --experimental-strip-types --test tests/discovery-authority.test.mjs tests/discovery-native-completion.test.mjs tests/discovery-review-corrections.test.mjs",
+      "log": "review-targeted-final.log",
+      "logSha256": "cf6de37517f6aac0bb43af19fe187c198483d290c9d550a4ef2f0332fc892cdb",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.791645+00:00",
+      "includedInJourneysTotal": true,
+      "scope": "injected_authority_transport_and_SQL_source_assertions_only"
+    },
+    "journeysTypecheck": {
+      "status": "PASS",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "log": "journeys-typecheck-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.783813+00:00"
+    },
+    "webTypecheck": {
+      "status": "PASS",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "log": "web-typecheck-final.log",
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.804409+00:00"
+    },
+    "smeTypecheck": {
+      "mode": "equivalent_local_tsc_checks",
+      "packageManagerWrapper": "BLOCKED_PINNED_PNPM_NOT_CACHED_NETWORK_DISABLED",
+      "checks": [
+        {
+          "name": ".",
+          "declaredScript": "tsc --noEmit && corepack pnpm -r typecheck",
+          "executed": "node node_modules/typescript/bin/tsc --noEmit",
+          "exitCode": 0,
+          "started": "2026-10-31T21:20:13.922Z",
+          "finished": "2026-10-31T21:20:30.524Z"
+        },
+        {
+          "name": "packages/contracts",
+          "declaredScript": "tsc --noEmit",
+          "executed": "node node_modules/typescript/bin/tsc --noEmit",
+          "exitCode": 0,
+          "started": "2026-10-31T21:20:30.527Z",
+          "finished": "2026-10-31T21:20:32.265Z"
+        },
+        {
+          "name": "packages/region",
+          "declaredScript": "tsc --noEmit",
+          "executed": "node node_modules/typescript/bin/tsc --noEmit",
+          "exitCode": 0,
+          "started": "2026-10-31T21:20:32.266Z",
+          "finished": "2026-10-31T21:20:33.515Z"
+        },
+        {
+          "name": "packages/scan-engine",
+          "declaredScript": "tsc --noEmit",
+          "executed": "node node_modules/typescript/bin/tsc --noEmit",
+          "exitCode": 0,
+          "started": "2026-10-31T21:20:33.515Z",
+          "finished": "2026-10-31T21:20:35.333Z"
+        },
+        {
+          "name": "packages/scoring",
+          "declaredScript": "tsc --noEmit",
+          "executed": "node node_modules/typescript/bin/tsc --noEmit",
+          "exitCode": 0,
+          "started": "2026-10-31T21:20:35.334Z",
+          "finished": "2026-10-31T21:20:36.684Z"
+        }
+      ]
+    },
+    "journeysBuild": {
+      "status": "PASS",
+      "command": "node node_modules/next/dist/bin/next build (local; backend configuration blank)",
+      "log": "build-final.log",
+      "logSha256": "d33251601e758924955abcb4d1b7d5db60f3b7f64c818110112ce7157d839313",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.775713+00:00"
+    },
+    "smeUnit": {
+      "tests": 14,
+      "pass": 14,
+      "fail": 0,
+      "skipped": 0,
+      "command": "node --test lib/mcp/*.test.mjs",
+      "log": "sme-unit-final.log",
+      "logSha256": "82c73b60034cabc368f824e902bf23ae638ae8184108f987d5622feb777c3479",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.800707+00:00"
+    },
+    "smeRegression": {
+      "status": "PASS",
+      "command": "vitest run lib/repositories/mcp-read-sql.test.ts lib/workspace/{offers,offer-sql,offer-format,offer-binding}.test.ts",
+      "log": "sme-regression-final.log",
+      "logSha256": "d49e7e66348688debe9aeed49c9d6693fb36d4bcef1521ebda9f88a238d71696",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.797004+00:00",
+      "passed": 49,
+      "failed": 0
+    },
+    "webPublicCache": {
+      "status": "PASS",
+      "command": "vitest run --config vitest.discovery.config.ts",
+      "log": "web-cache-tests.log",
+      "logSha256": "c9439f8340fe675799370fa7fa110ffe55c1b31f065562deff9a29e3457e9aa8",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.803867+00:00",
+      "passed": 2,
+      "failed": 0
+    },
+    "crossRepoContract": {
+      "checks": 7,
+      "status": "PASS",
+      "scope": "in_process_contract_roundtrip",
+      "officialMcpProtocol": "NOT_RUN",
+      "realConnections": false,
+      "timeUtc": "2026-10-31T21:17:20.134Z"
+    },
+    "exampleBrowser": {
+      "creator": {
+        "passed": 14,
+        "failed": 0,
+        "externalRequests": 0,
+        "evidence": "creator-browser.json",
+        "sha256": "0124f92b0526f381ba66c37f12c538a9c450484a0b270f4123abda8ef71a183a",
+        "timeUtc": "2026-10-31T20:46:53.188Z"
+      },
+      "traveller": {
+        "passed": 22,
+        "failed": 0,
+        "externalRequests": 0,
+        "evidence": "traveller-browser.json",
+        "sha256": "2c85975db4e5dcf4c1ac776acb6849d231175551d283f10436c5c942b628973d",
+        "timeUtc": "2026-10-31T20:48:48.509Z"
+      },
+      "merchant": {
+        "passed": 25,
+        "failed": 0,
+        "externalRequests": 0,
+        "evidence": "merchant-browser.json",
+        "sha256": "de563c8461ba236e2bdd56c7cd3a09b8a250bb54b113dcb0eccd0b035b14cdb6",
+        "timeUtc": "2026-10-31T20:48:50.560Z"
+      },
+      "discovery": {
+        "passed": 9,
+        "failed": 0,
+        "externalRequests": 0,
+        "evidence": "discovery-browser.json",
+        "sha256": "539421b4f2b7db182bcbec1f399dc37ea3ed86487a57f87f2dbf198d0f861a76",
+        "timeUtc": "2026-10-31T21:16:00.889Z"
+      },
+      "c1": {
+        "passed": 12,
+        "failed": 0,
+        "evidence": "c1-browser.json",
+        "stats": {
+          "startTime": "2026-10-31T21:12:44.958Z",
+          "duration": 22213.762000000002,
+          "expected": 12,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      "totalPassed": 82,
+      "mode": "LOCAL_EXAMPLES_ONLY",
+      "isNativeAcceptance": false,
+      "ports": [
+        3497,
+        3501
+      ],
+      "platform": "Windows / Chromium 145.0.7632.6"
+    },
+    "nativeDisconnectedBrowser": {
+      "passed": 2,
+      "failed": 0,
+      "stats": {
+        "startTime": "2026-10-31T21:14:11.919Z",
+        "duration": 3882.868,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "evidence": "native-disabled-browser.json",
+      "mode": "ACTUAL_NEXT_DISCONNECTED_ONLY"
+    },
+    "nativeDatabase": {
+      "tests": 5,
+      "pass": 0,
+      "fail": 0,
+      "skipped": 5,
+      "command": "node --test tests/integration/discovery.test.mjs (authorization variable unset)",
+      "log": "native-db-not-run.log",
+      "logSha256": "e0904cd0c27e16bade38495602a1e637cc634c1836acc4b6a42172ae8fb19580",
+      "logRecordedAtUtc": "2026-10-31T21:22:36.788505+00:00",
+      "status": "NOT_RUN",
+      "sqlExecuted": false,
+      "coverage": "pre-existing five harness cases; not complete native merchant/reader/transaction suite"
+    }
+  },
+  "review": {
+    "freshWholeWorkReviews": 1,
+    "agent": "Copernicus",
+    "critical": 0,
+    "important": 5,
+    "boundedCorrectionPasses": 1,
+    "corrections": [
+      "latest tagged SQL definitions preserve Creator 360 listing and role",
+      "committed receipt recovered before reusing consumed link nonce",
+      "original authenticated write transport refreshes refs and calls one bound original transaction",
+      "stable block markers map grants only to the corresponding adopted stop",
+      "matching only validates external refs and hashes authorized immutable Kinnso imports"
+    ],
+    "validation": "18 targeted tests and full local regressions; SQL behavior not executed"
+  },
+  "issues": [
+    {
+      "kind": "LOCAL_BROWSER_CONNECTION",
+      "initial": "8 pass / 1 fail before scenario interaction",
+      "log": "discovery-browser-initial.log",
+      "resolution": "subsequent full runs 9 pass including final; initial failure retained"
+    },
+    {
+      "kind": "WINDOWS_SYMLINK_TEST",
+      "state": "1 SKIP",
+      "resolution": "not counted as pass"
+    },
+    {
+      "kind": "PINNED_PACKAGE_MANAGER",
+      "log": "sme-workspace-typecheck-final.log",
+      "state": "pnpm 9.12.0 not cached and network deliberately disabled",
+      "resolution": "all five declared tsc checks executed directly using installed TypeScript; wrapper not claimed passed"
+    },
+    {
+      "kind": "DEPENDENCY_JUNCTION_PERMISSIONS",
+      "state": "initial OS denial",
+      "resolution": "local execution approval used, four isolated package links verified; original checkout unchanged"
+    },
+    {
+      "kind": "CODE_GRAPH",
+      "state": "list_projects did not return",
+      "resolution": "bounded local source searches used"
+    }
+  ],
+  "preservation": {
+    "baselineFiles": 2438,
+    "missing": [],
+    "changed": [
+      "apps/journeys/lib/discovery/native.ts",
+      "apps/journeys/lib/discovery/operations.ts",
+      "apps/journeys/lib/discovery/server.ts",
+      "apps/journeys/tests/e2e/discovery-native.spec.ts",
+      "contracts/smeassistant/read-v1.schema.json",
+      "docs/prototypes/conversation-studio-local/c2-c5-browser-check.json",
+      "docs/prototypes/conversation-studio-local/merchant-1280.png",
+      "docs/prototypes/conversation-studio-local/merchant-390.png",
+      "docs/prototypes/conversation-studio-local/merchant-browser-check.json",
+      "docs/prototypes/conversation-studio-local/traveller-browser-check.json",
+      "apps/journeys/lib/creators/contracts.ts",
+      "apps/journeys/lib/supabase/server.ts",
+      "apps/journeys/scripts/source-manifest.json",
+      "apps/web/app/[locale]/g/[slug]/opengraph-image.tsx",
+      "apps/web/app/sitemap.ts",
+      "apps/web/lib/supabase/public.ts",
+      "apps/web/lib/supabase/server.ts"
+    ],
+    "protected": {
+      "apps/scan/": true,
+      "apps/sync/": true,
+      "packages/": true,
+      "apps/journeys/app/travel/": true,
+      "apps/journeys/app/workroom/": true,
+      "apps/journeys/lib/studio/": true,
+      "apps/journeys/lib/trips/": true,
+      "apps/journeys/lib/merchants/": true,
+      "docs/prototypes/conversation-studio-local/mock-backend.mjs": true,
+      "docs/prototypes/conversation-studio-local/traveller-backend.mjs": true,
+      "docs/prototypes/conversation-studio-local/merchant-backend.mjs": true
+    }
+  },
+  "sourceArchives": [
+    {
+      "file": "apps/journeys/public/source/kinnsoos-source.zip",
+      "entries": 694,
+      "sha256": "562e2dadfbad9b68a98b8148062d3391f82f4339a15c692cf815bfaa684417b8",
+      "currentSourceParity": true
+    },
+    {
+      "file": "apps/journeys/public/source/kinnsoos-local-discovery-source.zip",
+      "entries": 729,
+      "sha256": "59af9c79ec7eda77352040bdfd24bf548d5139f0fa237e3d12c018d70a05a6a7",
+      "currentSourceParity": true
+    }
+  ],
+  "smePatchReverseCheck": "PASS",
+  "userPreview": {
+    "timeUtc": "2026-10-31T21:17:24.3104508Z",
+    "originalPid": 45748,
+    "health": {
+      "mode": "EXAMPLES_ONLY",
+      "persistent": false,
+      "realConnections": false
+    },
+    "listener": [
+      {
+        "LocalAddress": "127.0.0.1",
+        "LocalPort": 3499,
+        "OwningProcess": 45748
+      }
+    ],
+    "originalProcessStillListening": true
+  },
+  "cleanup": {
+    "status": "STOPPED_OWN_3501",
+    "userPreview": {
+      "mode": "EXAMPLES_ONLY",
+      "persistent": false,
+      "realConnections": false
+    },
+    "pid": 48376,
+    "timeUtc": "2026-10-31T21:21:42.2521214Z"
+  },
+  "blockers": [
+    "no SQL syntax/semantics, Auth/RLS, cross-tenant, concurrent UUID, revoke race or rollback execution",
+    "native database tests require additional cases before acceptance",
+    "official MCP HTTP SDK, verifier, issuer/audience and durable epoch unresolved",
+    "real third-party rights approval, event invalidation and source current service unaccepted",
+    "60-second observations are not cross-system atomic revocation",
+    "licensed block removal requires new brief/guide; no reviewed lineage-detachment workflow",
+    "no hosted/CDN/provider, booking/payment or revenue acceptance"
+  ],
+  "sources": [
+    "docs/implementation/DISCOVERY_NATIVE_N01_N04_REVIEW.md",
+    "docs/implementation/DISCOVERY_NATIVE_COMPLETION_READER_MATRIX.md",
+    "supabase/migrations/",
+    "scripts/prepare-discovery-native-guards.py",
+    "docs/implementation/evidence/discovery-native-completion/"
+  ]
+}

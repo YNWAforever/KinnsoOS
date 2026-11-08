@@ -8,6 +8,7 @@ import {trips} from '../../lib/trips/repository';
 import type {TripSnapshot} from '../../lib/contracts/trips';
 import type {AgentResult,TripProposal} from '../../lib/agent/result-contract';
 import {canonicalUrl} from '../../lib/agent/result-contract';
+import {trialNavigationHref} from '../../lib/canonical';
 import type {AgentTask} from '../../lib/agent/policy';
 const descriptions:Record<AgentTask,[string,string]>={sourceQA:['Source questions: read published sources and verification dates.','來源問答：查看已公開來源及核實日期。'],tripSuggestion:['Trip suggestions: preview your owned trip and confirm each change.','行程建議：預覽你擁有的行程，逐項確認套用。'],creatorMaterials:['Creator materials: read your own material for organization.','Creator 素材整理：只讀取自己的素材，提供整理參考。'],merchantBrief:['Merchant brief: owner or marketing members can preview before editing.','Merchant brief 建議：限 owner / marketing 成員，先預覽再於商戶編輯器修改。']};
 const taskLabels:Record<AgentTask,[string,string]>={sourceQA:['Source questions','來源問答'],tripSuggestion:['Trip suggestions','行程建議'],creatorMaterials:['Creator materials','Creator 素材整理'],merchantBrief:['Merchant brief','Merchant brief 建議']};
@@ -57,7 +58,7 @@ export default function AgentWorkspace({actorId,roles=[],initialTrip=null,mercha
   {!connected&&<p>{t('Sign in to a connected account to read sources.','請登入已連接的帳戶使用來源服務。')}</p>}
   <p role="status" aria-live="polite">{status}</p>
   {ready&&valid&&result&&<div><p>{t('Mode','模式')}：{result.capabilityMode} · AI：{result.providerStatus}</p><div style={{whiteSpace:'pre-wrap'}}>{result.answer}</div>
-   <ul>{result.sources.map((s,i)=>{const url=canonicalUrl(s.url);return <li key={i}>{url?<a href={url} target="_blank" rel="noopener noreferrer">{s.title}</a>:s.title} · {s.verifiedAt?t('Verified: ','核實：')+s.verifiedAt:t('Verification date unknown','核實日期未知')}</li>;})}</ul>
+   <ul>{result.sources.map((s,i)=>{const source=canonicalUrl(s.url),url=source?trialNavigationHref(source):null;return <li key={i}>{url?<a href={url} target="_blank" rel="noopener noreferrer">{s.title}</a>:s.title} · {s.verifiedAt?t('Verified: ','核實：')+s.verifiedAt:t('Verification date unknown','核實日期未知')}</li>;})}</ul>
    {result.proposedActions.map((p,i)=><div key={i}><h3>{t('Trip change preview','行程修改預覽')}</h3><p>{t('Current revision','目前版本')}：{p.payload.expectedRevision}</p><p>{t('Original order','原次序')}：{trip?.days.flatMap(d=>d.stops.map(s=>s.title)).join(' → ')}</p><p>{t('Move to the first position of its day: ','移至該天首位：')}{trip?.days.flatMap(d=>d.stops).find(s=>s.id===('id'in p.payload.command?p.payload.command.id:''))?.title??t('Trip stop','行程站點')}</p><button type="button" disabled={busy||!canUse('tripSuggestion')} onClick={()=>void apply(p)}>{t('Confirm and apply this change','確認並套用這項修改')}</button></div>)}
   </div>}
   <Link href={`/${locale}/trips${ready&&valid&&trip?'/'+trip.id:''}`}>{t('Return to trip editor','返回普通行程編輯器')}</Link>

@@ -1,0 +1,13 @@
+{
+  "URL": "http://127.0.0.1:3499/zh-HK/",
+  "PID": 24908,
+  "Mode": "EXAMPLES_ONLY",
+  "Flows": [
+    "C1-C5",
+    "T1-T5",
+    "M1-M5"
+  ],
+  "UpdatedAt": "2026-10-31T11:11:50.0615956Z",
+  "ResetOnRestart": true,
+  "RealConnections": false
+}

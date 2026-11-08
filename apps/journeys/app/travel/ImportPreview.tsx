@@ -16,8 +16,8 @@ export function ImportPreview({actorId}:{actorId:string|null}) {
  const needsResume=editing!==null&&editorActor!==actorId;
  const readLock=useRef(false),blocked=busy||reading||editing!==null,selectionBlocked=blocked||!!intent.current;
  async function loadDevice(){
-  if(readLock.current||writeLock.current||intent.current||busy||editing)return;const generation=epoch.current;readLock.current=true;setReading(true);
-  try{const rows=await readGuestTrips(),valid=restorableDeviceDrafts(rows);if(generation!==epoch.current)return;setReadFailed(false);setGuests(valid);setPreview(null);setSelectedDevice(null);setMessage(rows.length===valid.length?'':t('Some device copies could not be previewed. Original data is kept.','部分裝置副本未能預覽，原資料已保留。'))}
+  if(readLock.current||writeLock.current||intent.current||busy||editing)return;const generation=epoch.current;readLock.current=true;setReading(true);setMessage(t('Reading saved device drafts…','正在讀取已保存的裝置草稿…'));
+  try{const rows=await readGuestTrips(),valid=restorableDeviceDrafts(rows);if(generation!==epoch.current)return;setReadFailed(false);setGuests(valid);setPreview(null);setSelectedDevice(null);setMessage(rows.length!==valid.length?t('Some device copies could not be previewed. Original data is kept.','部分裝置副本未能預覽，原資料已保留。'):valid.length?'':t('No device drafts saved in this browser yet.','此瀏覽器暫未保存裝置草稿。'))}
   catch{if(generation===epoch.current){setReadFailed(true);setMessage(t('Device draft storage is unavailable. Retry reading before importing; original data is kept.','裝置草稿無法讀取，請先重試讀取再匯入，原資料已保留。'));}}
   finally{if(generation===epoch.current){readLock.current=false;setReading(false);}}
  }

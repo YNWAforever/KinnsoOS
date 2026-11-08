@@ -14,6 +14,8 @@ import { getProductState } from '@/lib/product-state'
 /** ISR: this page prefers one hour; the parent locale layout makes effective route ISR about five minutes, while platform stats and testimonials keep their own one-hour Data Cache. */
 export const revalidate = 3600
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }))
 }

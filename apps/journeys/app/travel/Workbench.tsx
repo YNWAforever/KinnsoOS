@@ -8,6 +8,8 @@ import * as m from "./model";
 import { AppContext, Chip, Empty, Icon, Modal, useApp } from "./ui";
 import { HomePage, ExplorePage, AdventurePage, TripsPage } from "./explore";
 import { ConnectedHome } from './ConnectedHome';
+import {isStudioRoute} from '../../lib/studio/navigation';
+import {retainGuestQuestionForRoute} from '../../lib/studio/guest-draft';
 import { TripWorkspace } from './TripWorkspace';
 import { GuideWorkspace,BookmarkWorkspace } from './GuideWorkspace';
 import { AccountSignOut } from './AccountSignOut';
@@ -57,6 +59,7 @@ const CreatorWorkspace = dynamic(
   () => import('./CreatorWorkspace').then(mod => mod.CreatorWorkspace),
   {loading: RoleWorkspaceLoading},
 );
+const WorkroomShell = dynamic(() => import('../workroom/WorkroomShell').then(mod => mod.WorkroomShell), {loading: RoleWorkspaceLoading});
 const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspace').then(mod => mod.CreatorMissionsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorSessionsWorkspace = dynamic(() => import('./CreatorSessionsWorkspace').then(mod => mod.CreatorSessionsWorkspace), {loading: RoleWorkspaceLoading});
@@ -278,7 +281,7 @@ export function Workbench({
   tripHeading?:import('../../lib/trips/private-heading').PrivateTripHeading|null;
   merchantEntry?:PrivateMerchantEntry|null;
   creatorMissionEntry?:PrivateCreatorMissionEntry|null;
-  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;pilot?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean};
+  features?:{media:boolean;sharing:boolean;shareRecovery?:boolean;catalog?:boolean;trips?:boolean;creator?:boolean;ops?:boolean;pilot?:boolean;merchant?:boolean;notifications?:boolean;agent?:boolean;telemetry?:boolean;fieldMetrics?:boolean;conversation?:boolean;creatorBriefHandoff?:boolean};
 }) {
   const requestNavigation = useDraftNavigation(), router = useRouter(),
     query = useSearchParams(),
@@ -296,6 +299,7 @@ export function Workbench({
   // Retain invalidation before a deferred private workspace mounts. Only a new
   // server-verified actor prop can restore that workspace's account scope.
   const workspaceActor = invalidatedActor === actor ? null : actor;
+  useEffect(()=>retainGuestQuestionForRoute(path,workspaceActor?.id??null),[path,workspaceActor?.id]);
   useEffect(() => subscribeAccountInvalidation(next => {
     if (actor && next !== actor.id) setInvalidatedActor(actor);
   }), [actor]);
@@ -659,7 +663,8 @@ export function Workbench({
   )
     content = <CreatorShell path={path}>{content}</CreatorShell>;
   if(mode !== 'demo') {
-    if(!path) content=<ConnectedHome actorId={actor?.id??null}/>;
+    if(!path) content=<ConnectedHome actorId={workspaceActor?.id??null}/>;
+    else if(isStudioRoute(path))content=<WorkroomShell key={workspaceActor?.id??'guest'} path={path} actorId={workspaceActor?.id??null} roles={workspaceActor?.roles??[]} enabled={features.conversation===true} handoffEnabled={features.creatorBriefHandoff===true&&features.creator===true}/>;
     else if(['library','explore','destinations'].includes(path)||path.startsWith('destinations/'))content=<CatalogPanel/>;
     else if(path.startsWith('g/'))content=<GuideWorkspace id={path.split('/')[1]} actorId={actor?.id??null} initialGuide={publicGuide}/>;
     else if(path.startsWith('c/')&&publicCreator)content=<PublicCreatorContent creator={publicCreator} locale={locale}/>;
@@ -783,7 +788,7 @@ export function Workbench({
           </Link>
         </div>
         <div className="os-handoff">
-          <Link href={href("library")}>
+          <Link href={mode === "demo" ? href("library") : href("explore")}>
             {t("Published guides", "已發布攻略")}
           </Link>
           <Link href={href("workspace")}>

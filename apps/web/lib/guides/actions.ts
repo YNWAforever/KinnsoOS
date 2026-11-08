@@ -136,12 +136,19 @@ export async function updateGuideAction(
   const supabase = await getSupabase()
   const auth = await getAuthedCreator(supabase)
   if (!auth.ok) return auth
+  const creator = auth.creator
 
+  const draft=await supabase.rpc('get_kinnso_guide_draft',{p_draft_id:id})
+  if(draft.error)return formError('Draft permissions could not be verified')
+  if((draft.data as {studio?:unknown}|null)?.studio)return formError('Use the source-linked editor to review and confirm this guide')
+
+  // Published rows are publicly readable, so ownership has to be in the filter.
   // Read current row (RLS scopes to owner) to decide publish_at transition.
   const { data: current } = await supabase
     .from('guides')
     .select('status, published_at')
     .eq('id', id)
+    .eq('creator_id', creator.id)
     .maybeSingle()
   if (!current) return formError('Guide not found')
 
@@ -159,6 +166,7 @@ export async function updateGuideAction(
     .from('guides')
     .update(update)
     .eq('id', id)
+    .eq('creator_id', creator.id)
     .select('id')
     .single()
   if (error || !data) return formError('Guide could not be saved')

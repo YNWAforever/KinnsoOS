@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-10-31T11:12:06.092Z",
+  "timezone": "Asia/Hong_Kong",
+  "platform": "Windows / Chromium 145.0.7632.6",
+  "baseUrl": "http://127.0.0.1:3499",
+  "mode": "LOCAL_EXAMPLES_ONLY",
+  "passed": [
+    "M3 selected documents → three materials → original draft → M4 correct gaps and publish"
+  ],
+  "failures": [],
+  "externalRequests": [],
+  "pageErrors": [],
+  "migrations": "NOT_RUN",
+  "deployment": "NONE",
+  "realConnections": "NONE"
+}

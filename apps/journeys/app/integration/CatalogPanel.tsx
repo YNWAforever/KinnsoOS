@@ -2,13 +2,15 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useApp } from "../travel/ui";
 import type { CatalogResult } from "../../lib/catalog";
+import { catalogResultsPath } from "../../lib/catalog-results";
 
 export function CatalogPanel() {
   const { t, locale, href } = useApp();
   const params = useSearchParams();
+  const pathname = usePathname() ?? "";
   const router = useRouter();
   const query = params.toString();
   const [q, setQ] = useState(params.get("q") ?? "");
@@ -43,7 +45,7 @@ export function CatalogPanel() {
     if (q.trim()) next.set("q", q.trim());
     if (city.trim()) next.set("city", city.trim());
     if (page > 1) next.set("page", String(page));
-    router.push(href("library") + (next.size ? "?" + next : ""));
+    router.push(href(catalogResultsPath(pathname)) + (next.size ? "?" + next : ""));
   }
   return (
     <div className="k-page os-library">
@@ -104,11 +106,11 @@ export function CatalogPanel() {
           </h2>
           <p>
             {t(
-              "Your sample itineraries still work while published content is prepared.",
-              "正式內容準備期間，你仍可使用示範行程。",
+              "Explore sample itineraries while the published library connection is prepared.",
+              "已發布攻略尚在接通中，你可先探索示範行程。",
             )}
           </p>
-          <Link className="k-btn primary" href={`/${locale}/demo/explore`}>
+          <Link className="k-btn" href={`/${locale}/demo/explore`}>
             {t("Explore sample routes", "探索示範路線")}
           </Link>
         </div>
@@ -179,7 +181,7 @@ export function CatalogPanel() {
               <h2>
                 {t("No guides match this search.", "暫未找到符合條件的攻略。")}
               </h2>
-              <Link className="k-btn" href={href("library")}>
+              <Link className="k-btn" href={href(catalogResultsPath(pathname))}>
                 {t("Clear filters", "清除篩選")}
               </Link>
             </div>

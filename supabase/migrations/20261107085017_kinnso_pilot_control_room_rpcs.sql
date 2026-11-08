@@ -665,7 +665,11 @@ alter function public.publish_kinnso_guide_draft(uuid,integer,uuid) set schema k
 alter function public.publish_guide_version(uuid,integer,uuid,jsonb) set schema kinnso_internal;
 do $$
 declare definition text; begin
- definition:=pg_get_functiondef('kinnso_internal.publish_kinnso_guide_draft(uuid,integer,uuid)'::regprocedure);
+ -- Conversation Studio wraps the existing draft publisher. Patch the actual
+ -- writer and keep the outer Studio source/confirmation guard in the call path.
+ definition:=pg_get_functiondef(coalesce(
+  to_regprocedure('kinnso_internal.legacy_publish_kinnso_guide_draft(uuid,integer,uuid)'),
+  'kinnso_internal.publish_kinnso_guide_draft(uuid,integer,uuid)'::regprocedure));
  if position('snapshot:=public.publish_guide_version' in definition)=0 or position('set revision=revision+1,base_version=ver+1' in definition)=0 then raise exception 'Unexpected publisher source';end if;
  definition:=replace(definition,'snapshot:=public.publish_guide_version','snapshot:=kinnso_internal.publish_guide_version');
  -- Publishing identical reviewed content must not manufacture a content edit.

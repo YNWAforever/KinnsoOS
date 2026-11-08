@@ -18,15 +18,21 @@ function load(file, dependencies, env={}, window) {
 }
 
 const notFound = () => { throw new Error('NEXT_HTTP_ERROR_FALLBACK;404'); };
+const redirect=path=>{throw Error('REDIRECT:'+path);};
+const authIntent=load('../lib/auth/auth-intent.ts',{'./return-path.ts':load('../lib/auth/return-path.ts',{})});
 const Workbench = Symbol('Workbench');
 const jsx = (type, props) => ({type, props});
-const routes = load('../app/travel/routes.ts', {'./model': {fixtures: []}});
+const studioNavigation=load('../lib/studio/navigation.ts',{});
+const guestDraft=load('../lib/studio/guest-draft.ts',{});
+const routes = load('../app/travel/routes.ts', {'./model': {fixtures: []},'../../lib/studio/navigation':studioNavigation});
 const pageDependencies = {
   react: {cache: fn => fn, Suspense: Symbol('Suspense')},
   'react/jsx-runtime': {jsx},
-  'next/navigation': {notFound},
+  'next/navigation': {notFound,redirect},
   '../../travel/Workbench': {Workbench},
   '../../travel/routes': routes,
+  '../../../lib/auth/auth-intent':authIntent,
+  '../../../lib/catalog-results': {connectedCatalogRedirect:()=>null},
   '../../../lib/auth/actor': {currentActor: async () => null},
   '../../../lib/contracts/capabilities': {capabilities},
   '../../../lib/seo/public-routes': {parsePublicRoute: () => null, isPublicRouteNamespace: () => false, readLiveArticles: () => false, readLiveSessions: () => false, bareNamespaceIsPublicEntry: () => false},
@@ -132,9 +138,9 @@ async function integration({locale='en', route, query='', flags='trips,ops,pilot
     react, 'react/jsx-runtime':{jsx,jsxs:jsx,Fragment:Symbol('Fragment')},
     'next/link':{__esModule:true,default:'a'},
     'next/dynamic':{__esModule:true,default:resolve => ({resolve})},
-    'next/navigation':{notFound, useSearchParams:()=>search, useRouter:()=>({})},
+    'next/navigation':{notFound,redirect, useSearchParams:()=>search, useRouter:()=>({})},
     './ui':{AppContext:{Provider:Symbol('Provider')},useApp}, '../ui':{useApp},
-    './model':{blank:()=>({})}, './routes':routes,
+    './model':{blank:()=>({})}, './routes':routes, '../../lib/studio/navigation':studioNavigation,'../../lib/studio/guest-draft':guestDraft,
     '../integration/public-entry-registry':{isPublicEntryPath:()=>false},
     './UnsavedDraftGuard':{useDraftNavigation:()=>()=>{}},
     '../../lib/trips/local-drafts':{subscribeAccountInvalidation:subscribe},
@@ -182,11 +188,11 @@ test('connected canonical entry mounts the real participant workspace in both lo
 });
 
 test('only exact Ops pilot query starts control-room reads, with both gates and an actor', async () => {
+  await assert.rejects(integration({route:['ops'],query:'view=pilot',flags:'ops,pilot',actor:null}), /REDIRECT:\/en\/sign-in\?next=%2Fen%2Fops%3Fview%3Dpilot/);
   for (const [route,query,flags,actor,expected] of [
     [['ops'],'view=pilot&id=selected','ops,pilot',operator,'Loading pilot…'],
     [['ops'],'view=pilot','ops',operator,'Operations services are disconnected.'],
     [['ops'],'view=pilot','pilot',operator,'Operations services are disconnected.'],
-    [['ops'],'view=pilot','ops,pilot',null,'Sign in to continue'],
     [['ops','missions'],'view=pilot','ops,pilot',ordinary,null],
     [['ops'],'view=reviews','ops,pilot',ordinary,null],
   ]) {

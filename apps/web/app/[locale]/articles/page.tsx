@@ -10,6 +10,8 @@ import { ArticleCard } from '@/components/ArticleCard'
 
 // 30 min preferred; the parent locale layout caps the effective route ISR at
 // about five minutes. See app/[locale]/layout.tsx.
+export const dynamic = 'force-dynamic'
+
 export const revalidate = 1800
 
 export async function generateMetadata(

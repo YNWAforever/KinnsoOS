@@ -11,6 +11,8 @@ import { Pagination } from '@/components/Pagination'
 // about five minutes. See app/[locale]/layout.tsx.
 export const revalidate = 1800
 
+export const dynamic = 'force-dynamic'
+
 export function generateStaticParams() {
   return URL_CATEGORIES.map((category) => ({ category }))
 }

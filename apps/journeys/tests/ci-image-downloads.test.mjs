@@ -56,9 +56,39 @@ test('429 retries keep the same pinned image and use a minimum 15s then 30s back
 
 test('authorization, missing manifest and daemon failures do not trigger registry retries',async()=>{
  const start=entry();
- for(const message of ['unauthorized: authentication required','unauthorized with prior429 diagnostic','denied: forbidden','manifest unknown','Cannot connect to the Docker daemon']){
-  const h=harness(),actual=h.options.run;h.options.run=(program,args,options)=>args[0]==='pull'?{status:1,stderr:message,stdout:''}:actual(program,args,options);
-  await assert.rejects(()=>start('connected',h.options),/IMAGE_PULL_FAILED/);assert.deepEqual(h.waits,[]);
+ for(const message of ['unauthorized: authentication required','unauthorized with prior429 diagnostic','unauthorized after HTTP 429 Too Many Requests','forbidden','denied: forbidden','manifest unknown','Cannot connect to the Docker daemon','HTTP 401','HTTP 403']){
+  for(const failure of [{status:1,stderr:message},{status:null,signal:'SIGTERM',stderr:message,error:Error('timeout')},{status:null,error:Error(message)}]){
+   const h=harness(),actual=h.options.run;let pulls=0;
+   h.options.run=(program,args,options)=>args[0]==='pull'?(pulls++,failure):actual(program,args,options);
+   await assert.rejects(()=>start('connected',h.options),/IMAGE_PULL_FAILED/);assert.equal(pulls,1);assert.deepEqual(h.waits,[]);
+  }
+ }
+});
+
+test('authorization failure after a retryable GHCR failure stops immediately on the mirror',async()=>{
+ const start=entry(),h=harness(),actual=h.options.run;let pulls=0;
+ h.options.run=(program,args,options)=>args[0]==='pull'?(pulls++,{status:1,stderr:pulls===1?'HTTP 429 Too Many Requests':'unauthorized: authentication required'}):actual(program,args,options);
+ await assert.rejects(()=>start('connected',h.options),error=>{
+  assert.equal(error.message,'IMAGE_PULL_FAILED');assert.equal(error.receipt.failedImage.attempts,2);assert.equal(error.receipt.failedImage.source,'VERIFIED_DOCKER_HUB');return true;
+ });
+ assert.equal(pulls,2);assert.deepEqual(h.waits,[15000]);
+});
+
+test('transient GHCR connectivity errors retry with backoff and the same verified mirror digest',async()=>{
+ const start=entry();
+ for(const message of ['Get "https://ghcr.io/v2/": net/http: request canceled while waiting for connection (Client.Timeout exceeded while awaiting headers)','Client.Timeout exceeded','connection timed out','dial tcp: connection refused','read: connection reset by peer','i/o timeout','TLS handshake timeout','temporary failure in name resolution','unexpected EOF','net/http: transport connection broken','context deadline exceeded','ECONNRESET','ECONNREFUSED','EAI_AGAIN','network is unreachable']){
+  for(const output of ['stderr','stdout']){
+   const h=harness(),actual=h.options.run;let failures=0;
+   h.options.run=(program,args,options)=>{
+    if(args[0]==='pull'&&failures++<2){h.calls.push([program,...args]);return {status:1,[output]:message};}
+    return actual(program,args,options);
+   };
+   const r=await start('connected',h.options),pin=verifiedLock.images[0],pulls=h.calls.filter(x=>x[1]==='pull');
+   assert.equal(r.status,'PASS');assert.equal(r.images[0].attempts,3);assert.equal(r.images[0].source,'VERIFIED_DOCKER_HUB');assert.deepEqual(h.waits,[15000,30000]);
+   assert.equal(pulls[0].at(-1),'ghcr.io/supabase/postgres@'+pin.digest);assert.equal(pulls[1].at(-1),pin.mirror+'@'+pin.digest);assert.equal(pulls[2].at(-1),pulls[1].at(-1));
+   assert.equal(r.images[0].downloadReference,pulls[1].at(-1));assert.deepEqual(r.images[0].digests,[pulls[1].at(-1)]);
+   assert.deepEqual(h.messages.filter(x=>x.startsWith('Pinned image '+pin.image)),[1,2,3].map(n=>`Pinned image ${pin.image}, attempt ${n}/5`));
+  }
  }
 });
 
@@ -90,10 +120,54 @@ test('tag failures are not retried and never fall back to a remote ECR pull',asy
  assert.ok(h.calls.filter(x=>x[1]==='pull').every(x=>x.at(-1).startsWith('ghcr.io/supabase/')));
 });
 
-test('a killed or indeterminate Docker process is not treated as a retryable 429',async()=>{
- const start=entry(),h=harness(),actual=h.options.run;let pulls=0;
- h.options.run=(program,args,options)=>args[0]==='pull'?(pulls++,{status:null,signal:'SIGTERM',stderr:'toomanyrequests',error:Error('timeout')}):actual(program,args,options);
- await assert.rejects(()=>start('connected',h.options),/IMAGE_PULL_FAILED/);assert.equal(pulls,1);assert.deepEqual(h.waits,[]);
+test('hung or killed Docker pulls retry even without registry stderr',async()=>{
+ const start=entry();
+ for(const failure of [{status:null,signal:'SIGTERM',stderr:'toomanyrequests',error:Error('timeout')},{status:null,signal:'SIGTERM',error:Object.assign(Error('spawnSync docker ETIMEDOUT'),{code:'ETIMEDOUT'})},{status:null,signal:'SIGKILL'},{status:null},{status:1,error:Error('Client.Timeout exceeded while awaiting headers')}]){
+  const h=harness({random:()=>0.5}),actual=h.options.run;let failed=false;const timeouts=[];
+  h.options.run=(program,args,options)=>{
+   timeouts.push(options.timeout);
+   if(args[0]==='pull'&&!failed){failed=true;h.calls.push([program,...args]);return failure;}
+   return actual(program,args,options);
+  };
+  const r=await start('connected',h.options),pulls=h.calls.filter(x=>x[1]==='pull');
+  assert.equal(r.images[0].attempts,2);assert.equal(r.images[0].source,'VERIFIED_DOCKER_HUB');assert.deepEqual(h.waits,[17500]);
+  assert.equal(pulls[1].at(-1),verifiedLock.images[0].mirror+'@'+verifiedLock.images[0].digest);assert.ok(timeouts.every(ms=>ms===120000));
+ }
+});
+
+test('unrecognized Docker errors and local spawn failures remain fail-closed',async()=>{
+ const start=entry();
+ for(const failure of [{status:1,stderr:'unexpected local failure'},{status:null,error:Object.assign(Error('spawnSync docker ENOENT'),{code:'ENOENT'})},{status:null,error:Object.assign(Error('spawnSync docker EACCES'),{code:'EACCES'})}]){
+  const h=harness(),actual=h.options.run;let pulls=0;
+  h.options.run=(program,args,options)=>args[0]==='pull'?(pulls++,failure):actual(program,args,options);
+  await assert.rejects(()=>start('connected',h.options),/IMAGE_PULL_FAILED/);assert.equal(pulls,1);assert.deepEqual(h.waits,[]);
+ }
+});
+
+test('persistent network and hung pull failures exhaust five attempts and preserve the last diagnostic',async()=>{
+ const start=entry();
+ for(const failure of [{status:1,stderr:'Client.Timeout exceeded while awaiting headers'},{status:null,signal:'SIGTERM',error:Error('spawnSync docker ETIMEDOUT')}]){
+  const h=harness(),actual=h.options.run;let pulls=0;
+  h.options.run=(program,args,options)=>args[0]==='pull'?(pulls++,failure):actual(program,args,options);
+  await assert.rejects(()=>start('connected',h.options),error=>{
+   assert.equal(error.message,'REGISTRY_RETRY_EXHAUSTED');assert.equal(error.receipt.status,'FAIL');assert.equal(error.receipt.failedImage.attempts,5);
+   assert.equal(error.receipt.failedImage.source,'VERIFIED_DOCKER_HUB');assert.equal(error.receipt.failedImage.downloadReference,verifiedLock.images[0].mirror+'@'+verifiedLock.images[0].digest);
+   assert.match(error.receipt.failedImage.lastError,/Client.Timeout|ETIMEDOUT/);return true;
+  });
+  assert.equal(pulls,5);assert.deepEqual(h.waits,[15000,30000,60000,60000]);assert.deepEqual(h.calls,[['supabase','--version']]);
+ }
+});
+
+test('hung pulls share the eight-minute budget and each timeout is capped by remaining time',async()=>{
+ const start=entry(),h=harness(),actual=h.options.run,timeouts=[];let pulls=0;
+ h.options.run=(program,args,options)=>{
+  if(args[0]==='pull'){pulls++;timeouts.push(options.timeout);h.advance(options.timeout);return {status:null,signal:'SIGTERM',error:Error('spawnSync docker ETIMEDOUT')};}
+  return actual(program,args,options);
+ };
+ await assert.rejects(()=>start('connected',h.options),error=>{
+  assert.equal(error.message,'REGISTRY_TIME_BUDGET_EXHAUSTED');assert.equal(error.receipt.failedImage.attempts,4);return true;
+ });
+ assert.equal(pulls,4);assert.deepEqual(h.waits,[15000,30000,60000]);assert.deepEqual(timeouts,[120000,120000,120000,15000]);
 });
 
 
