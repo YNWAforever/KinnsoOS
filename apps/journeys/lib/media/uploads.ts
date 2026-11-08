@@ -10,7 +10,7 @@ export async function uploadPhoto(tripId:string,blob:Blob,requestId:string,signa
  const prepared=await request<{id:string;uploadUrl:string|null;alreadyUploaded?:boolean}>('/api/media','POST',{tripId,requestId,mime:blob.type,size:blob.size},signal);checkCancellation();if(!prepared.ok)return prepared;
  if(prepared.data.alreadyUploaded!==true){
   if(typeof prepared.data.uploadUrl!=='string')throw new Error('Upload origin is unavailable');
-  const url=new URL(prepared.data.uploadUrl);if(url.protocol!=='https:'&&!(location.hostname==='127.0.0.1'&&url.origin==='http://127.0.0.1:58421'))throw new Error('Upload origin is unavailable');
+  const url=new URL(prepared.data.uploadUrl);if(url.protocol!=='https:'&&!(location.hostname==='127.0.0.1'&&['http://127.0.0.1:58421','http://127.0.0.1:59721'].includes(url.origin)))throw new Error('Upload origin is unavailable');
   const uploaded=await fetch(url,{method:'PUT',headers:{'Content-Type':blob.type},body:blob,signal});checkCancellation();
   // A concurrent immutable upload can still complete before its response.
   if(!uploaded.ok&&![400,409].includes(uploaded.status))throw new Error('Upload interrupted; original is kept.');
