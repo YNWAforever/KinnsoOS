@@ -8,7 +8,8 @@ concurrency:
 jobs:
   workspace-fixtures:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Dependency setup and both browser suites share this job budget.
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: apps/journeys
