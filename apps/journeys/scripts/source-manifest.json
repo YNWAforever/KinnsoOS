@@ -83,6 +83,7 @@
     "app/api/ops/guides/route.ts",
     "app/api/ops/health/route.ts",
     "app/api/ops/invitations/accept/route.ts",
+    "app/api/ops/launch/route.ts",
     "app/api/ops/merchant-applications/route.ts",
     "app/api/ops/monitoring/route.ts",
     "app/api/ops/pilot/route.ts",
@@ -168,6 +169,7 @@
     "app/travel/GuideWorkspace.tsx",
     "app/travel/ImportPreview.tsx",
     "app/travel/InboxWorkspace.tsx",
+    "app/travel/LaunchDecision.tsx",
     "app/travel/LegacyCapabilityGate.tsx",
     "app/travel/MerchantApplicationReview.tsx",
     "app/travel/MerchantCampaigns.tsx",
@@ -966,7 +968,8 @@
     "tests/contracts/20261108134500_merchant_offer_pagination.sql": "supabase/migrations/20261108134500_merchant_offer_pagination.sql",
     "tests/contracts/20261109120000_content_honesty.sql": "supabase/migrations/20261109120000_content_honesty.sql",
     "tests/contracts/20261109130000_author_verification.sql": "supabase/migrations/20261109130000_author_verification.sql",
-    "tests/contracts/20261109140000_health_alerting.sql": "supabase/migrations/20261109140000_health_alerting.sql"
+    "tests/contracts/20261109140000_health_alerting.sql": "supabase/migrations/20261109140000_health_alerting.sql",
+    "tests/contracts/20261109150000_launch_gates.sql": "supabase/migrations/20261109150000_launch_gates.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
