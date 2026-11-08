@@ -254,6 +254,21 @@ function statusChipClass(status: GuideHonestyStatus): string {
   if (status === 'attested') return 'k-chip';
   return 'k-chip amber';
 }
+/**
+ * Chip colours measured against the shared k-chip backgrounds. The default
+ * neutral (#637265 on #eef1ed) and amber (#986319 on #fbefda) pairs measure
+ * 4.47:1 and 4.46:1, just under the 4.5:1 required for 12px text, so these
+ * local overrides darken the foreground only.
+ */
+const CHIP_NEUTRAL = { color: '#4f5c50' } as const;
+const CHIP_AMBER = { color: '#78500f' } as const;
+
+function chipStyleFor(status: GuideHonestyStatus) {
+  if (status === 'verified') return undefined;
+  if (status === 'attested') return CHIP_NEUTRAL;
+  return CHIP_AMBER;
+}
+
 
 function rightsBasisLabel(basis: GuideRightsBasis, t: (en: string, zh: string) => string): string {
   if (basis === 'original') return t('Original work', '原創作品');
@@ -559,13 +574,14 @@ export function OpsContentHygiene({ className }: { className?: string } = {}) {
               <div style={ROW_HEAD_STYLE}>
                 <span
                   className={statusChipClass(item.status)}
+              style={chipStyleFor(item.status)}
                   data-testid="ops-guide-status"
                   data-status={item.status}
                 >
                   {statusLabel(item.status, t)}
                 </span>
-                <span className="k-chip">{sourceLabel}</span>
-                <span className="k-chip">{rightsBasisLabel(item.rightsBasis, t)}</span>
+                <span className="k-chip" style={CHIP_NEUTRAL}>{sourceLabel}</span>
+                <span className="k-chip" style={CHIP_NEUTRAL}>{rightsBasisLabel(item.rightsBasis, t)}</span>
               </div>
               <p style={NOTE_STYLE}>
                 {placeDate

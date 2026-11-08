@@ -248,6 +248,21 @@ function statusChipClass(status: GuideHonestyStatus): string {
   if (status === 'attested') return 'k-chip';
   return 'k-chip amber';
 }
+/**
+ * Chip colours measured against the shared k-chip backgrounds. The default
+ * neutral (#637265 on #eef1ed) and amber (#986319 on #fbefda) pairs measure
+ * 4.47:1 and 4.46:1, just under the 4.5:1 required for 12px text, so these
+ * local overrides darken the foreground only.
+ */
+const CHIP_NEUTRAL = { color: '#4f5c50' } as const;
+const CHIP_AMBER = { color: '#78500f' } as const;
+
+function chipStyleFor(status: GuideHonestyStatus) {
+  if (status === 'verified') return undefined;
+  if (status === 'attested') return CHIP_NEUTRAL;
+  return CHIP_AMBER;
+}
+
 
 function rightsBasisLabel(basis: GuideRightsBasis, t: (en: string, zh: string) => string): string {
   if (basis === 'original') return t('Rights basis: original work', '權利依據：原創作品');
@@ -670,13 +685,13 @@ export function CreatorContentStatus({
       {data && (
         <>
           <div style={HEADER_STYLE}>
-            <span className={statusChipClass(data.status)} data-testid="creator-status-chip" data-status={data.status}>
+            <span className={statusChipClass(data.status)} style={chipStyleFor(data.status)} data-testid="creator-status-chip" data-status={data.status}>
               {statusLabel(data.status, t)}
             </span>
-            <span className="k-chip">{rightsBasisLabel(data.rightsBasis, t)}</span>
-            <span className="k-chip">{sourceCountChip}</span>
+            <span className="k-chip" style={CHIP_NEUTRAL}>{rightsBasisLabel(data.rightsBasis, t)}</span>
+            <span className="k-chip" style={CHIP_NEUTRAL}>{sourceCountChip}</span>
             {attestVersion !== null && (
-              <span className="k-chip" data-testid="creator-published-version">
+              <span className="k-chip" style={CHIP_NEUTRAL} data-testid="creator-published-version">
                 {t(`Published version ${attestVersion}`, `已發布第 ${attestVersion} 版`)}
               </span>
             )}
