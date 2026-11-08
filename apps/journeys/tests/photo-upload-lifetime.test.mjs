@@ -30,11 +30,11 @@ for(const point of ['before prepare','after prepare','after upload','after final
   assert.equal(calls.length,expected);
  });
 }
-test('an owned retry still finalizes an immutable upload and uses its original request id',async t=>{
+for(const port of [58421,59721])test(`an owned retry on local gateway ${port} finalizes without changing the request id`,async t=>{
  const calls=[];
  t.mock.method(globalThis,'fetch',async(input,init)=>{
   calls.push({url:String(input),init});
-  if(input==='/api/media')return Response.json({ok:true,data:{id:'synthetic-id',uploadUrl:'http://127.0.0.1:58421/storage/v1/object/upload/sign/synthetic'}});
+  if(input==='/api/media')return Response.json({ok:true,data:{id:'synthetic-id',uploadUrl:`http://127.0.0.1:${port}/storage/v1/object/upload/sign/synthetic`}});
   if(input==='/api/media/finalize')return Response.json({ok:true,data:{id:'synthetic-id',state:'ready'}});
   return new Response(null,{status:409});
  });

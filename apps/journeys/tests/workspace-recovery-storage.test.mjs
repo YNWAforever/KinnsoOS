@@ -18,6 +18,13 @@ async function storage(){
  runInContext(source.code,createContext({module,exports:module.exports,indexedDB,crypto:webcrypto,TextEncoder,window:{dispatchEvent(){}},CustomEvent:class{},structuredClone}));return module.exports;
 }
 const uuid='11111111-1111-4111-8111-111111111111';
+test('published legacy guide identifiers can read an empty creation journal without weakening request validation',async()=>{
+ const s=await storage();await s.synchronizeAccountCache('A');
+ const guideId='e1c2820d-25e5-9795-54b5-637be546e04a';
+ assert.equal(await s.readPendingCreation('A',guideId),null);
+ await assert.rejects(s.readPendingCreation('A','invalid-guide'),/INVALID_CREATION/);
+ await assert.rejects(s.savePendingCreation('A',{requestId:guideId,guideId:null,version:null,flowId:null,tripId:null},{title:'Test',timezone:'UTC',startDate:null}),/INVALID_CREATION/);
+});
 const value={version:1,draft:{notes:'Owned original'},pending:{requestId:uuid,command:{type:'submitEvidence',notes:'Exact original'}}};
 test('an invalid creation time zone is refused before retaining a frozen request',async()=>{
  const s=await storage();await s.synchronizeAccountCache('A');

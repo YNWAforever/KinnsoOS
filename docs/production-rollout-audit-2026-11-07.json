@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "status": "DEPLOYED_VERIFIED_PUBLIC_LAUNCH_HOLD",
+  "deploymentReady": true,
+  "observedAt": "2026-11-07",
+  "applicationSourceHead": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+  "runtimeApplicationCommit": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
+  "sourceArchiveSha256": "c3aac23ff7ff4228e9261b5c99c6684b7f3dd65e9a4c1b5af593c229873ca2f8",
+  "remainingBlockers": [
+    "real author consent and rights-reviewed structured guides are absent",
+    "physical iOS and Android plus VoiceOver and NVDA acceptance are not available",
+    "external alert binding and final launch-owner acceptance remain incomplete",
+    "the post-promotion interactive Edge replay is blocked by the Windows Computer Use kernel-assets error"
+  ],
+  "content": {
+    "status": "FAIL",
+    "project": "scryfkefedzuetfdtrvl",
+    "publishedGuideCards": 9,
+    "explicitSyntheticGuideCards": 1,
+    "nonSyntheticGuideCards": 8,
+    "publishedStructuredGuideVersions": 1,
+    "nonSyntheticStructuredGuideVersions": 0,
+    "nonSyntheticCoverAssets": 0,
+    "nonSyntheticSourceReferences": 0,
+    "nonSyntheticPlaceVerificationDates": 0,
+    "reviewedAuthorConsentRecords": 0,
+    "nonSyntheticGuides": [
+      {
+        "id": "e1c2820d-25e5-9795-54b5-637be546e04a",
+        "title": "Busan's Jagalchi seafood market, a first-timer's guide",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "7559c30e-083f-5db5-d9c8-3d68cb242ce9",
+        "title": "Chiang Mai on a backpacker budget",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "30d760a5-1ee5-3416-b122-dd9edc7012d7",
+        "title": "Bali family resorts that actually work with young kids",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "70abfc90-1e00-264f-352e-735c23fd885e",
+        "title": "The Korean BBQ spots Seoul locals actually queue for",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "1ce845e3-0880-2f56-a3b2-70f2e544ab21",
+        "title": "A quiet-temples weekend in Kyoto",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "06ec038d-3d2d-d72f-051e-615f591fe21c",
+        "title": "Bangkok street food for under $20 a day",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "3338bfb4-a19f-8029-392a-b1a34fe58175",
+        "title": "A late-night ramen crawl through Tokyo",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      },
+      {
+        "id": "e958953e-94b4-b754-67be-2b13526783fc",
+        "title": "Singapore with kids: the stroller-friendly route",
+        "kind": "summary_only",
+        "structuredVersion": null,
+        "coverUrl": null,
+        "sourceReferences": 0,
+        "placeVerificationDate": null
+      }
+    ],
+    "articleCorpus": {
+      "rows": 7,
+      "status": "FAIL_FIXTURE_ONLY",
+      "reason": "The rows use placeholder identifiers, have no publication dates or source references, and represent seed/fixture articles rather than an author-reviewed pilot."
+    }
+  },
+  "deviceAccessibility": {
+    "automatedStatus": "PASS",
+    "exactReleaseBuilds": {
+      "node24": "PASS",
+      "node26": "PASS",
+      "routesGenerated": 71
+    },
+    "connectedAccessibility": {
+      "passed": 1,
+      "scope": "EN authenticated trips, merchant, operations and account routes at 320, 375, 768, 1280px and 200%-zoom-equivalent reflow; keyboard modal/focus restoration"
+    },
+    "touchDeviceNavigation": {
+      "passed": 13,
+      "scope": "device-only drafts, IndexedDB persistence/recovery, touch-style navigation, Back/Forward interception, import and cancellation"
+    },
+    "publicRouteAccessibility": {
+      "passed": 36,
+      "scope": "EN and zh-HK public routes at 320, 640 and 1280px; axe WCAG A/AA through 2.2, keyboard and 200% text probe"
+    },
+    "componentAccessibility": {
+      "passed": 50,
+      "scope": "guide, creator, earnings, merchant, operations, support and support-operations states in EN and zh-HK at 320, 640 and 1280px"
+    },
+    "contentWorkflow": {
+      "passed": 5,
+      "scope": "public content retry/cover/original text, document language/history, structured publication, device save, account import and withdrawal"
+    },
+    "physicalDevices": "NOT_RUN",
+    "voiceOver": "NOT_RUN",
+    "nvda": "NOT_RUN",
+    "limitations": "Automated Chromium viewport, touch, axe and doubled-text probes do not establish physical iOS/Android or screen-reader acceptance."
+  },
+  "production": {
+    "status": "DEPLOYED_VERIFIED",
+    "project": "ynwaforevers-projects/kinnso-os",
+    "canonicalOrigin": "https://kinnso-os.vercel.app",
+    "currentDeployment": {
+      "id": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+      "url": "https://kinnso-pwi55gb7i-ynwaforevers-projects.vercel.app",
+      "target": "production",
+      "status": "READY",
+      "sourceCommitAlias": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+      "canonicalOrigin": "https://kinnso-os.vercel.app",
+      "previousDeploymentId": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs"
+    },
+    "buildConfiguration": {
+      "projectNodeVersion": "24.x",
+      "observedFunctionRuntime": "nodejs26.x",
+      "installCommand": "npx --yes pnpm@11.6.0 install --frozen-lockfile",
+      "buildCommand": "npm run build",
+      "rootDirectory": "apps/journeys"
+    },
+    "environment": {
+      "kinnsoEnvironment": "production",
+      "siteUrl": "https://kinnso-os.vercel.app",
+      "supabaseProjectRef": "scryfkefedzuetfdtrvl",
+      "approvedSupabaseOrigin": "https://scryfkefedzuetfdtrvl.supabase.co",
+      "legacyAuthOrigin": "https://scryfkefedzuetfdtrvl.supabase.co",
+      "enabledCapabilities": [
+        "trips",
+        "bookmarks",
+        "creator",
+        "merchant",
+        "ops",
+        "notifications"
+      ],
+      "previewEnvironmentVariables": 0
+    },
+    "currentRuntime": {
+      "healthEndpoint": 200,
+      "healthDatabase": "up",
+      "adminAnalytics": "AUTH_REQUIRED",
+      "agentCapability": "UNAVAILABLE",
+      "mediaUploadCapability": "UNAVAILABLE",
+      "recentErrorLogs24h": 0,
+      "recentFatalLogs": 0,
+      "recentHttp500Logs": 0,
+      "logQuery": "NO_MATCHING_ERROR_LOGS",
+      "metricsCli": "UNAVAILABLE_IN_INSTALLED_CLI",
+      "externalAlertBinding": "NOT_VERIFIED"
+    },
+    "postDeploymentVerification": {
+      "canonicalPages": "PASS",
+      "authenticatedBackendAttestation": "PASS",
+      "approvedAccountRoles": {
+        "creator": "active",
+        "merchant": "active",
+        "operations": "admin_active"
+      },
+      "suspendedMemberOperationsAccess": "DENIED",
+      "crossAccountIsolation": "PASS",
+      "labeledCampaignStatus": "paused",
+      "approvedCollaborationStatus": "active",
+      "interactiveEdgeRerun": "BLOCKED_COMPUTER_USE_KERNEL_ASSETS",
+      "sourceArtifact": {
+        "deploymentMetadataCommit": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+        "packageContentMatchesCommit": true,
+        "stagedArchiveSha256": "e868704072aa97dce4f54cdeb694ab640d0dfccf45deceabbde5ffc41258293c",
+        "note": "Vercel regenerated line endings and removed local Git metadata from the ZIP; the deployment metadata and source contents were verified separately."
+      }
+    },
+    "databaseDrift": {
+      "productionLedgerCount": 209,
+      "productionLedgerHead": "20261107020000",
+      "candidateLedgerCount": 209,
+      "candidateLedgerHead": "20261107020000",
+      "drift": false,
+      "productionOnlyMigrationsToPreserve": [
+        "20261025140000_grant_ops_audit_log_select",
+        "20261105123750_active_merchant_mission_writes_reviewed_envelope"
+      ],
+      "repositoryMappingToPreserve": "20261104195741_active_merchant_mission_writes.sql is represented in production by the reviewed 20261105123750 envelope and must not be replayed blindly.",
+      "missingContentRpcFunctions": 0,
+      "legacyOperationsWritePoliciesPresent": false,
+      "moderatorReadPoliciesPresent": true,
+      "authenticatedAuditAppendAllowed": false,
+      "destinationViewChecksCreatorPublicProfile": true,
+      "authenticatedDirectPerkAndTestimonialWritesAllowed": false,
+      "pendingMigrations": [],
+      "transactionMode": "FIVE_INDIVIDUAL_TRANSACTIONS",
+      "approvedSingleTransactionEnvelopeReproduced": false,
+      "automaticRetryUsed": false,
+      "replayObserved": false
+    },
+    "rollback": {
+      "status": "AVAILABLE",
+      "pendingRollback": false,
+      "applicationTargetDeploymentId": "dpl_8fVAPaBpULzeF4WCg8s2CHQ2V2Cs",
+      "databaseStrategy": "Application rollback keeps additive schema and policy changes; database reversal requires a separate reviewed forward fix and must not replay history.",
+      "deployedAppUsesRevokedDirectOperationsWrites": false
+    },
+    "hostedPreview": {
+      "status": "READY_BUILD_ONLY_UNBOUND",
+      "deploymentId": "dpl_CPRZma9n42XAGVnQ3a3LE36XbmmE",
+      "url": "https://kinnso-hiaj9vbd7-ynwaforevers-projects.vercel.app",
+      "routesGenerated": 71,
+      "environmentBound": false,
+      "health": "db_down_expected",
+      "productionChanged": false
+    }
+  },
+  "productionChanged": true,
+  "journeysDeploymentChanged": false,
+  "backupRestore": "WAIVED"
+}

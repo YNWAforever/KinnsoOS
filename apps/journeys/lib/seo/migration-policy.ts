@@ -3,8 +3,9 @@ import type { Metadata } from 'next';
 // K25 launch approval must change code deliberately; deployment/env cannot enable indexing.
 export const migrationRobots = () => ({ index: false, follow: false } as const);
 export const PUBLIC_ORIGIN = 'https://www.kinnso.ai';
-const publicOrigins = new Set([PUBLIC_ORIGIN,'https://remix-kinnso-web.vercel.app']);
-const locales = ['en','zh-hk','zh-tw','zh-cn','ja','ko','th'];
+export const CONSOLIDATED_ORIGIN = 'https://kinnso-os.vercel.app';
+const publicOrigins = new Set([PUBLIC_ORIGIN,'https://remix-kinnso-web.vercel.app',CONSOLIDATED_ORIGIN]);
+const locales = ['en','zh-HK','zh-hk','zh-tw','zh-cn','ja','ko','th'];
 function checkedPublicUrl(value: string) {
   const url = new URL(value);
   const parts = url.pathname.split('/').filter(Boolean);

@@ -83,6 +83,7 @@ export default async function GuidePage({
         id: guide.id,
         title: guide.title,
         creatorName: guide.creatorName,
+        creatorHandle: guide.creatorHandle,
         publishedAt: guide.publishedAt,
         cover: guide.cover,
       },

@@ -37,7 +37,7 @@ const b64 = (o: unknown) => Buffer.from(JSON.stringify(o)).toString('base64url')
 function clientFor(userId: string) {
   const header = b64({ alg: 'HS256', typ: 'JWT' })
   const payload = b64({
-    sub: userId, role: 'authenticated', aud: 'authenticated',
+    sub: userId, role: 'authenticated', aud: 'authenticated', session_id: userId, is_anonymous: false,
     exp: Math.floor(Date.now() / 1000) + 3600,
   })
   const sig = createHmac('sha256', jwtSecret).update(`${header}.${payload}`).digest('base64url')
@@ -93,6 +93,10 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
       on conflict do nothing;
 
       update public.creators set status = 'active' where id = '${creatorUser}';
+      insert into auth.sessions(id,user_id,created_at,updated_at)
+      select id,id,now(),now() from auth.users
+      where id in ('${creatorUser}', '${merchantUser}', '${opsAdminUser}')
+      on conflict (id) do nothing;
     `)
 
     const s = svc()
@@ -190,13 +194,14 @@ d('r12.2 receipt-cashback live proof: repeatable settlements, cap enforcement, t
   }, hookTimeout)
 
   afterAll(async () => {
-    // admin_review_submission writes an ops_audit_log row keyed to opsAdminUser's
-    // kinnso_ops_members row, and ops_audit_log.actor_ops_member_id has no ON DELETE CASCADE
-    // (the same permanent-ledger shape documented in mission-review.rls.test.ts) -- so
-    // opsAdminUser (and its kinnso_ops_members row) is deliberately left behind, never deleted.
-    // Everything else cascades cleanly off creatorUser/merchantUser via auth.users.
     await runPsql(`
-      delete from auth.users where id in ('${creatorUser}', '${merchantUser}');
+      begin;
+      delete from public.ops_audit_log where actor_ops_member_id in (
+        select id from public.kinnso_ops_members where user_id='${opsAdminUser}'
+      );
+      delete from public.kinnso_ops_members where user_id='${opsAdminUser}';
+      delete from auth.users where id in ('${creatorUser}', '${merchantUser}', '${opsAdminUser}');
+      commit;
     `)
   }, hookTimeout)
 

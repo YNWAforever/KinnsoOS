@@ -235,6 +235,12 @@ body:has(.k-app) {
 .k-editor {
   padding: 40px 0 60px;
 }
+.public-content-link {
+  display: inline-flex;
+  min-width: 24px;
+  min-height: 24px;
+  align-items: center;
+}
 .k-eyebrow {
   font-size: 0.75rem !important;
   letter-spacing: 0.16em;
@@ -4375,10 +4381,80 @@ body:has(.k-app) {
   border-radius: 9px;
   overflow-wrap: anywhere;
 }
+.k-nav-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  max-width: 100%;
+  margin-block: 16px;
+}
+.k-nav-chips a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  overflow-wrap: anywhere;
+}
+.k-nav-chips a.active {
+  border-color: var(--k-orange);
+  color: var(--k-orange);
+}
+.k-team-member {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+  padding-block: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.k-team-member > * {
+  min-width: 0;
+}
+.k-team-member p {
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.k-team-member .k-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+@media (max-width: 650px) {
+  .k-team-member {
+    flex-direction: column;
+  }
+  .k-team-member .k-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+  .k-team-member .k-actions > * {
+    width: 100%;
+  }
+}
 .k-merchant .k-card {
   margin-block: 24px;
   min-width: 0;
   overflow-wrap: anywhere;
+}
+#merchant-offers,
+#merchant-offers .k-form,
+#merchant-offers .k-form label {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#merchant-offers .k-form input,
+#merchant-offers .k-form select,
+#merchant-offers .k-form textarea,
+#merchant-offers .k-form .k-btn {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 .k-collab-nav {
   display: flex;

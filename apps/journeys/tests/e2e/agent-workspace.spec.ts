@@ -13,7 +13,7 @@ async function signIn(page:Page,email:string,password:string){
  await page.getByLabel('Email',{exact:true}).fill(email);
  await page.getByLabel('Password',{exact:true}).fill(password);
  await page.getByRole('button',{name:'Sign in',exact:true}).click();
- await page.waitForURL('**/en/agent');await page.waitForLoadState('networkidle');
+ await page.waitForURL('**/en/agent');
  await expect(page.getByRole('heading',{name:'Task preview',exact:true})).toBeVisible();
 }
 async function browserPost(page:Page,path:string,body:unknown){

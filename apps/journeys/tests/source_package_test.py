@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -25,9 +26,10 @@ class SourcePackageTests(unittest.TestCase):
     def manifest(self, files):
         (self.root / 'scripts/source-manifest.json').write_text(json.dumps({'version': 1, 'files': files}))
 
-    def run_pack(self):
+    def run_pack(self, env=None):
         return subprocess.run([sys.executable, str(self.root / 'scripts/package-source.py')],
-                              cwd=self.root, capture_output=True, text=True)
+                              cwd=self.root, capture_output=True, text=True,
+                              env={**os.environ, **(env or {})})
 
     def test_exact_manifest_excludes_unlisted_private_files(self):
         for name in ['private-note.txt', 'dump.sql', 'credential.json', '.env.local']:
@@ -39,6 +41,19 @@ class SourcePackageTests(unittest.TestCase):
                 'scripts/package-source.py', 'scripts/source-manifest.json', 'SOURCE_METADATA.json'})
             metadata = json.loads(archive.read('SOURCE_METADATA.json'))
             self.assertEqual(set(metadata['sha256']), set(archive.namelist()) - {'SOURCE_METADATA.json'})
+
+    def test_vercel_upload_fallback_preserves_missing_gitignore_bytes(self):
+        gitignore = b'node_modules/\n.next/\n'
+        (self.root / '.gitignore').write_bytes(gitignore)
+        (self.root / 'scripts/gitignore.pack').write_bytes(gitignore)
+        self.manifest(['LICENSE', 'package.json', 'scripts/package-source.py',
+                       'scripts/source-manifest.json', '.gitignore',
+                       'scripts/gitignore.pack'])
+        (self.root / '.gitignore').unlink()
+        result = self.run_pack({'VERCEL': '1'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(self.root / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read('.gitignore'), gitignore)
 
     def test_unsafe_paths_and_missing_files_fail(self):
         for name in ['../outside.txt', '/outside.txt', 'C:/secret.txt', '.env.local',
@@ -73,10 +88,13 @@ class SourcePackageTests(unittest.TestCase):
             self.assertTrue(target.resolve().is_relative_to(self.root), name)
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(source, target)
-        # Mapped SQL is inside standalone distribution metadata. This fixture
-        # never reads a temporary parent's migration when it is repackaged.
+        # Mapped parent inputs are inside standalone distribution metadata.
+        # This fixture never reads a temporary parent's files when it is repackaged.
         hashes = {}
-        for destination, source in source_manifest.get('repositoryFiles', {}).items():
+        mapped = {}
+        mapped.update(source_manifest.get('repositoryFiles', {}))
+        mapped.update(source_manifest.get('repositoryDocuments', {}))
+        for destination, source in mapped.items():
             canonical = source_root / destination if (source_root / 'SOURCE_METADATA.json').is_file() else source_root.parents[1] / source
             target = self.root / destination
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -150,6 +168,30 @@ class SourcePackageTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         with ZipFile(extracted / 'public/source/kinnsoos-source.zip') as archive:
             self.assertEqual(archive.read(destination), sql, 'Ordinary initialized extraction keeps its own SQL')
+
+    def test_vercel_repository_sql_input_does_not_require_git_metadata(self):
+        repository = self.root
+        app = repository / 'apps/journeys'
+        app.mkdir(parents=True)
+        for name in ['LICENSE', 'package.json', 'scripts/package-source.py',
+                     'scripts/source-manifest.json']:
+            target = app / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(repository / name, target)
+        source = 'supabase/migrations/20261011004000_kinnso_merchant_insights.sql'
+        destination = 'tests/contracts/20261011004000_kinnso_merchant_insights.sql'
+        sql = b'-- Reviewed Vercel migration input, never executed here.\nselect 1;\n'
+        source_path = repository / source
+        source_path.parent.mkdir(parents=True)
+        source_path.write_bytes(sql)
+        self.root = app
+        manifest = json.loads((app / 'scripts/source-manifest.json').read_text())
+        manifest['repositoryFiles'] = {destination: source}
+        (app / 'scripts/source-manifest.json').write_text(json.dumps(manifest))
+        result = self.run_pack({'VERCEL': '1'})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        with ZipFile(app / 'public/source/kinnsoos-source.zip') as archive:
+            self.assertEqual(archive.read(destination), sql)
 
     def test_initialized_distribution_keeps_internal_sql_in_another_repository(self):
         repository = self.root

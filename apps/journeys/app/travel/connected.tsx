@@ -2406,6 +2406,11 @@ export function CreatorShell({
             ["studio/adventures", "My adventures", "我的旅程記錄", "map"],
             ["studio/opportunities", "Opportunities", "合作機會", "trip"],
             ["studio/earnings", "Earnings", "收益", "wallet"],
+            ["studio/sessions", "Sessions", "活動", "calendar"],
+            ["studio/tier", "Creator tier", "創作者級別", "wallet"],
+            ["studio/perks", "Partner perks", "夥伴禮遇", "spark"],
+            ["studio/offers", "Affiliate offers (gated)", "聯盟優惠（暫停）", "pin"],
+            ["studio/scan", "Creator scan (gated)", "創作者掃描（暫停）", "camera"],
           ].map(([p, en, zh, icon]) => (
             <Link
               key={p}

@@ -20,6 +20,8 @@ test.afterEach(async()=>{
 });
 async function sourceTask(locale:string){
  const author=await owned.actor(true),title='Synthetic mailbox original guide '+randomUUID();
+ const published=await admin.from('creators').update({handle:'mailbox-'+author.id,public_profile:{languages:['en']}}).eq('id',author.id);
+ if(published.error)throw published.error;
  const guide=await owned.guide(author,{title});
  return{next:`/${locale}/g/${guide}?intent=import`,title,guide};
 }

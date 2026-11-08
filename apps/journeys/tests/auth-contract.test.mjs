@@ -5,6 +5,7 @@ const auth = await import('../lib/auth/return-path.ts').catch(() => ({}));
 test('safe return preserves a local task and rejects foreign or encoded navigation', () => {
   assert.equal(typeof auth.safeReturnPath, 'function');
   assert.equal(auth.safeReturnPath('/en/trips/123?intent=save', 'en'), '/en/trips/123?intent=save');
+  for(const locale of ['zh-tw','zh-cn','ja','ko','th'])assert.equal(auth.safeReturnPath(`/${locale}/g/11111111-1111-4111-8111-111111111111?bookmark=1`,'en'),`/${locale}/g/11111111-1111-4111-8111-111111111111?bookmark=1`);
   for (const value of ['https://evil.test/', '//evil.test/', '/\\evil.test',
     '/en/%2f%2fevil.test', '/en/../auth/callback', '/en/sign-in', '/en/%0aHeader:x']) {
     assert.equal(auth.safeReturnPath(value, 'en'), '/en/trips', value);

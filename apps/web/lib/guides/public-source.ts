@@ -11,6 +11,7 @@ export type GuideSourceRow = {
   id: string
   title: string
   creatorName: string | null
+  creatorHandle: string | null
   publishedAt: string | null
   cover: string | null
 }
@@ -39,6 +40,7 @@ export function projectPublishedGuideSource(
       id: row.id,
       title: row.title,
       creator_name: row.creatorName,
+      creator_handle: row.creatorHandle,
       published_at: row.publishedAt,
       cover_url: row.cover,
     }),

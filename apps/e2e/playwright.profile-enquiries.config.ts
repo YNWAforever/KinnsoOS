@@ -9,7 +9,13 @@ import {
 
 function localTestEnv() {
   const values: Record<string, string> = {}
-  const source = readFileSync(resolve(import.meta.dirname, '../web/.env.test'), 'utf8')
+  let source: string
+  try {
+    source = readFileSync(resolve(import.meta.dirname, '../web/.env.test'), 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return values
+    throw error
+  }
   for (const line of source.split(/\r?\n/)) {
     const match = /^([A-Z0-9_]+)=(.*)$/.exec(line)
     if (match) values[match[1]] = match[2].replace(/^"|"$/g, '')

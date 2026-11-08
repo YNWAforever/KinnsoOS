@@ -12,6 +12,7 @@ const row: GuideSourceRow = {
   id: '11111111-1111-4111-8111-111111111111',
   title: 'Author text',
   creatorName: 'Row author',
+  creatorHandle: 'row-author',
   publishedAt: '2026-06-02T00:00:00.000Z',
   cover: 'https://cdn.kinnso.ai/test/guide.jpg',
 }
@@ -82,6 +83,7 @@ describe('published guide source projection', () => {
         id: row.id,
         title: row.title,
         creator_name: row.creatorName,
+        creator_handle: row.creatorHandle,
         published_at: row.publishedAt,
         cover_url: row.cover,
       }),

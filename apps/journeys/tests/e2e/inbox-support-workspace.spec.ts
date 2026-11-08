@@ -8,7 +8,7 @@ loadEnvFile('.env.test');verifyTestTarget();
 const admin=createClient(process.env.SUPABASE_URL!,process.env.SUPABASE_SERVICE_ROLE_KEY!,{auth:{persistSession:false}});
 const ok=async(promise:PromiseLike<any>)=>{const result=await promise;expect(result.error).toBeNull();return result.data;};
 async function signIn(page:Page,email:string,password:string,path:string){
- await page.goto('/en/sign-in?next='+encodeURIComponent(path));await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(url=>url.pathname===path);await page.waitForLoadState('networkidle');
+ await page.goto('/en/sign-in?next='+encodeURIComponent(path));await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.waitForURL(url=>url.pathname===path);
 }
 async function browserPost(page:Page,path:string,body:unknown){return page.evaluate(async({path,body})=>{const response=await fetch(path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return{status:response.status,body:await response.json()};},{path,body});}
 

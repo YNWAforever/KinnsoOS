@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "status": "PASS",
+  "observedAt": "2026-11-07",
+  "applicationSourceHead": "9947e97fd0b9b8692e81628c2af7dcf90c1a5953",
+  "sourceArchiveSha256": "36ec39cf47dfbf9c2e94ac0898799537fd704168a07605544760ee8cc0a88f67",
+  "environment": {
+    "project": "kinnsoos-clean-review-20261107",
+    "apiOrigin": "http://127.0.0.1:59921",
+    "databasePort": "59922",
+    "dedicatedNetwork": "kinnsoos-clean-review-20261107-net",
+    "dockerMemoryBytes": 16608014336,
+    "wslTotalGiB": 15,
+    "wslAvailableAtStartGiB": 12,
+    "seedDisabled": true
+  },
+  "migrationChain": {
+    "status": "PASS",
+    "migrationCount": 204,
+    "lastMigration": "20261107020000_kinnso_ops_content_audit",
+    "postgresRestFunctionsLoaded": 216
+  },
+  "zeroDataReset": {
+    "authUsers": 0,
+    "communitySessions": 0,
+    "partnerPerks": 0,
+    "testimonials": 0,
+    "enquiries": 0,
+    "opsAuditLog": 0
+  },
+  "securityBoundaries": {
+    "securityDefinerContentRpcs": 6,
+    "authenticatedContentRpcExecute": true,
+    "authenticatedAuditAppendExecute": false,
+    "communitySessionsOperationsReadPolicy": true,
+    "partnerPerksOperationsReadPolicy": true,
+    "testimonialsOperationsReadPolicy": true,
+    "legacyOperationsWritePoliciesPresent": false,
+    "authenticatedDirectPerkWrites": false,
+    "authenticatedDirectTestimonialWrites": false
+  },
+  "authenticatedMigrationJourney": {
+    "status": "PASS",
+    "test": "apps/journeys/tests/e2e/u06-creator-merchant-ops-migration.spec.ts",
+    "durationMs": 25300,
+    "productionChanged": false
+  },
+  "productionChanged": false,
+  "journeysDeploymentChanged": false,
+  "backupRestore": "WAIVED"
+}

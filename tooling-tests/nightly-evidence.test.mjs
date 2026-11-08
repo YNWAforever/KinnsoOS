@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, writeFileSync, existsSync, mkdtempSync, rmSync } from 'node:fs';
@@ -254,7 +255,7 @@ test('actual crawler CLI defaults to KinnsoOS and records an empty sitemap witho
       };`);
     const env = { ...process.env, KINNSO_CRAWL_REPORT: output, GITHUB_RUN_ID: '42', GITHUB_RUN_ATTEMPT: '2' };
     delete env.BASE_URL;
-    const run = spawnSync(process.execPath, ['--experimental-strip-types', '--import', preload, path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, encoding: 'utf8', env });
+    const run = spawnSync(process.execPath, ['--experimental-strip-types', '--import', pathToFileURL(preload).href, path.join(root, 'scripts/crawl-sitemap.ts')], { cwd: root, encoding: 'utf8', env });
     assert.equal(run.status, 0, run.stderr);
     assert.match(run.stdout, /Checked 0 sitemap URLs; 0 failures/);
     assert.deepEqual(JSON.parse(readFileSync(output, 'utf8')), { checked: 0, failureCount: 0, targetOrigin: origin, sourceRevision: source, runId: '42', runAttempt: '2' });

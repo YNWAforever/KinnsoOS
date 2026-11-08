@@ -16,7 +16,7 @@ test('guide trip choices and saved interests clear across tabs, including a dela
  test.setTimeout(120000);const a=await fixture(),b=await fixture(),trip=await createTrip(a);
  const source=await admin.from('guides').insert({creator_id:a.id,creator_name:'Synthetic privacy source',creator_handle:'synthetic',slug:'synthetic-'+randomUUID(),title:'Synthetic account A interest',summary:'Private interest fixture',cover_url:'',city:'Kyoto',status:'published',published_at:new Date().toISOString()}).select('id').single();expect(source.error).toBeNull();const guideId=source.data!.id;
  expect((await a.client.rpc('kinnso_bookmark',{p_guide_id:guideId,p_desired_state:true,p_request_id:randomUUID()})).error).toBeNull();
- expect((await admin.from('creators').update({status:'active'}).eq('id',a.id)).error).toBeNull();
+ expect((await admin.from('creators').update({status:'active',handle:a.id,public_profile:{languages:['en']}}).eq('id',a.id)).error).toBeNull();
  expect((await a.client.rpc('publish_guide_version',{p_guide_id:guideId,p_expected_version:0,p_request_id:randomUUID(),p_content:{days:[{offset:0,title:'Synthetic day',stops:[{title:'Public source',description:'Authored fixture',placeId:null,startMinuteOfDay:null,durationMinutes:null}]}]}})).error).toBeNull();
  await login(page,a,'/en/trips');const guide=await context.newPage(),saved=await context.newPage(),late=await context.newPage();
  await guide.goto('/en/g/'+guideId);await expect(guide.getByRole('button',{name:'Remove bookmark',exact:true})).toBeVisible();await expect(guide.getByLabel('Apply to a trip',{exact:true}).locator('option')).toContainText(['Choose an existing trip',trip.title]);

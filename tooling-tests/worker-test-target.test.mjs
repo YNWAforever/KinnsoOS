@@ -229,12 +229,12 @@ function peerProofRunner() {
   const harness = String.raw`
 from unittest.mock import patch
 from types import SimpleNamespace
-import json, os, pathlib, socket, struct, subprocess, sys
+import json, os, pathlib, posixpath, socket, struct, subprocess, sys
 case = json.loads(sys.argv[1])
 kind = case.get('kind', 'native')
 pid = 1 if kind == 'systemd' else 123
 def readlink(path):
-    path = str(path)
+    path = str(path).replace(chr(92),"/")
     if path == '/proc/self/ns/net': return 'net:[789]'
     if path.endswith('/exe'):
         if case.get('protected_exe'): raise PermissionError()
@@ -244,7 +244,7 @@ def readlink(path):
     if '/fd/' in path: return 'socket:[%s]' % ('9999' if case.get('wrong_owner') else ('4444' if path.endswith('/3') else '4445'))
     raise RuntimeError(path)
 def read_text(path, *args, **kwargs):
-    path = str(path)
+    path = str(path).replace(chr(92),"/")
     if path.endswith('/net/unix'):
         visible = not case.get('wrong_namespace') and (kind != 'rootless' or path == '/proc/125/net/unix') and not (case.get('daemon_wrong_namespace') and path == '/proc/123/net/unix')
         return 'header\n' + ('0: 2 0 10000 1 01 5555\n' if visible else '')
@@ -284,6 +284,9 @@ class FakeSocket:
 sys.argv = ['proof', '/var/run/docker.sock', '58421', '58432']
 with patch.object(sys, 'platform', 'darwin' if case.get('darwin') else 'linux'), \
      patch.object(socket, 'socket', FakeSocket), \
+     patch.object(socket, 'SO_PEERCRED', 17, create=True), \
+     patch.object(socket, 'AF_UNIX', 1, create=True), \
+     patch.object(os.path, 'isabs', posixpath.isabs), \
      patch.object(os.path, 'realpath', lambda path: path), \
      patch.object(os, 'stat', lambda path: SimpleNamespace(st_dev=1, st_ino=2)), \
      patch.object(os, 'fstat', lambda fd: SimpleNamespace(st_ino=5555)), \
@@ -295,7 +298,7 @@ with patch.object(sys, 'platform', 'darwin' if case.get('darwin') else 'linux'),
 `;
   return options => {
     try {
-      return execFileSync('python3', ['-I', '-c', harness + '\n    exec(compile(' + JSON.stringify(script) + ', "peer-proof", "exec"))\n', JSON.stringify(options)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+      return execFileSync(process.platform==='win32'?'python':'python3', ['-I', '-c', harness + '\n    exec(compile(' + JSON.stringify(script) + ', "peer-proof", "exec"))\n', JSON.stringify(options)], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     } catch (error) { throw new Error(JSON.stringify(options) + ': ' + error.stderr.slice(-1000)); }
   };
 }

@@ -1,0 +1,2368 @@
+{
+  "schemaVersion": 2,
+  "readiness": "READY_FOR_USER_REVIEW",
+  "fixWave": "PR115_MAIN_MERGE_REMEDIATION",
+  "publicLaunch": "HOLD",
+  "realParticipation": "BLOCKED",
+  "journeysDeployment": {
+    "status": "UNCHANGED",
+    "candidateDeployed": false,
+    "hostedCandidateVerification": "NOT_RUN"
+  },
+  "source": {
+    "commit": "105fcd2366239f1ffbaec275df2abf7696c00821",
+    "tree": "2f7a4d104be362e8c0183a2dc25972d7f8d822f3",
+    "scope": "Final hosted-validated PR head; packet follow-up is documentation only."
+  },
+  "sourceManifest": {
+    "inputs": 921,
+    "path": "apps/journeys/scripts/source-manifest.json",
+    "gitBlobSha256": "6cf0fc2f6f69b4b9477f645405ed4a8855460d3bd62780f625bd77fb7af1c7af",
+    "checkoutSha256": "6cf0fc2f6f69b4b9477f645405ed4a8855460d3bd62780f625bd77fb7af1c7af",
+    "gitBlobHashBasis": "Exact Git blob bytes",
+    "checkoutHashBasis": "Exact checkout file bytes"
+  },
+  "pullRequest": {
+    "number": 115,
+    "url": "https://github.com/YNWAforever/KinnsoOS/pull/115",
+    "evidenceBasis": "Final PR status supplied for this packet update",
+    "workflows": [
+      {
+        "name": "CI",
+        "event": "push",
+        "runId": 42443424650,
+        "status": "SUCCESS",
+        "url": "https://github.com/YNWAforever/KinnsoOS/actions/runs/42443424650"
+      },
+      {
+        "name": "Journeys",
+        "event": "push",
+        "runId": 42443424657,
+        "status": "SUCCESS",
+        "url": "https://github.com/YNWAforever/KinnsoOS/actions/runs/42443424657"
+      },
+      {
+        "name": "CI",
+        "event": "pull_request",
+        "runId": 42443428219,
+        "status": "SUCCESS",
+        "url": "https://github.com/YNWAforever/KinnsoOS/actions/runs/42443428219"
+      },
+      {
+        "name": "Journeys",
+        "event": "pull_request",
+        "runId": 42443428124,
+        "status": "SUCCESS",
+        "url": "https://github.com/YNWAforever/KinnsoOS/actions/runs/42443428124"
+      }
+    ],
+    "vercel": {
+      "idPrefix": "BPb89",
+      "status": "SUCCESS"
+    },
+    "checks": {
+      "success": 25,
+      "skipped": 20,
+      "failed": 0,
+      "pending": 0
+    },
+    "allReviewThreadsResolved": true,
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "formalApproval": false,
+    "hostedShareRecovery": {
+      "passed": 2,
+      "workflow": "Journeys connected",
+      "includedInLocalCount": false
+    }
+  },
+  "localMatrix": {
+    "scope": "Final local validation series; see saved logs. Hosted workflow evidence is bound separately to the final PR head.",
+    "checks": [
+      {
+        "name": "Journeys unit",
+        "passed": 1979,
+        "skipped": 2,
+        "failed": 0,
+        "log": ".local-private/pr115-ci-lint/unit.log"
+      },
+      {
+        "name": "Web",
+        "passed": 3316,
+        "skipped": 44,
+        "failed": 0,
+        "log": ".local-private/pr115-ci-lint/web-final.log"
+      },
+      {
+        "name": "Connected Chromium (locally applicable)",
+        "passed": 384,
+        "skipped": 0,
+        "failed": 0,
+        "log": ".local-private/pr115-ci-lint/browser-full.log"
+      },
+      {
+        "name": "Database integrations",
+        "passed": 74,
+        "skipped": 0,
+        "failed": 0,
+        "log": ".local-private/pr115-ci-lint/integration.log"
+      },
+      {
+        "name": "Presentation",
+        "passed": 77,
+        "skipped": 0,
+        "failed": 0,
+        "log": ".local-private/pr115-ci-lint/presentation.log"
+      }
+    ],
+    "migrations": 234,
+    "cleanup": {
+      "residue": 0,
+      "authRestored": true
+    }
+  },
+  "migrations": {
+    "count": 234,
+    "head": "20261108134500",
+    "files": [
+      {
+        "version": "20260613000001",
+        "name": "20260613000001_articles_core.sql",
+        "sha256": "3495041354ea4b77b96e98c20857230fbd5c766ed96f92f68d3bf8d4077fdcdf"
+      },
+      {
+        "version": "20260613000002",
+        "name": "20260613000002_articles_supporting.sql",
+        "sha256": "f978d77966c37d4d4244ccc41e5a40e7b910aa3b388045cbd2cd2363daeb2b4f"
+      },
+      {
+        "version": "20260613000003",
+        "name": "20260613000003_indexes_fts.sql",
+        "sha256": "bcb89911a31cc49a73de0c3c4c7c1ca859d85e2042f892f4d3737a3f0ecbd999"
+      },
+      {
+        "version": "20260613000004",
+        "name": "20260613000004_rls.sql",
+        "sha256": "b31dda09c69930e33ef1e634a18229840d744ac9083c5f12043713216d625f5a"
+      },
+      {
+        "version": "20260613000005",
+        "name": "20260613000005_rpcs.sql",
+        "sha256": "6d73cbd03bc9a733723a5ab3c6b88e5b08a1263f0164b5d1429ba569a120449c"
+      },
+      {
+        "version": "20260613000006",
+        "name": "20260613000006_grants.sql",
+        "sha256": "4119dad46d8fbb6fe5154d76cd778ee35b4729a5c924dc6337d42307d5b17925"
+      },
+      {
+        "version": "20260614000007",
+        "name": "20260614000007_article_flags.sql",
+        "sha256": "4fc3fd2c546405afe685954c264f4156f4d8ae5760ba71e75fa94ecdcd44b331"
+      },
+      {
+        "version": "20260614000008",
+        "name": "20260614000008_search_rpc.sql",
+        "sha256": "28737fa86094efb3c9093b1928fb75493e169fee0136761e7ce6393a80fe5aa3"
+      },
+      {
+        "version": "20260614000009",
+        "name": "20260614000009_creator_tables.sql",
+        "sha256": "1c953281d9f89a39ee6a7bbd6d1e0d2194771a576bc760a2d84bfdb32f356e1d"
+      },
+      {
+        "version": "20260614000010",
+        "name": "20260614000010_creator_triggers.sql",
+        "sha256": "1d77a7e0dd69e3b5deb900dca6e72033a6aa1a6e517764aac1509acb59ec8189"
+      },
+      {
+        "version": "20260614000011",
+        "name": "20260614000011_creator_rls.sql",
+        "sha256": "f5f16bd0efce641ba4b4844a83e5717538322fc98f34284ae50123b19be89ff6"
+      },
+      {
+        "version": "20260614000012",
+        "name": "20260614000012_creator_grants.sql",
+        "sha256": "8f15a42de9b2c2e84f79683ea8c3f30d1d82fb91a652d29321f38efeed2a0479"
+      },
+      {
+        "version": "20260614000013",
+        "name": "20260614000013_creator_realtime.sql",
+        "sha256": "9d6cf1aadb0b59fc565c0d6d8036686b2489be39f17c0e57b6ee6de4b1aee591"
+      },
+      {
+        "version": "20260614000014",
+        "name": "20260614000014_creator_auth_trigger.sql",
+        "sha256": "68af0e4bb1aba00f8a2704571abbea5e142eaa10d5355574a3340055a400ff5a"
+      },
+      {
+        "version": "20260614000015",
+        "name": "20260614000015_creator_scan_jobs_single_active.sql",
+        "sha256": "c41c16293277acd04bd6649e845508105b723037970d8b96b89e02dbf01f0251"
+      },
+      {
+        "version": "20260617173932",
+        "name": "20260617173932_mission_tables.sql",
+        "sha256": "f686703b1a41155f58cf47a0a79fcd8b7f34abe5dc1c57aeb7179c5c77d95263"
+      },
+      {
+        "version": "20260617173938",
+        "name": "20260617173938_mission_rls.sql",
+        "sha256": "16434dbbc8fff0e3012465f47492491b31404a0bdd8543a50f99771f4f68b117"
+      },
+      {
+        "version": "20260617173941",
+        "name": "20260617173941_mission_grants.sql",
+        "sha256": "8ae1cd89cea9569052dd2766d1026f2acd5ed0e612d790697d006d9737644649"
+      },
+      {
+        "version": "20260617210058",
+        "name": "20260617210058_mission_rollback_policy.sql",
+        "sha256": "eee390a149461f8a5a5d0393afd1a1775e1ba7897778dd2e2b6d1cb4b08e9fb4"
+      },
+      {
+        "version": "20260617212607",
+        "name": "20260617212607_mission_rollback_helper.sql",
+        "sha256": "f57fea22e102db443054ca46cd47f93ee12fa3c987b8356858f8f907d33eedc0"
+      },
+      {
+        "version": "20260617222922",
+        "name": "20260617222922_travelpayouts_partner_link_rpc.sql",
+        "sha256": "ea235489dc25e215747254f6c8868bd5462206dd29ba5cfa44aa75343ad222f3"
+      },
+      {
+        "version": "20260618014206",
+        "name": "20260618014206_drop_public_partner_link_rpc.sql",
+        "sha256": "3aeaa44f47459ba55af4effe3c4cf513f224975413c1d03e4b740ea1fb010641"
+      },
+      {
+        "version": "20260619000001",
+        "name": "20260619000001_guides.sql",
+        "sha256": "c8fed17b2fd4a302e49df3c01be7f20289a5e36f36b0075cdcb45c5ffbe6a010"
+      },
+      {
+        "version": "20260619000002",
+        "name": "20260619000002_mission_verification_jobs.sql",
+        "sha256": "b6422be1c04168476a65f45764dc1e94421faca66f089034bca09f2f5b24d5d1"
+      },
+      {
+        "version": "20260619000003",
+        "name": "20260619000003_allow_submission_resubmit.sql",
+        "sha256": "7531b54a6900dfe524cb75b2ce669f4fc6e9cac50fafed0ec8b51a0ff7908ef9"
+      },
+      {
+        "version": "20260619000004",
+        "name": "20260619000004_allow_youtube_verification.sql",
+        "sha256": "22749421edfdbb6837df63424f2d0fcd5e3535d13584aca7a9f6542281dc8e17"
+      },
+      {
+        "version": "20260622153645",
+        "name": "20260622153645_seed_travelpayouts_offers.sql",
+        "sha256": "b3c63cc962381b18b408f44a3b0e7c81107de5497254db1ff1ae32e25a74eef1"
+      },
+      {
+        "version": "20260624000001",
+        "name": "20260624000001_creator_public_profile.sql",
+        "sha256": "c7e81f7ff841f1ff43a40ec31952009a5c397fb9ec1a3c18d05a34051fdcdc85"
+      },
+      {
+        "version": "20260625090000",
+        "name": "20260625090000_creator_contribution_backbone.sql",
+        "sha256": "5643613854616de93d789107f512934ccf160bae2e5e25b57df863de8d73159b"
+      },
+      {
+        "version": "20260625100000",
+        "name": "20260625100000_mission_tier_gating.sql",
+        "sha256": "68dd779c7d7b7d4ec0202d254cdc96e41015a53f7286829ab860eefc697f3cf8"
+      },
+      {
+        "version": "20260626120000",
+        "name": "20260626120000_copilot_messages.sql",
+        "sha256": "d7dbc06d943ee7f84989c68d07e927c67a4a36867ab4c39755ced0f576f4af7f"
+      },
+      {
+        "version": "20260626130000",
+        "name": "20260626130000_admin_overview_counts.sql",
+        "sha256": "ceb94fa71a9fff76771e8e08f1ff976714d7fd94992ef4c73d52b172d96b4dbd"
+      },
+      {
+        "version": "20260626140000",
+        "name": "20260626140000_partner_perks.sql",
+        "sha256": "1e327941d6c56a6905864158efcf37b370dac04497d7ed85cf12b105565d0850"
+      },
+      {
+        "version": "20260627090000",
+        "name": "20260627090000_redeem_perk_reveal_entitlement.sql",
+        "sha256": "9b855e63a937c69681cfc84274106c7121f7245371cffa9036aace8572760735"
+      },
+      {
+        "version": "20260627120000",
+        "name": "20260627120000_admin_users.sql",
+        "sha256": "56e86f9c36a433f77904b6e2a4e6e66f7a25a4ef032a6f45366edd9026e41f2e"
+      },
+      {
+        "version": "20260627150000",
+        "name": "20260627150000_admin_set_user_status_hardening.sql",
+        "sha256": "3be04385a897b3e1900e7801d42453a5cea16795bf5ec191d1c6d4611830d7f0"
+      },
+      {
+        "version": "20260627155000",
+        "name": "20260627155000_harden_contribution_function_grants.sql",
+        "sha256": "7c867b7c2d23b95887de9fb60abdc6bff2668ea5db79c6770e39818ce04f38f9"
+      },
+      {
+        "version": "20260627160000",
+        "name": "20260627160000_merchant_depth.sql",
+        "sha256": "d970de4b279b0fe58ea4b3571054e8b4ba5eb18aeee60ee4f8234de0205ec6cc"
+      },
+      {
+        "version": "20260627170000",
+        "name": "20260627170000_merchant_depth_hardening.sql",
+        "sha256": "f83dbc493e50dc33ec0fdf715b751775f7665af3af20a0a1a47a047b82fed4c7"
+      },
+      {
+        "version": "20260627180000",
+        "name": "20260627180000_insights_rpcs.sql",
+        "sha256": "8e55fb79a18f5e1f056fd637ee6a7c2c21882631ff95e614e3ce49c9b380106e"
+      },
+      {
+        "version": "20260628120000",
+        "name": "20260628120000_settlement_status_amount_checks.sql",
+        "sha256": "c6d2dafd38744bf780a069710edb614dd926a7ddd0667528338d1d9a1199fcda"
+      },
+      {
+        "version": "20260628130000",
+        "name": "20260628130000_ops_audit_log_and_creator_analytics.sql",
+        "sha256": "dd3bae05b5587f65cdd1ec6ad892a7bf6803571e93d800993a80b4a1291b6332"
+      },
+      {
+        "version": "20260629100000",
+        "name": "20260629100000_fix_at_risk_ordering.sql",
+        "sha256": "0660e11afe875e2e7409fbf3cd8e837030d8db41752742c07c3a20545610af1a"
+      },
+      {
+        "version": "20260629110000",
+        "name": "20260629110000_creator_lifecycle_and_search.sql",
+        "sha256": "51f1031b7a19fc9bc29605c9512f19fce25e07364d1b61e28e1b5a7c7e075f2e"
+      },
+      {
+        "version": "20260629120000",
+        "name": "20260629120000_admin_creator_detail.sql",
+        "sha256": "25fe7276dd7e64e6f64ceae113e3c3af191158a321c825b69656b58014c9ce3f"
+      },
+      {
+        "version": "20260629130000",
+        "name": "20260629130000_creator_detail_milestones.sql",
+        "sha256": "32fe951dcb98fced8fdc69f80ecd6291527f4d0f875ba8f77a8af626d5b10beb"
+      },
+      {
+        "version": "20260629140000",
+        "name": "20260629140000_admin_set_settlement_status.sql",
+        "sha256": "41df7f4f2277958008c315fea4d25fc3704b47a98a979123c711c4549f6bcf87"
+      },
+      {
+        "version": "20260630120000",
+        "name": "20260630120000_admin_merchant_analytics.sql",
+        "sha256": "2da4f1f8a2cb26900b56d1c00c6ff3f83c7ecaa5377568a791e50b89b4f239f6"
+      },
+      {
+        "version": "20260630130000",
+        "name": "20260630130000_merchant_ops_lifecycle_and_search.sql",
+        "sha256": "9c9416f0c10df7dc2f3d2aacbc70cf5d51e0bf5aa90485bde364d07e24c13447"
+      },
+      {
+        "version": "20260630140000",
+        "name": "20260630140000_admin_merchant_detail_and_drop_legacy_tier.sql",
+        "sha256": "dfaf2bb601c1210249601d6daa3e9dd2edc4d2a60e56451f075c889dc4d30966"
+      },
+      {
+        "version": "20260701150000",
+        "name": "20260701150000_ops_member_role.sql",
+        "sha256": "a9b8d427340350dc90e03912b926e26614c2e797d2e4572e4749a912da07a403"
+      },
+      {
+        "version": "20260701160000",
+        "name": "20260701160000_ops_invites_and_lifecycle.sql",
+        "sha256": "aa1a9e496bebdcc7fb72173be8e53433aaf84289d325121731d7f0036bef14d5"
+      },
+      {
+        "version": "20260701170000",
+        "name": "20260701170000_ops_role_enforcement.sql",
+        "sha256": "73336c6743c372ae93dfe253fb20ba8e3e78b6c1d51577b0694f866c4748f8f0"
+      },
+      {
+        "version": "20260702090000",
+        "name": "20260702090000_admin_mission_analytics.sql",
+        "sha256": "234141e228e1ecb2bf71e7e93d8300a4edd9c53d3458f0066d286b8e193370d0"
+      },
+      {
+        "version": "20260702120000",
+        "name": "20260702120000_r1b_platform_stats_testimonials.sql",
+        "sha256": "36e1a1354bf623753074336d69315b286e61622beab2ff87fa87b37550d755c0"
+      },
+      {
+        "version": "20260703090000",
+        "name": "20260703090000_r1c_agent_waitlist_and_testimonials_updated_at.sql",
+        "sha256": "cea70797fadb47103dd9c8749f4f4d9743c62320f49444c107a10110451125a5"
+      },
+      {
+        "version": "20260703100000",
+        "name": "20260703100000_r2a_merchant_applications.sql",
+        "sha256": "68ee3129bd0f2b25778571b37676f4c8a3d351abcbd33a02fb6d65c87e441ac0"
+      },
+      {
+        "version": "20260704090000",
+        "name": "20260704090000_r2b_merchant_public_fields_and_experiences.sql",
+        "sha256": "88344ff526fe8c021eb961f012576778273491177eeb27f8bf75b5e64901e442"
+      },
+      {
+        "version": "20260704100000",
+        "name": "20260704100000_fix_experiences_public_read_merchant_check.sql",
+        "sha256": "86ec9134f3519a03a242d4c38a3ef03c8a893a5875bfa400a1acbbafaa659b08"
+      },
+      {
+        "version": "20260704110000",
+        "name": "20260704110000_r3a1_traveler_role_and_booking_core.sql",
+        "sha256": "c7fc88d99b29521b85e7e5aa46ea477aaf3e8f986b3c25813c44659cd1df9385"
+      },
+      {
+        "version": "20260704120000",
+        "name": "20260704120000_r3a2_stripe_webhook_confirmation_and_rate_limit.sql",
+        "sha256": "4ca126594ff9616875c0c8b786de4749f21f8fc5039cd58baec5ee5236814b9c"
+      },
+      {
+        "version": "20260704130000",
+        "name": "20260704130000_r3a2_fix_confirm_booking_webhook_grant.sql",
+        "sha256": "e47514648955db3d7853d4cc088009bb26dd9c2c2b85cc5b2febdee167bf085e"
+      },
+      {
+        "version": "20260704140000",
+        "name": "20260704140000_r3b_booking_settlements_and_trigger.sql",
+        "sha256": "c5f8b3a3694d8461c3d1aa2d5bad98df5e46bd4c59ba827b9c1c13c3ca35d54c"
+      },
+      {
+        "version": "20260704141000",
+        "name": "20260704141000_r3b_fix_booking_settlements_table_grant.sql",
+        "sha256": "23aef0723d2c572685b2e64619ddbd594a9cda3db836aa2517dd6c7b03753638"
+      },
+      {
+        "version": "20260704150000",
+        "name": "20260704150000_r3b_admin_settlement_status_rpc.sql",
+        "sha256": "d034d37b879a7e391d9e77dc2307b2e6c6b869eb961eae27ba8097b27663359f"
+      },
+      {
+        "version": "20260704151500",
+        "name": "20260704151500_r3b_fix_settlement_trigger_fn_grant.sql",
+        "sha256": "2407a70c5e0359743a2697c4440c11072aef540a705b2e05a4500867ff1332d1"
+      },
+      {
+        "version": "20260704160000",
+        "name": "20260704160000_r3b_merchant_booking_access_and_completion.sql",
+        "sha256": "752e2eb8f6869500eda49218b316c8a3e60c3f1201fbcfcc29ccc1066c7bdd1c"
+      },
+      {
+        "version": "20260704170000",
+        "name": "20260704170000_r3b_admin_cancel_refund_booking.sql",
+        "sha256": "afbac47aa4927caf414d8582d0365d69eaa31eb4105a30a603fca7c094150741"
+      },
+      {
+        "version": "20260704171000",
+        "name": "20260704171000_r3b_fix_cancel_refund_settlement_not_found_guard.sql",
+        "sha256": "401b752c9cac6233a2ed53ec78458e062b26b72c37e100ae0f1289246d2ea140"
+      },
+      {
+        "version": "20260705090000",
+        "name": "20260705090000_r3c_platform_stats_bookings_count.sql",
+        "sha256": "b1d7fe38dff6cd350986dd7463b04e0451904d66715bc726369cd02563f829c1"
+      },
+      {
+        "version": "20260705100000",
+        "name": "20260705100000_r4_search_guides_and_experiences.sql",
+        "sha256": "3204b2be50b6e3cdcfabbc2d1871adf4d5dac0d754137dc8b8c4ea64e1c612f7"
+      },
+      {
+        "version": "20260705110000",
+        "name": "20260705110000_r4_agent_messages.sql",
+        "sha256": "6b36037a3113ba6efb79c597926de05dae096f0c218ec1ac334a466365332294"
+      },
+      {
+        "version": "20260705120000",
+        "name": "20260705120000_r4_agent_rate_limit_and_rating_rpc.sql",
+        "sha256": "1d416f80be2af5d54bfc0acfce69def18c6d3a993fd20b2aa3f59fb608d91be0"
+      },
+      {
+        "version": "20260705130000",
+        "name": "20260705130000_r4_bookings_agent_source_surface.sql",
+        "sha256": "464f113d82454736298a742fd45759325e16c3a46d794dfa09933c2416eaeb93"
+      },
+      {
+        "version": "20260706090000",
+        "name": "20260706090000_r6a_saves_and_reviews.sql",
+        "sha256": "49683abb4510756a6e0217a567b507643c94c60b1f80314917961794e3f068d0"
+      },
+      {
+        "version": "20260706093000",
+        "name": "20260706093000_r6a_fix_saves_upsert_grant.sql",
+        "sha256": "220aeb0966c4450a9bb3b3d3cdf83f87ea8eeac162e92f2b1c624d6c7a687d76"
+      },
+      {
+        "version": "20260706094500",
+        "name": "20260706094500_r6a_revoke_saves_update_grant.sql",
+        "sha256": "8310b9ce29cd7327300e53ff636f57bc122d294a8970333bca85acef2a1790e1"
+      },
+      {
+        "version": "20260707100000",
+        "name": "20260707100000_r5_community_sessions.sql",
+        "sha256": "e1a82ace62b2743a6a08723b8e936ae9e86eeeb1211372918fd77eb42a6bc99d"
+      },
+      {
+        "version": "20260707110000",
+        "name": "20260707110000_r5_platform_stats_upcoming_sessions.sql",
+        "sha256": "b341465553a50e442756804f1021c047540cf986cc8d7174623d507a9de1f849"
+      },
+      {
+        "version": "20260707120000",
+        "name": "20260707120000_r5_drop_agent_waitlist.sql",
+        "sha256": "820ee176386610f5d12f837f488dda801f89db324a06f55604c01f69b376d7dd"
+      },
+      {
+        "version": "20260708100000",
+        "name": "20260708100000_r5_fix_rsvp_cancelled_session_check.sql",
+        "sha256": "c11337860d86b74ec92eb639e19ba1094808f2fd669a61187a75b9b59c35303e"
+      },
+      {
+        "version": "20260709090000",
+        "name": "20260709090000_r6b_destinations.sql",
+        "sha256": "0e2c6c4447b82eb75d2895588e37387f168658eea82dbdaa125d4026144c9a81"
+      },
+      {
+        "version": "20260709100000",
+        "name": "20260709100000_r6b_platform_stats_destinations_count.sql",
+        "sha256": "04a49a47af9c73a2fb1126c425fd439a6b890947a9a27ce4b09e9c26e0521da3"
+      },
+      {
+        "version": "20260711062712",
+        "name": "20260711062712_r6b_fix_session_destination_tags_ci_backfill.sql",
+        "sha256": "eb752dc969cbb8e00b7d5391d6713a0e5bed73523d0ce1f538b95e3f7d09f4b3"
+      },
+      {
+        "version": "20260711130000",
+        "name": "20260711130000_r6b_drop_orphaned_destination_tags_index.sql",
+        "sha256": "4a877695e4950a5236bb98e57a70479dde6f53f2e43e0c4e13637c89314d78e1"
+      },
+      {
+        "version": "20260712090000",
+        "name": "20260712090000_r6a_fix_reviews_ops_select.sql",
+        "sha256": "7773937ae95159f8a6bc545c766b18d62efe17ae3c3c87f8895e81193fca0d08"
+      },
+      {
+        "version": "20260712100000",
+        "name": "20260712100000_r6c_article_cross_link_overrides.sql",
+        "sha256": "37278b5ebc436d339df9f74a7f07a86d5a0efcb2dc73d69331c66c9aa5765359"
+      },
+      {
+        "version": "20260714072649",
+        "name": "20260714072649_r7_2_feature_interest_signups.sql",
+        "sha256": "42549264df6ee9fc51ce84d6ab727d8fcc78ad2be515847dd75268d456e3ce33"
+      },
+      {
+        "version": "20260714120321",
+        "name": "20260714120321_restore_travelpayouts_partner_link_rpc.sql",
+        "sha256": "620e2319291e8408a399629c054d7575a7e058a03463e633cde606fb7ccdf4f6"
+      },
+      {
+        "version": "20260717124836",
+        "name": "20260717124836_r7_3_production_honesty.sql",
+        "sha256": "af4f89b90499a6046733b68d22fdd669ce605c95561ab1abf6d15e7439ba0162"
+      },
+      {
+        "version": "20260718093422",
+        "name": "20260718093422_r7_3_honesty_cleanup.sql",
+        "sha256": "2c4ec887f315dc3e4d8e93ef0d27bb1d9e1192207e44319d2d9a8715c57883de"
+      },
+      {
+        "version": "20260719161738",
+        "name": "20260719161738_r7_5_destination_index.sql",
+        "sha256": "59a91a2d0aea63689306471838281acc4cfa12078e77e3d806bfac2e9b12321e"
+      },
+      {
+        "version": "20260720105725",
+        "name": "20260720105725_r7_5_session_waitlist.sql",
+        "sha256": "86e31b0f53ac086dfde6b7ce81881ed647a518240b062916364b043cee7e575c"
+      },
+      {
+        "version": "20260726090000",
+        "name": "20260726090000_r7_7_profile_enquiries.sql",
+        "sha256": "a681ff6e259460e31810f0a6e0379d4263d88c1a5877bd14dabac72addc59cc5"
+      },
+      {
+        "version": "20260801090000",
+        "name": "20260801090000_r8_0_measurement_baseline.sql",
+        "sha256": "ff2111d32e67351d06b0628fcd0acbeffaac18bbbc5984fa6ab7c9101da795f0"
+      },
+      {
+        "version": "20260805120000",
+        "name": "20260805120000_analytics_ip_rate_limit.sql",
+        "sha256": "117847ce1f8244ebc221bb151dfcd2a7e81e1f5dff6e3980de37d24404d9c239"
+      },
+      {
+        "version": "20260805120100",
+        "name": "20260805120100_protect_creator_trust_columns.sql",
+        "sha256": "9ea0f6a5fa18ab2d2e8a710d321bc9d7f26ffd0f42f680fef66c494c3af7acc9"
+      },
+      {
+        "version": "20260805120200",
+        "name": "20260805120200_guides_column_grants.sql",
+        "sha256": "cf4d303efcae808c6bf08e4f06c32efe592ca24ec3047e3b0f8d02a6233a9771"
+      },
+      {
+        "version": "20260805120300",
+        "name": "20260805120300_booking_insert_invariants.sql",
+        "sha256": "6624414752ff81c6f1d5e0532e61f0e5f0570eef80674e856b61e0ac304df026"
+      },
+      {
+        "version": "20260805120400",
+        "name": "20260805120400_creator_social_handle_format.sql",
+        "sha256": "763705f66c11e89e53c26193d9b1b168f76c38c1071fd4de1fa7fcfcdaf9bcd5"
+      },
+      {
+        "version": "20260815090000",
+        "name": "20260815090000_r10_0_creator_earnings_summary.sql",
+        "sha256": "c0bba2a9fbd4fadb22254fc4d9703332936b7a032a2065b5c9caceae702f13f4"
+      },
+      {
+        "version": "20260815100000",
+        "name": "20260815100000_r10_1_settlement_mint_uniques.sql",
+        "sha256": "b8b281ef912f9e79d7c6cc549dc388247017f842c3549469d16c584b40ac7f84"
+      },
+      {
+        "version": "20260815100100",
+        "name": "20260815100100_r10_1_mint_settlement_from_affiliate_event.sql",
+        "sha256": "edb5adc023bd5132fd346482693b8a69dce57133ecca9e8f29611ff0ce5ca73f"
+      },
+      {
+        "version": "20260815100200",
+        "name": "20260815100200_r10_1_mint_settlement_on_approval.sql",
+        "sha256": "acde2cd7b0c6a260fccf38129f18fd4f5a35d07bb301ff6c2f20e9c7cd50c486"
+      },
+      {
+        "version": "20260815100300",
+        "name": "20260815100300_r10_1_backfill_affiliate_settlements.sql",
+        "sha256": "832ab713d14684571cede93aaa88ccd8c9681b509108dcf620f4eafb57271858"
+      },
+      {
+        "version": "20260816090000",
+        "name": "20260816090000_r10_2_payout_batches_and_decisions.sql",
+        "sha256": "b248668dea303d9f615b7bebf5f123b92e0b37e65872afef9e344af481074be1"
+      },
+      {
+        "version": "20260816090100",
+        "name": "20260816090100_r10_2_payout_processing_window_setting.sql",
+        "sha256": "00a1c4bf8edb20fc469cf8a843139ced4cdce5729718c32be04575631b642700"
+      },
+      {
+        "version": "20260816090200",
+        "name": "20260816090200_r10_2_admin_create_payout_batch.sql",
+        "sha256": "770ea64c3415972f36c28b80ee5dd6368fae03899ee5ac0f88a8ca157334da93"
+      },
+      {
+        "version": "20260816090300",
+        "name": "20260816090300_r10_2_admin_settle_payout_batch.sql",
+        "sha256": "1f751c50d94a59487e5cb8ef8a67a98028b25c45aec3e3a52bd660bdefe9e38a"
+      },
+      {
+        "version": "20260816090400",
+        "name": "20260816090400_r10_2_payout_batch_reads.sql",
+        "sha256": "27e8a3611e44afe2129e8a28df10fad66496a370b36508d7fa197584518d96b8"
+      },
+      {
+        "version": "20260817090000",
+        "name": "20260817090000_r10_3_notifications_table.sql",
+        "sha256": "b711dab9381059fe383bbc5bcecd7ee7ba984c9f8d3e70b3046d218efccbf9e6"
+      },
+      {
+        "version": "20260817090100",
+        "name": "20260817090100_r10_3_notification_triggers.sql",
+        "sha256": "18dfa1f16a7f09a68e4e3c604d05e9cb86b19a10c17265b23c022d9909fce2e7"
+      },
+      {
+        "version": "20260817090150",
+        "name": "20260817090150_r10_3_notification_trigger_payout_batch.sql",
+        "sha256": "07c69c0db04b89c99de707535a32853eab29e6041f2b502235fc080345c6ef8e"
+      },
+      {
+        "version": "20260817090200",
+        "name": "20260817090200_r10_3_notification_reads.sql",
+        "sha256": "e4eeb7451714f5817923b00f3e05be7c2e17d1118d69d36d06531d97e3650710"
+      },
+      {
+        "version": "20260819090000",
+        "name": "20260819090000_r11_0_mission_review_events.sql",
+        "sha256": "f95fab3ac04e1eccc681334270501ac98820892d40463f3cbbf7313ab7f88f46"
+      },
+      {
+        "version": "20260819090100",
+        "name": "20260819090100_r11_0_admin_review_submission.sql",
+        "sha256": "f1d0fb31b1ac511a3aba530adb03da0b24e8dd2d9f0a7ab88b67d6692a157340"
+      },
+      {
+        "version": "20260819090150",
+        "name": "20260819090150_r11_0_mission_review_event_merchant_append.sql",
+        "sha256": "23ac54ee9678febe63e36bb900a2031e4a8c92ba4d812aac8f43aa0b7e8aba98"
+      },
+      {
+        "version": "20260819090200",
+        "name": "20260819090200_r11_0_widen_mission_analytics.sql",
+        "sha256": "5a5fe52fc9b65748143e06e75187eb015bcdf33910471469bd469781247a8d0b"
+      },
+      {
+        "version": "20260820090000",
+        "name": "20260820090000_r11_1_mission_verification_jobs_ops_select.sql",
+        "sha256": "77ea1a29777952965ac989bdbf74947f1a58e2cdbc4f2380ec684fb331b95550"
+      },
+      {
+        "version": "20260820090100",
+        "name": "20260820090100_r11_1_auto_approve_policy.sql",
+        "sha256": "d42cbcefe785fa246066ce860bc28c682b31097ec581864570d0295abf5e9124"
+      },
+      {
+        "version": "20260820090200",
+        "name": "20260820090200_r11_1_admin_mission_attention.sql",
+        "sha256": "d0675ee130ac771e1c27f1006b90228e46ca7851ae829552d1f16e3aaef7263a"
+      },
+      {
+        "version": "20260820100000",
+        "name": "20260820100000_r11_2_merchant_budgets.sql",
+        "sha256": "34613a14e488d05cf8b09d966df216454f080b92dea5fc38c65eaff36d8a4fcf"
+      },
+      {
+        "version": "20260820100100",
+        "name": "20260820100100_r11_2_budget_debit_trigger.sql",
+        "sha256": "4cc8402f565d5f8ddb60013cd0febe3e12a070ce6f0cc06fe10e0eb2cf612c0b"
+      },
+      {
+        "version": "20260820100200",
+        "name": "20260820100200_r11_2_budget_rpcs.sql",
+        "sha256": "cf894f64a898b5dd9b947f7ca22bd0d26cfc7aad4de6e50179005a0070106ed8"
+      },
+      {
+        "version": "20260821090000",
+        "name": "20260821090000_r3b_grant_booking_settlements_select.sql",
+        "sha256": "ff0304dea5ef1da83f171be43dd48412ddd5dec276d1408fbca3220eb84132fc"
+      },
+      {
+        "version": "20260821100000",
+        "name": "20260821100000_r12_0_offer_claim_redemption_tables.sql",
+        "sha256": "30aecb94adb1e4698f7f0fb4a92bee4cf24c41c981b534a1b656ef34bdd15a2e"
+      },
+      {
+        "version": "20260821100100",
+        "name": "20260821100100_r12_0_claim_offer.sql",
+        "sha256": "419552819fbe7778781892cb9db6ff3f66ed9c3fea0f699e23f81470e06d8fe3"
+      },
+      {
+        "version": "20260821100200",
+        "name": "20260821100200_r12_0_redeem_offer_claim.sql",
+        "sha256": "25214e140dbf563db97fb1be025837df3fd89e127c20a3f9b27ae01e6a506814"
+      },
+      {
+        "version": "20260821100300",
+        "name": "20260821100300_r12_0_settlement_on_redemption.sql",
+        "sha256": "399c9a42d0959087d3728175173e32126e1812236fbb96462b7d115cb2f3c6f7"
+      },
+      {
+        "version": "20260821100400",
+        "name": "20260821100400_r12_0_admin_mission_attention_redemption_velocity.sql",
+        "sha256": "51017bdb0e2256f6e3203e3350ef54fe1138d391deaded91749d6bf622cde921"
+      },
+      {
+        "version": "20260821100500",
+        "name": "20260821100500_r12_0_list_offers_for_creator.sql",
+        "sha256": "7b9134cc241bcdeb446fc5744a7ee878fcfd2a8c2f645732facfd797c8c6fb52"
+      },
+      {
+        "version": "20260821100600",
+        "name": "20260821100600_r12_0_get_my_offer_claim.sql",
+        "sha256": "5b9c3484de72c556f2b143f9a1ef87fbc574e34d6d2a223d7f159d8603462ff3"
+      },
+      {
+        "version": "20260821110000",
+        "name": "20260821110000_r10_1_deploy_settlement_minting.sql",
+        "sha256": "88a2af818cad333b98798501793bcc198c3dc919cae65721531a726329aaaf31"
+      },
+      {
+        "version": "20260821120000",
+        "name": "20260821120000_r12_1_analytics_taxonomy_and_journey_columns.sql",
+        "sha256": "c9f35d1170a06240fb8bc68420d180d4b4d27be8e29dd4ac1cb8f0a791cba018"
+      },
+      {
+        "version": "20260821120100",
+        "name": "20260821120100_r12_1_claim_offer_journey_capture.sql",
+        "sha256": "46a7fa277a70c31cd045e4d369aec6b7ca47f0e90bf81a6c9d345f64348098b0"
+      },
+      {
+        "version": "20260821120200",
+        "name": "20260821120200_r12_1_redeem_emits_offer_redeemed.sql",
+        "sha256": "9776cf2b3b6f03367e57594fa22a9ba7bfdd4400d39d5fe3771c3f954aaa7e3b"
+      },
+      {
+        "version": "20260821120300",
+        "name": "20260821120300_r12_1_merchant_visits_driven.sql",
+        "sha256": "bd9d3426ec216510072dbac5d7aa2b6f6c697bc45e49ff481b9aa8a4671c0f05"
+      },
+      {
+        "version": "20260821120400",
+        "name": "20260821120400_r12_1_creator_visits_driven.sql",
+        "sha256": "f9ac96e8789e2686760fd916b01b27ae77bd594f972de670b3fe5a80419f0e78"
+      },
+      {
+        "version": "20260822090000",
+        "name": "20260822090000_r12_2_receipt_cashback_schema.sql",
+        "sha256": "b57e13689a60d72d49641b7483443406a860dcccc02d785b174b600eb5e1e07d"
+      },
+      {
+        "version": "20260822090100",
+        "name": "20260822090100_r12_2_settlements_receipt_source.sql",
+        "sha256": "b0f621827ea38fc2586613b0798c2ee708feb73af43e49fc7416ccf9520e2ccf"
+      },
+      {
+        "version": "20260822090200",
+        "name": "20260822090200_r12_2_settle_receipt_on_approval.sql",
+        "sha256": "aa6d935fbc9387b837354245392b033f25058a05ac1a5ffecaeaf76db8356d09"
+      },
+      {
+        "version": "20260822090300",
+        "name": "20260822090300_r12_2_receipt_reason_taxonomy.sql",
+        "sha256": "6c7011868e64f45ebe78ddc14ad5a2d203772401322249a402e552e5a73ae188"
+      },
+      {
+        "version": "20260822090400",
+        "name": "20260822090400_r12_2_submit_receipt.sql",
+        "sha256": "304afa6463140258aa7f9e7ceecfe3a2d688a730fa0765173523b8f864f83bb1"
+      },
+      {
+        "version": "20260822090500",
+        "name": "20260822090500_r12_2_lock_down_repeatable_submission_insert.sql",
+        "sha256": "1f5157fcb0fe1be99ec73d7d3f9205a76225f2fac069721fa9f1c7c67d231e86"
+      },
+      {
+        "version": "20260822090600",
+        "name": "20260822090600_r12_2_at_most_one_repeatable_milestone.sql",
+        "sha256": "cc69ccf44ff74ff372f2c4686e0815eaa804bf9585f61f18f04a8b277807b354"
+      },
+      {
+        "version": "20260823090000",
+        "name": "20260823090000_r13_0_mission_brief_richness.sql",
+        "sha256": "c0e1b7305057e489126092dc0ca189c467b30b052af805d9620c91a85572793d"
+      },
+      {
+        "version": "20260911090000",
+        "name": "20260911090000_p2_0_personal_trips.sql",
+        "sha256": "dfb0ce06c0db12115b9688d85b850454727898904db4d18530bb6ed2e8551620"
+      },
+      {
+        "version": "20260911120000",
+        "name": "20260911120000_p2_1_trip_write_path.sql",
+        "sha256": "a63aa0954c13d485819a383f388a0e653b043a1084a1b16417dc400a432147f8"
+      },
+      {
+        "version": "20261002114905",
+        "name": "20261002114905_kinnso_trip_commands.sql",
+        "sha256": "50ee054c20ab55617e0eb0e13e994abd2c2721c5e7ca93eb035b60611230a02e"
+      },
+      {
+        "version": "20261002120719",
+        "name": "20261002120719_kinnso_actor_identity.sql",
+        "sha256": "0d5d342f609247ace891f06c8eaaa15bcc4d1526771f80ccf4af6559f39f7329"
+      },
+      {
+        "version": "20261002122534",
+        "name": "20261002122534_kinnso_guide_versions.sql",
+        "sha256": "f445bcfa5d462dd6b26cf12301182d20a2a85b3dbd53e5990bb790a99018526a"
+      },
+      {
+        "version": "20261002123131",
+        "name": "20261002123131_kinnso_guide_revision_summary.sql",
+        "sha256": "35431d60f6c71d77d2f8d2a6501c3262fd099292caa5dd87410f71db81e1e881"
+      },
+      {
+        "version": "20261002125335",
+        "name": "20261002125335_kinnso_local_import.sql",
+        "sha256": "d1bc9624c095f957eaa59c5b74005518788317c23396c48c4fb18f70dc87de3c"
+      },
+      {
+        "version": "20261002125911",
+        "name": "20261002125911_kinnso_import_replay_fix.sql",
+        "sha256": "955a956d62f31850b4037d89c7e1006ae50bbac6e342a99ecff5fc0de0a5e16d"
+      },
+      {
+        "version": "20261002130715",
+        "name": "20261002130715_kinnso_private_media.sql",
+        "sha256": "22c07893b26bb5f6cf1e590d3ab75bdee9a2e92536a4befa9990de328661bc09"
+      },
+      {
+        "version": "20261002132201",
+        "name": "20261002132201_kinnso_sharing_after_media.sql",
+        "sha256": "da7ccc3c3c461f8bbed0b1dadd2c0afa6f25c5e8b7260ecdf2e8c9162518a13b"
+      },
+      {
+        "version": "20261002133152",
+        "name": "20261002133152_kinnso_content_facts_and_authoring.sql",
+        "sha256": "a76ae718e7afa7c44fa1184a7d5c497fe809ab2836dd73428bef43044394b18c"
+      },
+      {
+        "version": "20261002135431",
+        "name": "20261002135431_kinnso_recovery_metadata.sql",
+        "sha256": "60075f4e76d4652701f4892ff0effd46d318f634d147b0815a60d51372767bdd"
+      },
+      {
+        "version": "20261002141801",
+        "name": "20261002141801_kinnso_place_review_overrides.sql",
+        "sha256": "c24881e314ed97f7070a1afc7ac0b944fca0ca0c269bca67bfb4bcb65bc4f751"
+      },
+      {
+        "version": "20261002150201",
+        "name": "20261002150201_kinnso_place_alias_preservation.sql",
+        "sha256": "b007cceb148370464878ba361559a2cbd06e49a44c579ca5a7c596f0f1daaba8"
+      },
+      {
+        "version": "20261002153201",
+        "name": "20261002153201_kinnso_review_session_aggregate.sql",
+        "sha256": "07acf9cc626ee2fe2973160949f1cdb0ea5a835be392f755cf8aa125b4eb1624"
+      },
+      {
+        "version": "20261002154001",
+        "name": "20261002154001_kinnso_traveller_events.sql",
+        "sha256": "c165de553ddcf005a935dda85f5313a6d780468b54ac554bde5a7d22646bf21d"
+      },
+      {
+        "version": "20261002154501",
+        "name": "20261002154501_kinnso_return_visit_eligibility.sql",
+        "sha256": "dd792ba8f22803dcd798942845d7e2afc005c2e3db64484b5dbf65fb91e55a0f"
+      },
+      {
+        "version": "20261003190000",
+        "name": "20261003190000_ensure_notifications_prerequisite.sql",
+        "sha256": "02d56536bb7c9672d866f82a9022258b613df75488cee05fec8ed0b41187fce9"
+      },
+      {
+        "version": "20261003193322",
+        "name": "20261003193322_add_creator_workspace_commands.sql",
+        "sha256": "220fa7cc5a7f92cd78d3a575c5ea180420f811efc8f747574b6b8e03b7d193e8"
+      },
+      {
+        "version": "20261003203535",
+        "name": "20261003203535_add_ops_queue_and_bulk_contracts.sql",
+        "sha256": "b2069a560fc8c89767ecaeb9574f44d4db1bb42d57abcdd3074ab882dc167562"
+      },
+      {
+        "version": "20261003204655",
+        "name": "20261003204655_add_merchant_branch_commands.sql",
+        "sha256": "e76b8063931974be0f2fd522bb62fc0d605cdfe80280aad5f79b0364830015f4"
+      },
+      {
+        "version": "20261003212525",
+        "name": "20261003212525_kinnso_service_budgets_and_metrics.sql",
+        "sha256": "f10c4241d70b224390ba0cafb56b924b2e0e22b157727261ba11cad01f7c550a"
+      },
+      {
+        "version": "20261003213222",
+        "name": "20261003213222_kinnso_inbox_delivery_and_support.sql",
+        "sha256": "9f47090491afcff06cf529459463275b3e333764970ba5db116bf2c7aaf2dbfc"
+      },
+      {
+        "version": "20261003215243",
+        "name": "20261003215243_kinnso_place_report_lifecycle.sql",
+        "sha256": "082510f37d0aa76a6a55ea604678684073edcdc39e8e831a2f5ac0176169587f"
+      },
+      {
+        "version": "20261003220203",
+        "name": "20261003220203_kinnso_financial_reconciliation_reads.sql",
+        "sha256": "7177dca5d9c57e8975d35588d32cc02d8d27fb66d664996e47f049a360f82628"
+      },
+      {
+        "version": "20261003220500",
+        "name": "20261003220500_kinnso_agent_actor_quota.sql",
+        "sha256": "e49e8a298848bee812e7a4a2ed94db8678a079f584d6736d1b7427b69d601510"
+      },
+      {
+        "version": "20261004010000",
+        "name": "20261004010000_kinnso_media_cleanup_claim.sql",
+        "sha256": "c504265b996fb953df393e4befc33389c41908c868a35e75f82051a805f01466"
+      },
+      {
+        "version": "20261004011500",
+        "name": "20261004011500_kinnso_media_cleanup_token_retention.sql",
+        "sha256": "2e87f5585586aea2117714f67812edafb9c8a0ef13b4d3b48d9557b7172f1a65"
+      },
+      {
+        "version": "20261004175811",
+        "name": "20261004175811_kinnso_monthly_budget_ceiling.sql",
+        "sha256": "f9d473463511e29f89cb3530c23ee7c539e0c47998796e205a328650221e7b3d"
+      },
+      {
+        "version": "20261008000000",
+        "name": "20261008000000_allow_empty_creator_editing_drafts.sql",
+        "sha256": "e5721dacc7451d862c59a4b816d8be7775d0222503cd7c1aa6a03ba9a53e98f7"
+      },
+      {
+        "version": "20261008020800",
+        "name": "20261008020800_kinnso_ops_assignment_and_presets.sql",
+        "sha256": "a9afbcf080993e140e7696259d36b6c2cd327cbbe17e37b24c448b8315b6b235"
+      },
+      {
+        "version": "20261008031116",
+        "name": "20261008031116_kinnso_merchant_team_directory.sql",
+        "sha256": "2908ea3d5ee75fdfa6e76667a7d05654c6280232cecdc640eded34bb7bb7ddfb"
+      },
+      {
+        "version": "20261008041020",
+        "name": "20261008041020_kinnso_merchant_invitation_contract.sql",
+        "sha256": "050badcaf9a13692699f18c86a53cc99596b8b4128933a089b39cfcf08f6084d"
+      },
+      {
+        "version": "20261008083508",
+        "name": "20261008083508_kinnso_notification_provider_acceptance.sql",
+        "sha256": "d89dde56367df4b142b7a66e53858e1711a98a73ffd52353b87d8ae0d54aa896"
+      },
+      {
+        "version": "20261010190752",
+        "name": "20261010190752_kinnso_creator_collaboration.sql",
+        "sha256": "2ee6af97838634aa0f38149152e88831b12a3cfc66e31f091216def7c5bdd881"
+      },
+      {
+        "version": "20261010190758",
+        "name": "20261010190758_kinnso_merchant_campaign_lifecycle.sql",
+        "sha256": "f87e1cbb15cc7c2c9b03358a86e9d227a521dc4ddfb3b5582a05c51de7b38a26"
+      },
+      {
+        "version": "20261010190951",
+        "name": "20261010190951_kinnso_merchant_onboarding_profile.sql",
+        "sha256": "12729159686cf5b8272b593d693540b5393d3ea7c4098916e066db79e0374ed2"
+      },
+      {
+        "version": "20261010213700",
+        "name": "20261010213700_kinnso_campaign_schedule_terms.sql",
+        "sha256": "8eb3efca4c192bc8f2d11926cb0a4b9485d00f2aa5954c8c268ac3ee8548ba6e"
+      },
+      {
+        "version": "20261010223500",
+        "name": "20261010223500_kinnso_creator_discovery.sql",
+        "sha256": "f09eabe33e2b840828117f73028eb97aab013d5fa31d6a2656ed55e6eec469f1"
+      },
+      {
+        "version": "20261010230000",
+        "name": "20261010230000_kinnso_collaboration_list_queries.sql",
+        "sha256": "aa0dd7d70a729999caaa4386aec444e40ea98b4e1f30d8fc18fffeb9916807c7"
+      },
+      {
+        "version": "20261010233500",
+        "name": "20261010233500_kinnso_collaboration_reminders.sql",
+        "sha256": "f9632046e880d49edf79496bada9298d6988ae50eb8d1dd3e71a8df4b826ffff"
+      },
+      {
+        "version": "20261010234000",
+        "name": "20261010234000_kinnso_collaboration_support_context.sql",
+        "sha256": "404e2c882d7f745304c66fdd4ba1ee0a952b752a3cb3a6f2a80b5ca202662181"
+      },
+      {
+        "version": "20261011004000",
+        "name": "20261011004000_kinnso_merchant_insights.sql",
+        "sha256": "fd8568daadd79140ad3a710d47cf4329652418ea7b099f8607b3fb5aab1ec46a"
+      },
+      {
+        "version": "20261012170745",
+        "name": "20261012170745_kinnso_reminder_context.sql",
+        "sha256": "c5bf7e183c8d71dcadec0163b7c2a2af7b66385f52fb4c360154b5532ce0301c"
+      },
+      {
+        "version": "20261013190617",
+        "name": "20261013190617_kinnso_campaign_utc_validation_fast_path.sql",
+        "sha256": "ce4e9a686f4c99f52b242a63647cc04738c1712e6d48bb60709c8f46fe418bf1"
+      },
+      {
+        "version": "20261016000953",
+        "name": "20261016000953_kinnso_private_trip_pilot_metrics.sql",
+        "sha256": "4a26edc47416e5fb92181d601a76c081bad59f8199e988216853139a247b1702"
+      },
+      {
+        "version": "20261016054409",
+        "name": "20261016054409_kinnso_trip_creation_receipt.sql",
+        "sha256": "10de2df040fa64f66506083af360561f913021654e10799bf48419ae94b2edc0"
+      },
+      {
+        "version": "20261017024102",
+        "name": "20261017024102_kinnso_adoption_lock_order.sql",
+        "sha256": "532f9f86b68857b53a3c79365c0efee31c4ea51d4aea76356de120603bfad22b"
+      },
+      {
+        "version": "20261017145002",
+        "name": "20261017145002_kinnso_adoption_nonblocking_source_locks.sql",
+        "sha256": "1a2347ea5bc481d4e779c15eb211e5cc19fc2f26d042aa15392f425bf2bc2f74"
+      },
+      {
+        "version": "20261023033353",
+        "name": "20261023033353_kinnso_durable_share_receipts.sql",
+        "sha256": "7a613189b8e006e5d5e3763488fb46e5f64968549585db03b3dd077dd6e33a72"
+      },
+      {
+        "version": "20261023114944",
+        "name": "20261023114944_kinnso_unknown_tracked_profit.sql",
+        "sha256": "0aaed9cd0f7436c0acd4bbe00130fc0a6c340f9d3fd377f1bca41e6aa57fed40"
+      },
+      {
+        "version": "20261024120000",
+        "name": "20261024120000_kinnso_private_trip_progress.sql",
+        "sha256": "465c67cc50000fa74506c167a42c65f08330fad99224cda68b6588c011ae41a4"
+      },
+      {
+        "version": "20261025140000",
+        "name": "20261025140000_grant_ops_audit_log_select.sql",
+        "sha256": "b44ec704c95b045869fe668e22bb043c589cd486b433d8808f8a777a19290f4a"
+      },
+      {
+        "version": "20261028090000",
+        "name": "20261028090000_aud_02_server_only_rate_limits.sql",
+        "sha256": "4a024662b014dbe8cc6eb8021b635b68726f6fcdf82d62920082f979201befbf"
+      },
+      {
+        "version": "20261029090000",
+        "name": "20261029090000_aud_04_08_worker_launch_reservations.sql",
+        "sha256": "8cd028d4caa5d754975991cbbbcdb69fcd7fb1df965159c0bd987ab06cc6731e"
+      },
+      {
+        "version": "20261031090000",
+        "name": "20261031090000_add_studio_metadata.sql",
+        "sha256": "13f999465b1b9eb8a7573fee1ff180af37601f18e4c2a26d07a71dabe75b6672"
+      },
+      {
+        "version": "20261031090100",
+        "name": "20261031090100_guard_studio_guide_writes.sql",
+        "sha256": "dd40123a226d2dc06918a22e19a30c887dddad55aa317b34b6cf1bb40304d057"
+      },
+      {
+        "version": "20261101090000",
+        "name": "20261101090000_discovery_metadata.sql",
+        "sha256": "ed8ca9cd43c239b7b3dcbc70f69ec7490c79831fe3a0bf74ba584f04b89e890e"
+      },
+      {
+        "version": "20261101090100",
+        "name": "20261101090100_discovery_source_grants.sql",
+        "sha256": "13925046ad316c4319f5fefe36da37cda7f96cf40fd0d577f11dd12dfa852737"
+      },
+      {
+        "version": "20261101100000",
+        "name": "20261101100000_discovery_native_commands.sql",
+        "sha256": "185fb6280c98265ecaaeccadb41ca5f8b96155bbeab7c658daa4efb9c85ca709"
+      },
+      {
+        "version": "20261101100100",
+        "name": "20261101100100_discovery_native_readers.sql",
+        "sha256": "f6ea30b04afd31f9bb78f35524d31e6fdd2bd28358db8e58ad7df01edfe4c083"
+      },
+      {
+        "version": "20261101100200",
+        "name": "20261101100200_discovery_native_transactions.sql",
+        "sha256": "fafb230e34918744225b0878ef3ca723b161f829ed29ab73f704135a8a7129ea"
+      },
+      {
+        "version": "20261101100300",
+        "name": "20261101100300_discovery_original_writer_guards.sql",
+        "sha256": "e9fbd1d176c0d25193ec0441d359226b0794df32bc1744c3adfae5213c088108"
+      },
+      {
+        "version": "20261101100400",
+        "name": "20261101100400_discovery_command_context.sql",
+        "sha256": "f4bf01add3ceb2dbc9587252eda88168f40c479227803e6ed183b6e76018c2e0"
+      },
+      {
+        "version": "20261101100500",
+        "name": "20261101100500_discovery_source_refresh.sql",
+        "sha256": "691827bb23fcebb446935bb35942a9610ba8b525096ad616b80eb7898967e026"
+      },
+      {
+        "version": "20261101100600",
+        "name": "20261101100600_discovery_field_lineage.sql",
+        "sha256": "2e8f2c0a149cb2ef556722186ae86ace53c602c43424f2698676ede58f85544b"
+      },
+      {
+        "version": "20261101100700",
+        "name": "20261101100700_discovery_editor_lineage.sql",
+        "sha256": "54aef1e78aaad0ed69a4c6859f09453732613895da0c9dec8baf154280fe8b40"
+      },
+      {
+        "version": "20261104195741",
+        "name": "20261104195741_active_merchant_mission_writes.sql",
+        "sha256": "01991684b3520977c3e5c80a9d931b5c401e80d2ccdceb3de0d8232dd9c523a2"
+      },
+      {
+        "version": "20261106090000",
+        "name": "20261106090000_kinnso_public_inventory_suspension.sql",
+        "sha256": "f2ddb200fb7c0f3fabdbd93dc6da4e308bd9fbc81cca8a286da0aefc4534c476"
+      },
+      {
+        "version": "20261106110000",
+        "name": "20261106110000_fix_redeem_perk_ambiguity.sql",
+        "sha256": "8ef837fb1e1756aa4e19671796126129cf3e29b7de9f0e3578d0be1926c590d0"
+      },
+      {
+        "version": "20261106123312",
+        "name": "20261106123312_harden_ops_team_lifecycle.sql",
+        "sha256": "a97ba336dd6a6b1f334e98a655a2a4f449bc789a2c0b0da310788ddbaf2384e2"
+      },
+      {
+        "version": "20261106135230",
+        "name": "20261106135230_harden_ops_team_security.sql",
+        "sha256": "c0749878b9b8aeff29f97c09c00778bc094ae24ec67c2cb1fe18a595f8cda1f2"
+      },
+      {
+        "version": "20261107020000",
+        "name": "20261107020000_kinnso_ops_content_audit.sql",
+        "sha256": "8b7a0727886f2e3f03d726220169bfaf1cda3168351f1c30216ee34ad5cd4d3d"
+      },
+      {
+        "version": "20261107081531",
+        "name": "20261107081531_kinnso_pilot_control_room_schema.sql",
+        "sha256": "74c523d0c672925f39b4f51950b0fa7971ab497f38d3bf4820f3c0d9bd7adbc0"
+      },
+      {
+        "version": "20261107085017",
+        "name": "20261107085017_kinnso_pilot_control_room_rpcs.sql",
+        "sha256": "03c953a359ec3cb938c9ccffd1fcce6703ad1c27609ba0c2e2824f90afbaf2fe"
+      },
+      {
+        "version": "20261107110059",
+        "name": "20261107110059_kinnso_pilot_readiness_publication_contract.sql",
+        "sha256": "b2702fdaa41963f2f1b44045a22d371e23c7867e695e380b199a1ed1ee2245e0"
+      },
+      {
+        "version": "20261107135337",
+        "name": "20261107135337_kinnso_pilot_traveller_support_context.sql",
+        "sha256": "d611bea3668888d7366544ab481d6bc14bc15e553a1ae18bf7e2b32c9616818e"
+      },
+      {
+        "version": "20261107145100",
+        "name": "20261107145100_kinnso_pilot_opaque_evidence.sql",
+        "sha256": "246579588dd27726de6d32076ca42512069d5b587758040bbae6c35ebf845b6d"
+      },
+      {
+        "version": "20261107152000",
+        "name": "20261107152000_kinnso_pilot_duplicate_intake.sql",
+        "sha256": "eabb4914d03924c0bcbfb58db7c3fa60efcfe49de502e1fa0587666c887188d2"
+      },
+      {
+        "version": "20261107155000",
+        "name": "20261107155000_kinnso_pilot_stored_intake_identity.sql",
+        "sha256": "13e49add8e9e57c32c337df8fa92ff268a749631282be32542b2c02412734588"
+      },
+      {
+        "version": "20261107165735",
+        "name": "20261107165735_kinnso_pilot_final_review.sql",
+        "sha256": "a5e22ecdd44bdecb55c78a8fa188b9f0d7664ef8e0b3c7be71bbae8b7dc74885"
+      },
+      {
+        "version": "20261108120000",
+        "name": "20261108120000_kinnso_pilot_residual_races.sql",
+        "sha256": "e8f85961a43ad940ffb17384a85a593d0361f7d3f83ad066faa4a6a4487710bb"
+      },
+      {
+        "version": "20261108123000",
+        "name": "20261108123000_kinnso_ops_team_mutation_receipts.sql",
+        "sha256": "b14d17d3f90d5985fcea6b7e50239410814872bb76f0fc0edafa7f563b307cbc"
+      },
+      {
+        "version": "20261108124500",
+        "name": "20261108124500_protect_ops_invite_history.sql",
+        "sha256": "77af1650d29fb428c2580e0bea4a6bfe45caea64412dc3f44811c9c878fb7c4f"
+      },
+      {
+        "version": "20261108130000",
+        "name": "20261108130000_restore_redeemed_perk_entitlement.sql",
+        "sha256": "6849ac03cf7a7934393b670efedfb319adc16a1d4f47afd7beaf8a1a045158ac"
+      },
+      {
+        "version": "20261108131500",
+        "name": "20261108131500_ops_perk_create_receipts.sql",
+        "sha256": "274e6596153c39c3ef88cec06785e07778638e06bfce6f259890a01a9560fdfe"
+      },
+      {
+        "version": "20261108133000",
+        "name": "20261108133000_ops_content_receipt_upgrade.sql",
+        "sha256": "ef69bed5c59a32fb43fe15ddb92bc5522f230943324dc151922c3bde782394db"
+      },
+      {
+        "version": "20261108134500",
+        "name": "20261108134500_merchant_offer_pagination.sql",
+        "sha256": "58cb50e16c8abeac35620b1fb80c4ad5c077d67c4d70cf88d53f2eafa332102f"
+      }
+    ],
+    "envelopeSha256": "51f2b32fc36c45ec60c9a6f028e34bd22c57c4d461fd63cf297b281ac2750786",
+    "pilotEnvelopeSha256": "246cb385d6c76dd1d81c586280034e5e959b5901d7e65df1f2ea15f835e40a52",
+    "hashBasis": "Per file: exact Git blob and staged SQL bytes. Envelope: version, filename and lowercase SHA-256 separated by ASCII spaces, one LF-terminated line per ascending migration."
+  },
+  "production": {
+    "changed": false,
+    "deploymentChanged": false,
+    "freshRead": false,
+    "recordedRollbackDeployment": "dpl_BZDa82gXNB7KGJeZzjvhBSTB6TtP",
+    "recordedSource": "950d08b2011f1c23265a193b8f7adc377a44eb26",
+    "recordedLedgerCount": 209,
+    "recordedSchemaHead": "20261107020000",
+    "recordedCapabilities": [
+      "trips",
+      "bookmarks",
+      "creator",
+      "merchant",
+      "ops",
+      "notifications"
+    ],
+    "receipt": "docs/production-rollout-audit-2026-11-07.json",
+    "deploymentStatus": "UNVERIFIED",
+    "recordedPilotEnabled": false,
+    "recordedExcludedCapabilities": [
+      "pilot",
+      "agent",
+      "media",
+      "sharing",
+      "telemetry"
+    ],
+    "evidenceBasis": "Historical production receipt only; no fresh production read or mutation in this wave."
+  },
+  "blockers": {
+    "realNoticeArtifactsAndHashes": "BLOCKED/NOT_RUN",
+    "namedSupportAndPrivacyOwners": "BLOCKED/NOT_RUN",
+    "consentedRealParticipantsAndContent": "BLOCKED/NOT_RUN",
+    "approvedPrivacyAndRetentionPolicy": "BLOCKED/NOT_RUN",
+    "physicalIOS": "BLOCKED/NOT_RUN",
+    "physicalAndroid": "BLOCKED/NOT_RUN",
+    "VoiceOver": "BLOCKED/NOT_RUN",
+    "NVDA": "BLOCKED/NOT_RUN"
+  },
+  "privacyAndRetention": "Completed runs remain retained; no automatic retention or deletion term. Approve exact EN and zh-HK notice bytes/digests, processors, owner contacts, retention/redaction and escalation workflow before collecting real information. Keep exports restricted and free of private text and raw invite material.",
+  "backupRestore": "WAIVED_BY_USER",
+  "participantMessagesSent": false,
+  "realParticipantsUsed": false,
+  "externalProvidersActivated": false,
+  "nextApproval": "Formal PR approval remains outstanding. Public launch remains on hold pending deployment verification and external acceptance.",
+  "historicalRemediation": {
+    "scope": "Superseded local remediation snapshot. Earlier builds, archives and diagnostic outcomes apply only to that snapshot.",
+    "packetCommit": "38968a0c3027aa8b5c9de73aa2f124e61db86570",
+    "source": {
+      "commit": "5ccab1e3cb108619681f2eaa2acfdcc2777ce326",
+      "tree": "f3149c839ce8427b0066a8a3c9da54f3daec4df7",
+      "mergeCommit": "0e11273cd38a30894fdb27806d638ef7f26e5fca",
+      "mergeParents": [
+        "42776e9d9e6e9a0c31898cefe8365ba2065e079d",
+        "cb35e38a38e2ea8ce046a07dc4e19e00aceee3a8"
+      ],
+      "scope": "Exact tested remediation source; follow-up packet documentation only."
+    },
+    "archives": {
+      "exactGitTree": {
+        "path": ".local-private/pr115-main-remediation/tested-tree.zip",
+        "sha256": "3471a8bc57c5acf918b20585e223f2c83f0a7531a4d832d279b7e79bd5306af6",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "exactMigrations": {
+        "path": ".local-private/pr115-main-remediation/migrations.zip",
+        "sha256": "b5ba7d77735a9f38831b5fc61bab7b0f6ae4f5f5ec7342d111d5d7f2ec8fd4d2",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "testedRuntime": {
+        "path": ".local-private/pr115-main-remediation/tested-runtime-source.zip",
+        "sha256": "ae90c713c3379404a44baeda494d49162d620d3a1eba40798b5e95c479d3b8e0",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "canonicalSource": {
+        "path": ".local-private/pr115-main-remediation/final-committed-source.zip",
+        "sha256": "8adb28cd4a207060ad879bbb58799db097939390f7ea0416252ee760417e1a71",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "verification": {
+        "path": ".local-private/pr115-main-remediation/archive-verification.log",
+        "sha256": "cddbf626862f42f94c95701fce9d3bddf2f52a61ae4d44264e87d72a4638a64d",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "archiveEntries": 922,
+      "allCanonicalInputsMatchGitBlobs": true,
+      "testedInputsMatchCheckout": true,
+      "checkoutOnlyLineEndingDifferences": 70,
+      "allStagedMigrationsMatchGitBlobs": true
+    },
+    "checks": {
+      "unit": {
+        "total": 1980,
+        "passed": 1978,
+        "failed": 0,
+        "skipped": 2,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/unit.log",
+          "sha256": "cca5e08461efb74b8bb2397852fb7e5c8731beb03516ee5bf30cf24f7ab99d65",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "typecheck": {
+        "path": ".local-private/pr115-main-remediation/typecheck-final.log",
+        "sha256": "a48493bb7a8ec96d9e2fd7048c0e54de314efb2aecaaa8f73368d2c4d8053640",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "sourcePackage": {
+        "passed": 11,
+        "failed": 0,
+        "skipped": 1,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/source-package.log",
+          "sha256": "d6cfa5f6209c9c95cdc3c5ad87ff50ca440e520dd181b77144d11c7013cb255b",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "journeysBuild": {
+        "head": "5ccab1e3cb108619681f2eaa2acfdcc2777ce326",
+        "tree": "f3149c839ce8427b0066a8a3c9da54f3daec4df7",
+        "buildId": "nqKrCkw2NrvTqQaLUsN_Y",
+        "log": {
+          "path": ".local-private/pr115-main-remediation/build.log",
+          "sha256": "487b33a08b2fc7c4856014f456d0709e269a4aa32808c6360e56a7eacd5b2c65",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "rootTooling": {
+        "total": 112,
+        "passed": 110,
+        "failed": 0,
+        "skipped": 2,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/root-tests.log",
+          "sha256": "95883d6924ded6d8ade6277856362fd8b8e1ca0fd0e61d96e75405935360bacc",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "workspaceTests": {
+        "apps-scan": {
+          "passed": 153,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 16,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/apps-scan-test.log",
+            "sha256": "145409ae300a3909e67a52978058a17fb7652164c1f4321f2c2b7436a9ac3ebd",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "apps-sync": {
+          "passed": 34,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 1,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/apps-sync-test.log",
+            "sha256": "7d1895096304b6ed518c2661dde173d25151bb1af3f7e18f19d427984f22f2bd",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "packages-honesty": {
+          "passed": 11,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 2,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/packages-honesty-test.log",
+            "sha256": "f24ea22deeae1cf2b54b9a7cd984123f041b68ef41bb1492c2d834dbee04adb3",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "packages-parity": {
+          "passed": 92,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 16,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/packages-parity-test.log",
+            "sha256": "c40fca26b7cb852f90fa5253129b1a0e0586cf77e6e94f0b51de1b649feb10b5",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "packages-scan": {
+          "passed": 40,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 4,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/packages-scan-test.log",
+            "sha256": "b4589e03838d66ef2a6ced4dd0304044ddbccdf047b8224e9ac8c9f748b404cb",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "packages-sync": {
+          "passed": 97,
+          "failed": 0,
+          "skipped": 0,
+          "files": {
+            "passed": 16,
+            "failed": 0,
+            "skipped": 0
+          },
+          "log": {
+            "path": ".local-private/pr115-main-remediation/packages-sync-test.log",
+            "sha256": "6e6aea89b390fd101086abe5e5bd7ebd66e94cc8dcf1bd81e80950310402002f",
+            "hashBasis": "Exact saved file bytes"
+          }
+        }
+      },
+      "web": {
+        "passed": 3316,
+        "failed": 0,
+        "skipped": 44,
+        "files": {
+          "passed": 524,
+          "failed": 0,
+          "skipped": 4
+        },
+        "log": {
+          "path": ".local-private/pr115-main-remediation/web-final.log",
+          "sha256": "868f05749406b24888c736814d53ed2bfa4f9753608cbf953bf12aa1759108ad",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "workspaceTypechecks": {
+        "path": ".local-private/pr115-main-remediation/workspace-typechecks.log",
+        "sha256": "8038450c25b7467ec0f70597e3b2556e20dc65b28c464e7749c980fc60b6e4e2",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "webWebpack": {
+        "exit": "webWebpack=0",
+        "log": {
+          "path": ".local-private/pr115-main-remediation/web-webpack.log",
+          "sha256": "f8f10ed6d51172008e35f6da9b033a9f60ff0dffdc37ce561119d4cf137e7dd4",
+          "hashBasis": "Exact saved file bytes"
+        },
+        "testedAt": "c67f94ba15168a0af3ed19e97bb0641e38e7fe39",
+        "webWorkspaceAndSharedDependencyInputsUnchanged": true
+      },
+      "webDefault": {
+        "status": "WINDOWS_JUNCTION_BLOCKED",
+        "log": {
+          "path": ".local-private/pr115-main-merge/web-build-final.log",
+          "sha256": "757c261119824a71eda2a5588a40a7fadcb3f61be79b9c3120a8912241310fb9",
+          "hashBasis": "Exact saved file bytes"
+        },
+        "sameMainConfig": true
+      },
+      "integration": {
+        "total": 74,
+        "passed": 74,
+        "failed": 0,
+        "skipped": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/integration.log",
+          "sha256": "7a427156f18510bae96c2bf8939c7cb72f14c6afdac4cde54b0f1ed054eefc19",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "focusedBrowser": {
+        "total": 47,
+        "passed": 47,
+        "failed": 0,
+        "skipped": 0,
+        "notRun": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/browser.log",
+          "sha256": "a811c89d08d09e35a40b0c3fbc20cc5b18c0b1d830b471b99dbbf1eeb3bf1e48",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "browser": {
+        "total": 384,
+        "passed": 384,
+        "failed": 0,
+        "skipped": 0,
+        "notRun": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/browser-full.log",
+          "sha256": "37100932b6631ebeefd780328dfb9d90abf9c91ce1261107bb1228bfe28a32c2",
+          "hashBasis": "Exact saved file bytes"
+        },
+        "identityVerified": true,
+        "selection": {
+          "path": ".local-private/pr115-main-remediation/browser-list.log",
+          "sha256": "16b9e62cad11469140032ad4eed1d68ca0311c1027e8cbc723e9fbfd2c50220e",
+          "hashBasis": "Exact saved file bytes"
+        },
+        "workers": 1,
+        "retries": 0,
+        "serverReused": false,
+        "freshTarget": true,
+        "oldSelectionSize": 386,
+        "selectedSpecs": 52,
+        "excludedHostedCiCases": [
+          [
+            "u23-share-receipt-recovery.spec.ts",
+            "PD06 durable lost-ACK share recovers the same URL in a second authenticated context: en"
+          ],
+          [
+            "u23-share-receipt-recovery.spec.ts",
+            "PD06 durable lost-ACK share recovers the same URL in a second authenticated context: zh-HK"
+          ]
+        ],
+        "nonpassingCases": [],
+        "pilotPassed": 2,
+        "passedBySpec": {
+          "account-recovery.spec.ts": 3,
+          "agent-workspace.spec.ts": 1,
+          "auth-entry.spec.ts": 8,
+          "content-first-wave.spec.ts": 5,
+          "creator-draft-navigation.spec.ts": 80,
+          "creator-workspace.spec.ts": 20,
+          "demo-language-navigation.spec.ts": 4,
+          "device-draft-navigation.spec.ts": 13,
+          "inbox-support-workspace.spec.ts": 1,
+          "pr115-review-ui.spec.ts": 23,
+          "public-article.spec.ts": 1,
+          "public-creator.spec.ts": 1,
+          "seo-migration.spec.ts": 5,
+          "ssr-private-trip-heading.spec.ts": 1,
+          "u01-guide-import.spec.ts": 27,
+          "u02-photo-lifetime.spec.ts": 6,
+          "u02-travel-share.spec.ts": 1,
+          "u03-u04-collaboration.spec.ts": 1,
+          "u04-merchant-invitations.spec.ts": 2,
+          "u04-merchant.spec.ts": 4,
+          "u05-ops.spec.ts": 3,
+          "u06-accessibility.spec.ts": 1,
+          "u06-collaboration-tasks-layout.spec.ts": 6,
+          "u06-collaboration-tasks.spec.ts": 2,
+          "u06-creator-discovery.spec.ts": 2,
+          "u06-creator-merchant-ops-migration.spec.ts": 4,
+          "u06-ops-content-admin.spec.ts": 1,
+          "u06-ops-moderation-controls.spec.ts": 1,
+          "u06-ops-team-lifecycle.spec.ts": 2,
+          "u06-role-bundle.spec.ts": 4,
+          "u06-workspace-service-state.spec.ts": 8,
+          "u07-collaboration-query.spec.ts": 2,
+          "u08-collaboration-reminders.spec.ts": 2,
+          "u09-collaboration-support.spec.ts": 2,
+          "u10-merchant-insights.spec.ts": 2,
+          "u11-workspace-recovery.spec.ts": 2,
+          "u12-finance-membership-retry.spec.ts": 2,
+          "u16-workspace-loading-layout.spec.ts": 38,
+          "u17-support-form-labels.spec.ts": 6,
+          "u18-merchant-invitation-retention.spec.ts": 6,
+          "u18-workspace-entry.spec.ts": 12,
+          "u19-creator-ssr-entry.spec.ts": 2,
+          "u19-merchant-ssr-entry.spec.ts": 1,
+          "u19-merchant-ssr-late-company.spec.ts": 2,
+          "u19-performance-first-usable.spec.ts": 16,
+          "u20-operational-analytics-connected.spec.ts": 1,
+          "u20-operational-apis.spec.ts": 1,
+          "u20-single-origin-legacy.spec.ts": 4,
+          "u22-workflow-continuation.spec.ts": 4,
+          "u25-public-accessibility.spec.ts": 36,
+          "u26-pilot-control-room.spec.ts": 1,
+          "u26-pilot-security.spec.ts": 1
+        },
+        "previousReleaseMatrix": {
+          "count": 102,
+          "unchangedSelected": 100,
+          "superseded": [
+            [
+              "creator-workspace.spec.ts",
+              "late save acknowledgement cannot reopen an editor after client navigation"
+            ],
+            [
+              "u06-role-bundle.spec.ts",
+              "U06 deferred role panels retain server headings, language, private cache and signed-out boundaries"
+            ]
+          ],
+          "unchangedAllPassed": true
+        }
+      },
+      "nativeBrowser": {
+        "total": 152,
+        "passed": 152,
+        "failed": 0,
+        "skipped": 0,
+        "notRun": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/native-final.log",
+          "sha256": "e5eabdfe8c17b042aecac0fa17773c35bc82b5d65180c3f929ecce956d590c6e",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "studioBrowser": {
+        "total": 13,
+        "passed": 13,
+        "failed": 0,
+        "skipped": 0,
+        "notRun": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/studio-final.log",
+          "sha256": "c681b1b564b80c85058d52230ca81826c2c7bec97a33a20a0e8b3e35d6eabfd8",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "presentation": {
+        "total": 77,
+        "passed": 77,
+        "failed": 0,
+        "skipped": 0,
+        "notRun": 0,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/presentation.log",
+          "sha256": "a76822c75e461c308e4f4228ffab4a2e2b6c79654eb61f1f9bd38cfd0da648c7",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "advisors": {
+        "total": 68,
+        "log": {
+          "path": ".local-private/pr115-main-remediation/advisors.log",
+          "sha256": "64cd95f11d80468833a5ff7d8fffc1684c26265947d06b5f47deab571df9de52",
+          "hashBasis": "Exact saved file bytes"
+        },
+        "inheritedPerformanceWarning": "auth_rls_init_plan_public_guides_studio_private_guide_read",
+        "policyGitBlob": "392e466ed33599e43bb2d8f5f4eb5a64bb46ac85",
+        "policyIdenticalToMain": true,
+        "addedSinceMerge": [],
+        "removedSinceMerge": [],
+        "newSecurityWarnings": 0,
+        "mainComparison": {
+          "path": ".local-private/pr115-main-remediation/baseline-identity.log",
+          "sha256": "9ce07f1c6dd5cfcf92f9d4540411be8ce23ffc517cc0e20a7816592e9aafe9a5",
+          "hashBasis": "Exact saved file bytes"
+        }
+      },
+      "cleanup": {
+        "aggregate": {
+          "target": "kinnsoos-public-it-20261106",
+          "basis": "Full-table aggregate readback after exact fixture cleanup on clean unseeded disposable target",
+          "tables": {
+            "auth.users": 0,
+            "auth.sessions": 0,
+            "auth.identities": 0,
+            "public.creators": 0,
+            "public.guides": 0,
+            "public.guide_versions": 0,
+            "kinnso_internal.guide_drafts": 0,
+            "public.trips": 0,
+            "public.trip_revisions": 0,
+            "public.trip_days": 0,
+            "public.trip_stops": 0,
+            "public.guide_saves": 0,
+            "public.missions": 0,
+            "public.mission_participants": 0,
+            "public.mission_milestones": 0,
+            "public.mission_milestone_submissions": 0,
+            "public.mission_verification_jobs": 0,
+            "public.merchant_applications": 0,
+            "public.merchant_profiles": 0,
+            "public.kinnso_ops_members": 0,
+            "public.ops_audit_log": 0,
+            "public.notifications": 0,
+            "public.enquiries": 0,
+            "public.community_sessions": 0,
+            "public.partner_perks": 0,
+            "public.testimonials": 0,
+            "kinnso_internal.support_cases": 0,
+            "kinnso_internal.support_messages": 0,
+            "kinnso_internal.support_audit": 0,
+            "kinnso_internal.inbox_events": 0,
+            "kinnso_internal.notification_outbox": 0,
+            "kinnso_internal.requests": 0,
+            "kinnso_internal.creator_requests": 0,
+            "kinnso_internal.workspace_requests": 0,
+            "kinnso_internal.trip_requests": 0,
+            "kinnso_internal.pilot_runs": 0,
+            "kinnso_internal.pilot_participants": 0,
+            "kinnso_internal.pilot_invites": 0,
+            "kinnso_internal.pilot_checks": 0,
+            "kinnso_internal.pilot_collaborations": 0,
+            "kinnso_internal.pilot_content_intakes": 0,
+            "kinnso_internal.pilot_evidence": 0,
+            "kinnso_internal.pilot_participant_audit": 0,
+            "kinnso_internal.pilot_events": 0
+          },
+          "residueTotal": 0,
+          "tableCount": 44
+        },
+        "beforeBrowser": {
+          "target": "kinnsoos-public-it-20261106",
+          "basis": "Full-table aggregate readback after exact fixture cleanup on clean unseeded disposable target",
+          "tables": {
+            "auth.users": 0,
+            "auth.sessions": 0,
+            "auth.identities": 0,
+            "public.creators": 0,
+            "public.guides": 0,
+            "public.guide_versions": 0,
+            "kinnso_internal.guide_drafts": 0,
+            "public.trips": 0,
+            "public.trip_revisions": 0,
+            "public.trip_days": 0,
+            "public.trip_stops": 0,
+            "public.guide_saves": 0,
+            "public.missions": 0,
+            "public.mission_participants": 0,
+            "public.mission_milestones": 0,
+            "public.mission_milestone_submissions": 0,
+            "public.mission_verification_jobs": 0,
+            "public.merchant_applications": 0,
+            "public.merchant_profiles": 0,
+            "public.kinnso_ops_members": 0,
+            "public.ops_audit_log": 0,
+            "public.notifications": 0,
+            "public.enquiries": 0,
+            "public.community_sessions": 0,
+            "public.partner_perks": 0,
+            "public.testimonials": 0,
+            "kinnso_internal.support_cases": 0,
+            "kinnso_internal.support_messages": 0,
+            "kinnso_internal.support_audit": 0,
+            "kinnso_internal.inbox_events": 0,
+            "kinnso_internal.notification_outbox": 0,
+            "kinnso_internal.requests": 0,
+            "kinnso_internal.creator_requests": 0,
+            "kinnso_internal.workspace_requests": 0,
+            "kinnso_internal.trip_requests": 0,
+            "kinnso_internal.pilot_runs": 0,
+            "kinnso_internal.pilot_participants": 0,
+            "kinnso_internal.pilot_invites": 0,
+            "kinnso_internal.pilot_checks": 0,
+            "kinnso_internal.pilot_collaborations": 0,
+            "kinnso_internal.pilot_content_intakes": 0,
+            "kinnso_internal.pilot_evidence": 0,
+            "kinnso_internal.pilot_participant_audit": 0,
+            "kinnso_internal.pilot_events": 0
+          },
+          "residueTotal": 0,
+          "tableCount": 44
+        },
+        "beforeBrowserNewDomain": {
+          "tables": {
+            "public.studio_threads": 0,
+            "public.studio_sources": 0,
+            "public.studio_messages": 0,
+            "public.studio_artifacts": 0,
+            "public.studio_artifact_versions": 0,
+            "public.studio_evidence_links": 0,
+            "kinnso_internal.studio_requests": 0,
+            "kinnso_internal.studio_handoffs": 0,
+            "kinnso_internal.studio_guide_bindings": 0,
+            "kinnso_internal.studio_guide_tombstones": 0,
+            "kinnso_internal.studio_write_permits": 0,
+            "public.discovery_preferences": 0,
+            "public.trip_intents": 0,
+            "public.merchant_links": 0,
+            "public.offer_imports": 0,
+            "public.offer_publications": 0,
+            "public.offer_publication_versions": 0,
+            "public.match_runs": 0,
+            "public.match_choices": 0,
+            "kinnso_internal.discovery_requests": 0,
+            "kinnso_internal.discovery_tombstones": 0,
+            "kinnso_internal.discovery_maintenance_audit": 0,
+            "public.traveller_analytics_events": 0,
+            "public.traveller_analytics_rate_limits": 0,
+            "public.traveller_analytics_ip_rate_limits": 0
+          },
+          "residueTotal": 0,
+          "tableCount": 25
+        },
+        "newDomain": {
+          "tables": {
+            "public.studio_threads": 0,
+            "public.studio_sources": 0,
+            "public.studio_messages": 0,
+            "public.studio_artifacts": 0,
+            "public.studio_artifact_versions": 0,
+            "public.studio_evidence_links": 0,
+            "kinnso_internal.studio_requests": 0,
+            "kinnso_internal.studio_handoffs": 0,
+            "kinnso_internal.studio_guide_bindings": 0,
+            "kinnso_internal.studio_guide_tombstones": 0,
+            "kinnso_internal.studio_write_permits": 0,
+            "public.discovery_preferences": 0,
+            "public.trip_intents": 0,
+            "public.merchant_links": 0,
+            "public.offer_imports": 0,
+            "public.offer_publications": 0,
+            "public.offer_publication_versions": 0,
+            "public.match_runs": 0,
+            "public.match_choices": 0,
+            "kinnso_internal.discovery_requests": 0,
+            "kinnso_internal.discovery_tombstones": 0,
+            "kinnso_internal.discovery_maintenance_audit": 0,
+            "public.traveller_analytics_events": 0,
+            "public.traveller_analytics_rate_limits": 0,
+            "public.traveller_analytics_ip_rate_limits": 0
+          },
+          "residueTotal": 0,
+          "tableCount": 25
+        },
+        "auth": {
+          "restored": true,
+          "container": "supabase_auth_kinnsoos-public-it-20261106",
+          "temporaryFileAbsent": true,
+          "maxIdleConnections": 0,
+          "maxOpenConnections": 0,
+          "afterFinalMatrixAndCleanup": true,
+          "at": "2026-11-08T02:19:08Z",
+          "productionChanged": false
+        },
+        "webAdditional": [
+          "affiliate_network_events|0",
+          "affiliate_network_programs_mint_fixture|0",
+          "creator_payout_batches|0",
+          "creator_payout_decisions|0",
+          "destinations_r75_fixture|0",
+          "experiences_r75_fixture|0",
+          "merchant_budget_transactions|0",
+          "merchant_budgets|0",
+          "mission_review_events|0",
+          "mission_settlements|0"
+        ],
+        "additional": [
+          "creator_contribution|0",
+          "creator_contribution_events|0",
+          "merchant_offers|0",
+          "perk_redemptions|0"
+        ],
+        "storage": "0",
+        "beforeBrowserStorage": "0",
+        "inviteHistory": "0",
+        "discoveryGateRestored": true,
+        "seedReadback": "0|0|0|7",
+        "logs": {
+          "web-final-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/web-final-cleanup.log",
+            "sha256": "6f3cf5cddb4e85d27051c1e6591113c316661147e56b973b32f5fb8a9b2b0804",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "web-seed-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/web-seed-cleanup.log",
+            "sha256": "8f2399c500b61ff385ec7cb46bc766c52b99a968a44d81e3f70278ac99850c96",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "web-final-residue-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/web-final-residue-cleanup.log",
+            "sha256": "288789d51e153695b23ee3611f2db3657ebf9f763b27788887aaaa683ef2bb97",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "postpresentation-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/postpresentation-cleanup.log",
+            "sha256": "6f3cf5cddb4e85d27051c1e6591113c316661147e56b973b32f5fb8a9b2b0804",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "new-domain-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/new-domain-cleanup.log",
+            "sha256": "7da05c653d3b814a8d7efd096137ce67116fcdb4abc998c56590a4e6aa2d4e1c",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "restore.log": {
+            "path": ".local-private/pr115-main-remediation/restore.log",
+            "sha256": "793efee6940a48cde981226e62220fcc128326ff21c32989b0f34013b512c2b8",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "exact-domain-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/exact-domain-cleanup.log",
+            "sha256": "712cdca2bc94d8159f897d09acf72944d9e14b451cb74d517892bfbdf01c8717",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "exact-storage-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/exact-storage-cleanup.log",
+            "sha256": "ce7d9b1c1dc5d16249f1754f6d4c514b6bff2c1c539763b8277fb1f1728a08be",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "moderation-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/moderation-cleanup.log",
+            "sha256": "25b6fcde21d459bec46ef5a4f95fcb96ac4f9680fb2dc52d166a4d7516869831",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "operations-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/operations-cleanup.log",
+            "sha256": "8cf2ac8e3cc0c52f51fe216a236693b491d8beb0854dd424fa532659f0495691",
+            "hashBasis": "Exact saved file bytes"
+          },
+          "storage-final-cleanup.log": {
+            "path": ".local-private/pr115-main-remediation/storage-final-cleanup.log",
+            "sha256": "13bf7b3039c63bf5a50491fa3cfd8eb4e699d1ba1436315aef9cbe5711530354",
+            "hashBasis": "Exact saved file bytes"
+          }
+        },
+        "noPostTestReset": true
+      }
+    },
+    "isolatedAuthConfiguration": {
+      "restoration": {
+        "restored": true,
+        "container": "supabase_auth_kinnsoos-public-it-20261106",
+        "temporaryFileAbsent": true,
+        "maxIdleConnections": 0,
+        "maxOpenConnections": 0,
+        "afterFinalMatrixAndCleanup": true,
+        "at": "2026-11-08T02:19:08Z",
+        "productionChanged": false
+      },
+      "startup": {
+        "path": ".local-private/pr115-main-remediation/auth-pool-startup.log",
+        "sha256": "ad5010e3327e45d8415963ab1134e335b715bc51d3ce25a0c9cbd141692fb1f0",
+        "hashBasis": "Exact saved file bytes"
+      }
+    },
+    "localValidationGates": {
+      "unitTypecheckSource": true,
+      "defaultJourneysBuild": true,
+      "rootAndWorkspaces": true,
+      "web": true,
+      "isolatedIntegration": true,
+      "localConnected": true,
+      "hostedShareRecovery": false,
+      "nativeStudioPresentation": true,
+      "cleanup": true
+    },
+    "testProcessConfiguration": {
+      "capabilities": [
+        "trips",
+        "bookmarks",
+        "media",
+        "sharing",
+        "creator",
+        "ops",
+        "merchant",
+        "notifications",
+        "agent",
+        "telemetry",
+        "pilot",
+        "conversation",
+        "creatorBriefHandoff"
+      ],
+      "scope": "Existing local test-process configuration only",
+      "envFileUnchanged": true,
+      "productionChanged": false,
+      "ephemeralLocalReceiptKey": true
+    },
+    "diagnosticHistory": {
+      "originalConnected": {
+        "path": ".local-private/pr115-main-merge/browser.log",
+        "sha256": "b66f0a25d1f1acd4688c923f5e1580cd4dd11b7d835657f4d27e5139fb04e2f6",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "firstFocused": {
+        "path": ".local-private/pr115-main-remediation/focused-first.log",
+        "sha256": "b87ad945547f9936ca560b6b0e055331703772303923194b3109358e5adf55e5",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "secondFocused": {
+        "path": ".local-private/pr115-main-remediation/focused-second.log",
+        "sha256": "ff68adcebe43cf7d63495a2d5dded0dddf45a5908694eb10147968e182a94df9",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "thirdFocused": {
+        "path": ".local-private/pr115-main-remediation/browser.log",
+        "sha256": "a811c89d08d09e35a40b0c3fbc20cc5b18c0b1d830b471b99dbbf1eeb3bf1e48",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "firstFullRemediation": {
+        "path": ".local-private/pr115-main-remediation/browser-first-full.log",
+        "sha256": "7ed22315c838148a7ccb53aec2dbf5e56e2dcafa3a97d567b3e1df15819ecd79",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "firstFullBuild": {
+        "path": ".local-private/pr115-main-remediation/first-full-build.json",
+        "sha256": "a46cfac2bf14e266589a433f1614dab5398692dede65cb74cacb9e575258d98d",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "finalMerchantFocused": {
+        "path": ".local-private/pr115-main-remediation/merchant-final.log",
+        "sha256": "be85a20a33f74bbfe29bf6f8d1a7c656f2682be2cf9ee9ec757d585a0b2419a2",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "historicalPacket": "23ae4ab6a6df372c6bc483cce72cf2b8f5dd48ee"
+    },
+    "redEvidence": {
+      "scope": "Historical runs are excluded from final counts; see isolated diagnostic logs."
+    },
+    "isolatedTarget": {
+      "project": "kinnsoos-public-it-20261106",
+      "api": "http://127.0.0.1:59721",
+      "dbPort": 59722,
+      "databaseContainer": "supabase_db_kinnsoos-public-it-20261106",
+      "ledgerCount": 234,
+      "schemaHead": "20261108134500",
+      "seeded": false,
+      "ownershipVerified": true,
+      "resetAllMigrations": "PASS",
+      "finalResetLog": {
+        "path": ".local-private/pr115-main-remediation/reset-full.log",
+        "sha256": "ce14eac6c337f6e4d914d6aa2dfb32529ac9c9874980da4b342db8a3e46b947e",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "migrationListLog": {
+        "path": ".local-private/pr115-main-remediation/migration-list.log",
+        "sha256": "0f57bf93f930117bb7c1b0618bc300cba5f783cca7947dca4d5c3091454da256",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "ledgerLog": {
+        "path": ".local-private/pr115-main-remediation/ledger.log",
+        "sha256": "1d3ae9c90c70e68982a6b58be462e55412112e4a07a1312d16ab122051971b01",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "identityLog": {
+        "path": ".local-private/pr115-main-remediation/target.log",
+        "sha256": "cbd4de86f71004d94f18d6776ed932d9b4a771c236cf29bdf012db280cca77ae",
+        "hashBasis": "Exact saved file bytes"
+      },
+      "resetCli": "2.107.0",
+      "advisorCli": "2.107.0",
+      "temporaryWebSeed": "Applied for full web tests only; readback in checks.cleanup"
+    },
+    "concerns": [
+      "No production read, write or deployment; historical production evidence remains historical.",
+      "Windows pnpm Next junction is rejected by Turbopack in this checkout; supported Webpack build passes.",
+      "Studio guide RLS performance advisor is inherited unchanged from main."
+    ],
+    "originalFailureLedger": [
+      {
+        "case": "agent-workspace.spec.ts:23:1 › owned source-only trip preview requires explicit confirmation, saves once, rejects stale CAS and denies another actor",
+        "rootCause": "Global network-idle wait timed out after sign-in; the local runner also lacked CI’s canonical source origin.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "public-creator.spec.ts:8:1 › real public creator SSR and hydration show bounded published guides; withdrawing the profile removes public content",
+        "rootCause": "Correct page-two DOM, but the page-one public content remained in the original RSC hydration payload. Check active DOM and fresh page-two HTML separately.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "seo-migration.spec.ts:25:1 › published summary with a legacy database UUID survives API, SSR and hydration while owner drafts remain absent",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. The summary SSR lacked the language notice and its new client action hydrates through the session request.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "seo-migration.spec.ts:63:1 › authored published guide renders without JavaScript; withdrawing versions removes structured adoption and preserves the published summary",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. After withdrawing versions, the native summary omitted its no-structured-itinerary guidance.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:40:1 › late trip creation acknowledgement cannot replace a different open trip ",
+        "rootCause": "Readiness: global networkidle after released mutation response",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:57:1 › late trip deletion acknowledgement cannot close a different open trip ",
+        "rootCause": "Readiness: global networkidle after released mutation response",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:72:1 › late trip creation acknowledgement cannot navigate an invalidated account tab ",
+        "rootCause": "Readiness: global networkidle after released mutation response",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:140:1 › guide picker reaches a third page and persists adoption with private notes retained",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:162:1 › guide picker page failure retains selection and retries the same cursor once",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:172:1 › guide picker late page cannot append the previous account options",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:191:1 › guide bookmark status failure stays unknown and retries the real saved state",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Native summary treated read failure as an unconfirmed write; restored status-only retry.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:195:42 › guide bookmark delayed status cannot overwrite acknowledged save",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Native summary blocked the resumed save on its held status response; generation and ticket checks now reject stale reads.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:195:42 › guide bookmark delayed status cannot overwrite acknowledged removal",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Native summary blocked resumed save and therefore the removal; a stale status read no longer owns mutation state.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:203:1 › guide bookmark lost acknowledgement retries the original committed intent",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Exact request ID and desired state remain pending until the write is acknowledged.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:207:1 › bookmark pagination crosses100 tied timestamps and older guide remains saved",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:223:1 › bookmark pagination late page cannot append the previous account bookmarks",
+        "rootCause": "Global network-idle wait timed out after releasing the held bookmark page; wait for delivery/render and verify account isolation.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:228:36 › guide original text and unknown metadata en",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Native summary was missing original-text and unknown metadata notices.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:228:36 › guide original text and unknown metadata zh-HK",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Native summary was missing original-text and unknown metadata notices.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:236:1 › anonymous bookmark returns once; summary never offers invented itinerary",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Restore summary-only guidance; sign-in is a semantic link, and bookmark remains exactly once.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:237:1 › saved guest copy survives reload, a new guide version and cancelled sign-in before explicit import",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:273:1 › a saved device draft can be repaired anonymously and after sign-in when its source is withdrawn",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:295:50 › device repair retains unsaved notes through account invalidation and a failed save",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:295:50 › device repair retains pending-save notes through account invalidation and a failed save",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:326:1 › large bounded device notes save and reload while the account import size gate stays closed",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:342:1 › guest edits import once, original stays, server adoption has real source, second context conflicts without losing input",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:349:1 › published v2 is reviewed before appending; conflict requires review and lost response replays once",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:372:36 › summary inspiration leads to manual trip planning (en)",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Main’s native summary lacked the manual trip-planning link.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u01-guide-import.spec.ts:372:36 › summary inspiration leads to manual trip planning (zh-HK)",
+        "rootCause": "Synthetic author lacked a handle and public profile required by the merged public reader. Main’s native summary lacked the manual trip-planning link.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u02-photo-lifetime.spec.ts:57:2 › cancel en upload after prepare preserves the file and retries one owned photo ",
+        "rootCause": "Media: client rejects verified 59721 loopback gateway before PUT",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u02-photo-lifetime.spec.ts:57:2 › cancel en upload after bytes preserves the file and retries one owned photo ",
+        "rootCause": "Media: client rejects verified 59721 loopback gateway before PUT",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u02-photo-lifetime.spec.ts:57:2 › cancel zh-HK upload after prepare preserves the file and retries one owned photo ",
+        "rootCause": "Media: client rejects verified 59721 loopback gateway before PUT",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u02-photo-lifetime.spec.ts:57:2 › cancel zh-HK upload after bytes preserves the file and retries one owned photo ",
+        "rootCause": "Media: client rejects verified 59721 loopback gateway before PUT",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u02-travel-share.spec.ts:6:1 › private photo persists, anonymous readonly share excludes notes and media stops after revoke",
+        "rootCause": "The browser denied the approved local upload gateway before PUT. After fixing it, the runner needed an ephemeral receipt key and the test needed to recover the same durable URL before revoking.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u04-merchant-invitations.spec.ts:18:1 › U04 invitation is persisted once, privately reviewed/cancelled, accepted once and revoked membership loses same-session access",
+        "rootCause": "The server-rendered control could look enabled before the live membership reads finished; this recurred in the first 384-case run. Wait for the confirmed clerk membership and workspace responses, then require the same-session refresh to return 403 and clear controls. Scope the localized recipient field to the visible textbox.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u06-role-bundle.spec.ts:137:1 › U06 deferred role panels retain server headings, language and private cache after local sign-in",
+        "rootCause": "Global network-idle wait and Chromium eviction of response bodies across navigation. Capture the browser-observed immutable chunk URLs and read their exact bytes independently; preserve all route, language, cache and bundle assertions.",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "PASSED"
+      },
+      {
+        "case": "u23-share-receipt-recovery.spec.ts:17:45 › PD06 durable lost-ACK share recovers the same URL in a second authenticated context: en ",
+        "rootCause": "Target gate: requires fresh owned GitHub Actions CI stack on 58421; local run is not eligible",
+        "originalOutcome": "FAILED",
+        "focusedOutcome": "BLOCKED_HOSTED_CI"
+      },
+      {
+        "case": "u23-share-receipt-recovery.spec.ts: PD06 zh-HK",
+        "rootCause": "Did not run after the same beforeAll target gate failed for English.",
+        "originalOutcome": "NOT_RUN",
+        "focusedOutcome": "BLOCKED_HOSTED_CI"
+      }
+    ]
+  }
+}

@@ -56,6 +56,6 @@ test('every owned browser job prepares its mirror before the unchanged complete 
   assert.match(job,/KINNSO_CI_RUNNER_ENVIRONMENT:.*runner\.environment/);
   assert.doesNotMatch(job,/continue-on-error/);
  }
- assert.match(workflow.split('  workspace-fixtures:')[1].split('  verify:')[0],/timeout-minutes: 10/);
+ assert.match(workflow.split('  workspace-fixtures:')[1].split('  studio-planning:')[0],/timeout-minutes: 15/);
  assert.match(workflow.split('  operations-performance:')[1],/timeout-minutes: 45/);
 });

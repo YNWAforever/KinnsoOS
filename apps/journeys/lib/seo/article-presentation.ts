@@ -1,8 +1,8 @@
 import type {Metadata} from 'next';
 import type {PublicArticle} from './public-article';
-import {publicUrl} from './migration-policy.ts';
+import {publicUrl,CONSOLIDATED_ORIGIN} from './migration-policy.ts';
 export function articleCanonical(article:PublicArticle):string {
- return publicUrl(`https://remix-kinnso-web.vercel.app/${article.locale}/articles/${article.category}/${encodeURIComponent(article.slug)}`);
+ return publicUrl(`${CONSOLIDATED_ORIGIN}/${article.locale==='zh-hk'?'zh-HK':article.locale}/articles/${article.category}/${encodeURIComponent(article.slug)}`);
 }
 export function articlePageMetadata(article:PublicArticle):Metadata {
  const canonical=articleCanonical(article);

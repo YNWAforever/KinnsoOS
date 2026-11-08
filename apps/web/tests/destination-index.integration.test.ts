@@ -30,6 +30,12 @@ d('R7.5 destination index normalization and curated slug allocation (live Postgr
     const creator = await svc.auth.admin.createUser({ email: `r75-destination-creator-${runId}@example.test`, password, email_confirm: true })
     expect(creator.error, `create creator failed: ${creator.error?.message}`).toBeNull()
     creatorId = creator.data.user!.id
+    const publishedCreator = await svc.from('creators').update({
+      status: 'active',
+      handle: `r75${runId}`.replace(/[^a-zA-Z0-9_.-]/g, '').slice(0, 80),
+      public_profile: { languages: ['en'] },
+    }).eq('id', creatorId)
+    expect(publishedCreator.error, `publish creator failed: ${publishedCreator.error?.message}`).toBeNull()
     const merchantUser = await svc.auth.admin.createUser({ email: `r75-destination-merchant-${runId}@example.test`, password, email_confirm: true })
     expect(merchantUser.error, `create merchant failed: ${merchantUser.error?.message}`).toBeNull()
     merchantUserId = merchantUser.data.user!.id

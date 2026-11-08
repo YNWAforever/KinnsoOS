@@ -6,7 +6,7 @@ export async function studioRequest<T>(url:string,actorId:string,method='GET',bo
   const response=await fetch(url,{method,headers:{'X-Kinnso-Intent-Actor':actorId,...body?{'Content-Type':'application/json'}:{}},body:body?JSON.stringify(body):undefined,cache:'no-store',signal:AbortSignal.timeout(15000)});
   const value=await response.json();
   if(typeof value?.ok!=='boolean'||!response.ok&&value.ok)throw Error('INVALID_RESPONSE');
-  if(!value.ok&&!['AUTH_REQUIRED','FORBIDDEN','NOT_FOUND','CONFLICT','INVALID','UNAVAILABLE','RESTRICTED'].includes(value.code))throw Error('INVALID_RESPONSE');
+  if(!value.ok&&!['AUTH_REQUIRED','FORBIDDEN','NOT_FOUND','CONFLICT','INVALID','UNAVAILABLE','RESTRICTED','PILOT_REVIEW_REQUIRED'].includes(value.code))throw Error('INVALID_RESPONSE');
   return value;
  }catch{return{ok:false,code:'UNAVAILABLE',retryable:true};}
 }

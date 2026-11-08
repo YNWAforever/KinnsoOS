@@ -222,6 +222,7 @@ for (const locale of ['en', 'zh-HK'] as const) {
           }) };
         });
         measurements.push({ width, enlarged, geometry });
+        if(process.env.KINNSO_LAYOUT_DEBUG==='1'&&enlarged)console.log('N14_LAYOUT_DEBUG '+JSON.stringify({overflowingElements:geometry.overflowingElements,overflowingText:geometry.overflowingText}));
         await testInfo.attach(`n14-${locale}-${width}-${enlarged ? 'double-text' : 'normal'}-geometry`, { body: JSON.stringify(geometry), contentType: 'application/json' });
         await page.screenshot({ path: `evidence/n14-merchant-${locale}-${width}-${enlarged ? 'double-text' : 'normal'}.png`, fullPage: true });
         expect(geometry.fields.length).toBeGreaterThanOrEqual(12);

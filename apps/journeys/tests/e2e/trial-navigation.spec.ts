@@ -11,9 +11,12 @@ for(const locale of ['en','zh-HK','zh-hk']){
    const url=new URL(page.url());
    expect(url.origin).toBe(new URL(baseURL!).origin);
    expect(url.pathname).toBe(`/${language}/sign-in`);
-   expect(url.searchParams.get('next')).toBe(`/${language}/${path}?tab=drafts&filter=new&filter=active`);
+   const canonical=path==='merchants/dashboard/profile'?'merchant':path==='admin'?'ops':path;
+   const query='tab=drafts&filter=new&filter=active'+(path==='admin'?'&view=overview':path==='merchants/dashboard/profile'?'&section=profile':'');
+   const next=`/${language}/${canonical}?${query}`;
+   expect(url.searchParams.get('next')).toBe(next);
    await expect(page.getByRole('heading',{name:language==='en'?'Sign in to Kinnso':'登入 Kinnso',exact:true})).toBeVisible();
-   await expect(page.getByRole('link',{name:language==='en'?'Create an account':'建立帳戶',exact:true})).toHaveAttribute('href',`/${language}/sign-up?${new URLSearchParams({next:`/${language}/${path}?tab=drafts&filter=new&filter=active`})}`);
+   await expect(page.getByRole('link',{name:language==='en'?'Create an account':'建立帳戶',exact:true})).toHaveAttribute('href',`/${language}/sign-up?${new URLSearchParams({next})}`);
   }
   expect(external).toEqual([]);
  });
@@ -71,15 +74,16 @@ for(const locale of ['en','zh-HK'])test(`${locale}: unavailable library, collect
  await expect(page.locator('a[href*="remix-kinnso-web.vercel.app"]')).toHaveCount(0);
 });
 
-for(const locale of ['en','zh-HK','zh-hk'])test(`${locale}: creator entry works without JavaScript`,async({browser,baseURL})=>{
- const language=locale==='en'?'en':'zh-HK';
- const context=await browser.newContext({baseURL,javaScriptEnabled:false});
- try{
-  const page=await context.newPage();
-  await page.goto(`/${locale}/workspace`);
+test.describe('creator entry without JavaScript',()=>{
+ test.use({javaScriptEnabled:false});
+ for(const locale of ['en','zh-HK','zh-hk'])test(`${locale}: creator entry works without JavaScript`,async({page})=>{
+  // This dev-server suite can compile the workspace and sign-in routes on first navigation.
+  test.setTimeout(60_000);
+  const language=locale==='en'?'en':'zh-HK';
+  await page.goto(`/${locale}/workspace`,{waitUntil:'domcontentloaded'});
   await page.locator(`main a[href="/${language}/studio"]`).click();
   await expect(page).toHaveURL(new RegExp(`/${language}/sign-in\\?`));
   expect(new URL(page.url()).searchParams.get('next')).toBe(`/${language}/studio`);
   await expect(page.getByRole('heading',{name:language==='en'?'Sign in to Kinnso':'登入 Kinnso',exact:true})).toBeVisible();
- }finally{await context.close();}
+ });
 });

@@ -12,6 +12,7 @@ export function failure(code: ErrorCode, status: number) {
 }
 export function backendFailure(error: {message?:string; code?:string} | null) {
   const message = error?.message ?? '';
+  if (message === 'PILOT_REVIEW_REQUIRED') return failure('PILOT_REVIEW_REQUIRED',409);
   if (/trip_not_found|guide_not_found|media_not_found|share_not_found|job_not_found|claim_not_found|merchant_not_found|mission_not_found|notification_not_found|support_not_found|report_not_found|submission_not_found|preset_not_found|creator_not_found/.test(message)) return failure('NOT_FOUND',404);
   if (/revision_conflict|idempotency_conflict|immutable_campaign_terms|already_participant/.test(message)) return failure('CONFLICT',409);
   if (/unauthenticated/.test(message)) return failure('AUTH_REQUIRED',401);
@@ -21,18 +22,25 @@ export function backendFailure(error: {message?:string; code?:string} | null) {
 }
 export async function apiContext(request: Request, capability: string, write = false) {
   const started=performance.now();
+  const correlation = request.headers.get('X-Kinnso-Local-Correlation');
+  const trace = (stage: string, status?: number) => {
+    if ((capability === 'pilot' || capability === 'ops' || capability === 'merchant') && process.env.KINNSO_ENVIRONMENT === 'local' &&
+      process.env.KINNSO_LOCAL_BUILD_IDENTITY && uuid(correlation))
+      console.warn('connected-auth', correlation, stage, status ?? 0);
+  };
   if (write && !sameOrigin(request,process.env.KINNSO_SITE_URL)) return {response:failure('FORBIDDEN',403)} as const;
   if (capabilities(process.env)[capability]?.mode !== 'connected') return {response:failure('UNAVAILABLE',503)} as const;
   const client = await serverClient();
   if (!client) return {response:failure('UNAVAILABLE',503)} as const;
   const {data:{user},error} = await client.auth.getUser();
-  if (error || !user) return {response:failure('AUTH_REQUIRED',401)} as const;
+  if (error || !user) { trace('auth-user', error?.status); return {response:failure('AUTH_REQUIRED',401)} as const; }
   const intentActor = request.headers.get('X-Kinnso-Intent-Actor');
   if (intentActor !== null && (!uuid(intentActor) || intentActor.toLowerCase() !== user.id.toLowerCase()))
     return {response:failure('AUTH_REQUIRED',401)} as const;
   // The RPC also verifies the current auth.sessions row and authoritative roles.
   const actor = await client.rpc('kinnso_actor');
-  if (actor.error || actor.data?.id !== user.id) return {response:failure('AUTH_REQUIRED',401)} as const;
+  if (actor.error || actor.data?.id !== user.id) { trace('actor-rpc', actor.status); return {response:failure('AUTH_REQUIRED',401)} as const; }
+  trace('authorized', actor.status);
   observeRequest(actor.data,started);
   return {client,actor:actor.data} as const;
 }

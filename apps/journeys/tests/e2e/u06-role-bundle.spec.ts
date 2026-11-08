@@ -9,13 +9,19 @@ const agentMarker = 'Source questions: read published sources and verification d
 const roleMarkers = ['Your next actions', 'Invite a company colleague', 'Retry invitation acceptance', 'Operations queue', 'Financial reconciliation', agentMarker, 'Drafts are private. Published versions can be adopted into traveller trips.'];
 
 function downloadedScripts(page: Page) {
-  const bodies: Promise<string>[] = [];
+  const urls = new Set<string>();
   page.on('response', response => {
     const path = new URL(response.url()).pathname;
     if (response.status() === 200 && path.startsWith('/_next/static/chunks/') && path.endsWith('.js'))
-      bodies.push(response.text());
+      urls.add(response.url());
   });
-  return async () => (await Promise.all(bodies)).join('\n');
+  return async () => (await Promise.all([...urls].map(async url => {
+    // The browser observed this exact immutable chunk. Read it independently
+    // so Chromium can evict the original response body after a navigation.
+    const response=await page.request.get(url);
+    expect(response.status()).toBe(200);
+    return response.text();
+  }))).join('\n');
 }
 
 test('U06 public search defers private role-workspace JavaScript', async ({page, baseURL}) => {
@@ -42,7 +48,7 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
   const created = await admin.auth.admin.createUser({email, password, email_confirm: true});
   expect(created.error).toBeNull();
   const actorId = created.data.user!.id;
-  let release!: () => void, held = false;
+  let release!: () => void, heldUrl: string | undefined;
   const released = new Promise<void>(resolve => {release = resolve;});
   let logoutPage: Page | undefined;
   try {
@@ -55,14 +61,14 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
     expect((await page.request.get('/api/trips')).status()).toBe(200);
     await page.route('**/_next/static/chunks/*.js', async route => {
       const response = await route.fetch();
-      if (!held && (await response.text()).includes(agentMarker)) {
-        held = true;
+      if (!heldUrl && (await response.text()).includes(agentMarker)) {
+        heldUrl = route.request().url();
         await released;
       }
       await route.fulfill({response});
     });
     await page.goto('/en/agent', {waitUntil: 'commit'});
-    await expect.poll(() => held, {timeout: 10000}).toBe(true);
+    await expect.poll(() => Boolean(heldUrl), {timeout: 10000}).toBe(true);
     // Witness real broadcasts without forwarding them or changing product state.
     await page.evaluate(() => {
       const witness = window as unknown as {lazyLogoutCount: number; lazyLogoutChannel: BroadcastChannel};
@@ -79,8 +85,12 @@ test('U06 logout while an agent chunk is held cannot restore signed-in controls'
     await expect.poll(() => page.evaluate(() => (window as unknown as {lazyLogoutCount: number}).lazyLogoutCount)).toBeGreaterThanOrEqual(2);
     const denied = await page.request.get('/api/trips');
     expect(denied.status()).toBe(401);
+    // Synchronize on the specific delayed script, not unrelated page traffic.
+    const script = page.waitForResponse(response => response.url() === heldUrl, {timeout: 10000});
     release();
-    await page.waitForLoadState('networkidle');
+    const delivered = await script;
+    expect(delivered.ok()).toBe(true);
+    expect(await delivered.finished()).toBeNull();
     const panel = page.locator('section.k-page').filter({has: page.getByRole('heading', {name: 'Task preview', exact: true})}).first();
     if (await panel.getByLabel('Query', {exact: true}).count()) {
       await panel.getByLabel('Query', {exact: true}).fill('Synthetic query after completed logout');
@@ -145,7 +155,7 @@ test('U06 deferred role panels retain server headings, language and private cach
     await page.waitForURL(url=>url.pathname==='/en/merchant');
     // The next document must not replace Chromium's response-body resources
     // while the script collector is still reading the sign-in transition.
-    await page.waitForLoadState('networkidle');
+    await expect(page.getByRole('heading',{level:1,name:'Merchant workspace',exact:true})).toBeVisible();
     await scripts();
     const routes = [
       {path: '/en/merchant', heading: 'Merchant workspace'},
@@ -165,7 +175,6 @@ test('U06 deferred role panels retain server headings, language and private cach
       await expect(page.getByRole('heading', {level: 1, name: route.heading, exact: true})).toBeVisible();
       await expect(page.locator('html')).toHaveAttribute('lang',route.path.startsWith('/en/')?'en':'zh-HK');
       await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /noindex/);
-      await page.waitForLoadState('networkidle');
       await scripts();
     }
     await expect(page.getByRole('button', {name: 'Review invitation', exact: true})).toHaveCount(0);
