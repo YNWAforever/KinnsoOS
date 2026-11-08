@@ -17,7 +17,7 @@ async function visitPublishedGuide(page: Page, guideHref: string): Promise<void>
     await expect(page.locator('h1')).toBeVisible()
     if (await page.locator('.k-app').count() > 0) {
       // Workbench shows the SSR guide during its client refresh without a loading
-      // marker. That read must succeed before missing creator links can soft-skip.
+      // marker. That read must succeed before an incomplete guide can soft-skip.
       const refresh = observedRefresh ?? await page.waitForResponse(isGuideRefresh)
       expect(refresh.status(), `${guideHref} guide refresh should return HTTP 200`).toBe(200)
       expect((await refresh.json()).ok, `${guideHref} guide refresh should succeed`).toBe(true)
@@ -63,14 +63,18 @@ export async function findAttributedExperience(page: Page, guideLinks: string[])
     await expect(creatorLink).toBeVisible()
     const href = await page.locator('a[href^="/en/experiences/"][href*="src=guide"]')
       .evaluateAll(links => links.map(link => link.getAttribute('href')).find(Boolean) ?? null)
-    if (href) {
-      // Once a complete path is selected, a broken creator is a funnel regression.
-      const creatorHref = await creatorLink.getAttribute('href')
-      const creatorResponse = await page.goto(creatorHref as string)
-      expect(creatorResponse?.status(), `${creatorHref} should return HTTP 200`).toBe(200)
-      await expect(page.locator('h1')).toBeVisible()
-      return href
+    if (!href) {
+      const reason = `pilot-incomplete-experience-link: guide ${guideHref} has no attributed experience link`
+      incompleteReasons.push(reason)
+      test.info().annotations.push({ type: 'pilot-incomplete-experience-link', description: reason })
+      continue
     }
+    // Once a complete path is selected, a broken creator is a funnel regression.
+    const creatorHref = await creatorLink.getAttribute('href')
+    const creatorResponse = await page.goto(creatorHref as string)
+    expect(creatorResponse?.status(), `${creatorHref} should return HTTP 200`).toBe(200)
+    await expect(page.locator('h1')).toBeVisible()
+    return href
   }
   test.skip(guideLinks.length > 0 && incompleteReasons.length === guideLinks.length, incompleteReasons.join('; '))
   throw new Error('CONTENT_MISSING: no featured guide has an attributed experience link')

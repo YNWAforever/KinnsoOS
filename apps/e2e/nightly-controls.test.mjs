@@ -12,6 +12,7 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
 const artifacts = new URL('../../.ci-evidence/nightly-softgate-controls/', import.meta.url);
 const funnelTitle = 'home to a published guide to its linked experience';
 const incompleteReason = guide => `pilot-incomplete-creator-link: guide /en/g/${guide} has no creator link`;
+const missingExperienceReason = guide => `pilot-incomplete-experience-link: guide /en/g/${guide} has no attributed experience link`;
 
 function testsIn(suites) {
   return suites.flatMap(suite => [
@@ -95,7 +96,7 @@ test('actual Nightly specs preserve pilot skips and hard funnel failures on synt
       { mode: 'mixed-broken-creator', specs: funnel, incomplete: ['first'], failed: true, error: '/en/c/author should return HTTP 200' },
       { mode: 'mixed-broken-experience', specs: funnel, incomplete: ['first'], failed: true, error: '/en/experiences/linked?src=guide should return HTTP 200' },
       { mode: 'mixed-no-price', specs: funnel, incomplete: ['first'], failed: true, error: 'toContainText' },
-      { mode: 'mixed-no-experience', specs: funnel, incomplete: ['first'], failed: true, error: 'CONTENT_MISSING' },
+      { mode: 'mixed-no-experience', specs: funnel, skipped: true, incomplete: ['first'], missingExperience: ['complete'] },
       { mode: 'catalog-error', specs: funnel, failed: true, error: 'toContainText' },
     ]) await t.test(scenario.mode, { timeout: 90_000 }, async t => {
       mode = scenario.mode;
@@ -112,18 +113,34 @@ test('actual Nightly specs preserve pilot skips and hard funnel failures on synt
       assert.equal(run.code, scenario.failed ? 1 : 0, run.stderr);
       const report = JSON.parse(await readFile(reportPath, 'utf8'));
       assert.equal(report.stats.unexpected, scenario.failed ? 1 : 0);
-      assert.equal(report.stats.skipped, scenario.skipped ? 1 : 0);
+      assert.equal(report.stats.skipped, (scenario.skipped ? 1 : 0) + (scenario.specs.includes('funnel-fixture') ? 1 : 0));
       assert.equal(report.stats.flaky, 0);
       const tests = testsIn(report.suites);
       const subject = tests.find(result => result.title === funnelTitle) ?? tests[0];
       const annotations = subject.annotations ?? [];
       assert.deepEqual(annotations.filter(annotation => annotation.type === 'pilot-incomplete-creator-link')
         .map(annotation => annotation.description), (scenario.incomplete ?? []).map(incompleteReason));
+      assert.deepEqual(annotations.filter(annotation => annotation.type === 'pilot-incomplete-experience-link')
+        .map(annotation => annotation.description), (scenario.missingExperience ?? []).map(missingExperienceReason));
       if (scenario.mode === 'incomplete') {
         assert.equal(subject.status, 'skipped');
         assert.equal(annotations.find(annotation => annotation.type === 'skip')?.description,
           ['first', 'second'].map(incompleteReason).join('; '));
         assert.ok(!requests.some(request => request.path.startsWith('/en/c/') || request.path.startsWith('/en/experiences/')));
+      }
+      if (scenario.mode === 'mixed-no-experience') {
+        assert.equal(subject.status, 'skipped');
+        assert.equal(annotations.find(annotation => annotation.type === 'skip')?.description,
+          [incompleteReason('first'), missingExperienceReason('complete')].join('; '));
+        assert.ok(!requests.some(request => request.path.startsWith('/en/c/') || request.path.startsWith('/en/experiences/')));
+      }
+      if (scenario.specs.includes('funnel-fixture')) {
+        const experienceGap = tests.find(result => result.title === 'creator-complete guides without an attributed experience soft-skip with evidence');
+        const experienceReasons = ['first', 'second'].map(missingExperienceReason);
+        assert.equal(experienceGap?.status, 'skipped');
+        assert.deepEqual((experienceGap?.annotations ?? []).filter(annotation => annotation.type === 'pilot-incomplete-experience-link')
+          .map(annotation => annotation.description), experienceReasons);
+        assert.equal(experienceGap?.annotations?.find(annotation => annotation.type === 'skip')?.description, experienceReasons.join('; '));
       }
       if (scenario.mode === 'empty') assert.match(annotations.find(annotation => annotation.type === 'skip')?.description, /^PILOT_EMPTY:/);
       if (scenario.complete || scenario.mode === 'full') {

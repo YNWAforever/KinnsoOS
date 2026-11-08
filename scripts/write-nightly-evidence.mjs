@@ -19,6 +19,8 @@ function pilotContentAnnotations(suites) {
         // Only retain known public pilot reasons, never arbitrary annotations or errors.
         if (annotation.type === 'pilot-incomplete-creator-link' &&
             /^pilot-incomplete-creator-link: guide \/en\/g\/[a-zA-Z0-9_%.-]+ has no creator link$/.test(annotation.description)) reason = 'pilot-incomplete-creator-link';
+        if (annotation.type === 'pilot-incomplete-experience-link' &&
+            /^pilot-incomplete-experience-link: guide \/en\/g\/[a-zA-Z0-9_%.-]+ has no attributed experience link$/.test(annotation.description)) reason = 'pilot-incomplete-experience-link';
         if (annotation.type === 'skip' && annotation.description === pilotEmptyReason) reason = 'pilot-empty';
         if (reason && !seen.has(annotation.description)) {
           annotations.push({ reason, description: annotation.description, testOutcome: test.status });
