@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-08T23:49:20.201Z",
+  "slice": "Scheduler launch digest + simulated failure drill",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "6be6acdba91049bbfd6046a8a79e28c968e6627f",
+    "releaseTree": "ec1d07d21d9a91fd4f013fe3a60711c85b6029e6",
+    "parent": "e1181f1230cd41fa0c15e4ce2b0743439544c9f2",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42534466483,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "project": "scryfkefedzuetfdtrvl",
+    "migration": "20261109190000_launch_digest.sql",
+    "baseline": {
+      "ledger": 247,
+      "head": "20261109180000"
+    },
+    "post": {
+      "ledger": 248,
+      "head": "20261109190000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_LAUNCH_DIGEST_20261109",
+    "verified": {
+      "rpc": "kinnso_public_launch_digest()",
+      "anonGrant": true,
+      "opsRpcLeak": false,
+      "publishedGuidesUnchanged": 9
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_6dVAQhUs47DcoHy9wF2sWEeDv7rJ",
+    "staged": "dpl_5fYHH4VKq7WyKEz1mRXNB3AecK3a",
+    "promoted": "dpl_5fYHH4VKq7WyKEz1mRXNB3AecK3a",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": 200,
+      "spacesPage": 200,
+      "drillWithoutCredential": 401,
+      "drillWithCredential": "200 {test:true, delivered:true, status:200}",
+      "scheduledDigest": "signoffsAccepted 0, signoffsPending 6, waiversExpired 0, waiversExpiringSoon 0"
+    },
+    "rollbackTargets": [
+      "dpl_6dVAQhUs47DcoHy9wF2sWEeDv7rJ",
+      "dpl_6qMWd2dkZ1A7ayFA1NQvbVubd3xF"
+    ]
+  },
+  "behaviour": {
+    "digest": "daily 08:00 UTC reminder when waivers expire or expire within 14 days; aggregate counts only",
+    "drill": "?test=1&state=<state> sends a labelled simulated-failure alert through the real classification and delivery path",
+    "fallback": "unknown simulated states fall back to the plain self-test"
+  },
+  "phase4Status": {
+    "L1": "done, deployed (+ waiver expiry)",
+    "L2": "done, deployed",
+    "L3": "deliberately-failed-check delivery demonstrated in production; owner destination swap and PITR decision remain",
+    "L4": "matrix deployed; owner records the 24 real device/AT results",
+    "exit": "launch-ready verdict requires owner sign-offs and content labelling; the packet is downloadable"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "generatedAt": "2026-11-08T23:17:20.967Z",
+  "origin": "http://localhost:3495",
+  "steps": [
+    {
+      "name": "aggregate launch digest is readable with the publishable key",
+      "status": "PASS",
+      "detail": "status=200"
+    },
+    {
+      "name": "digest exposes counts only, no identities or notes",
+      "status": "PASS",
+      "detail": "[\"rejectedGates\",\"signoffsAccepted\",\"signoffsPending\",\"snapshotAt\",\"waiversActive\",\"waiversExpired\",\"waiversExpiringSoon\"]"
+    },
+    {
+      "name": "digest reports waiver state",
+      "status": "PASS",
+      "detail": "{\"snapshotAt\":\"2026-11-08T23:17:20.996981+00:00\",\"rejectedGates\":0,\"waiversActive\":0,\"waiversExpired\":0,\"signoffsPending\":2,\"signoffsAccepted\":4,\"waiversExpiringSoon\":0}"
+    },
+    {
+      "name": "scheduled run returns the digest for diagnostics",
+      "status": "PASS",
+      "detail": "{\"snapshotAt\":\"2026-11-08T23:17:21.046065+00:00\",\"rejectedGates\":0,\"waiversActive\":0,\"waiversExpired\":0,\"signoffsPending\":2,\"signoffsAccepte"
+    },
+    {
+      "name": "simulated failure drill is delivered",
+      "status": "PASS",
+      "detail": "status=200 delivered=true"
+    },
+    {
+      "name": "drill payload is labelled as simulated and names the state",
+      "status": "PASS",
+      "detail": "KinnsoOS simulated failure drill (unavailable): this is a labelled test of the incident path, not a real incident. Deliv"
+    },
+    {
+      "name": "an unknown simulated state falls back to the plain self-test",
+      "status": "PASS",
+      "detail": "status=200 state=test"
+    }
+  ],
+  "digest": {
+    "snapshotAt": "2026-11-08T23:17:20.996981+00:00",
+    "rejectedGates": 0,
+    "waiversActive": 0,
+    "waiversExpired": 0,
+    "signoffsPending": 2,
+    "signoffsAccepted": 4,
+    "waiversExpiringSoon": 0
+  },
+  "drill": {
+    "text": "KinnsoOS simulated failure drill (unavailable): this is a labelled test of the incident path, not a real incident. Delivery classification and transport are being verified.",
+    "state": "unavailable",
+    "site": "http://localhost:3495",
+    "checkedAt": "2026-11-08T23:17:21.054Z",
+    "simulated": true
+  },
+  "summary": {
+    "total": 7,
+    "passed": 7,
+    "failed": 0
+  }
+}
