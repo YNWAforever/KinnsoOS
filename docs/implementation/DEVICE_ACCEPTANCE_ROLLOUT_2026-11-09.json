@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-08T23:14:14.318Z",
+  "slice": "L4 device and assistive-tech acceptance matrix",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "e1181f1230cd41fa0c15e4ce2b0743439544c9f2",
+    "releaseTree": "301f5af9c0c8cba2171f95ab04c8bf94c43d3b38",
+    "parent": "776914bee783a26391e4e19ceda424f4589068ac",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42531529914,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "project": "scryfkefedzuetfdtrvl",
+    "migration": "20261109180000_device_acceptance.sql",
+    "baseline": {
+      "ledger": 246,
+      "head": "20261109170000"
+    },
+    "post": {
+      "ledger": 247,
+      "head": "20261109180000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_DEVICE_ACCEPTANCE_20261109",
+    "verified": {
+      "table": "kinnso_internal.device_acceptance (empty, no client grants)",
+      "rpcs": [
+        "kinnso_ops_device_acceptance()",
+        "kinnso_ops_record_device_acceptance(text,text,text,text)"
+      ],
+      "anonLeak": false,
+      "publishedGuidesUnchanged": 9
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_6qMWd2dkZ1A7ayFA1NQvbVubd3xF",
+    "staged": "dpl_6dVAQhUs47DcoHy9wF2sWEeDv7rJ",
+    "promoted": "dpl_6dVAQhUs47DcoHy9wF2sWEeDv7rJ",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": 200,
+      "spacesPage": "200 on the promoted deployment",
+      "anonymousDevices": 401,
+      "anonymousLaunch": 401,
+      "anonymousPacket": 401
+    },
+    "rollbackTargets": [
+      "dpl_6qMWd2dkZ1A7ayFA1NQvbVubd3xF",
+      "dpl_9k2hmX8F8UzzVVdChuUeAxMbQqjy"
+    ]
+  },
+  "matrix": {
+    "surfaces": [
+      "public_site",
+      "guide_reader",
+      "account",
+      "studio_editor",
+      "spaces_chat",
+      "ops_pages"
+    ],
+    "platforms": [
+      "ios_safari",
+      "android_chrome",
+      "voiceover",
+      "nvda"
+    ],
+    "cells": 24,
+    "rule": "devices gate accepted only when 24/24 pass, or by an explicitly dated waiver; a failing cell reopens the gate; expired waivers block again"
+  },
+  "phase4Status": {
+    "L1": "done, deployed (+ waiver expiry)",
+    "L2": "done, deployed",
+    "L3": "transport + restore rehearsal proven; owner destination and platform PITR decision remain",
+    "L4": "mechanism deployed; owner must record the 24 real device/AT results (or a dated waiver)",
+    "exit": "launch-ready verdict still requires the owner to record content labelling/attestations and the real device results"
+  },
+  "openItems": [
+    "Owner records the 24 device/assistive-tech cells with real evidence notes, or a dated waiver.",
+    "Owner replaces KINNSO_ALERT_WEBHOOK_URL with their destination and confirms one test alert.",
+    "Owner decides backup/PITR: reinstate or dated waiver.",
+    "Owner signs off privacy/rollback/backup/accessibility and labels fixture content."
+  ]
+}
