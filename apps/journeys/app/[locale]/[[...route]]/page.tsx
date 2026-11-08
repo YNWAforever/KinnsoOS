@@ -215,7 +215,10 @@ export default async function Page({ params,searchParams }: Props) {
   const tripHeading=!demo&&actor&&route[0]==='trips'&&route.length===2&&capabilities(process.env).trips.mode==='connected'
     ?await readPrivateTripHeading(await serverClient(),actor.id,route[1]):null;
   return (
-    <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}>
+    <Suspense fallback={<main className="k-page">
+      {locale==='en'?'Loading Kinnso…':'正在載入 Kinnso…'}
+      {path==='workspace'&&<noscript><p><a href={`/${locale}/studio`}>{locale==='en'?'Creator workspace':'創作者工作區'}</a></p></noscript>}
+    </main>}>
       <Workbench
         key={locale + path}
         locale={locale as "en" | "zh-HK"}
