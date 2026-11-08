@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-08T21:57:03.233Z",
+  "slice": "L3 alert binding and recovery rehearsal (Phase 4)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED / RESTORE REHEARSAL PASSED",
+  "source": {
+    "releaseCommit": "1642ab1b0a45719f75543fc224e75bb792a222f7",
+    "releaseTree": "83aac459a9e4b0886a1476ab33b84253cc58935a",
+    "parent": "d033470e5075da608b25a4aa1c0b224d20c095f0",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42524828314,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "changed": false,
+    "ledger": 245,
+    "head": "20261109160000"
+  },
+  "deployment": {
+    "previousProduction": "dpl_2R9oXrt4kzGLvuRCz9GDqnSnYhrC",
+    "staged": "dpl_9k2hmX8F8UzzVVdChuUeAxMbQqjy",
+    "promoted": "dpl_9k2hmX8F8UzzVVdChuUeAxMbQqjy",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": 200,
+      "spacesPage": 200,
+      "inboxWithoutToken": 401,
+      "inboxWithToken": "200 {received:true}",
+      "cronTestWithoutCredential": 401,
+      "cronTestWithCredential": "200 {test:true, delivered:true, status:200}",
+      "anonymousOpsSelfTest": 403
+    },
+    "rollbackTargets": [
+      "dpl_2R9oXrt4kzGLvuRCz9GDqnSnYhrC",
+      "dpl_9AKHmqo1wFZDYiRtJA3Q1B79omVR"
+    ]
+  },
+  "alerting": {
+    "schedulerPath": "/api/cron/health-alert (every 15 min, vercel.json)",
+    "states": [
+      "ok (no alert)",
+      "unavailable (every run)",
+      "cost-exhausted (hourly)",
+      "content-not-ready (daily 08:00 UTC digest)"
+    ],
+    "delivery": "KINNSO_ALERT_WEBHOOK_URL; optional KINNSO_ALERT_INBOX_TOKEN header; scheduler credential CRON_SECRET",
+    "configuredProductionDestination": "in-product inbox (verification destination)",
+    "ownerAction": "replace KINNSO_ALERT_WEBHOOK_URL with the owner destination and redeploy, then press Send test alert once"
+  },
+  "restoreRehearsal": {
+    "verdict": "PASS",
+    "schema": {
+      "exitCode": 0,
+      "tables": 180,
+      "functions": 431,
+      "indexes": 419,
+      "triggers": 126,
+      "policies": 133
+    },
+    "rows": {
+      "production": {
+        "creators": 13,
+        "guides": 11,
+        "publishedGuides": 9,
+        "tables": 180
+      },
+      "restored": {
+        "creators": 13,
+        "guides": 11,
+        "publishedGuides": 9,
+        "tables": 180
+      },
+      "match": true
+    },
+    "limits": [
+      "This exercises the product schema and key rows, not the platform PITR/snapshot restore path, which remains a Supabase-managed operation and is not verified here.",
+      "Platform-managed schemas (auth, realtime, storage, extensions) were stubbed or excluded, so this is not a byte-identical full-cluster restore.",
+      "The rehearsal target is disposable and was left in place for inspection."
+    ],
+    "artifact": "RESTORE_REHEARSAL.json"
+  },
+  "phase4Status": {
+    "L1": "done, deployed",
+    "L2": "done, deployed",
+    "L3": "code + production transport verified; owner destination and backup/PITR decision remain",
+    "L4": "owner action: physical devices and screen readers",
+    "exit": "launch-ready verdict still requires owner sign-offs in /ops/readiness and a content gate that is no longer unverified"
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "rehearsalAt": "2026-11-08T21:33:06.346Z",
+  "kind": "logical schema + key-row restore rehearsal",
+  "source": "production Supabase Postgres (project scryfkefedzuetfdtrvl) via a live schema dump",
+  "target": "isolated local Postgres database kinnso_restore in the disposable stack",
+  "dump": {
+    "command": "pg_dump --schema-only --no-owner --no-privileges -n public -n kinnso_internal -n supabase_migrations -n kinnso_share_api -n app_private",
+    "fileLines": 27115,
+    "note": "Platform auth functions and the extensions schema were stubbed in the empty target (auth.uid/jwt/role/email, pgcrypto) because they are platform-managed, not product objects."
+  },
+  "schemaRestore": {
+    "exitCode": 0,
+    "tables": 180,
+    "functions": 431,
+    "indexes": 419,
+    "triggers": 126,
+    "policies": 133
+  },
+  "keyRowRestore": {
+    "command": "pg_dump --data-only -t public.creators -t public.guides",
+    "exitCode": 0,
+    "note": "Restored with session_replication_role=replica so platform auth.users rows did not have to be replicated into the rehearsal target."
+  },
+  "counts": {
+    "production": {
+      "creators": 13,
+      "guides": 11,
+      "publishedGuides": 9,
+      "tables": 180
+    },
+    "restored": {
+      "creators": 13,
+      "guides": 11,
+      "publishedGuides": 9,
+      "tables": 180
+    },
+    "match": true
+  },
+  "limits": [
+    "This exercises the product schema and key rows, not the platform PITR/snapshot restore path, which remains a Supabase-managed operation and is not verified here.",
+    "Platform-managed schemas (auth, realtime, storage, extensions) were stubbed or excluded, so this is not a byte-identical full-cluster restore.",
+    "The rehearsal target is disposable and was left in place for inspection."
+  ]
+}
