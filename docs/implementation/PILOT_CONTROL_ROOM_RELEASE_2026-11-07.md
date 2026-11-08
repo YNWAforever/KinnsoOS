@@ -1,6 +1,33 @@
-# Pilot Control Room — PR #115 main merge remediation
+# Pilot Control Room — PR #115 final validation
 
-**BLOCKED_EXTERNAL_VALIDATION. Production unchanged; deployment unverified. Public launch HOLD. Backup/restore waived.**
+**READY_FOR_USER_REVIEW. Production unchanged; deployment unverified. Public launch HOLD. Backup/restore waived.**
+
+Final validated [PR #115](https://github.com/YNWAforever/KinnsoOS/pull/115) source: `105fcd2366239f1ffbaec275df2abf7696c00821`, Git tree: `2f7a4d104be362e8c0183a2dc25972d7f8d822f3`. This packet update is documentation only.
+
+| Workflow | Event | Run | Result |
+|---|---|---|---|
+| CI | push | [42443424650](https://github.com/YNWAforever/KinnsoOS/actions/runs/42443424650) | Success |
+| Journeys | push | [42443424657](https://github.com/YNWAforever/KinnsoOS/actions/runs/42443424657) | Success |
+| CI | pull_request | [42443428219](https://github.com/YNWAforever/KinnsoOS/actions/runs/42443428219) | Success |
+| Journeys | pull_request | [42443428124](https://github.com/YNWAforever/KinnsoOS/actions/runs/42443428124) | Success |
+
+Vercel check `BPb89…`: success. The supplied final PR snapshot shows **25 successful, 20 skipped, 0 failed, 0 pending**. All review threads are resolved. GitHub reports mergeable and clean; formal approval remains outstanding. Both hosted-only share recovery cases passed in Journeys connected CI and are excluded from the local count.
+
+| Final local check | Passed | Skipped | Failed |
+|---|---:|---:|---:|
+| Journeys unit | 1,979 | 2 | 0 |
+| Web | 3,316 | 44 | 0 |
+| Connected Chromium (locally applicable) | 384 | 0 | 0 |
+| Database integrations | 74 | 0 | 0 |
+| Presentation | 77 | 0 | 0 |
+
+The local matrix records the final validation series in `.local-private/pr115-ci-lint/`. The isolated target ran 234 migrations through `20261108134500`. Cleanup left zero residue and Auth was restored.
+
+Real participation, physical devices, and assistive technology remain blocked. Hosted CI and the Vercel check do not verify a production deployment.
+
+The 921-input source manifest is unchanged and excludes both packet files. The archives below belong to the earlier remediation snapshot.
+
+## Historical appendix — original main merge remediation
 
 Tested commit `5ccab1e3cb108619681f2eaa2acfdcc2777ce326`, tree `f3149c839ce8427b0066a8a3c9da54f3daec4df7`, default Journeys build `nqKrCkw2NrvTqQaLUsN_Y`. The branch retains the two-parent merge `0e11273cd38a30894fdb27806d638ef7f26e5fca`. The remediation restores public summary planning and bookmark recovery, corrects synthetic fixtures and local target configuration, and retains the original product and security assertions.
 
@@ -29,11 +56,11 @@ The RLS advisor policy is byte-identical on main `cb35e38`. This remediation kee
 | Manifest | `6cf0fc2f6f69b4b9477f645405ed4a8855460d3bd62780f625bd77fb7af1c7af` | Exact Git blob |
 | All migrations | `51f2b32fc36c45ec60c9a6f028e34bd22c57c4d461fd63cf297b281ac2750786` | Version, name and SHA-256 separated by spaces, LF per row |
 
-Open evidence gates: hostedShareRecovery. Real participation, physical devices and assistive technology remain blocked. Nothing was pushed, deployed or changed in production.
+At this historical checkpoint the hosted share cases had not passed locally because the target was ineligible. The final hosted results above supersede that evidence gap.
 
 ## Original 386-case failure ledger
 
-Original exact merge run: 349 passed, 36 failed, one did not run. Cases 1–35 passed in the corrected 47-case focused run. Cases 36–37 remain hosted-CI only.
+Original exact merge run: 349 passed, 36 failed, one did not run. Cases 1–35 passed in the corrected 47-case focused run. Cases 36–37 were hosted-CI only and subsequently passed there.
 
 | # | Test | First observed cause |
 |---|---|---|
