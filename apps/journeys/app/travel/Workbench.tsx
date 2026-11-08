@@ -60,6 +60,7 @@ const CreatorWorkspace = dynamic(
   {loading: RoleWorkspaceLoading},
 );
 const WorkroomShell = dynamic(() => import('../workroom/WorkroomShell').then(mod => mod.WorkroomShell), {loading: RoleWorkspaceLoading});
+const SpacesApp = dynamic(() => import('../workroom/SpacesApp').then(mod => mod.SpacesApp), {loading: RoleWorkspaceLoading});
 const CreatorMissionsWorkspace = dynamic(() => import('./CreatorMissionsWorkspace').then(mod => mod.CreatorMissionsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorEarningsWorkspace = dynamic(() => import('./CreatorEarningsWorkspace').then(mod => mod.CreatorEarningsWorkspace), {loading: RoleWorkspaceLoading});
 const CreatorSessionsWorkspace = dynamic(() => import('./CreatorSessionsWorkspace').then(mod => mod.CreatorSessionsWorkspace), {loading: RoleWorkspaceLoading});
@@ -670,6 +671,7 @@ export function Workbench({
     else if(path.startsWith('c/')&&publicCreator)content=<PublicCreatorContent creator={publicCreator} locale={locale}/>;
     else if(path.startsWith('articles/')&&publicArticle)content=<PublicArticleContent article={publicArticle} locale={locale}/>;
     else if(['saved','bookmarks'].includes(path))content=<BookmarkWorkspace actorId={actor?.id??null}/>;
+    else if(path==='spaces'||path.startsWith('spaces/'))content=<SpacesApp key={workspaceActor?.id??'guest'} path={path} actorId={workspaceActor?.id??null} enabled={features.conversation===true}/>;
     else if(path==='trips'||path.startsWith('trips/')||path==='record'||path==='trip-planner')content=<TripWorkspace id={path.startsWith('trips/')?path.split('/')[1]:undefined} actorId={actor?.id??null} initialHeading={tripHeading} mediaEnabled={features.media} sharingEnabled={features.sharing} shareRecoveryEnabled={features.shareRecovery}/>;
     else if(path==='studio'||path==='studio/guides'||path==='studio/adventures'||path==='studio/guides/new'||path==='studio/adventures/new'||/^studio\/(guides|adventures)\/[0-9a-f-]{36}\/edit$/.test(path))content=<CreatorWorkspace path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
     else if(path==='studio/missions'||path.startsWith('studio/missions/')||path==='studio/opportunities'||path==='studio/outcomes')content=<CreatorMissionsWorkspace key={`${workspaceActor?.id}:${path}`} initialSnapshot={creatorMissionEntry?.actorId===workspaceActor?.id?creatorMissionEntry:null} path={path} actorId={workspaceActor?.id??null} enabled={features.creator===true}/>;
