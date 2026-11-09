@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T16:05:43.934Z",
+  "slice": "Traveller booking-requests tracker page",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "e23ffc17e4e0257217a75a1c8bf3a2a91d92478d",
+    "releaseTree": "60a80f592dc700e62de390d57cee7172ef45a0f6",
+    "parent": "9e796c3e237907efd551574f8bddf47d0f129a20",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42646204159,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "changed": false,
+    "ledger": 250,
+    "head": "20261109210000"
+  },
+  "deployment": {
+    "previousProduction": "dpl_6UvPRX4AZ3s9VGfzV51pu4K9bBqN",
+    "staged": "dpl_6gDz7Zve3Ges2rAZuJWG9ub7FRgN",
+    "promoted": "dpl_6gDz7Zve3Ges2rAZuJWG9ub7FRgN",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "behaviour": [
+    "GET /{locale}/requests lists every request the signed-in traveller has made, with guide link, creator, dates, party size and status.",
+    "Undecided requests can be withdrawn from the tracker; decided requests cannot.",
+    "Guests see a sign-in CTA; the guide-page request panel links to the tracker.",
+    "No new database objects: the page reuses the booking-request APIs."
+  ],
+  "verification": {
+    "local": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "production": {
+      "traveller": "launch-traveller-20261109@kinnso.internal",
+      "rows": 1,
+      "statuses": [
+        "accepted"
+      ]
+    }
+  },
+  "honestLimits": [
+    "No notifications: status changes are visible only when the traveller or creator visits the tracker/studio.",
+    "No pagination; the API returns all of a traveller’s requests (bounded by the 5-per-24h rule).",
+    "Verification accounts and the test request still exist in production and should be removed before real use."
+  ]
+}
