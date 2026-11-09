@@ -10,7 +10,7 @@ This document is the forward plan for the product after Studio Chat 2.0 and the 
 - **Evidence discipline:** each slice was additive at the database level, covered by unit tests, browser acceptance, a green six-job CI run, a staged-then-promoted deployment and a rollout receipt.
 - **The one thing missing:** a single place where the launch decision is made from evidence instead of prose. That is L1 below.
 
-## Phase 4 — Launch closure (next, in order)
+## Phase 4 — Launch closure — EXIT ACHIEVED 2026-11-09 (launch-ready + packet)
 
 Goal: make "launch" a decision that the product computes and the owner signs, not a status kept in documents.
 
