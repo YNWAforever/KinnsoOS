@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T17:32:28.495Z",
+  "slice": "In-app notifications for booking events",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "acd1cf2722866354660eb93f6264d3ad9635a880",
+    "releaseTree": "3b6334ed1dae2c0d8cb6896721ba67a5a9e5417f",
+    "parent": "e23ffc17e4e0257217a75a1c8bf3a2a91d92478d",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42660354518,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "migration": "20261109220000_booking_notifications.sql",
+    "baseline": {
+      "ledger": 250,
+      "head": "20261109210000"
+    },
+    "post": {
+      "ledger": 251,
+      "head": "20261109220000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_BOOKING_NOTIFICATIONS_20261109",
+    "changes": [
+      "inbox event/entity vocabulary widened additively (booking.requested/accepted/declined/withdrawn, booking_request / booking_request_creator)",
+      "three booking RPCs replaced to emit inbox events in the same transaction as the state change"
+    ],
+    "verified": {
+      "publishedGuides": 8,
+      "contentChanged": false
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_6gDz7Zve3Ges2rAZuJWG9ub7FRgN",
+    "staged": "dpl_5NwfFvh4DrRJLiKcw4VPhU9kNQAU",
+    "promoted": "dpl_5NwfFvh4DrRJLiKcw4VPhU9kNQAU",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "behaviour": [
+    "A traveller request notifies the owning creator (booking.requested) with an unread count; the inbox card links to the studio.",
+    "Accepting or declining notifies the traveller (booking.accepted / booking.declined); the card links to /requests.",
+    "A traveller withdrawing an undecided request notifies the creator (booking.withdrawn).",
+    "No email or external delivery: the inbox states that email delivery is unconfigured."
+  ],
+  "verification": {
+    "local": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-09T17:31:40.059Z",
+          "step": "traveller request submitted",
+          "requestMessage": "Request sent. The creator decides; this is not a confirmed booking."
+        },
+        {
+          "at": "2026-11-09T17:31:52.294Z",
+          "step": "creator inbox shows a booking notification",
+          "firstCard": "你的攻略收到新的預訂申請 2026-11-09T17:31:39.980357+00:00 未讀 開啟相關活動標示已讀向客服查詢此事件",
+          "matchingCards": 1
+        },
+        {
+          "at": "2026-11-09T17:31:55.567Z",
+          "step": "creator accepts the pending request",
+          "ok": true,
+          "id": "a9ef0653-1d63-4355-ba74-7b02f8b85669"
+        },
+        {
+          "at": "2026-11-09T17:32:07.619Z",
+          "step": "traveller inbox shows the accepted decision",
+          "firstCard": "創作者已接受你的日期申請 2026-11-09T17:31:55.644345+00:00 未讀 開啟相關活動標示已讀向客服查詢此事件",
+          "matchingCards": 1
+        }
+      ],
+      "traveller": "launch-traveller-20261109@kinnso.internal",
+      "creator": "release-operator@kinnso.internal (KinnsoOS Editorial)"
+    }
+  },
+  "honestLimits": [
+    "Notifications are in-app only; email delivery remains unconfigured and no push exists.",
+    "Notifications are not marked read automatically and have no digest; they are read in the inbox.",
+    "The production test created another booking request and notification rows; clean up verification accounts and test data before real use."
+  ]
+}
