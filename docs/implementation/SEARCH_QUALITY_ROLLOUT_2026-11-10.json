@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T19:07:12.012Z",
+  "slice": "Multi-word catalogue search (discovery quality)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "1c58db29b0a8260dd00de47d8c99a17663a9f78a",
+    "releaseTree": "bb1106def9f6a49a5e53ee399fa7a10d6d188671",
+    "parent": "1c52191269e485fc518d4ae5ff6a9865e62a668a",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42674472985,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "changed": false,
+    "ledger": 251,
+    "head": "20261109220000"
+  },
+  "deployment": {
+    "previousProduction": "dpl_7R3jPQBe8vetcn6e2qXR3BZLfnFK",
+    "staged": "dpl_8ixXgBsKkWtXntox6NDGonFXdQpE",
+    "promoted": "dpl_8ixXgBsKkWtXntox6NDGonFXdQpE",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "change": {
+    "before": "the whole query was used as one substring, so “quiet temples weekend” returned nothing while the exact phrase worked",
+    "after": "queries with two or more meaningful words are split (stopwords removed, max five) and matched across title, city and summary; single-word behaviour and destination aliases are unchanged",
+    "security": "the PostgREST or-filter builder still quotes/escapes values and cannot touch published status; the security test now asserts the sanitized clause shape and that no “eq.” syntax leaks"
+  },
+  "verification": {
+    "local": {
+      "steps": [
+        {
+          "kind": "api",
+          "q": "quiet temples weekend",
+          "status": 200,
+          "titles": [
+            "A quiet-temples weekend in Kyoto"
+          ]
+        },
+        {
+          "kind": "api",
+          "q": "quiet-temples",
+          "status": 200,
+          "titles": [
+            "A quiet-temples weekend in Kyoto"
+          ]
+        },
+        {
+          "kind": "api",
+          "q": "kyoto",
+          "status": 200,
+          "titles": [
+            "A quiet-temples weekend in Kyoto",
+            "Kyoto market-to-dinner food walk"
+          ]
+        },
+        {
+          "kind": "page",
+          "path": "/zh-HK/explore?q=quiet+temples+weekend",
+          "status": 200,
+          "containsGuide": false
+        },
+        {
+          "kind": "browser",
+          "path": "/zh-HK/explore?q=quiet+temples+weekend",
+          "containsGuide": true
+        }
+      ],
+      "api": "quiet temples weekend → A quiet-temples weekend in Kyoto; single word and city filters unchanged",
+      "browser": "the explore page rendered the Kyoto guide for the multi-word query",
+      "unit": "full suite 2037 pass / 2 skip, including the updated catalogue security test"
+    },
+    "production": {
+      "api": {
+        "family trip singapore": [
+          "Bali family resorts that actually work with young kids",
+          "Singapore with kids: the stroller-friendly route"
+        ],
+        "quiet temples weekend": [
+          "Chiang Mai on a backpacker budget",
+          "A quiet-temples weekend in Kyoto"
+        ],
+        "kyoto": [
+          "A quiet-temples weekend in Kyoto"
+        ]
+      },
+      "health": 200
+    }
+  },
+  "honestLimits": [
+    "Matching is any-meaningful-word across title/city/summary; it improves recall but is not relevance-scored, so a generic word can pull in unrelated guides.",
+    "Search is still substring-based (no stemming, synonyms or typos); “family-friendly” and “family friendly” differ.",
+    "No database change: the mcp_search_guides RPC used by the studio assistant was not altered, so its tool queries keep their existing semantics."
+  ]
+}
