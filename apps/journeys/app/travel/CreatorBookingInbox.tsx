@@ -82,7 +82,7 @@ export function CreatorBookingInbox() {
   return (
     <section className="k-card" aria-labelledby="creator-booking-title" data-testid="creator-booking-inbox" data-state="ready">
       <h2 id="creator-booking-title" style={{ marginTop: 0 }}>{t('Booking requests', '預訂申請')}</h2>
-      <p className="k-meta">{t('Travelers can request a date with you. Accepting means you will arrange it directly; no payment is processed here and no contact details are shared.', '旅客可向你提出日期申請。接受代表你會直接安排；此處不處理付款，亦不交換聯絡資料。')}</p>
+      <p className="k-meta">{t('Travelers can request a date with you. The product takes no payment and does not collect contact details; if the traveller left a way to reach them in the message, arrange the details directly.', '旅客可向你提出日期申請。此處不處理付款，也不會收集聯絡資料；若旅客在訊息中留下聯絡方式，請直接安排細節。')}</p>
       {notice && <p role="status" data-testid="creator-booking-notice">{notice}</p>}
       {items.length === 0 ? (
         <p data-testid="creator-booking-empty">{t('No requests yet.', '尚未有申請。')}</p>
