@@ -18,4 +18,8 @@ export function collaborationNotice(type:string,locale:string){const labels:Reco
  'collaboration.application_rejected':['Application not accepted','合作申請未獲接納'],
  'submission.revision_requested':['Changes requested for submitted work','已提交工作需要修改'],
  'submission.approved':['Submitted work approved','已提交工作獲批'],
- 'submission.rejected':['Submitted work not approved','已提交工作未獲批']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}
+ 'submission.rejected':['Submitted work not approved','已提交工作未獲批'],
+ 'booking.requested':['New booking request for one of your guides','你的攻略收到新的預訂申請'],
+ 'booking.accepted':['The creator accepted your date request','創作者已接受你的日期申請'],
+ 'booking.declined':['The creator declined your date request','創作者已婉拒你的日期申請'],
+ 'booking.withdrawn':['A traveller withdrew a booking request','旅客已撤回預訂申請']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}

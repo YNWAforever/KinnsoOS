@@ -994,7 +994,8 @@
     "tests/contracts/20261109180000_device_acceptance.sql": "supabase/migrations/20261109180000_device_acceptance.sql",
     "tests/contracts/20261109190000_launch_digest.sql": "supabase/migrations/20261109190000_launch_digest.sql",
     "tests/contracts/20261109200000_creator_performance.sql": "supabase/migrations/20261109200000_creator_performance.sql",
-    "tests/contracts/20261109210000_booking_requests.sql": "supabase/migrations/20261109210000_booking_requests.sql"
+    "tests/contracts/20261109210000_booking_requests.sql": "supabase/migrations/20261109210000_booking_requests.sql",
+    "tests/contracts/20261109220000_booking_notifications.sql": "supabase/migrations/20261109220000_booking_notifications.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",

@@ -23,6 +23,8 @@ export function reminderContext(item:InboxItem){
 export function entityLink(item:InboxItem,locale:'en'|'zh-HK'){
  if(!uuid.test(item.entityId))return null;
  if(item.entityType==='support_case')return `/${locale}/support`;
+ if(item.entityType==='booking_request')return `/${locale}/requests`;
+ if(item.entityType==='booking_request_creator')return `/${locale}/studio`;
  if(item.entityType==='place_report')return `/${locale}/reports`;
  const path=item.entityType==='mission'?`studio/missions/${item.entityId}`:item.entityType==='mission_settlement'||item.entityType==='payout_batch'?'studio/earnings':null;
  const context=reminderContext(item);
