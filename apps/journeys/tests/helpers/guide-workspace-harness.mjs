@@ -31,6 +31,7 @@ const STUBS = {
    export const saveLocalSnapshot=async()=>{};export const readLocalSnapshot=async()=>null;
    export const saveLocalDraft=async()=>{};export const readLocalDraft=async()=>null;export const clearLocalDraft=async()=>{};`,
   guest: `export const GuestPlanner=()=>null;`,
+  bookingPanel: `export const BookingRequestPanel=()=>null;`,
   content: `export const PublicGuideContent=({guide})=>guide?guide.title:'';`,
   guard: `export const useDraftNavigation=()=>path=>globalThis.__ports.navigate?.(path);`,
   metrics: `export const trackPilotEvent=(...args)=>globalThis.__ports.trackPilotEvent?.(...args);export const pilotSession=()=>null;`,
@@ -48,6 +49,7 @@ function stubFor(specifier, importer='', live=new Set()) {
   if (specifier.endsWith('/trips/local-drafts')) return 'drafts';
   if (specifier === './ui') return 'ui';
   if (specifier === './GuestPlanner') return 'guest';
+  if (specifier === './BookingRequestPanel') return 'bookingPanel';
   if (specifier.endsWith('/seo/PublicGuideContent')) return 'content';
   if (specifier === './UnsavedDraftGuard') return 'guard';
   if (specifier.endsWith('/telemetry/pilot-client')) return 'metrics';

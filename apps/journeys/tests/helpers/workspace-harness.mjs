@@ -58,6 +58,8 @@ export async function workspaceHarness(name,ports={},initial={}) {
     guideNavigation:'export const useDraftNavigation=()=>()=>{};export const useUnsavedDraftGuard=()=>()=>false;',
     guideGuest:'export const GuestPlanner=()=>null;',
     creatorPerformance:'export const CreatorPerformance=()=>null;',
+    creatorBooking:'export const CreatorBookingInbox=()=>null;',
+    bookingPanel:'export const BookingRequestPanel=()=>null;',
     missing:'export const WorkspaceServiceState=()=>null;'};
   const compiled=await build({entryPoints:[new URL('../../app/travel/'+(name==='SupportWorkspace'?'InboxWorkspace':name)+'.tsx',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],bundle:true,write:false,platform:'node',format:'cjs',external:['react','react/jsx-runtime','next/link','next/navigation','next/image'],plugins:[{name:'boundary-ports',setup(b){
     b.onResolve({filter:/.*/},args=>{
@@ -66,6 +68,8 @@ export async function workspaceHarness(name,ports={},initial={}) {
       else if(name==='GuideWorkspace'&&args.path==='./GuestPlanner')path='guideGuest';
       else if(args.path==='./UnsavedDraftGuard')path='guideNavigation';
       else if(args.path==='./CreatorPerformance')path='creatorPerformance';
+      else if(args.path==='./CreatorBookingInbox')path='creatorBooking';
+      else if(args.path==='./BookingRequestPanel')path='bookingPanel';
       else if(name==='GuideWorkspace'&&args.path.endsWith('/guides/repository'))path='guides';
       else if(name==='GuideWorkspace'&&args.path.endsWith('/bookmarks/repository'))path='bookmarks';
       else if(args.path.endsWith('/trips/local-drafts'))path='drafts';

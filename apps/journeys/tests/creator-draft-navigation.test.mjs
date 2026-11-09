@@ -22,7 +22,7 @@ function providerHistory(initial){
  runInContext(compiledGuard.code,createContext({module,exports:module.exports,crypto,URL,location,history,
   window:{history,addEventListener(){},removeEventListener(){}},require:name=>{
    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
-   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='next/navigation')return{usePathname:()=>location.pathname,useRouter:()=>({push(){}})};
+   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{usePathname:()=>location.pathname,useRouter:()=>({push(){}})};
    if(name==='./ui')return{Modal:'modal'};
    if(name==='../../lib/trips/draft-navigation')return{safeAppDestination};
    throw Error('Unexpected guard dependency '+name);
@@ -86,7 +86,7 @@ function editor(){
   window:{history:{state:{__NA:true,router:{tree:'retained'}},replaceState(...args){historyWrites.push(args);}},addEventListener:(name,fn)=>listeners.set(name,fn),removeEventListener:(name,fn)=>{if(listeners.get(name)===fn)listeners.delete(name);}},
   setTimeout:fn=>{const id=Symbol();timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id),require:name=>{
    if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='next/navigation')return{useRouter:()=>({replace(){}})};
+   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{useRouter:()=>({replace(){}})};
    if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:Object.fromEntries(['save','publish','withdraw'].map(action=>[action,(...args)=>new Promise(resolve=>writes.push({action,args,resolve}))]))};
    if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard:state=>{guard=state;return()=>leaving;}};

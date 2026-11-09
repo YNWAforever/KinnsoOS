@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type {StudioGuideIntent} from '../../lib/studio/guide-editor';
 import {CreatorContentStatus} from './CreatorContentStatus';
 import {CreatorPerformance} from './CreatorPerformance';
+import {CreatorBookingInbox} from './CreatorBookingInbox';
 import type {StudioGuideBinding} from '../../lib/studio/contracts';
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
@@ -87,7 +88,7 @@ function CreatorGuides({ hidden = false }: { hidden?: boolean }) {
  return <section className="k-page"><div className="k-section-title"><h1>{t('Your authored guides', '你的創作攻略')}</h1><Link className="k-btn primary" href={href('studio/guides/new')}>{t('Create guide', '建立攻略')}</Link></div><p>{t('Drafts are private. Published versions can be adopted into traveller trips.', '草稿屬私人內容，已發布版本可供旅人套用到行程。')}</p>
   {!loaded && !message && <p role="status">{t('Loading guides…', '正在載入攻略…')}</p>}{loaded && !items.length && <p>{t('Start with your first authored route.', '由你的第一份創作路線開始。')}</p>}
   <div className="k-card-grid">{items.map(d => <article className="os-guide" key={d.id}><div className="os-guide-body"><h2>{d.payload.title || t('Untitled guide', '未命名攻略')}</h2><p>{d.payload.summary}</p><span>{d.status === 'published' ? t(`Published version ${d.publishedVersion}`, `已發布第 ${d.publishedVersion} 版`) : t('Private draft', '私人草稿')}</span><Link className="k-btn" href={href('studio/guides/' + d.id + '/edit')}>{t('Edit guide', '編輯攻略')}</Link></div></article>)}</div>
-  <CreatorPerformance/>
+  <CreatorPerformance/>`n  <CreatorBookingInbox/>
   {cursor && <button className="k-btn" onClick={() => load(cursor)}>{t('Load more', '載入更多')}</button>}{message && <><p role="alert">{message}</p><button className="k-btn" onClick={() => load()}>{t('Retry', '重試')}</button></>}
  </section>;
 }
