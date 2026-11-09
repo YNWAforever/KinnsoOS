@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T18:16:10.189Z",
+  "slice": "Grounded catalogue assistant for travellers (Phase 6)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "1c52191269e485fc518d4ae5ff6a9865e62a668a",
+    "releaseTree": "3a1dfd27d9f83385b3b06f0b755030adad22033f",
+    "parent": "acd1cf2722866354660eb93f6264d3ad9635a880",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42667392512,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "changed": false,
+    "ledger": 251,
+    "head": "20261109220000"
+  },
+  "deployment": {
+    "previousProduction": "dpl_5NwfFvh4DrRJLiKcw4VPhU9kNQAU",
+    "staged": "dpl_7R3jPQBe8vetcn6e2qXR3BZLfnFK",
+    "promoted": "dpl_7R3jPQBe8vetcn6e2qXR3BZLfnFK",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "design": {
+    "surface": "/{locale}/assistant (signed-in only; guest gets sign-in CTA)",
+    "endpoint": "POST /api/assistant/ask (conversation capability, stateless, nothing stored)",
+    "cost": "reserves one turn from the existing hourly chat budget (30/h in production); 429 with reset time when exhausted",
+    "grounding": "retrieves published guides through the same MCP search function, then asks the configured model to answer only from those rows and cite them; sources are returned separately and linked to /g/{id}",
+    "fallback": "if the model is unconfigured or fails, returns a plain catalogue result labelled “Catalogue result (model not configured)”",
+    "retrievalFix": "catalogue search matches substrings, not questions; when the full question returns nothing the endpoint searches its meaningful words and merges by guide id (caught by acceptance)"
+  },
+  "verification": {
+    "local": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "production": {
+      "traveller": "launch-traveller-20261109@kinnso.internal",
+      "question": "Which guide is good for a family trip to Singapore?",
+      "answer": "The guide for a family trip to Singapore is “Singapore with kids: the stroller-friendly route.” …",
+      "sources": 2,
+      "model": "deepseek-v4.1-flash · 1/30 turns this hour",
+      "firstSourceLink": "/zh-HK/g/30d760a5-1ee5-3416-b122-dd9edc7012d7"
+    }
+  },
+  "honestLimits": [
+    "The answer is generated and can still misstate details; the source cards are the verifiable part.",
+    "Signed-in only to bound cost; no anonymous assistant.",
+    "No conversation memory or history: each question is independent and nothing is stored.",
+    "No booking/charge/availability action: it explicitly cannot book or confirm.",
+    "The 30/h budget is shared with the studio chat assistant for that account."
+  ]
+}
