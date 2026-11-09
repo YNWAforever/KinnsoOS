@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T19:56:00.585Z",
+  "slice": "Relevance-ranked catalogue search",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "7ed4c83c98ef82db9a281e4fd37b6f85162333af",
+    "releaseTree": "349e9cd163ec4ba5a9fe5c432abf7764d79e7daa",
+    "parent": "1c58db29b0a8260dd00de47d8c99a17663a9f78a",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42682722099,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "migrations": [
+      {
+        "version": "20261110010000",
+        "name": "catalog_ranking",
+        "ledger": 252
+      },
+      {
+        "version": "20261110020000",
+        "name": "catalog_ranking_weights",
+        "ledger": 253
+      }
+    ],
+    "rpc": "search_kinnso_catalog(text,text,integer,integer) — anon-readable, public columns only",
+    "scoring": "per matched token: title 15, city 8, summary 5, creator 3; +5 verified content status; +0.5 per save (max 20); recency tiebreak"
+  },
+  "deployment": {
+    "previousProduction": "dpl_8ixXgBsKkWtXntox6NDGonFXdQpE",
+    "staged": "dpl_GxJkeB9PGsRiqFQczbbphNdFiRQf",
+    "promoted": "dpl_GxJkeB9PGsRiqFQczbbphNdFiRQf",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "change": {
+    "before": "multi-word search matched tokens but ordered by publication date",
+    "firstAttempt": "one point per matched token regardless of field — family trip singapore still ranked Bali first because both guides matched one token and tied",
+    "final": "field-weighted scoring so a title token beats a summary token; production now ranks the Singapore guide first for family trip singapore",
+    "fallback": "single-word, city and destination-alias searches keep the existing REST path; a failed RPC falls back to the REST token filter"
+  },
+  "verification": {
+    "production": {
+      "family trip singapore": [
+        "Singapore with kids: the stroller-friendly route",
+        "Bali family resorts that actually work with young kids"
+      ],
+      "quiet temples weekend": [
+        "A quiet-temples weekend in Kyoto",
+        "Chiang Mai on a backpacker budget"
+      ],
+      "health": 200
+    },
+    "local": "ranked RPC returns the Kyoto guide for kyoto weekend; unit suite green with a new ranked-path test and a fallback test"
+  },
+  "honestLimits": [
+    "Scoring is heuristic field weighting, not semantic relevance; synonyms and typos are still unmatched.",
+    "Verified/saves boosts can outrank a title match when saved/verified content is only loosely related.",
+    "City filtering inside the RPC is exact; destination aliases still use the REST path.",
+    "The studio assistant MCP search RPC is unchanged, so assistant retrieval does not use the ranking yet."
+  ]
+}
