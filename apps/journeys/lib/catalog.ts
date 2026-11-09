@@ -151,6 +151,31 @@ export async function queryCatalog(
   url.searchParams.set("limit", String(query.pageSize + 1));
   url.searchParams.set("offset", String((query.page - 1) * query.pageSize));
   const destination=query.city ? null : destinationAlias(query.q);
+  const tokens = searchTokens(query.q);
+  // Multi-word searches use the ranked RPC; single-word and aliased searches keep
+  // the existing REST path. A failed RPC falls back to REST rather than erroring.
+  if (query.q && !destination && tokens.length > 1) {
+    try {
+      const rpcUrl = new URL("/rest/v1/rpc/search_kinnso_catalog", url.origin);
+      const response = await transport(rpcUrl, {
+        method: "POST",
+        headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ p_query: query.q, p_city: query.city, p_limit: query.pageSize + 1, p_offset: (query.page - 1) * query.pageSize }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(8000),
+        redirect: "error",
+      });
+      if (response.ok) {
+        const data: unknown = await response.json();
+        if (Array.isArray(data) && data.length <= 13) {
+          const ranked = data.map(mapRow);
+          return { status: "ready", items: ranked.slice(0, 12), hasMore: ranked.length > 12 && query.page < 100, query };
+        }
+      }
+    } catch {
+      // Fall through to the REST search below; ranking is an improvement, not a precondition.
+    }
+  }
   if (query.city) url.searchParams.set("city", "eq." + postgrestValue(query.city));
   else if (destination) url.searchParams.set('city', destination==='Kyoto' ? 'in.(Kyoto,京都)' : 'in.("Hong Kong",香港)');
   if (query.q && !destination) {

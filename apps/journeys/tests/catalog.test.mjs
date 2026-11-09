@@ -149,15 +149,28 @@ test("only approved HTTPS image host passes cover validation", () => {
   ])
     assert.equal(safeCover(value), null);
 });
-test("a multi-word guide title stays one quoted search pattern", async () => {
-  await queryCatalog({ q: "Quiet Kyoto" }, env, async (input) => {
-    const pattern = new URL(input).searchParams.get("or");
-    assert.equal(
-      pattern,
-      '(title.ilike."*Quiet Kyoto*",city.ilike."*Quiet Kyoto*",summary.ilike."*Quiet Kyoto*")',
-    );
+test("a multi-word search uses the ranked catalogue RPC", async () => {
+  let seen = null;
+  const result = await queryCatalog({ q: "Quiet Kyoto" }, env, async (input, init) => {
+    seen = { url: String(input), body: JSON.parse(String(init?.body ?? "{}")) };
     return Response.json([]);
   });
+  assert.ok(seen);
+  assert.match(seen.url, /\/rest\/v1\/rpc\/search_kinnso_catalog$/);
+  assert.equal(seen.body.p_query, "Quiet Kyoto");
+  assert.equal(result.status, "ready");
+});
+test("a failed ranked search falls back to the REST token filter", async () => {
+  const calls = [];
+  const result = await queryCatalog({ q: "quiet temples" }, env, async (input, init) => {
+    const url = String(input);
+    calls.push({ url, method: init?.method });
+    if (url.includes("/rpc/")) return new Response("", { status: 503 });
+    return Response.json([]);
+  });
+  assert.equal(calls.length, 2);
+  assert.match(calls[1].url, /\/rest\/v1\/guides\?/);
+  assert.equal(result.status, "ready");
 });
 test("a single-word search keeps the unquoted ilike wildcard", async () => {
   await queryCatalog({ q: "coffee" }, env, async (input) => {
