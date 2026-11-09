@@ -38,6 +38,7 @@
     "app/api/creator/ladder/route.ts",
     "app/api/creator/missions/[id]/route.ts",
     "app/api/creator/missions/route.ts",
+    "app/api/creator/performance/route.ts",
     "app/api/creator/perks/route.ts",
     "app/api/creator/profile/route.ts",
     "app/api/creator/scan/route.ts",
@@ -168,6 +169,7 @@
     "app/travel/CreatorEarningsWorkspace.tsx",
     "app/travel/CreatorLadderWorkspace.tsx",
     "app/travel/CreatorMissionsWorkspace.tsx",
+    "app/travel/CreatorPerformance.tsx",
     "app/travel/CreatorSessionsWorkspace.tsx",
     "app/travel/CreatorWorkspace.tsx",
     "app/travel/DataRights.tsx",
@@ -984,7 +986,8 @@
     "tests/contracts/20261109160000_data_rights.sql": "supabase/migrations/20261109160000_data_rights.sql",
     "tests/contracts/20261109170000_waiver_expiry.sql": "supabase/migrations/20261109170000_waiver_expiry.sql",
     "tests/contracts/20261109180000_device_acceptance.sql": "supabase/migrations/20261109180000_device_acceptance.sql",
-    "tests/contracts/20261109190000_launch_digest.sql": "supabase/migrations/20261109190000_launch_digest.sql"
+    "tests/contracts/20261109190000_launch_digest.sql": "supabase/migrations/20261109190000_launch_digest.sql",
+    "tests/contracts/20261109200000_creator_performance.sql": "supabase/migrations/20261109200000_creator_performance.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
