@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T13:00:00.684Z",
+  "slice": "Creator guide activity (Phase 6, first slice)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "3063ac4ba8391d54deb7ebacae775a8312c7d18a",
+    "releaseTree": "6c42476d65175a1eade8bac022d452474f1b95e2",
+    "parent": "ddc9d7f6813b20d213b5dfd0b83350a7b3b4559e",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42617122868,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "migration": "20261109200000_creator_performance.sql",
+    "baseline": {
+      "ledger": 248
+    },
+    "post": {
+      "ledger": 249
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_CREATOR_PERFORMANCE_20261109",
+    "verified": {
+      "rpc": "kinnso_creator_guide_performance()",
+      "anonLeak": false,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_FJ2WULx8KkNRUD5ZRS3KHNgY2SV7",
+    "staged": "dpl_JAaCBu8ci7A6J9ge7uJksNreJScY",
+    "promoted": "dpl_JAaCBu8ci7A6J9ge7uJksNreJScY",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "anon": 401,
+      "creatorApi": {
+        "status": 200,
+        "totals": {
+          "saves": 1,
+          "guides": 8,
+          "points": 0,
+          "verified": 8,
+          "contributions": 0
+        }
+      },
+      "studioPanel": {
+        "panels": 1,
+        "rows": 8,
+        "totalsText": "8 篇攻略 · 8 篇已核實 · 1 次收藏 · 0 項貢獻（0 分）"
+      }
+    }
+  },
+  "verification": {
+    "local": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "production": {
+      "checkedAt": "2026-11-09T12:59:39.934Z",
+      "origin": "https://kinnso-os.vercel.app",
+      "deployment": null,
+      "expectedDeployment": "dpl_JAaCBu8ci7A6J9ge7uJksNreJScY",
+      "anonStatus": 401,
+      "apiStatus": 200,
+      "totals": {
+        "saves": 1,
+        "guides": 8,
+        "points": 0,
+        "verified": 8,
+        "contributions": 0
+      },
+      "guides": [
+        {
+          "title": "The Korean BBQ spots Seoul locals actually queue for",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "Singapore with kids: the stroller-friendly route",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "Chiang Mai on a backpacker budget",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "Busan's Jagalchi seafood market, a first-timer's guide",
+          "verified": true,
+          "saves": 1,
+          "contributions": 0
+        },
+        {
+          "title": "Bangkok street food for under $20 a day",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "Bali family resorts that actually work with young kids",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "A quiet-temples weekend in Kyoto",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        },
+        {
+          "title": "A late-night ramen crawl through Tokyo",
+          "verified": true,
+          "saves": 0,
+          "contributions": 0
+        }
+      ],
+      "panel": 1,
+      "rows": 8,
+      "totalsText": "8 篇攻略 · 8 篇已核實 · 1 次收藏 · 0 項貢獻（0 分）"
+    }
+  },
+  "honestLimits": [
+    "traveller analytics is unpopulated, so views are omitted rather than zero",
+    "contributions belong to the original seed creator ids, so the editorial identity shows 0",
+    "aggregates only; no per-traveller or per-user data is exposed",
+    "small samples are activity, not statistically meaningful performance"
+  ]
+}

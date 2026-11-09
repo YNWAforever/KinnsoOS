@@ -34,10 +34,10 @@ Do not start building until these product decisions are made; they change the sc
 
 Suggested build order once decided: **S6a booking requests without money** (inquiries, merchant inbox, traveller status timeline) → **S6b payments and payouts** → **S6c merchant settlement tooling**. Each step gets the same slice discipline: additive migration, RPC-only access, API, UI, tests, staged deploy, receipt.
 
-## Phase 6 — Growth and depth (only after Phase 4/5)
+## Phase 6 — Growth and depth (first slice shipped: creator guide activity)
 
 - Traveller-facing assistant beyond the studio (same chat backend, different tools and guardrails).
-- Creator analytics: views, adoption, conversion, honest labels for small samples.
+- Creator analytics: guide activity panel shipped (saves, contributions, verified status; views omitted until traveller analytics is populated).
 - Discovery: ranking and personalisation with explicit controls and a "why am I seeing this" surface.
 - Notifications: email/push with preference centre and consent records.
 - Ops analytics: funnel, alerts history, content coverage.
