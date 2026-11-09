@@ -25,7 +25,10 @@ const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * 86400000)
 /** Request-to-book a date with the guide's author. Request only: no payment, no
  * confirmation, and the creator's answer appears here — nothing is promised. */
 export function BookingRequestPanel({ guideId }: { guideId: string }) {
-  const { t, href } = useApp();
+  const app = useApp();
+  // Server rendering in public-page tests can mount this without an AppContext; fall back safely.
+  const t = (en: string, zh: string) => (app ? app.t(en, zh) : en);
+  const href = (path: string) => (app ? app.href(path) : '/' + path);
   const [items, setItems] = useState<BookingRequest[] | null>(null);
   const [authRequired, setAuthRequired] = useState(false);
   const [busy, setBusy] = useState(false);
