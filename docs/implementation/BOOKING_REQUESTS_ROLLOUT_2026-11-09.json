@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T15:21:59.487Z",
+  "slice": "S6a booking requests without payments (request-to-book)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "decisions": {
+    "model": "request-to-book only: traveller requests a date, the owning creator accepts or declines, traveller may withdraw before a decision",
+    "money": "no payment fields, no amounts, no provider; nothing is charged or confirmed",
+    "contact": "the product does not collect contact details; both panels tell the traveller to include a way to be reached in the message if a follow-up is wanted",
+    "rateLimit": "5 requests per traveller per rolling 24 hours, enforced in the database"
+  },
+  "source": {
+    "commits": [
+      "b7fe3a16e96e95bc3878345de4405f5660e60647 (migration, RPCs, APIs, panels)",
+      "5fc9c26560f500764d04b9bb92a40edc3306a386 (summary guide pages get the panel)",
+      "9e796c3e237907efd551574f8bddf47d0f129a20 (arrangement copy)"
+    ],
+    "branch": "release/spaces-mcp-20261108",
+    "ci": [
+      {
+        "runId": 42623163018,
+        "conclusion": "success",
+        "jobs": 6
+      },
+      {
+        "runId": 42628448746,
+        "conclusion": "success",
+        "jobs": 6
+      },
+      {
+        "runId": 42634034730,
+        "conclusion": "success",
+        "jobs": 6,
+        "note": "one rerun after an unrelated ECONNRESET flake in content-first-wave"
+      }
+    ]
+  },
+  "database": {
+    "migration": "20261109210000_booking_requests.sql",
+    "baseline": {
+      "ledger": 249,
+      "head": "20261109200000"
+    },
+    "post": {
+      "ledger": 250,
+      "head": "20261109210000"
+    },
+    "atomic": true,
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_BOOKING_REQUESTS_20261109",
+    "verified": {
+      "table": "public.booking_requests (RLS, guest access revoked both table and RPCs)",
+      "rpcs": [
+        "kinnso_request_booking",
+        "kinnso_my_booking_requests",
+        "kinnso_creator_booking_requests",
+        "kinnso_respond_booking_request",
+        "kinnso_withdraw_booking_request"
+      ],
+      "anonLeak": false,
+      "contentUnchanged": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_7ZgZaerVuc63CQqjeeqe4YfoZiYK",
+    "staged": "dpl_6UvPRX4AZ3s9VGfzV51pu4K9bBqN",
+    "promoted": "dpl_6UvPRX4AZ3s9VGfzV51pu4K9bBqN",
+    "url": "https://kinnso-os.vercel.app",
+    "verification": {
+      "health": 200,
+      "guidePage": "200 with booking panel and arrangement copy present",
+      "local": {
+        "total": 14,
+        "passed": 14,
+        "failed": 0
+      }
+    }
+  },
+  "productionE2E": {
+    "travellerAccount": "launch-traveller-20261109@kinnso.internal (created for verification; email confirmed directly for login; password stored only in .local-private/launch-traveller.json)",
+    "steps": [
+      {
+        "at": "2026-11-09T14:20:54.091Z",
+        "step": "traveller account created via signup",
+        "status": "existing",
+        "hasSession": false,
+        "confirmed": null
+      },
+      {
+        "at": "2026-11-09T14:21:08.214Z",
+        "step": "traveller sees the request panel on the guide",
+        "panel": 1
+      },
+      {
+        "at": "2026-11-09T14:21:13.074Z",
+        "step": "traveller submits a request through the UI",
+        "message": "Request sent. The creator decides; this is not a confirmed booking.",
+        "status": "requested"
+      },
+      {
+        "at": "2026-11-09T14:21:27.220Z",
+        "step": "creator sees the request in the studio inbox",
+        "inbox": 1,
+        "rows": 1
+      },
+      {
+        "at": "2026-11-09T14:21:30.273Z",
+        "step": "creator accepts the request",
+        "notice": "已接受申請。"
+      },
+      {
+        "at": "2026-11-09T14:21:44.167Z",
+        "step": "traveller sees the creator decision",
+        "status": "accepted"
+      },
+      {
+        "at": "2026-11-09T14:21:50.828Z",
+        "step": "signed-out guide page offers sign-in to request",
+        "guestPanel": 1,
+        "signInCta": 1
+      }
+    ],
+    "outcome": "request submitted through the guide-page UI, seen in the creator studio inbox, accepted, and reflected back to the traveller; signed-out page shows the sign-in CTA"
+  },
+  "honestLimits": [
+    "No payment, no confirmation, no contract: an accepted request only says the creator will arrange details.",
+    "No notifications or email; the response is visible only when either party visits the page or studio.",
+    "No traveller identity is shown to the creator; follow-up depends on the traveller volunteering contact in the message.",
+    "Five requests per 24h; there is no spam scoring beyond that.",
+    "A test request and a verification traveller account exist in production; remove them when real travellers arrive.",
+    "Three production identities now exist for automation/verification (release operator, KinnsoOS Editorial creator, launch traveller) — rotate or remove."
+  ]
+}

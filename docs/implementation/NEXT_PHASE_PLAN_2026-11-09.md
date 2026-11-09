@@ -32,7 +32,7 @@ Do not start building until these product decisions are made; they change the sc
 3. **Payouts and tax:** merchant onboarding (KYC), commission model, invoicing, regional tax handling.
 4. **Trust surface:** cancellation policy, disputes, support ownership.
 
-Suggested build order once decided: **S6a booking requests without money** (inquiries, merchant inbox, traveller status timeline) → **S6b payments and payouts** → **S6c merchant settlement tooling**. Each step gets the same slice discipline: additive migration, RPC-only access, API, UI, tests, staged deploy, receipt.
+Suggested build order: **S6a booking requests without money — shipped 2026-11-09 (request-to-book, no payments)** (inquiries, merchant inbox, traveller status timeline) → **S6b payments and payouts** → **S6c merchant settlement tooling**. Each step gets the same slice discipline: additive migration, RPC-only access, API, UI, tests, staged deploy, receipt.
 
 ## Phase 6 — Growth and depth (first slice shipped: creator guide activity)
 
