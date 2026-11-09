@@ -103,6 +103,7 @@ export function BookingRequestPanel({ guideId }: { guideId: string }) {
   return (
     <section className="k-card" aria-labelledby="booking-request-title" data-testid="booking-request-panel">
       <h2 id="booking-request-title" style={{ marginTop: 0 }}>{t('Request a date with the author', '向作者預約日期')}</h2>
+      <p className="k-meta"><a href={href('requests')}>{t('See all your requests', '查看你所有申請')}</a></p>
       <p className="k-meta">{t('This sends a request only. No payment is taken and nothing is confirmed until the creator accepts. The product does not collect contact details, so include a way to reach you in the message if you want the creator to follow up.', '這只會送出申請；不收取款項，創作者接受前都不算確認。此產品不會收集聯絡資料，如希望創作者跟進，請在訊息中留下聯絡方式。')}</p>
       {authRequired ? (
         <p>

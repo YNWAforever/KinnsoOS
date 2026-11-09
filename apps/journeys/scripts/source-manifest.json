@@ -200,6 +200,7 @@
     "app/travel/MerchantTeamAccess.tsx",
     "app/travel/MerchantWorkspace.tsx",
     "app/travel/MonitoringWorkspace.tsx",
+    "app/travel/MyBookingRequests.tsx",
     "app/travel/OpsContentAdmin.tsx",
     "app/travel/OpsContentHygiene.tsx",
     "app/travel/OpsDashboardWorkspace.tsx",
