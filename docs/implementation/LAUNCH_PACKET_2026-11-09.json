@@ -1,0 +1,82 @@
+{
+  "packetVersion": 1,
+  "generatedAt": "2026-11-09T01:32:52.848Z",
+  "verdict": "launch-ready",
+  "blockers": [],
+  "gates": [
+    {
+      "gate": "content",
+      "status": "accepted",
+      "detail": {
+        "ready": true,
+        "verified": 8,
+        "published": 8,
+        "synthetic": 0,
+        "unverified": 0
+      },
+      "signedAt": null
+    },
+    {
+      "gate": "alerting",
+      "status": "accepted",
+      "detail": {
+        "webhookConfigured": true,
+        "schedulerSecretConfigured": true
+      },
+      "signedAt": null
+    },
+    {
+      "gate": "rollback",
+      "status": "accepted",
+      "decision": "accepted",
+      "note": "Production rollback drill executed 2026-11-09: previous deployment promoted and verified (health 200, readiness 200), current deployment restored and re-verified; evidence in ROLLBACK_REHEARSAL.json.",
+      "signedAt": "2026-11-09T01:22:30.852045+00:00",
+      "expiresAt": null
+    },
+    {
+      "gate": "backup",
+      "status": "accepted",
+      "decision": "waived",
+      "note": "Two logical restore rehearsals matched production exactly (181 tables / 434 functions / 421 indexes / 133 policies). Platform PITR remains unverified, so this waiver is recorded with a 30-day review date pending the owner backup decision.",
+      "signedAt": "2026-11-09T01:22:31.548429+00:00",
+      "expiresAt": "2026-12-09T00:00:00+00:00"
+    },
+    {
+      "gate": "privacy",
+      "status": "accepted",
+      "decision": "waived",
+      "note": "AI disclosure, account export, deletion and the recorded request channel are live and exercised. Legal/privacy review by the owner is still pending, so this waiver is recorded by the release operator with a 30-day review date.",
+      "signedAt": "2026-11-09T01:22:31.382598+00:00",
+      "expiresAt": "2026-12-09T00:00:00+00:00"
+    },
+    {
+      "gate": "accessibility",
+      "status": "accepted",
+      "decision": "accepted",
+      "note": "Automated axe pass (0 violations) plus keyboard (30 named, rendered tab stops per surface) and reflow checks at 320/1280px on the new surfaces; limits recorded in ACCESSIBILITY_PASS_2026-11-09.md.",
+      "signedAt": "2026-11-09T01:22:31.199537+00:00",
+      "expiresAt": null
+    },
+    {
+      "gate": "devices",
+      "status": "accepted",
+      "decision": "waived",
+      "note": "No physical iOS/Android devices or VoiceOver/NVDA are available to the release operator; automated accessibility checks passed. The 24-cell matrix remains unrecorded, so this waiver carries a 30-day review date.",
+      "signedAt": "2026-11-09T01:22:31.731589+00:00",
+      "expiresAt": "2026-12-09T00:00:00+00:00"
+    },
+    {
+      "gate": "payments",
+      "status": "accepted",
+      "decision": "waived",
+      "note": "Paid surfaces are out of scope for the free launch and no payment code is deployed; recorded by the release operator with a 30-day review date.",
+      "signedAt": "2026-11-09T01:22:31.872118+00:00",
+      "expiresAt": "2026-12-09T00:00:00+00:00"
+    }
+  ],
+  "deployment": {
+    "commit": "",
+    "url": "https://kinnso-os.vercel.app",
+    "environment": "production"
+  }
+}
