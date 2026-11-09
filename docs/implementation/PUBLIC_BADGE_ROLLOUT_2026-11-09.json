@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-09T05:41:22.160Z",
+  "slice": "Public catalogue content-status badge (post-launch polish)",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "93004d82a528882503bbe2d32432c0490695180f",
+    "releaseTree": "bceab853127445cd27d7e9f1d64c4b155757e5ee",
+    "parent": "96102dd4dabe12c19800a5d563887585b2252050",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42565269627,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "changed": false,
+    "ledger": 248
+  },
+  "deployment": {
+    "previousProduction": "dpl_AB5fJCi41aFVqFBiJeKxsSzgXn9i",
+    "staged": "dpl_FJ2WULx8KkNRUD5ZRS3KHNgY2SV7",
+    "promoted": "dpl_FJ2WULx8KkNRUD5ZRS3KHNgY2SV7",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "changes": [
+    "The content-status badge is now rendered on summary guide pages, not only structured itinerary pages.",
+    "The badge UUID check no longer requires an RFC-variant nibble; eight launch ids failed it and silently lost their badge, though the server-side fetch always validated ids.",
+    "ContentHonestyBadge tolerates a missing AppContext during server rendering/tests (falls back to English copy) instead of throwing — caught by CI."
+  ],
+  "verification": {
+    "guidePages": [
+      {
+        "id": "3338bfb4-a19f-8029-392a-b1a34fe58175",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "1ce845e3-0880-2f56-a3b2-70f2e544ab21",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "30d760a5-1ee5-3416-b122-dd9edc7012d7",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "06ec038d-3d2d-d72f-051e-615f591fe21c",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "e1c2820d-25e5-9795-54b5-637be546e04a",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "7559c30e-083f-5db5-d9c8-3d68cb242ce9",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "e958953e-94b4-b754-67be-2b13526783fc",
+        "page": 200,
+        "badge": "verified"
+      },
+      {
+        "id": "70abfc90-1e00-264f-352e-735c23fd885e",
+        "page": 200,
+        "badge": "verified"
+      }
+    ],
+    "allEightVerified": true,
+    "accessibility": {
+      "surfaces": 6,
+      "issues": 0,
+      "detail": "axe WCAG AA + keyboard + reflow at 320/1280 on two guide pages and the creator page"
+    },
+    "defectsCaughtByCiOrAudit": [
+      "CI: page-imported client badge crashed in the public-attribution harness without AppContext (fixed).",
+      "Audit: only RFC-compliant ids showed a badge; the other catalogue ids silently skipped it (fixed and retested 8/8)."
+    ]
+  }
+}
