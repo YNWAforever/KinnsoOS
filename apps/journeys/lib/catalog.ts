@@ -51,6 +51,27 @@ export function postgrestValue(value: string): string {
   if (!/[\s,.:()"]/.test(value)) return value;
   return `"${value.replaceAll('"', '""')}"`;
 }
+
+const SEARCH_STOPWORDS = new Set([
+  'the','and','for','with','which','what','who','that','this','guide','guides','covers','cover',
+  'about','good','best','near','from','have','can','you','your','find','show','are','was','were',
+  'will','would','should','could','does','did','but','not','any','all','out','our','their','there',
+  'here','trip','travel','traveller','traveler','help','need','want','looking','look','tell','give',
+  'some','why','how','when','where','it','its','be','been','if','of','on','at','by','or','as','to',
+  'in','is','an','a',
+]);
+
+/** The catalogue filter matches substrings, so a multi-word query as one phrase
+ * misses most real searches. Split meaningful words and match any of them across
+ * title, city and summary; a single word keeps the original behaviour. */
+export function searchTokens(value: string): string[] {
+  const words = value
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((word) => word.length > 1 && !SEARCH_STOPWORDS.has(word));
+  return [...new Set(words)].slice(0, 5);
+}
+
 export function parseCatalogQuery(params: URLSearchParams): CatalogQuery {
   const raw = params.get("page") ?? "1";
   const page = /^[1-9]\d*$/.test(raw) ? Math.min(Number(raw), 100) : 1;
@@ -133,11 +154,21 @@ export async function queryCatalog(
   if (query.city) url.searchParams.set("city", "eq." + postgrestValue(query.city));
   else if (destination) url.searchParams.set('city', destination==='Kyoto' ? 'in.(Kyoto,京都)' : 'in.("Hong Kong",香港)');
   if (query.q && !destination) {
-    const pattern = postgrestValue(`*${query.q}*`);
-    url.searchParams.set(
-      "or",
-      `(title.ilike.${pattern},city.ilike.${pattern},summary.ilike.${pattern})`,
-    );
+    const tokens = searchTokens(query.q);
+    if (tokens.length > 1) {
+      const clauses: string[] = [];
+      for (const token of tokens) {
+        const pattern = postgrestValue(`*${token}*`);
+        clauses.push(`title.ilike.${pattern}`, `city.ilike.${pattern}`, `summary.ilike.${pattern}`);
+      }
+      url.searchParams.set("or", `(${clauses.join(",")})`);
+    } else {
+      const pattern = postgrestValue(`*${query.q}*`);
+      url.searchParams.set(
+        "or",
+        `(title.ilike.${pattern},city.ilike.${pattern},summary.ilike.${pattern})`,
+      );
+    }
   }
   try {
     const response = await transport(url, {

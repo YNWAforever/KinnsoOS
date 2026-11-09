@@ -197,10 +197,15 @@ test("search filter cannot alter published status or include PostgREST syntax", 
       const url = new URL(input);
       assert.equal(url.searchParams.get("status"), "eq.published");
       assert.equal(url.searchParams.get("city"), 'eq."Hong Kong"');
-      assert.equal(
-        url.searchParams.get("or"),
-        '(title.ilike."*東京 status eq draft*",city.ilike."*東京 status eq draft*",summary.ilike."*東京 status eq draft*")',
-      );
+      const filter = url.searchParams.get("or") ?? "";
+      // Multi-word queries are split into safe per-token ilike clauses; the
+      // injected syntax can only ever become literal wildcard text.
+      const clauses = filter.replace(/^\(|\)$/g, "").split(",");
+      assert.ok(clauses.length >= 3, filter);
+      for (const clause of clauses) {
+        assert.match(clause, /^(title|city|summary)\.ilike\.\*[^*]*\*$/, clause);
+      }
+      assert.ok(!filter.includes("eq."), filter);
       return Response.json([]);
     },
   );
