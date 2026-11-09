@@ -18,7 +18,7 @@ import { useApp } from './ui';
  *  partial payload is shown as "not provided" instead of a fabricated 0. */
 type Honesty = Pick<GuideHonesty, 'status' | 'rightsBasis' | 'placeVerifiedAt'> & { sourceCount: number | null };
 
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HONESTY_STATUSES: readonly GuideHonestyStatus[] = ['synthetic', 'unverified', 'attested', 'verified'];
 const RIGHTS_BASES: readonly GuideRightsBasis[] = ['original', 'licensed', 'unknown'];
 
