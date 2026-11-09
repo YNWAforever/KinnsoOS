@@ -19,6 +19,7 @@ import {PublicArticleListing,PublicArticlesHub} from '../../../lib/seo/PublicArt
 import {articleLabels} from '../../../lib/seo/article-labels';
 import {articlePageMetadata} from '../../../lib/seo/article-presentation';
 import {PublicGuideContent} from '../../../lib/seo/PublicGuideContent';
+import {ContentHonestyBadge} from '../../travel/ContentHonestyBadge';
 import {parsePublicRoute,isPublicRouteNamespace,readLiveArticles,readLiveSessions,bareNamespaceIsPublicEntry} from '../../../lib/seo/public-routes';
 import {readPublicExperience,readMerchantExperiences,experiencePageMetadata} from '../../../lib/seo/public-experiences';
 import {readPublicMerchant,merchantPageMetadata} from '../../../lib/seo/public-merchants';
@@ -187,7 +188,7 @@ export default async function Page({ params,searchParams }: Props) {
       const actor=await currentActor();
       return <Suspense fallback={<main className="k-page">Loading Kinnso…</main>}><Workbench key={locale+'g/'+guide.id} locale={locale as 'en'|'zh-HK'} path={'g/'+guide.id} mode={capabilities(process.env).trips.mode} actor={actor} publicGuide={guide} features={{catalog:capabilities(process.env).catalog.mode==='connected',trips:capabilities(process.env).trips.mode==='connected',media:capabilities(process.env).mediaUpload.mode==='connected',sharing:capabilities(process.env).sharing.mode==='connected',shareRecovery:capabilities(process.env).shareRecovery.mode==='connected',creator:capabilities(process.env).creator.mode==='connected',ops:capabilities(process.env).ops.mode==='connected',pilot:capabilities(process.env).pilot.mode==='connected',merchant:capabilities(process.env).merchant.mode==='connected',notifications:capabilities(process.env).notifications.mode==='connected',agent:capabilities(process.env).agent.mode==='connected',telemetry:capabilities(process.env).telemetry.mode==='connected',fieldMetrics:process.env.KINNSO_ENVIRONMENT!=='local'&&process.env.KINNSO_SYNTHETIC_RUN!=='true'&&!actor?.roles.includes('ops')}}/></Suspense>;
     }
-    return <PublicGuideContent guide={guide} locale={locale}/>;
+    return <div><ContentHonestyBadge guideId={guide.id}/><PublicGuideContent guide={guide} locale={locale}/></div>;
   }
   const demo=route[0]==='demo';
   const path = (demo?route.slice(1):route).join("/");

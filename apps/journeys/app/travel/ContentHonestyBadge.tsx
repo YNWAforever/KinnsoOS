@@ -86,7 +86,9 @@ function formatDate(value: string | null, locale: 'en' | 'zh-HK'): string | null
 }
 
 export function ContentHonestyBadge({ guideId, className }: { guideId: string; className?: string }) {
-  const { t } = useApp();
+  const app = useApp();
+  // Public pages can render this badge without an AppContext (e.g. server rendering in tests); fall back to English copy.
+  const t = (en: string, zh: string) => (app ? app.t(en, zh) : en);
   const [honesty, setHonesty] = useState<Honesty | null>(null);
 
   useEffect(() => {
