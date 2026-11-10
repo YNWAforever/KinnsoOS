@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T13:12:27.455Z",
+  "slice": "Booking request status filters",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "40af799de7ff7d19a4dd3ddeaedb6e0eabbcc5f3",
+    "releaseTree": "86e44531efe2a038c5abfff710a57d483203a6b8",
+    "parent": "ea33ad3a6c2b57a9c1d32ab0a738443f56799b07",
+    "branch": "release/spaces-mcp-20261108",
+    "previousReleaseCi": {
+      "commit": "728ca4fdf2915e43410be0b1f8493843479d25e2",
+      "runId": 42780703171,
+      "conclusion": "success",
+      "note": "the earlier backlog cleared and the previous release passed CI"
+    },
+    "ci": {
+      "status": "pending",
+      "note": "GitHub Actions postponed the run: created 12:53Z, still pending with no jobs ~30 minutes later"
+    }
+  },
+  "database": {
+    "migration": null,
+    "ledger": 258,
+    "note": "UI-only slice; no migration"
+  },
+  "deployment": {
+    "previousProduction": "dpl_H7Psp7D7pve4d5TMi56Ca4BYNrJs",
+    "staged": "dpl_EvFv1hMDmAPiUVhRSo3W4hveFCDg",
+    "promoted": "dpl_EvFv1hMDmAPiUVhRSo3W4hveFCDg",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T13:07:19.246Z",
+          "step": "traveller created three requests",
+          "ids": [
+            "672cecc3-6bfe-4510-9202-77b3cd4fd521",
+            "7289d92e-470c-4ae2-b4c8-62ec4afe72b0",
+            "af338465-91f9-49bc-84de-f0de50d11e1a"
+          ],
+          "statuses": [
+            201,
+            201,
+            201
+          ]
+        },
+        {
+          "at": "2026-11-10T13:07:37.122Z",
+          "step": "creator filters work in production",
+          "chips": [
+            "全部 (5)",
+            "待回覆 (1)",
+            "已接受 (3)",
+            "已婉拒 (1)",
+            "已撤回 (0)"
+          ],
+          "pendingStatuses": [
+            "requested"
+          ],
+          "declinedStatuses": [
+            "declined"
+          ]
+        },
+        {
+          "at": "2026-11-10T13:07:44.959Z",
+          "step": "traveller filters work in production",
+          "chips": [
+            "全部 (5)",
+            "等待回覆 (1)",
+            "已有結果 (4)"
+          ],
+          "historyStatuses": [
+            "declined",
+            "accepted",
+            "accepted",
+            "accepted"
+          ]
+        }
+      ],
+      "cleanup": "the three E2E requests and their inbox events were deleted; the two pre-existing booking rows from earlier verification remain for the owner-led cleanup"
+    }
+  },
+  "honestLimits": [
+    "Filters are client-side over the up-to-50 rows the creator inbox and traveller tracker already load; there is no pagination or server-side filter.",
+    "Counts in production included two older verification rows, so the E2E saw 5 total rather than 3 created ones."
+  ]
+}
