@@ -10,6 +10,22 @@ import {useEffect,useRef,useState} from 'react';
 import {useApp} from './ui';
 import {subscribeAccountInvalidation} from '../../lib/trips/local-drafts';
 import {inbox,support,deliveryFailures,entityLink,reminderContext,type InboxPage,type InboxCursor,type SupportCase,type DeliveryFailure} from '../../lib/notifications/repository';
+function InboxMutes({busy,onChanged}:{busy:boolean;onChanged:()=>void}){
+ const{t}=useApp();const[mutes,setMutes]=useState<Array<{eventType:string;muted:boolean}>|null>(null),[saving,setSaving]=useState(false),[error,setError]=useState(false);
+ const load=async()=>{if(typeof fetch!=='function')return;const r=await fetch('/api/notifications/mutes',{cache:'no-store'});const p=r.ok?await r.json().catch(()=>null):null;if(Array.isArray(p?.data?.mutes))setMutes(p.data.mutes);};
+ useEffect(()=>{void load();},[]);
+ const setOne=(eventType:string,muted:boolean)=>setMutes(current=>current?.map(item=>item.eventType===eventType?{...item,muted}:item)??null);
+ const toggle=async(eventType:string,muted:boolean)=>{setError(false);setSaving(true);setOne(eventType,muted);try{const r=await fetch('/api/notifications/mutes',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({eventType,muted})});if(!r.ok)throw new Error('failed');onChanged();}catch{setError(true);setOne(eventType,!muted);}finally{setSaving(false);}};
+ const labels:Record<string,[string,string]>={
+  'booking.requested':['New booking requests','新的預訂申請'],
+  'booking.withdrawn':['Request withdrawals','申請被撤回'],
+  'booking.accepted':['Accepted requests','申請已接受'],
+  'booking.declined':['Declined requests','申請已拒絕'],
+  'booking.dates_blocked':['Blocked dates affecting my requests','影響我申請的封鎖日期'],
+ };
+ if(!mutes)return null;
+ return <section className="k-card" aria-labelledby="inbox-mutes-title" data-testid="inbox-mutes"><h2 id="inbox-mutes-title" style={{marginTop:0}}>{t('Notification settings','通知設定')}</h2><p className="k-meta">{t('Muted notices are not added to this inbox.','已靜音的通知不會加入此收件匣。')}</p>{error&&<p role="alert" data-testid="inbox-mutes-error">{t('A setting could not be saved. Try again.','未能儲存設定，請重試。')}</p>}<ul style={{listStyle:'none',padding:0,display:'grid',gap:'6px'}}>{mutes.map(item=><li key={item.eventType}><label style={{display:'flex',gap:'8px',alignItems:'center'}}><input type="checkbox" checked={item.muted} disabled={busy||saving} onChange={(event)=>void toggle(item.eventType,event.target.checked)} data-testid={'mute-'+item.eventType}/>{t(labels[item.eventType][0],labels[item.eventType][1])}</label></li>)}</ul></section>;
+}
 export function InboxWorkspace({actorId,enabled}:{actorId:string|null;enabled:boolean}){
  const{t,locale}=useApp();const[data,setData]=useState<InboxPage|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[valid,setValid]=useState(true),[unknown,setUnknown]=useState(false);
  const generation=useRef(0),pending=useRef<{command:Record<string,unknown>;id:string}|null>(null);
@@ -19,7 +35,7 @@ export function InboxWorkspace({actorId,enabled}:{actorId:string|null;enabled:bo
  async function send(command?:Record<string,unknown>){if(!pending.current&&command)pending.current={command,id:crypto.randomUUID()};const p=pending.current;if(!p)return;const own=++generation.current;setBusy(true);const r=await inbox.command(p.command,p.id);if(own!==generation.current)return;setBusy(false);if(!r.ok){if(r.code==='FORBIDDEN'||r.code==='AUTH_REQUIRED')clear();setError(r.code);setUnknown(r.code==='UNAVAILABLE');if(r.code!=='UNAVAILABLE')pending.current=null;return;}pending.current=null;setUnknown(false);await load();}
  return <section className="k-page"><h1>{t('Your inbox','你的收件匣')}</h1>{!actorId||!valid?<Link href={`/${locale}/sign-in?next=/${locale}/inbox`}>{t('Sign in','登入')}</Link>:!enabled?<p>{t('Inbox service is not connected yet.','收件匣服務尚未接通。')}</p>:<>
  {error&&<p role="alert">{t('Inbox request was not completed. Refresh or retry.','收件匣請求未完成，請重新載入或重試。')}</p>}<button className="k-btn" disabled={busy||unknown} onClick={()=>void load()}>{t('Refresh inbox','重新載入收件匣')}</button>{unknown&&<button className="k-btn" disabled={busy} onClick={()=>void send()}>{t('Retry the same request','重試相同請求')}</button>}
- {data&&<><p>{data.unreadCount} {t('unread notifications','項未讀通知')}</p><p>{t('Email delivery is not configured. These are in-app notifications.','電郵外送尚未設定；這些是站內通知。')}</p><button className="k-btn" disabled={busy||unknown} onClick={()=>void send({type:'setPreference',channel:'email',enabled:false})}>{t('Opt out of future email delivery','取消未來電郵外送')}</button>{data.items.length===0&&<p>{t('No notifications yet.','暫未有通知。')}</p>}
+ {data&&<><InboxMutes busy={busy||unknown} onChanged={()=>void load()}/><p>{data.unreadCount} {t('unread notifications','項未讀通知')}</p><p>{t('Email delivery is not configured. These are in-app notifications.','電郵外送尚未設定；這些是站內通知。')}</p><button className="k-btn" disabled={busy||unknown} onClick={()=>void send({type:'setPreference',channel:'email',enabled:false})}>{t('Opt out of future email delivery','取消未來電郵外送')}</button>{data.items.length===0&&<p>{t('No notifications yet.','暫未有通知。')}</p>}
  {data.items.map(item=>{const context=reminderContext(item);return <article className="k-card" key={item.id}><h2>{collaborationNotice(item.type,locale)}</h2><p>{item.payload.missionTitle}</p>{context&&<><p>{context.milestoneTitle}</p><p>{t('Deadline when notified: ','通知發出時的期限：')}<time dateTime={context.dueAt}>{scheduleDate(context.dueAt,'UTC',locale)}</time></p></>}<time dateTime={item.createdAt}>{item.createdAt}</time><p>{item.readAt?t('Read','已讀'):t('Unread','未讀')}</p>{entityLink(item,locale)&&<Link href={entityLink(item,locale)!}>{t('Open related activity','開啟相關活動')}</Link>}<button className="k-btn" disabled={busy||unknown||!!item.readAt} onClick={()=>void send({type:'markRead',id:item.id})}>{t('Mark as read','標示已讀')}</button><Link href={`/${locale}/support?event=${item.id}`}>{t('Ask support about this event','向客服查詢此事件')}</Link></article>;})}{data.nextCursor&&<button className="k-btn" disabled={busy||unknown} onClick={()=>void load(data.nextCursor!)}>{t('Older notifications','較早通知')}</button>}</>}
  <Link className="k-btn" href={`/${locale}/support`}>{t('Support cases','客服案件')}</Link></>}</section>;
 }

@@ -82,6 +82,7 @@
     "app/api/merchant/redeem/route.ts",
     "app/api/merchant/route.ts",
     "app/api/merchant/team/route.ts",
+    "app/api/notifications/mutes/route.ts",
     "app/api/ops/alerts/inbox/route.ts",
     "app/api/ops/alerts/test/route.ts",
     "app/api/ops/assignments/route.ts",
@@ -1006,7 +1007,8 @@
     "tests/contracts/20261110020000_catalog_ranking_weights.sql": "supabase/migrations/20261110020000_catalog_ranking_weights.sql",
     "tests/contracts/20261110030000_booking_availability.sql": "supabase/migrations/20261110030000_booking_availability.sql",
     "tests/contracts/20261110040000_availability_notifications.sql": "supabase/migrations/20261110040000_availability_notifications.sql",
-    "tests/contracts/20261110050000_creator_wide_unavailability.sql": "supabase/migrations/20261110050000_creator_wide_unavailability.sql"
+    "tests/contracts/20261110050000_creator_wide_unavailability.sql": "supabase/migrations/20261110050000_creator_wide_unavailability.sql",
+    "tests/contracts/20261110060000_notification_mutes.sql": "supabase/migrations/20261110060000_notification_mutes.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",
