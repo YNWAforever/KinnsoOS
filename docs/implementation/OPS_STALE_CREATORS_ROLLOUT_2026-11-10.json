@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T18:25:35.750Z",
+  "slice": "Per-creator stale-queue visibility in ops",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "2bffc7b30b32e9f44c29556dea10c026223e5901",
+    "releaseTree": "6f180053ef07fe664c5be61e5e48aff4c7409d48",
+    "parent": "3605d7fe6cafbfef2288f83417ad86599c974aee",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110110000_ops_stale_creators.sql",
+    "baseline": {
+      "ledger": 261,
+      "head": "20261110100000"
+    },
+    "post": {
+      "ledger": 262,
+      "head": "20261110110000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_STALE_CREATORS_20261110",
+    "change": "kinnso_ops_booking_health() adds staleCreators (up to ten creators with requests older than 72h, each with pending count and oldest age); names fall back to display name, handle, then a short creator id"
+  },
+  "deployment": {
+    "previousProduction": "dpl_6Fq9MNLnSXzug2WpqRGrA28r6sEw",
+    "staged": "dpl_9xvAnZe5qfBeNyJP2HW3eGUzMchu",
+    "promoted": "dpl_9xvAnZe5qfBeNyJP2HW3eGUzMchu",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "production": {
+      "fixture": "one stale pending request (100h) for the editorial creator was inserted directly, read, and deleted; no inbox events were created",
+      "degradedCheck": {
+        "id": "booking-queue",
+        "status": "degraded",
+        "detail": "pending 1 (oldest 100h) · accepted 7d 2 · declined 7d 0 · blocked ranges 0; 1 pending older than 72h (KinnsoOS Editorial: 1 pending, oldest 100h)",
+        "ms": 296
+      },
+      "restoredCheck": {
+        "id": "booking-queue",
+        "status": "ok",
+        "detail": "pending 0 (oldest 0h) · accepted 7d 2 · declined 7d 0 · blocked ranges 0",
+        "ms": 308
+      },
+      "ledgerAfter": 262
+    }
+  },
+  "honestLimits": [
+    "Only the slowest creator appears in the health-check detail; the full up-to-ten list is available only by calling the RPC directly (no UI list yet).",
+    "Anonymous creators get a short-id fallback name; the ops panel cannot open that creator profile from the line."
+  ]
+}
