@@ -715,6 +715,7 @@
     "tests/e2e/u25-public-accessibility.spec.ts",
     "tests/e2e/u26-pilot-control-room.spec.ts",
     "tests/e2e/u26-pilot-security.spec.ts",
+    "tests/email-templates.test.mjs",
     "tests/evidence-timeline.test.mjs",
     "tests/feasibility.test.mjs",
     "tests/final-build.test.mjs",
