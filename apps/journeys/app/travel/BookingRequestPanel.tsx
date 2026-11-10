@@ -83,7 +83,7 @@ export function BookingRequestPanel({ guideId }: { guideId: string }) {
           message: form.note,
         }),
       });
-      const payload = await response.json().catch(() => null);
+      await response.json().catch(() => null);
       if (response.status === 201) {
         setMessage(t('Request sent. The creator decides; this is not a confirmed booking.', '申請已送出，由創作者決定；這不是已確認的預訂。'));
         await load();
