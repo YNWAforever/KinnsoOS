@@ -29,6 +29,8 @@ export function MyBookingRequests() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [authRequired, setAuthRequired] = useState(false);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'history'>('all');
@@ -49,6 +51,7 @@ export function MyBookingRequests() {
       const payload = await response.json().catch(() => null);
       if (!payload?.ok || !Array.isArray(payload.data?.items)) { setState('error'); return; }
       setItems(payload.data.items);
+      setHasMore(payload.data.hasMore === true);
       setAuthRequired(false);
       setState('ready');
     } catch {
@@ -57,6 +60,20 @@ export function MyBookingRequests() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const response = await fetch(`/api/booking-requests?offset=${items?.length ?? 0}`, { cache: 'no-store' });
+      const payload = response.ok ? await response.json().catch(() => null) : null;
+      if (Array.isArray(payload?.data?.items)) {
+        setItems((current) => [...(current ?? []), ...payload.data.items]);
+        setHasMore(payload.data.hasMore === true);
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const withdraw = async (id: string) => {
     setBusy(id); setNotice(null);
@@ -118,6 +135,11 @@ export function MyBookingRequests() {
             </li>
           ))}
         </ul>
+      )}
+      {hasMore && (
+        <button type="button" className="k-btn" disabled={loadingMore} onClick={() => void loadMore()} data-testid="my-booking-load-more" style={{ marginTop: '10px' }}>
+          {loadingMore ? t('Loading…', '載入中…') : t('Load older requests', '載入更早的申請')}
+        </button>
       )}
     </section>
   );

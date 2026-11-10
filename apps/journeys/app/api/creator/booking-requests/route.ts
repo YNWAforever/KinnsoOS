@@ -17,7 +17,8 @@ export async function GET(request: Request) {
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_creator_booking_requests', { p_limit: 50 });
+    const offset = Math.max(0, Math.min(100000, Number(new URL(request.url).searchParams.get('offset') ?? '0') || 0));
+    const response = await client.rpc('kinnso_creator_booking_requests', { p_limit: 50, p_offset: offset });
     if (response.error) throw new Error(response.error.message);
     return reply({ ok: true, data: response.data });
   } catch (error) {

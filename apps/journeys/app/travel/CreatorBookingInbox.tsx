@@ -27,6 +27,8 @@ export function CreatorBookingInbox() {
   const { t } = useApp();
   const [items, setItems] = useState<Item[] | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'hidden' | 'error'>('loading');
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
@@ -55,6 +57,7 @@ export function CreatorBookingInbox() {
       const payload = await response.json().catch(() => null);
       if (!payload?.ok || !Array.isArray(payload.data?.items)) { setState('error'); return; }
       setItems(payload.data.items);
+      setHasMore(payload.data.hasMore === true);
       setState('ready');
     } catch {
       setState('error');
@@ -62,6 +65,20 @@ export function CreatorBookingInbox() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const response = await fetch(`/api/creator/booking-requests?offset=${items?.length ?? 0}`, { cache: 'no-store' });
+      const payload = response.ok ? await response.json().catch(() => null) : null;
+      if (Array.isArray(payload?.data?.items)) {
+        setItems((current) => [...(current ?? []), ...payload.data.items]);
+        setHasMore(payload.data.hasMore === true);
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const respond = async (id: string, action: 'accepted' | 'declined') => {
     setBusy(id); setNotice(null);
@@ -141,6 +158,11 @@ export function CreatorBookingInbox() {
             </li>
           ))}
         </ul>
+      )}
+      {hasMore && (
+        <button type="button" className="k-btn" disabled={loadingMore} onClick={() => void loadMore()} data-testid="creator-booking-load-more" style={{ marginTop: '10px' }}>
+          {loadingMore ? t('Loading…', '載入中…') : t('Load older requests', '載入更早的申請')}
+        </button>
       )}
     </section>
   );
