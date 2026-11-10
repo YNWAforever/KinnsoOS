@@ -30,6 +30,22 @@ export function CreatorBookingInbox() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [filter, setFilter] = useState<'all' | Item['status']>('all');
+  const counts = {
+    all: items?.length ?? 0,
+    requested: items?.filter((item) => item.status === 'requested').length ?? 0,
+    accepted: items?.filter((item) => item.status === 'accepted').length ?? 0,
+    declined: items?.filter((item) => item.status === 'declined').length ?? 0,
+    withdrawn: items?.filter((item) => item.status === 'withdrawn').length ?? 0,
+  };
+  const filtered = (items ?? []).filter((item) => filter === 'all' || item.status === filter);
+  const FILTERS: Array<['all' | Item['status'], string, string]> = [
+    ['all', 'All', '全部'],
+    ['requested', 'Pending', '待回覆'],
+    ['accepted', 'Accepted', '已接受'],
+    ['declined', 'Declined', '已婉拒'],
+    ['withdrawn', 'Withdrawn', '已撤回'],
+  ];
 
   const load = useCallback(async () => {
     try {
@@ -87,11 +103,22 @@ export function CreatorBookingInbox() {
       <h2 id="creator-booking-title" style={{ marginTop: 0 }}>{t('Booking requests', '預訂申請')}</h2>
       <p className="k-meta">{t('Travelers can request a date with you. The product takes no payment and does not collect contact details; if the traveller left a way to reach them in the message, arrange the details directly.', '旅客可向你提出日期申請。此處不處理付款，也不會收集聯絡資料；若旅客在訊息中留下聯絡方式，請直接安排細節。')}</p>
       {notice && <p role="status" data-testid="creator-booking-notice">{notice}</p>}
+      {items.length > 0 && (
+        <div role="group" aria-label={t('Filter requests', '篩選申請')} style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '8px 0' }}>
+          {FILTERS.map(([key, en, zh]) => (
+            <button key={key} type="button" className={filter === key ? 'k-btn primary' : 'k-btn'} aria-pressed={filter === key} onClick={() => setFilter(key)} data-testid={`creator-booking-filter-${key}`}>
+              {t(en, zh)} ({counts[key]})
+            </button>
+          ))}
+        </div>
+      )}
       {items.length === 0 ? (
         <p data-testid="creator-booking-empty">{t('No requests yet.', '尚未有申請。')}</p>
+      ) : filtered.length === 0 ? (
+        <p data-testid="creator-booking-filter-empty">{t('No requests in this view.', '此篩選下沒有申請。')}</p>
       ) : (
         <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '10px' }}>
-          {items.map((item) => (
+          {filtered.map((item) => (
             <li key={item.id} data-testid="creator-booking-row" data-status={item.status} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '10px' }}>
               <strong>{item.guideTitle}</strong> · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')} · {t(LABEL[item.status][0], LABEL[item.status][1])}
               {item.message && <span className="k-meta" style={{ display: 'block', overflowWrap: 'anywhere' }}>{item.message}</span>}

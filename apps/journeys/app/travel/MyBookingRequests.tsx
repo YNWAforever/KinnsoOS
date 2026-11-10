@@ -31,6 +31,15 @@ export function MyBookingRequests() {
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [filter, setFilter] = useState<'all' | 'active' | 'history'>('all');
+  const active = (items ?? []).filter((item) => item.status === 'requested');
+  const history = (items ?? []).filter((item) => item.status !== 'requested');
+  const filtered = filter === 'all' ? (items ?? []) : filter === 'active' ? active : history;
+  const FILTERS: Array<['all' | 'active' | 'history', string, string, number]> = [
+    ['all', 'All', '全部', items?.length ?? 0],
+    ['active', 'Waiting', '等待回覆', active.length],
+    ['history', 'Decided', '已有結果', history.length],
+  ];
 
   const load = useCallback(async () => {
     try {
@@ -82,8 +91,20 @@ export function MyBookingRequests() {
         <p data-testid="my-booking-empty">{t('No requests yet.', '尚未有申請。')} <a href={href('explore')}>{t('Browse guides', '瀏覽攻略')}</a></p>
       )}
       {state === 'ready' && items && items.length > 0 && (
+        <div role="group" aria-label={t('Filter requests', '篩選申請')} style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '8px 0' }}>
+          {FILTERS.map(([key, en, zh, count]) => (
+            <button key={key} type="button" className={filter === key ? 'k-btn primary' : 'k-btn'} aria-pressed={filter === key} onClick={() => setFilter(key)} data-testid={`my-booking-filter-${key}`}>
+              {t(en, zh)} ({count})
+            </button>
+          ))}
+        </div>
+      )}
+      {state === 'ready' && items && items.length > 0 && filtered.length === 0 && (
+        <p data-testid="my-booking-filter-empty">{t('No requests in this view.', '此篩選下沒有申請。')}</p>
+      )}
+      {state === 'ready' && filtered.length > 0 && (
         <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '10px' }}>
-          {items.map((item) => (
+          {filtered.map((item) => (
             <li key={item.id} className="k-card" data-testid="my-booking-row" data-status={item.status}>
               <h2 style={{ marginTop: 0 }}><a href={href('g/' + item.guideId)}>{item.guideTitle}</a></h2>
               <p className="k-meta">{t('By', '作者')} {item.creatorName} · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')}</p>
