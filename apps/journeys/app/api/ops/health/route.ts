@@ -1,6 +1,7 @@
 import { apiContext, failure, reply } from '../../../../lib/api/server';
 import { contentReadiness } from '../../../../lib/content-honesty/server';
 import { usage } from '../../../../lib/chat/server';
+import { serverClient } from '../../../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -50,6 +51,19 @@ export async function GET(request: Request) {
     return configured
       ? { status: 'ok', detail: `configured: ${process.env.KINNSO_MODEL_ID}` }
       : { status: 'degraded', detail: 'no model key; replies are tool-grounded only' };
+  });
+  await run('booking-queue', async () => {
+    const client = await serverClient();
+    if (!client) throw new Error('unavailable');
+    const response = await client.rpc('kinnso_ops_booking_health');
+    if (response.error) throw new Error(response.error.message);
+    const data = (response.data ?? {}) as { pending?: number; stalePending?: number; oldestPendingHours?: number; acceptedLast7d?: number; declinedLast7d?: number; blockedRanges?: number };
+    const pending = data.pending ?? 0;
+    const stale = data.stalePending ?? 0;
+    const detail = `pending ${pending} (oldest ${data.oldestPendingHours ?? 0}h) · accepted 7d ${data.acceptedLast7d ?? 0} · declined 7d ${data.declinedLast7d ?? 0} · blocked ranges ${data.blockedRanges ?? 0}`;
+    return stale > 0
+      ? { status: 'degraded', detail: `${detail}; ${stale} pending older than 72h` }
+      : { status: 'ok', detail };
   });
   await run('deployment', async () => ({
     status: 'ok',
