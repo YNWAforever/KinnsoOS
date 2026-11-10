@@ -71,7 +71,7 @@ export function AvailabilityPanel({ guideId }: { guideId: string }) {
   };
 
   if (state === 'hidden') return null;
-  if (state === 'loading') return <section className="k-card" aria-busy="true"><p role="status">{t('Loading unavailable dates…', '正在載入不可預約日期…')}</p></section>;
+  if (state === 'loading') return <section className="k-card" aria-busy="true"><p>{t('Loading unavailable dates…', '正在載入不可預約日期…')}</p></section>;
   if (state === 'error' || !ranges) {
     return (
       <section className="k-card" data-testid="creator-availability" data-state="error">
