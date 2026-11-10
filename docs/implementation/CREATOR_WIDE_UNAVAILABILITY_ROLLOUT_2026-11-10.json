@@ -1,19 +1,32 @@
 {
   "schemaVersion": 1,
-  "executedAt": "2026-11-10T05:27:14.246Z",
+  "executedAt": "2026-11-10T06:18:24.349Z",
   "slice": "Creator-wide unavailable dates",
-  "mode": "DATABASE_DEPLOYED_APP_PENDING",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
   "source": {
-    "releaseCommit": "4e5f065d6ecc206efb7f6f7ba4c0feb73d1ff322",
-    "releaseTree": "b9f1c04c69c37b3adca550c3c5fabc07b44ba1a9",
-    "parent": "6ecbd67ee1f5fa71c95f12272dc2bb58d3490e0d",
+    "commits": [
+      "4e5f065d6ecc206efb7f6f7ba4c0feb73d1ff322 (feature)",
+      "8801a9e120cbc4828e967035126b2f8c9266f417 (receipt draft)",
+      "bcc804e63ac12cc2d152f6338e57c3bd217c8ab8 (merge of 3 production hotfixes)",
+      "8bf3630f0984658c1f88f166821d64d6d794873c (lint fix)"
+    ],
     "branch": "release/spaces-mcp-20261108",
-    "mainFastForwarded": true,
-    "ci": {
-      "runId": 42758264351,
-      "conclusion": "success",
-      "jobs": 6
-    }
+    "ci": [
+      {
+        "runId": 42758264351,
+        "conclusion": "success",
+        "note": "feature commit before merging the production hotfixes"
+      },
+      {
+        "runId": 42762907039,
+        "conclusion": "failure",
+        "note": "merged commit failed lint on an unused payload binding in BookingRequestPanel"
+      },
+      {
+        "commit": "8bf3630f0984658c1f88f166821d64d6d794873c",
+        "note": "lint fix pushed; CI re-running"
+      }
+    ]
   },
   "database": {
     "migration": "20261110050000_creator_wide_unavailability.sql",
@@ -28,13 +41,60 @@
     "clientResult": "exit 0 with KINNSO_COMMIT_ACK_CREATOR_WIDE_20261110",
     "change": "guide_unavailable_dates.guide_id is nullable; NULL means the block applies to every guide the creator owns. Creator list, public read, request-to-book check and blocked-date notifications all include creator-wide rows."
   },
+  "deployment": {
+    "previousProduction": "dpl_AzzbkrW635g3cuEfrXcDfEFZ1Lnd",
+    "firstStaged": "dpl_FacM7ZP3y1z6h7CcwtLvbiDTZ5D6",
+    "final": "dpl_GJ1tayiuPCrHG4oaAWhRPsuWYsX2",
+    "url": "https://kinnso-os.vercel.app",
+    "note": "Vercel CLI auth had disappeared (empty auth file, no token, no repo secret); after the owner re-ran vercel login the release was staged, health-checked and promoted."
+  },
   "verification": {
     "local": {
       "total": 7,
       "passed": 7,
       "failed": 0
     },
-    "production": null
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T06:17:39.845Z",
+          "step": "editor exposes the All my guides toggle",
+          "toggle": 1
+        },
+        {
+          "at": "2026-11-10T06:17:44.988Z",
+          "step": "creator blocks all guides in production",
+          "allGuidesRows": 1
+        },
+        {
+          "at": "2026-11-10T06:17:46.847Z",
+          "step": "range is publicly visible on other guides",
+          "visibleOnAll": true,
+          "statuses": [
+            200,
+            200
+          ]
+        },
+        {
+          "at": "2026-11-10T06:17:56.568Z",
+          "step": "request on another guide inside the range is refused",
+          "status": 400,
+          "code": "INVALID"
+        },
+        {
+          "at": "2026-11-10T06:18:06.046Z",
+          "step": "removal clears every guide",
+          "removed": 200,
+          "clean": true
+        }
+      ],
+      "cleanup": "all verification ranges removed; removal returned 200 and both public reads were empty. No booking request rows were created because the overlapping request was refused with 400."
+    }
   },
-  "deploymentNote": "The Vercel CLI credentials were absent at deploy time (auth.json empty, no VERCEL_TOKEN). The commit was fast-forwarded to main; the app deployment is tracked separately and the migration is forward-compatible with the previously deployed app (old app only writes guide-specific rows)."
+  "honestLimits": [
+    "Advisory blacklist across guides, not a calendar: no capacity, slots or instant booking.",
+    "A creator-wide range cannot overlap another creator-wide range, but it can overlap per-guide ranges (the stricter row wins for requests).",
+    "Ranges are still capped at 40 future rows per creator and 61 days per range.",
+    "Blocking/removing still sends no email; notices are in-app only."
+  ]
 }
