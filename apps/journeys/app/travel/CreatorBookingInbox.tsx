@@ -15,6 +15,15 @@ type Item = {
   createdAt: string;
 };
 
+type Upcoming = {
+  id: string;
+  guideTitle: string;
+  startsOn: string;
+  endsOn: string | null;
+  partySize: number;
+  daysUntil: number;
+};
+
 const waitingHours = (createdAt: string) => Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 3600000));
 
 const LABEL: Record<Item['status'], [string, string]> = {
@@ -34,6 +43,7 @@ const tripFinished = (item: Item) => {
 export function CreatorBookingInbox() {
   const { t } = useApp();
   const [items, setItems] = useState<Item[] | null>(null);
+  const [upcoming, setUpcoming] = useState<Upcoming[]>([]);
   const [state, setState] = useState<'loading' | 'ready' | 'hidden' | 'error'>('loading');
   const [hasMore, setHasMore] = useState(false);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -71,6 +81,11 @@ export function CreatorBookingInbox() {
       setHasMore(payload.data.hasMore === true);
       setCursor(typeof payload.data.nextCursor === 'string' ? payload.data.nextCursor : null);
       setState('ready');
+      const ahead = await fetch('/api/creator/booking-requests/upcoming', { cache: 'no-store' });
+      if (ahead.ok) {
+        const aheadPayload = await ahead.json().catch(() => null);
+        if (Array.isArray(aheadPayload?.data?.items)) setUpcoming(aheadPayload.data.items);
+      }
     } catch {
       setState('error');
     }
@@ -154,6 +169,21 @@ export function CreatorBookingInbox() {
   return (
     <section className="k-card" aria-labelledby="creator-booking-title" data-testid="creator-booking-inbox" data-state="ready">
       <h2 id="creator-booking-title" style={{ marginTop: 0 }}>{t('Booking requests', '預訂申請')}</h2>
+      {upcoming.length > 0 && (
+        <section className="k-card" data-testid="creator-upcoming-bookings" aria-labelledby="creator-upcoming-title" style={{ marginBottom: '12px' }}>
+          <h3 id="creator-upcoming-title" style={{ marginTop: 0 }}>{t('Trips starting soon', '即將出發的旅程')}</h3>
+          <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '8px' }}>
+            {upcoming.map((trip) => (
+              <li key={trip.id} data-testid="creator-upcoming-trip" data-days-until={trip.daysUntil} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '8px' }}>
+                <strong>{trip.guideTitle}</strong> · {trip.startsOn}{trip.endsOn ? ` – ${trip.endsOn}` : ''} · {trip.partySize} {t('people', '人')}
+                <span className="k-meta" style={{ marginLeft: '6px' }}>
+                  {trip.daysUntil === 0 ? t('today', '今天') : `${trip.daysUntil} ${t('days to go', '天後')}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <p className="k-meta">{t('Travelers can request a date with you. The product takes no payment and does not collect contact details; if the traveller left a way to reach them in the message, arrange the details directly.', '旅客可向你提出日期申請。此處不處理付款，也不會收集聯絡資料；若旅客在訊息中留下聯絡方式，請直接安排細節。')}</p>
       {notice && <p role="status" data-testid="creator-booking-notice">{notice}</p>}
       {items.length > 0 && (

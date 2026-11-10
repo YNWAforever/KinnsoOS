@@ -24,10 +24,20 @@ const LABEL: Record<Item['status'], [string, string]> = {
   completed: ['Completed', '已完成'],
 };
 
+type Upcoming = {
+  id: string;
+  guideTitle: string;
+  startsOn: string;
+  endsOn: string | null;
+  partySize: number;
+  daysUntil: number;
+};
+
 /** One place to track every date request a traveller has made. */
 export function MyBookingRequests() {
   const { t, href } = useApp();
   const [items, setItems] = useState<Item[] | null>(null);
+  const [upcoming, setUpcoming] = useState<Upcoming[]>([]);
   const [authRequired, setAuthRequired] = useState(false);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
   const [hasMore, setHasMore] = useState(false);
@@ -57,6 +67,11 @@ export function MyBookingRequests() {
       setCursor(typeof payload.data.nextCursor === 'string' ? payload.data.nextCursor : null);
       setAuthRequired(false);
       setState('ready');
+      const ahead = await fetch('/api/booking-requests/upcoming', { cache: 'no-store' });
+      if (ahead.ok) {
+        const aheadPayload = await ahead.json().catch(() => null);
+        if (Array.isArray(aheadPayload?.data?.items)) setUpcoming(aheadPayload.data.items);
+      }
     } catch {
       setState('error');
     }
@@ -105,6 +120,21 @@ export function MyBookingRequests() {
     <section className="k-page" data-testid="my-booking-requests">
       <h1>{t('Your booking requests', '你的預訂申請')}</h1>
       <p>{t('Requests are not bookings: a date is confirmed only when the creator accepts, and no payment happens here.', '申請不是預訂：只有創作者接受後才算確認日期，此處不涉及付款。')}</p>
+      {upcoming.length > 0 && (
+        <section className="k-card" data-testid="my-upcoming-bookings" aria-labelledby="my-upcoming-title" style={{ marginBottom: '12px' }}>
+          <h2 id="my-upcoming-title" style={{ marginTop: 0 }}>{t('Starting soon', '即將出發')}</h2>
+          <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '8px' }}>
+            {upcoming.map((trip) => (
+              <li key={trip.id} data-testid="my-upcoming-trip" data-days-until={trip.daysUntil} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '8px' }}>
+                <strong>{trip.guideTitle}</strong> · {trip.startsOn}{trip.endsOn ? ` – ${trip.endsOn}` : ''} · {trip.partySize} {t('people', '人')}
+                <span className="k-meta" style={{ marginLeft: '6px' }}>
+                  {trip.daysUntil === 0 ? t('today', '今天') : `${trip.daysUntil} ${t('days to go', '天後')}`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       {state === 'loading' && <p role="status">{t('Loading your requests…', '正在載入申請…')}</p>}
       {state === 'error' && <p role="alert">{t('Your requests could not be loaded. Retry later.', '申請暫時未能載入，請稍後重試。')}</p>}
       {notice && <p role="status" data-testid="my-booking-notice">{notice}</p>}
