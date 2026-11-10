@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T03:58:45.282Z",
+  "slice": "Blocked-date notifications for pending requests",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "960c425375be4915a0db70b7868e356493a68270",
+    "releaseTree": "936f4358d9f00afe543f604bc9ada55caf70e487",
+    "parent": "bd5ff5bd003a291a12102de68d61e066f2155e46",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "runId": 42748882440,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "migration": "20261110040000_availability_notifications.sql",
+    "baseline": {
+      "ledger": 254,
+      "head": "20261110030000"
+    },
+    "post": {
+      "ledger": 255,
+      "head": "20261110040000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_AVAILABILITY_NOTIFICATIONS_20261110",
+    "behaviour": "kinnso_creator_add_unavailable emits booking.dates_blocked inbox events to travellers whose pending requests intersect the new range, in the same transaction; the request status is not changed"
+  },
+  "deployment": {
+    "previousProduction": "dpl_XQiFdno7m5LwCFVHWsjurJMdjxnD",
+    "staged": "dpl_AzzbkrW635g3cuEfrXcDfEFZ1Lnd",
+    "promoted": "dpl_AzzbkrW635g3cuEfrXcDfEFZ1Lnd",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T03:57:53.803Z",
+          "step": "traveller pending request created",
+          "status": 201,
+          "id": "00b67d7a-d0f6-4a4b-9354-b5cb3140b7e7"
+        },
+        {
+          "at": "2026-11-10T03:58:02.799Z",
+          "step": "creator blocks the requested date",
+          "status": 201,
+          "rangeId": "f76696db-f378-4ec8-8bbb-fbd1dc3db356"
+        },
+        {
+          "at": "2026-11-10T03:58:12.915Z",
+          "step": "traveller inbox shows the blocked-dates notification",
+          "matchingCards": 1,
+          "link": "/zh-HK/requests"
+        },
+        {
+          "at": "2026-11-10T03:58:12.916Z",
+          "step": "pending request keeps its status",
+          "status": "requested"
+        },
+        {
+          "at": "2026-11-10T03:58:18.652Z",
+          "step": "cleanup: blocked range removed",
+          "ranges": []
+        }
+      ],
+      "notificationCard": 1,
+      "link": "/zh-HK/requests",
+      "requestStatusAfterBlock": "requested",
+      "cleanup": "blocked range removed (public range list empty); the test request and its inbox events were deleted directly after verification, so production has no rows from this run"
+    }
+  },
+  "honestLimits": [
+    "This is a notice, not an auto-decline or refund: the traveller still has to withdraw or wait for a decision.",
+    "Only requests already in requested status at block time are notified; later requests are simply refused by the availability check.",
+    "Notification is in-app only; email delivery remains unconfigured.",
+    "Ranges remain per guide (no creator-wide holiday calendar)."
+  ]
+}
