@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T20:03:41.089Z",
+  "slice": "Email delivery E2a — provider adapter, templates, sender cron, retry/backoff",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED_INERT",
+  "source": {
+    "releaseCommit": "7d6722847ae31342487e4734aca048225097945b",
+    "releaseTree": "f72be0801242368f6f18f393b745327a3ed9d02c",
+    "parent": "6933b389a39fb06d721211d15be61dba4fa96291",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint, build and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110140000_email_sender_support.sql",
+    "baseline": {
+      "ledger": 264,
+      "head": "20261110130000"
+    },
+    "post": {
+      "ledger": 265,
+      "head": "20261110140000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_EMAIL_E2A_20261110",
+    "change": "public flag probe for the sessionless sender cron and explicit service-role table grants",
+    "productionState": {
+      "flagEnabled": false,
+      "outboxRows": 0,
+      "pendingRequests": 0
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_7SyzH2r37ANutrU4S11yacHjPYYx",
+    "staged": "dpl_GzwCZCdHMT9CmXhyM3Myn2orBbJ3",
+    "promoted": "dpl_GzwCZCdHMT9CmXhyM3Myn2orBbJ3",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": "/api/cron/email-outbox (cron-gated, every 15 minutes via vercel.json)"
+  },
+  "verification": {
+    "unit": {
+      "file": "apps/journeys/tests/email-templates.test.mjs",
+      "tests": 4,
+      "passed": 4
+    },
+    "local": {
+      "consoleSuccess": {
+        "total": 7,
+        "passed": 7,
+        "failed": 0
+      },
+      "retryBackoff": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "recovery": {
+        "total": 2,
+        "passed": 2,
+        "failed": 0
+      }
+    },
+    "production": [
+      {
+        "at": "2026-11-10T20:03:07.944Z",
+        "step": "production sender rejects an unauthenticated cron call",
+        "status": 401
+      },
+      {
+        "at": "2026-11-10T20:03:18.130Z",
+        "step": "production outbox stays disabled with the sender deployed",
+        "status": 200,
+        "data": {
+          "enabled": false,
+          "pending": 0,
+          "failed": 0,
+          "oldestPendingAt": null,
+          "provider": "none",
+          "sending": false
+        }
+      }
+    ],
+    "productionChecks": {
+      "unauthenticatedCronRejected": 401,
+      "opsStatus": "enabled=false, pending=0, failed=0, provider=none, sending=false",
+      "scheduler": "vercel.json accepted two cron entries and the deployment is READY"
+    }
+  },
+  "honestLimits": [
+    "Production has no provider and the flag is off, so the scheduled cron only reports provider-not-configured; no real email has ever been sent.",
+    "The console/console-fail adapters prove the queue, claim, idempotency, retry and recovery logic and the templates, but real provider error semantics (bounces, rate limits, auth) are untested until E2b.",
+    "Recipient addresses are resolved through the Supabase Auth admin API, so production E2b needs a service-role credential in Vercel env; it is absent today.",
+    "Retention for sent rows is not implemented yet (E3); the table is empty in production so nothing accumulates today."
+  ]
+}
