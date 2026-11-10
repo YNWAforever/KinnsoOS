@@ -40,12 +40,13 @@ export async function POST(request: Request, context: { params: Promise<{ id: st
   } catch {
     return failure('INVALID', 400);
   }
-  const body = input as { startsOn?: unknown; endsOn?: unknown } | null;
+  const body = input as { startsOn?: unknown; endsOn?: unknown; allGuides?: unknown } | null;
   if (!body || typeof body !== 'object') return failure('INVALID', 400);
   if (typeof body.startsOn !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(body.startsOn)) return failure('INVALID', 400);
   const endsOn = typeof body.endsOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(body.endsOn) ? body.endsOn : body.startsOn;
   try {
-    const response = await ctx.client.rpc('kinnso_creator_add_unavailable', { p_guide_id: id, p_starts_on: body.startsOn, p_ends_on: endsOn });
+    const allGuides = body.allGuides === true;
+    const response = await ctx.client.rpc('kinnso_creator_add_unavailable', { p_guide_id: allGuides ? null : id, p_starts_on: body.startsOn, p_ends_on: endsOn });
     if (response.error) throw new Error(response.error.message);
     return reply({ ok: true, data: response.data }, 201);
   } catch (error) {

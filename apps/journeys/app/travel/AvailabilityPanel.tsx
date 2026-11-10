@@ -2,7 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApp } from './ui';
 
-type Range = { id: string; startsOn: string; endsOn: string };
+type Range = { id: string; guideId: string | null; startsOn: string; endsOn: string };
 
 const iso = (offsetDays: number) => new Date(Date.now() + offsetDays * 86400000).toISOString().slice(0, 10);
 
@@ -13,7 +13,7 @@ export function AvailabilityPanel({ guideId }: { guideId: string }) {
   const { t } = useApp();
   const [ranges, setRanges] = useState<Range[] | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'hidden' | 'error'>('loading');
-  const [form, setForm] = useState({ startsOn: iso(1), endsOn: '' });
+  const [form, setForm] = useState({ startsOn: iso(1), endsOn: '', allGuides: false });
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -39,7 +39,7 @@ export function AvailabilityPanel({ guideId }: { guideId: string }) {
       const response = await fetch(`/api/creator/guides/${guideId}/unavailable`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ startsOn: form.startsOn, endsOn: form.endsOn || form.startsOn }),
+        body: JSON.stringify({ startsOn: form.startsOn, endsOn: form.endsOn || form.startsOn, allGuides: form.allGuides }),
       });
       if (response.status === 201) {
         setNotice(t('Dates blocked.', '已封鎖日期。'));
@@ -94,6 +94,10 @@ export function AvailabilityPanel({ guideId }: { guideId: string }) {
             <input type="date" min={form.startsOn} value={form.endsOn} onChange={(event) => setForm((current) => ({ ...current, endsOn: event.target.value }))} data-testid="availability-end" />
           </label>
         </div>
+        <label style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+          <input type="checkbox" checked={form.allGuides} onChange={(event) => setForm((current) => ({ ...current, allGuides: event.target.checked }))} data-testid="availability-all-guides" />
+          {t('All my guides', '我的所有攻略')}
+        </label>
         <button type="submit" className="k-btn" disabled={busy} style={{ justifySelf: 'start' }} data-testid="availability-add">
           {busy ? t('Saving…', '儲存中…') : t('Block dates', '封鎖日期')}
         </button>
@@ -105,7 +109,7 @@ export function AvailabilityPanel({ guideId }: { guideId: string }) {
         <ul style={{ listStyle: 'none', padding: 0, display: 'grid', gap: '6px', marginTop: '10px' }}>
           {ranges.map((range) => (
             <li key={range.id} data-testid="availability-row" style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span>{range.startsOn}{range.endsOn !== range.startsOn ? ` – ${range.endsOn}` : ''}</span>
+              <span>{range.startsOn}{range.endsOn !== range.startsOn ? ` – ${range.endsOn}` : ''}{range.guideId === null ? ` · ${t('All guides', '所有攻略')}` : ''}</span>
               <button type="button" className="k-btn" disabled={busy} onClick={() => void remove(range.id)} data-testid="availability-remove">
                 {t('Remove', '移除')}
               </button>
