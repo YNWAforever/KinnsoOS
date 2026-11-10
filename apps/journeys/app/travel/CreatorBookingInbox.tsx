@@ -10,7 +10,7 @@ type Item = {
   endsOn: string | null;
   partySize: number;
   message: string;
-  status: 'requested' | 'accepted' | 'declined' | 'withdrawn';
+  status: 'requested' | 'accepted' | 'declined' | 'withdrawn' | 'completed';
   responseNote: string | null;
   createdAt: string;
 };
@@ -22,6 +22,12 @@ const LABEL: Record<Item['status'], [string, string]> = {
   accepted: ['Accepted', '已接受'],
   declined: ['Declined', '已婉拒'],
   withdrawn: ['Withdrawn', '已撤回'],
+  completed: ['Completed', '已完成'],
+};
+
+const tripFinished = (item: Item) => {
+  const lastDay = item.endsOn ?? item.startsOn;
+  return new Date(`${lastDay}T23:59:59`).getTime() < Date.now();
 };
 
 /** Creator inbox for request-to-book inquiries. Request only; no payment, no traveller contact details. */
@@ -42,6 +48,7 @@ export function CreatorBookingInbox() {
     accepted: items?.filter((item) => item.status === 'accepted').length ?? 0,
     declined: items?.filter((item) => item.status === 'declined').length ?? 0,
     withdrawn: items?.filter((item) => item.status === 'withdrawn').length ?? 0,
+    completed: items?.filter((item) => item.status === 'completed').length ?? 0,
   };
   const filtered = (items ?? []).filter((item) => filter === 'all' || item.status === filter);
   const FILTERS: Array<['all' | Item['status'], string, string]> = [
@@ -50,6 +57,7 @@ export function CreatorBookingInbox() {
     ['accepted', 'Accepted', '已接受'],
     ['declined', 'Declined', '已婉拒'],
     ['withdrawn', 'Withdrawn', '已撤回'],
+    ['completed', 'Completed', '已完成'],
   ];
 
   const load = useCallback(async () => {
@@ -104,6 +112,29 @@ export function CreatorBookingInbox() {
       await load();
     } catch {
       setNotice(t('The response could not be saved.', '回覆未能儲存。'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const complete = async (id: string) => {
+    setBusy(id); setNotice(null);
+    try {
+      const response = await fetch('/api/creator/booking-requests', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status: 'completed' }),
+      });
+      if (response.ok) {
+        setNotice(t('Trip marked completed.', '已標記旅程完成。'));
+      } else if (response.status === 409) {
+        setNotice(t('That trip cannot be completed yet.', '此旅程尚未可標記完成。'));
+      } else {
+        setNotice(t('The completion could not be saved.', '完成狀態未能儲存。'));
+      }
+      await load();
+    } catch {
+      setNotice(t('The completion could not be saved.', '完成狀態未能儲存。'));
     } finally {
       setBusy(null);
     }
@@ -168,6 +199,13 @@ export function CreatorBookingInbox() {
                     {t('Decline', '婉拒')}
                   </button>
                   </div>
+                </div>
+              )}
+              {item.status === 'accepted' && tripFinished(item) && (
+                <div style={{ marginTop: '6px' }}>
+                  <button type="button" className="k-btn" disabled={busy === item.id} onClick={() => void complete(item.id)} data-testid="creator-booking-complete">
+                    {busy === item.id ? t('Saving…', '儲存中…') : t('Mark trip completed', '標記旅程完成')}
+                  </button>
                 </div>
               )}
             </li>

@@ -22,7 +22,7 @@ function encodeCursor(value: CursorToken): string {
 
 function mapError(message: string) {
   if (/creator_required|actor_required|forbidden/.test(message)) return failure('FORBIDDEN', 403);
-  if (/request_not_found_or_decided/.test(message)) return failure('CONFLICT', 409);
+  if (/request_not_found_or_decided|trip_not_finished/.test(message)) return failure('CONFLICT', 409);
   if (/invalid_/.test(message)) return failure('INVALID', 400);
   return failure('UNAVAILABLE', 503);
 }
@@ -64,12 +64,14 @@ export async function PATCH(request: Request) {
   const body = input as { id?: unknown; status?: unknown; note?: unknown } | null;
   if (!body || typeof body !== 'object') return failure('INVALID', 400);
   if (typeof body.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)) return failure('INVALID', 400);
-  if (body.status !== 'accepted' && body.status !== 'declined') return failure('INVALID', 400);
+  if (body.status !== 'accepted' && body.status !== 'declined' && body.status !== 'completed') return failure('INVALID', 400);
   if (body.note !== undefined && body.note !== null && (typeof body.note !== 'string' || body.note.length > 500)) return failure('INVALID', 400);
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_respond_booking_request', { p_id: body.id, p_status: body.status, p_note: typeof body.note === 'string' ? body.note : null });
+    const response = body.status === 'completed'
+      ? await client.rpc('kinnso_creator_complete_booking', { p_id: body.id })
+      : await client.rpc('kinnso_respond_booking_request', { p_id: body.id, p_status: body.status, p_note: typeof body.note === 'string' ? body.note : null });
     if (response.error) throw new Error(response.error.message);
     return reply({ ok: true, data: response.data });
   } catch (error) {

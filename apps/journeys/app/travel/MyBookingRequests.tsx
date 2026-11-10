@@ -11,7 +11,7 @@ type Item = {
   endsOn: string | null;
   partySize: number;
   message: string;
-  status: 'requested' | 'accepted' | 'declined' | 'withdrawn';
+  status: 'requested' | 'accepted' | 'declined' | 'withdrawn' | 'completed';
   responseNote: string | null;
   createdAt: string;
 };
@@ -21,6 +21,7 @@ const LABEL: Record<Item['status'], [string, string]> = {
   accepted: ['Accepted — arrange details', '已接受 — 請安排細節'],
   declined: ['Declined', '已婉拒'],
   withdrawn: ['Withdrawn', '已撤回'],
+  completed: ['Completed', '已完成'],
 };
 
 /** One place to track every date request a traveller has made. */
