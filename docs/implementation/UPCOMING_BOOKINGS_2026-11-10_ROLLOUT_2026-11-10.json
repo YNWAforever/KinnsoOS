@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T20:52:50.802Z",
+  "slice": "Booking lifecycle B2 — surface accepted trips starting soon",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "d5b784db70f7736901f07050bc307f7a9243ea73",
+    "releaseTree": "86b958f58ffc6599e4a1c46498822478191a3bf1",
+    "parent": "27970b4dfaaac2462ab1b0bd6736cbf1dad3bc05",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint, build and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110170000_upcoming_bookings.sql",
+    "baseline": {
+      "ledger": 267,
+      "head": "20261110160000"
+    },
+    "post": {
+      "ledger": 268,
+      "head": "20261110170000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_UPCOMING_BOOKINGS_20261110",
+    "change": "kinnso_upcoming_bookings(days) returns the actor's accepted trips starting in the window for traveller and creator separately; derived at read time, no notifications/event types/mutes/email"
+  },
+  "deployment": {
+    "previousProduction": "dpl_Eg5h6YMDhwXoVcYzUnjvqchvF7sb",
+    "staged": "dpl_Hwo3SchetNv5wUa6RTB9fhKeKAG7",
+    "promoted": "dpl_Hwo3SchetNv5wUa6RTB9fhKeKAG7",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": "GET /api/booking-requests/upcoming, GET /api/creator/booking-requests/upcoming",
+    "changed": "traveller tracker Starting soon section; creator studio Trips starting soon section"
+  },
+  "verification": {
+    "local": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "production": [
+      {
+        "at": "2026-11-10T20:52:27.479Z",
+        "step": "production creator upcoming endpoint answers without errors",
+        "status": 200,
+        "items": 0
+      },
+      {
+        "at": "2026-11-10T20:52:34.846Z",
+        "step": "production traveller upcoming endpoint answers without errors",
+        "status": 200,
+        "items": 0
+      },
+      {
+        "at": "2026-11-10T20:52:36.361Z",
+        "step": "traveller page stays clean when nothing starts within the window",
+        "sections": 0
+      }
+    ],
+    "productionState": {
+      "ledger": 268,
+      "acceptedRows": 2,
+      "outboxRows": 0
+    }
+  },
+  "honestLimits": [
+    "Reminders are read-time only: no email, no push, no inbox notification. A user who does not open the page is not reminded.",
+    "The window is fixed at three days; there is no per-user preference.",
+    "The creator never sees traveller identity in these rows (consistent with the rest of the booking surface)."
+  ]
+}
