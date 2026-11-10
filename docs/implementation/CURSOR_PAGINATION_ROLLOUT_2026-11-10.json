@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T19:34:43.262Z",
+  "slice": "Cursor (keyset) pagination for booking request history",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "dc89d53fff8d0a51315fb178f1c6bf7977406571",
+    "releaseTree": "79812a52b26d7011fdcc1a413de3af09ad7796c0",
+    "parent": "f1984d2d2820b2f41bebf03bcb6dc0754c5aa527",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110120000_booking_cursor_pagination.sql",
+    "baseline": {
+      "ledger": 262,
+      "head": "20261110110000"
+    },
+    "post": {
+      "ledger": 263,
+      "head": "20261110120000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_CURSOR_PAGINATION_20261110",
+    "change": "keyset signatures for both read RPCs; the no-arg/offset overloads were dropped to end PostgREST ambiguity (PGRST203)",
+    "cutover": "migration and deployment were applied/promoted in immediate succession; the old deployment could not call the dropped overloads, so request lists had a sub-minute cutover window"
+  },
+  "deployment": {
+    "previousProduction": "dpl_9xvAnZe5qfBeNyJP2HW3eGUzMchu",
+    "staged": "dpl_HWHmH6gp4EsdGq1wLfNWLdUqYmGQ",
+    "promoted": "dpl_HWHmH6gp4EsdGq1wLfNWLdUqYmGQ",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T19:33:37.657Z",
+          "step": "traveller API returns items with hasMore/nextCursor and tolerates a bad cursor",
+          "status": true,
+          "items": 2,
+          "hasMore": false,
+          "nextCursor": null,
+          "badCursorItems": 2
+        },
+        {
+          "at": "2026-11-10T19:33:44.932Z",
+          "step": "traveller tracker still renders with no load-more needed",
+          "rows": 2,
+          "loadMoreButtons": 0
+        },
+        {
+          "at": "2026-11-10T19:33:53.489Z",
+          "step": "creator API still returns rows with hasMore/nextCursor",
+          "items": 2,
+          "hasMore": false,
+          "nextCursor": null
+        },
+        {
+          "at": "2026-11-10T19:34:00.668Z",
+          "step": "creator inbox still renders",
+          "rows": 2
+        }
+      ],
+      "cleanup": "read-only E2E: no rows created or deleted"
+    }
+  },
+  "honestLimits": [
+    "The cursor is opaque but not signed; a caller who edits it can only page their own rows, and malformed tokens fall back to the first page.",
+    "The cutover dropped the previous overloads, so a rollback to the offset deployment would need the old functions restored first.",
+    "One page is still 50 rows; there is no jump-to-end."
+  ]
+}
