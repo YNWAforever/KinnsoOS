@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T20:28:48.879Z",
+  "slice": "Booking lifecycle B1 — complete an accepted trip after its last day",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "3daa735b14dc50c9683d8f6ab1d6912bcedb20d3",
+    "releaseTree": "b7577afb109f696ebda6bcdf96ffca7685e727d4",
+    "parent": "8d8c023cfe806188edbc05fa7ad894513b41afb5",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint, build and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110160000_booking_completion.sql",
+    "baseline": {
+      "ledger": 266,
+      "head": "20261110150000"
+    },
+    "post": {
+      "ledger": 267,
+      "head": "20261110160000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_BOOKING_COMPLETION_20261110",
+    "change": "booking_requests.status accepts completed; kinnso_creator_complete_booking(uuid) completes only the owning creator's accepted trip whose last day has passed"
+  },
+  "deployment": {
+    "previousProduction": "dpl_CBirQWg9LRs8qBENxAAQ37kJ66sD",
+    "staged": "dpl_Eg5h6YMDhwXoVcYzUnjvqchvF7sb",
+    "promoted": "dpl_Eg5h6YMDhwXoVcYzUnjvqchvF7sb",
+    "url": "https://kinnso-os.vercel.app",
+    "changed": "creator PATCH accepts status=completed and maps trip_not_finished to 409; creator inbox Completed filter + Mark trip completed; traveller tracker Completed label"
+  },
+  "verification": {
+    "local": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "production": [
+      {
+        "at": "2026-11-10T20:28:02.446Z",
+        "step": "production creator inbox exposes the completed filter and renders its accepted rows",
+        "completedFilter": 1,
+        "rows": 2
+      },
+      {
+        "at": "2026-11-10T20:28:14.640Z",
+        "step": "production traveller tracker loads with the completion-capable API",
+        "historyFilter": 1,
+        "rows": 2,
+        "api": {
+          "status": 200,
+          "items": [
+            "accepted",
+            "accepted"
+          ]
+        }
+      }
+    ],
+    "productionState": {
+      "ledger": 267,
+      "completedRows": 0,
+      "acceptedRows": 2,
+      "pendingRows": 0,
+      "outboxRows": 0
+    }
+  },
+  "honestLimits": [
+    "Completion does not notify the traveller (no new notification type was introduced); it is visible on their tracker.",
+    "There is no automatic completion: a creator must mark each finished trip.",
+    "The two production accepted rows predate this slice and are left for owner-led cleanup; completing them was not exercised in production to avoid mutating owner data."
+  ]
+}

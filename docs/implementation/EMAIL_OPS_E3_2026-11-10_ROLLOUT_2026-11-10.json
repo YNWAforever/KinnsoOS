@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T20:28:48.867Z",
+  "slice": "Email delivery E3 — ops self-test, health check, alert state, retention",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED_INERT",
+  "source": {
+    "releaseCommit": "8d8c023cfe806188edbc05fa7ad894513b41afb5",
+    "releaseTree": "b95cc9e3b2bb0ed15448c586bfbf1f3e4e1405c7",
+    "parent": "0be94a2f2bcf8af09419aaa470bb9bd921cc4f11",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint, build and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110150000_public_email_health.sql",
+    "baseline": {
+      "ledger": 265,
+      "head": "20261110140000"
+    },
+    "post": {
+      "ledger": 266,
+      "head": "20261110150000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_EMAIL_E3_20261110",
+    "change": "public aggregate snapshot gains outbox flag/pending/failed/oldest-hours (counts only, no identities)"
+  },
+  "deployment": {
+    "previousProduction": "dpl_GzwCZCdHMT9CmXhyM3Myn2orBbJ3",
+    "staged": "dpl_CBirQWg9LRs8qBENxAAQ37kJ66sD",
+    "promoted": "dpl_CBirQWg9LRs8qBENxAAQ37kJ66sD",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": "POST /api/ops/email/test (own address only)",
+    "changed": "ops health email-outbox check, email-delivery-failing alert state + drill, 30-day retention in the sender cron"
+  },
+  "verification": {
+    "unit": {
+      "file": "apps/journeys/tests/email-templates.test.mjs",
+      "tests": 5,
+      "passed": 5
+    },
+    "local": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "production": [
+      {
+        "at": "2026-11-10T20:18:57.382Z",
+        "step": "production ops health includes the outbox check and reports it disabled",
+        "health": 200,
+        "check": {
+          "id": "email-outbox",
+          "status": "ok",
+          "detail": "disabled (flag off, provider none)",
+          "ms": 831
+        }
+      },
+      {
+        "at": "2026-11-10T20:18:59.451Z",
+        "step": "production self-test reports no provider instead of pretending to send",
+        "status": 200,
+        "body": {
+          "ok": true,
+          "data": {
+            "delivered": false,
+            "provider": "none",
+            "reason": "provider-not-configured"
+          }
+        }
+      },
+      {
+        "at": "2026-11-10T20:19:01.858Z",
+        "step": "production outbox remains disabled and empty",
+        "enabled": false,
+        "pending": 0,
+        "failed": 0,
+        "oldestPendingAt": null,
+        "provider": "none",
+        "sending": false
+      }
+    ],
+    "productionState": {
+      "ledger": 266,
+      "emailFlag": false,
+      "outboxRows": 0
+    }
+  },
+  "honestLimits": [
+    "No provider is configured, so the production self-test correctly reports provider-not-configured; no live email exists yet.",
+    "The real email-delivery-failing alert branch cannot fire in production today because the flag is off and the queue is empty; only the labelled drill was exercised.",
+    "Retention runs only when the sender cron runs; with the flag off the sender no-ops before retention."
+  ]
+}
