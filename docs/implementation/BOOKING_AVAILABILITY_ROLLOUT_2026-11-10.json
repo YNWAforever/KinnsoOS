@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T03:03:09.609Z",
+  "slice": "Creator unavailable dates for request-to-book",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "commits": [
+      "6e2d042e78d4c6b816e3445e10351c23e3aafdf7 (feature)",
+      "bd5ff5bd003a291a12102de68d61e066f2155e46 (duplicate status role fix)"
+    ],
+    "releaseTree": "aff7dde65639ee7d904f5328270dc0c4f30fe3d0",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": [
+      {
+        "runId": 42740097949,
+        "conclusion": "failure",
+        "note": "connected E2E strict-mode: availability loading paragraph added a second role=status inside creator-editor"
+      },
+      {
+        "runId": 42742702079,
+        "conclusion": "success",
+        "jobs": 6
+      }
+    ]
+  },
+  "database": {
+    "migration": "20261110030000_booking_availability.sql",
+    "baseline": {
+      "ledger": 253,
+      "head": "20261110020000"
+    },
+    "post": {
+      "ledger": 254,
+      "head": "20261110030000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_BOOKING_AVAILABILITY_20261110",
+    "objects": [
+      "public.guide_unavailable_dates",
+      "kinnso_creator_guide_unavailable",
+      "kinnso_creator_add_unavailable",
+      "kinnso_creator_remove_unavailable",
+      "kinnso_guide_unavailable",
+      "kinnso_request_booking (replaced with availability check)"
+    ],
+    "verified": {
+      "anonWriteLeak": false,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_GxJkeB9PGsRiqFQczbbphNdFiRQf",
+    "staged": "dpl_XQiFdno7m5LwCFVHWsjurJMdjxnD",
+    "promoted": "dpl_XQiFdno7m5LwCFVHWsjurJMdjxnD",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "behaviour": [
+    "Creators block date ranges per guide in the editor (Unavailable dates panel); ranges are validated (today..+365d, max 61 days, max 40 per guide) and overlapping ranges are refused with 409.",
+    "The public guide page lists upcoming blocked ranges and the request panel refuses an overlapping request before sending; the database refuses it too (dates_unavailable → 400).",
+    "Blocking dates never publishes, books, charges or changes visibility; it only narrows acceptable requests."
+  ],
+  "verification": {
+    "local": {
+      "total": 10,
+      "passed": 10,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T03:01:59.740Z",
+          "step": "creator editor shows the availability panel",
+          "panel": 1
+        },
+        {
+          "at": "2026-11-10T03:02:05.717Z",
+          "step": "creator blocks a range in production",
+          "rows": 1
+        },
+        {
+          "at": "2026-11-10T03:02:06.500Z",
+          "step": "blocked range is publicly readable",
+          "status": 200,
+          "ranges": [
+            {
+              "endsOn": "2026-12-01",
+              "startsOn": "2026-11-30"
+            }
+          ]
+        },
+        {
+          "at": "2026-11-10T03:02:20.733Z",
+          "step": "traveller guide page lists the unavailable dates",
+          "note": "Unavailable: 2026-11-30 – 2026-12-01"
+        },
+        {
+          "at": "2026-11-10T03:02:22.583Z",
+          "step": "overlapping request is refused in production",
+          "status": 400,
+          "code": "INVALID"
+        },
+        {
+          "at": "2026-11-10T03:02:32.168Z",
+          "step": "creator removes the range; production left clean",
+          "status": 200,
+          "ranges": [
+            {
+              "endsOn": "2026-12-01",
+              "startsOn": "2026-11-30"
+            }
+          ]
+        }
+      ],
+      "cleanup": "all verification ranges removed; public read returned [] at the end"
+    }
+  },
+  "honestLimits": [
+    "This is an advisory blacklist, not a calendar: there is no capacity, no per-day slots and no instant booking.",
+    "A traveller can still request a range that only partially overlaps; it is refused, they must pick another range.",
+    "Ranges are per guide; there is no creator-level holiday calendar across guides.",
+    "No notifications are sent when a creator blocks or removes dates."
+  ]
+}
