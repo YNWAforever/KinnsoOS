@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T19:50:12.344Z",
+  "slice": "Email delivery E1 — outbox foundation behind a default-off flag",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "46e17f4ed7f85e52bc21c53ecb27dc7ef1a2de01",
+    "releaseTree": "0f118261a682ecdf83803750c5670ec138db5b5a",
+    "parent": "2a96d36bfc454949171aff9281f570e441a33023",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint and acceptance ran before deployment"
+    },
+    "design": "docs/implementation/EMAIL_DELIVERY_DESIGN_2026-11-10.md"
+  },
+  "database": {
+    "migration": "20261110130000_email_outbox_foundation.sql",
+    "baseline": {
+      "ledger": 263,
+      "head": "20261110120000"
+    },
+    "post": {
+      "ledger": 264,
+      "head": "20261110130000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_EMAIL_E1_20261110",
+    "change": "runtime flag (email_outbox=false by default), public.email_outbox (ids only, idempotent per recipient/event/entity), enqueue helper, the four booking notifiers enqueuing beside the inbox event, ops toggle/status RPCs",
+    "productionState": {
+      "flagEnabled": false,
+      "outboxRows": 0,
+      "pendingRequests": 0
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_HWHmH6gp4EsdGq1wLfNWLdUqYmGQ",
+    "staged": "dpl_7SyzH2r37ANutrU4S11yacHjPYYx",
+    "promoted": "dpl_7SyzH2r37ANutrU4S11yacHjPYYx",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoute": "GET/PUT /api/ops/email/outbox (ops-gated status and flag toggle; provider is none, nothing sends)"
+  },
+  "verification": {
+    "local": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "production": [
+      {
+        "at": "2026-11-10T19:49:39.408Z",
+        "step": "production outbox is disabled with an empty queue",
+        "status": 200,
+        "data": {
+          "enabled": false,
+          "pending": 0,
+          "failed": 0,
+          "oldestPendingAt": null,
+          "provider": "none",
+          "sending": false
+        }
+      },
+      {
+        "at": "2026-11-10T19:49:50.138Z",
+        "step": "flag off: a real request still succeeds and enqueues no email row",
+        "createStatus": 201,
+        "requestId": "45bf7949-d05d-420b-b6ae-cc02c8118a49",
+        "after": {
+          "enabled": false,
+          "pending": 0,
+          "failed": 0,
+          "oldestPendingAt": null,
+          "provider": "none",
+          "sending": false
+        }
+      },
+      {
+        "at": "2026-11-10T19:49:51.549Z",
+        "step": "verification request cleaned up",
+        "removed": "45bf7949-d05d-420b-b6ae-cc02c8118a49"
+      }
+    ],
+    "note": "the dashboard browser check used the installed Chrome channel because the locally cached Playwright headless shell version was missing; no product code is affected"
+  },
+  "honestLimits": [
+    "E1 only queues: there is no provider adapter, sender cron, template, retry or retention yet, so an enabled flag would accumulate pending rows and send nothing.",
+    "The email preference currently reuses the in-app mute; a separate email channel preference is still an owner decision.",
+    "Enabling the flag in production is deliberately not done until E2 exists."
+  ]
+}
