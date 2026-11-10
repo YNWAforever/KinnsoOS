@@ -256,9 +256,7 @@ export async function runChatTurn(input: ChatTurnInput): Promise<{ text: string;
 
   let finalText = '';
   for (let step = 0; step < MAX_STEPS; step++) {
-    let stepText = '';
     const { text, toolCalls } = await streamCompletion(config, messages, tools, input.signal, (delta) => {
-      stepText += delta;
       input.emit({ type: 'delta', text: delta });
     }, input.threadId);
     finalText += text;
