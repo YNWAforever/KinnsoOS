@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T07:57:02.280Z",
+  "slice": "Per-event in-app notification mutes",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "0d99140d30e37d0e760f4b6a1adcca4c6fdc7dfe",
+    "releaseTree": "65648006e432b5dac2cc9bd09a839a8a33f85b17",
+    "parent": "473741ff106e3b00f97169e6ca19f239e6063232",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions runner backlog; unit tests, typecheck, eslint and the local acceptance all ran locally before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110060000_notification_mutes.sql",
+    "baseline": {
+      "ledger": 256,
+      "head": "20261110050000"
+    },
+    "post": {
+      "ledger": 257,
+      "head": "20261110060000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_NOTIFICATION_MUTES_20261110",
+    "change": "public.notification_mutes plus get/set RPCs; kinnso_request_booking, kinnso_respond_booking_request, kinnso_withdraw_booking_request and kinnso_creator_add_unavailable skip the inbox insert when the recipient muted that event type"
+  },
+  "deployment": {
+    "previousProduction": "dpl_FGjtia6892LR528VGi5b9azbJy1k",
+    "staged": "dpl_6MXr6EmnCRvZ4fe5PfMEpqELkPTg",
+    "promoted": "dpl_6MXr6EmnCRvZ4fe5PfMEpqELkPTg",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T07:56:09.056Z",
+          "step": "inbox shows notification settings",
+          "panel": 1
+        },
+        {
+          "at": "2026-11-10T07:56:24.326Z",
+          "step": "mute persists across a reload in production",
+          "afterOn": true,
+          "persisted": true,
+          "checkedAfterReload": true
+        },
+        {
+          "at": "2026-11-10T07:56:27.143Z",
+          "step": "mute is reversible and production left unmuted",
+          "restored": true
+        },
+        {
+          "at": "2026-11-10T07:56:40.379Z",
+          "step": "creator inbox also exposes notification settings",
+          "creatorPanel": 1
+        }
+      ],
+      "cleanup": "the mute row created by the E2E was deleted; notification_mutes and guide_unavailable_dates are empty again. Two older booking-request rows from earlier verification runs remain for the owner-led cleanup already disclosed."
+    }
+  },
+  "honestLimits": [
+    "Mutes cover the five booking event types only; place-report and support notices stay always-on.",
+    "Muting suppresses the inbox record entirely: the recipient cannot read a muted notice later, and no digest exists.",
+    "Email delivery remains unconfigured; the existing email opt-out is untouched and independent."
+  ]
+}
