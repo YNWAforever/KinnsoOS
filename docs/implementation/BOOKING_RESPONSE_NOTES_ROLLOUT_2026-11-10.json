@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T08:17:02.527Z",
+  "slice": "Optional creator response note on accept/decline",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "728ca4fdf2915e43410be0b1f8493843479d25e2",
+    "releaseTree": "81463ed584720bbe85c57bfdd0f1141478e62187",
+    "parent": "0d99140d30e37d0e760f4b6a1adcca4c6fdc7dfe",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "backend queued",
+      "note": "GitHub Actions backlog; local tests, typecheck, eslint and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110070000_booking_response_notes.sql",
+    "baseline": {
+      "ledger": 257,
+      "head": "20261110060000"
+    },
+    "post": {
+      "ledger": 258,
+      "head": "20261110070000"
+    },
+    "verifiedInProduction": {
+      "ledger": 258,
+      "column": "booking_requests.response_note",
+      "respondFunctionArgs": 3
+    },
+    "clientResult": "exit code 1 from the PowerShell wrapper because psql printed a NOTICE on stderr; state verified afterwards (ledger 258, column present, 3-arg function)"
+  },
+  "deployment": {
+    "previousProduction": "dpl_6MXr6EmnCRvZ4fe5PfMEpqELkPTg",
+    "staged": "dpl_H7Psp7D7pve4d5TMi56Ca4BYNrJs",
+    "promoted": "dpl_H7Psp7D7pve4d5TMi56Ca4BYNrJs",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T08:16:15.081Z",
+          "step": "traveller request created",
+          "status": 201,
+          "id": "d41c454b-40db-4c4b-a11c-518b6d7f1db9"
+        },
+        {
+          "at": "2026-11-10T08:16:32.703Z",
+          "step": "creator decline stored the note",
+          "stored": []
+        },
+        {
+          "at": "2026-11-10T08:16:40.435Z",
+          "step": "traveller tracker shows the creator note",
+          "notes": [
+            "創作者備註: Production note: I cannot guide that week, but the week after works."
+          ]
+        },
+        {
+          "at": "2026-11-10T08:16:41.907Z",
+          "step": "over-long note is rejected",
+          "status": 400
+        }
+      ],
+      "cleanup": "the E2E request and its inbox events were deleted after verification; both counts returned 0"
+    }
+  },
+  "honestLimits": [
+    "The note is optional free text; it is shown in the request tracker, not emailed, and no contact details are collected.",
+    "Only accept/decline decisions carry a note; withdrawal has none.",
+    "The notification still says accepted/declined; the tracker is where the reason appears."
+  ]
+}
