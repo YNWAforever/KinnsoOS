@@ -32,7 +32,8 @@ function workspace(props,request=async()=>({ok:false,code:'UNAVAILABLE'}),option
   if(name==='../../lib/trips/repository')return{trips:options.tripPorts??{apply:async()=>{throw Error('unexpected write');},get:async()=>{throw Error('unexpected read');}}};
   if(name==='../../lib/agent/result-contract')return{canonicalUrl};
   if(name==='../../lib/canonical')return navigation;
-  throw Error('Unexpected dependency '+name);
+  if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};
+    throw Error('Unexpected dependency '+name);
  }});runInContext(options.page?compiledPage.code:compiled.code,context);const Component=options.page?module.exports.AgentPage:module.exports.default;
  function render(next=latestProps,flush=true){latestProps=next;changed=false;cursor=0;tree=Component(latestProps);if(flush){for(let attempts=0;attempts<10;attempts++){for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}if(!changed)break;changed=false;cursor=0;tree=Component(latestProps);}}return tree;}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}

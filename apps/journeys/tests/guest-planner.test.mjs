@@ -35,7 +35,8 @@ function planner(actorId=null,initialDraft=null,onSaved=undefined,locale='en',on
    if(name==='../../lib/studio/contracts')return{sameValue};
    if(name==='../../lib/trips/device-trip-editor')return editor;
    if(name==='../../lib/trips/guest-drafts')return{guideDraft,restorableGuideDrafts,readGuestTrips:()=>new Promise((resolve,reject)=>reads.push({resolve,reject})),saveGuestTrip:(trip,signal)=>new Promise((resolve,reject)=>writes.push({trip:structuredClone(trip),signal,resolve,reject})),deleteGuestTrip:async(id,ownerId)=>{deletes.push({id,ownerId});}};
-   throw Error('Unexpected dependency '+name);
+   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};
+    throw Error('Unexpected dependency '+name);
   }}));
  function render(){cursor=0;tree=module.exports.GuestPlanner({...(initialDraft?{initialDraft,onSaved}:{guide}),actorId,onDeleted});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}return tree;}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}

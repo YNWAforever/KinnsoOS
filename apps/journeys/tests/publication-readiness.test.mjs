@@ -31,7 +31,7 @@ async function editor(payload,locale='en'){
   if(name==='../../lib/creators/contracts')return{emptyDraft:()=>ready(),creators:{get:async()=>({ok:true,data:{id:'guide',payload,revision:1,publishedVersion:0,sourceChanged:false}}),publish:async(...args)=>{writes.push(args);return{ok:false,code:'UNAVAILABLE',retryable:true};}}};
   if(name==='../../lib/creators/editor-operations')return ops;
   if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
-  if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts'||name==='./CreatorCollaborationTasks')return{};if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};
+  if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts'||name==='./CreatorCollaborationTasks')return{};if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};
   throw Error(name);
  }}));
  function render(){cursor=0;tree=module.exports.CreatorEditor({path:'studio/guides/guide/edit'});for(const e of effects)if(e?.pending){e.pending=false;e.work();}}

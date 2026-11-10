@@ -36,6 +36,8 @@
     "app/api/creator/guides/[id]/publish/route.ts",
     "app/api/creator/guides/[id]/route.ts",
     "app/api/creator/guides/[id]/sources/route.ts",
+    "app/api/creator/guides/[id]/unavailable/[rangeId]/route.ts",
+    "app/api/creator/guides/[id]/unavailable/route.ts",
     "app/api/creator/guides/[id]/withdraw/route.ts",
     "app/api/creator/guides/route.ts",
     "app/api/creator/handles/route.ts",
@@ -60,6 +62,7 @@
     "app/api/discovery/sources/route.ts",
     "app/api/guides/[id]/honesty/route.ts",
     "app/api/guides/[id]/route.ts",
+    "app/api/guides/[id]/unavailable/route.ts",
     "app/api/health/route.ts",
     "app/api/inbox/deliveries/route.ts",
     "app/api/inbox/route.ts",
@@ -164,6 +167,7 @@
     "app/sitemap.ts",
     "app/travel/AccountSignOut.tsx",
     "app/travel/AssistantWorkspace.tsx",
+    "app/travel/AvailabilityPanel.tsx",
     "app/travel/BookingRequestPanel.tsx",
     "app/travel/CollaborationListFilters.tsx",
     "app/travel/CollaborationTasks.tsx",
@@ -999,7 +1003,8 @@
     "tests/contracts/20261109210000_booking_requests.sql": "supabase/migrations/20261109210000_booking_requests.sql",
     "tests/contracts/20261109220000_booking_notifications.sql": "supabase/migrations/20261109220000_booking_notifications.sql",
     "tests/contracts/20261110010000_catalog_ranking.sql": "supabase/migrations/20261110010000_catalog_ranking.sql",
-    "tests/contracts/20261110020000_catalog_ranking_weights.sql": "supabase/migrations/20261110020000_catalog_ranking_weights.sql"
+    "tests/contracts/20261110020000_catalog_ranking_weights.sql": "supabase/migrations/20261110020000_catalog_ranking_weights.sql",
+    "tests/contracts/20261110030000_booking_availability.sql": "supabase/migrations/20261110030000_booking_availability.sql"
   },
   "repositoryDocuments": {
     "tests/contracts/2026-11-07-kinnso-production-rollout.md": "docs/superpowers/plans/2026-11-07-kinnso-production-rollout.md",

@@ -35,6 +35,7 @@ export function BookingRequestPanel({ guideId }: { guideId: string }) {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({ startsOn: iso(7), endsOn: '', partySize: 2, note: '' });
+  const [unavailable, setUnavailable] = useState<Array<{ startsOn: string; endsOn: string }>>([]);
 
   const load = useCallback(async () => {
     try {
@@ -52,7 +53,23 @@ export function BookingRequestPanel({ guideId }: { guideId: string }) {
 
   useEffect(() => { void load(); }, [load]);
 
+  useEffect(() => {
+    let active = true;
+    fetch(`/api/guides/${guideId}/unavailable`, { cache: 'no-store' })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload) => { if (active && Array.isArray(payload?.data?.ranges)) setUnavailable(payload.data.ranges); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [guideId]);
+
   const submit = async () => {
+    const requestedStart = form.startsOn;
+    const requestedEnd = form.endsOn || form.startsOn;
+    if (unavailable.some((range) => range.startsOn <= requestedEnd && range.endsOn >= requestedStart)) {
+      setMessage(null);
+      setError(t('The author is unavailable on those dates. Pick another range.', '作者在這些日期不可預約，請選擇其他日期。'));
+      return;
+    }
     setBusy(true); setMessage(null); setError(null);
     try {
       const response = await fetch('/api/booking-requests', {
@@ -105,6 +122,11 @@ export function BookingRequestPanel({ guideId }: { guideId: string }) {
       <h2 id="booking-request-title" style={{ marginTop: 0 }}>{t('Request a date with the author', '向作者預約日期')}</h2>
       <p className="k-meta"><a href={href('requests')}>{t('See all your requests', '查看你所有申請')}</a></p>
       <p className="k-meta">{t('This sends a request only. No payment is taken and nothing is confirmed until the creator accepts. The product does not collect contact details, so include a way to reach you in the message if you want the creator to follow up.', '這只會送出申請；不收取款項，創作者接受前都不算確認。此產品不會收集聯絡資料，如希望創作者跟進，請在訊息中留下聯絡方式。')}</p>
+      {unavailable.length > 0 && (
+        <p className="k-meta" data-testid="booking-request-unavailable">
+          {t('Unavailable', '不可預約')}: {unavailable.map((range) => `${range.startsOn}${range.endsOn !== range.startsOn ? ` – ${range.endsOn}` : ''}`).join(', ')}
+        </p>
+      )}
       {authRequired ? (
         <p>
           <a className="k-btn" href={href('sign-in') + '?next=' + encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname : '')}>

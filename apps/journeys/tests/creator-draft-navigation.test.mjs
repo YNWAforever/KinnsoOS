@@ -22,7 +22,7 @@ function providerHistory(initial){
  runInContext(compiledGuard.code,createContext({module,exports:module.exports,crypto,URL,location,history,
   window:{history,addEventListener(){},removeEventListener(){}},require:name=>{
    if(name==='react')return react;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};
-   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{usePathname:()=>location.pathname,useRouter:()=>({push(){}})};
+   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{usePathname:()=>location.pathname,useRouter:()=>({push(){}})};
    if(name==='./ui')return{Modal:'modal'};
    if(name==='../../lib/trips/draft-navigation')return{safeAppDestination};
    throw Error('Unexpected guard dependency '+name);
@@ -93,7 +93,8 @@ function editor(){
    if(name==='../../lib/creators/editor-operations')return operations;
    if(name==='../../lib/creators/handles')return{PLATFORMS:[]};
    if(name==='../../lib/trips/local-drafts'||name==='./WorkspaceServiceState'||name==='./CreatorCollaborationTasks')return{};
-   throw Error('Unexpected dependency '+name);
+   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};
+    throw Error('Unexpected dependency '+name);
   }}));
  function render(){cursor=0;tree=module.exports.CreatorEditor({path:'studio/guides/new'});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.cleanup?.();effect.cleanup=effect.work();}}
  function elements(node){if(arguments.length===0)node=tree;if(!node||typeof node!=='object')return[];return[node,...[node.props?.children].flat(Infinity).flatMap(child=>elements(child))];}

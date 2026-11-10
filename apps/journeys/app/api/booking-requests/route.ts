@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 function mapError(message: string) {
   if (/guide_not_found/.test(message)) return failure('NOT_FOUND', 404);
   if (/rate_limited/.test(message)) return failure('UNAVAILABLE', 429);
-  if (/invalid_|self_request|synthetic_guide|creator_unavailable/.test(message)) return failure('INVALID', 400);
+  if (/invalid_|self_request|synthetic_guide|creator_unavailable|dates_unavailable/.test(message)) return failure('INVALID', 400);
   if (/actor_required|forbidden/.test(message)) return failure('FORBIDDEN', 403);
   return failure('UNAVAILABLE', 503);
 }
