@@ -12,6 +12,7 @@ type Item = {
   partySize: number;
   message: string;
   status: 'requested' | 'accepted' | 'declined' | 'withdrawn';
+  responseNote: string | null;
   createdAt: string;
 };
 
@@ -87,6 +88,7 @@ export function MyBookingRequests() {
               <h2 style={{ marginTop: 0 }}><a href={href('g/' + item.guideId)}>{item.guideTitle}</a></h2>
               <p className="k-meta">{t('By', '作者')} {item.creatorName} · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')}</p>
               <p>{t(LABEL[item.status][0], LABEL[item.status][1])}</p>
+              {item.responseNote && <p className="k-meta" data-testid="my-booking-response-note">{t('Creator note', '創作者備註')}: {item.responseNote}</p>}
               {item.status === 'requested' && (
                 <button type="button" className="k-btn" disabled={busy === item.id} onClick={() => void withdraw(item.id)} data-testid="my-booking-withdraw">
                   {busy === item.id ? t('Withdrawing…', '撤回中…') : t('Withdraw', '撤回')}

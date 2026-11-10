@@ -11,6 +11,7 @@ type Item = {
   partySize: number;
   message: string;
   status: 'requested' | 'accepted' | 'declined' | 'withdrawn';
+  responseNote: string | null;
   createdAt: string;
 };
 
@@ -28,6 +29,7 @@ export function CreatorBookingInbox() {
   const [state, setState] = useState<'loading' | 'ready' | 'hidden' | 'error'>('loading');
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [notes, setNotes] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     try {
@@ -51,7 +53,7 @@ export function CreatorBookingInbox() {
       const response = await fetch('/api/creator/booking-requests', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status: action }),
+        body: JSON.stringify({ id, status: action, note: notes[id] ?? '' }),
       });
       if (response.ok) {
         setNotice(action === 'accepted' ? t('Request accepted.', '已接受申請。') : t('Request declined.', '已婉拒申請。'));
@@ -60,6 +62,7 @@ export function CreatorBookingInbox() {
       } else {
         setNotice(t('The response could not be saved.', '回覆未能儲存。'));
       }
+      setNotes((current) => { const next = { ...current }; delete next[id]; return next; });
       await load();
     } catch {
       setNotice(t('The response could not be saved.', '回覆未能儲存。'));
@@ -92,14 +95,20 @@ export function CreatorBookingInbox() {
             <li key={item.id} data-testid="creator-booking-row" data-status={item.status} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '10px' }}>
               <strong>{item.guideTitle}</strong> · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')} · {t(LABEL[item.status][0], LABEL[item.status][1])}
               {item.message && <span className="k-meta" style={{ display: 'block', overflowWrap: 'anywhere' }}>{item.message}</span>}
+              {item.responseNote && <span className="k-meta" style={{ display: 'block' }} data-testid="creator-booking-response-note">{t('Your note', '你的備註')}: {item.responseNote}</span>}
               {item.status === 'requested' && (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <div style={{ display: 'grid', gap: '6px', marginTop: '6px' }}>
+                  <label style={{ display: 'grid', gap: '4px' }}>{t('Optional note to the traveller', '給旅客的備註（可選）')}
+                    <textarea maxLength={500} rows={2} value={notes[item.id] ?? ''} onChange={(event) => setNotes((current) => ({ ...current, [item.id]: event.target.value }))} data-testid="creator-booking-note" />
+                  </label>
                   <button type="button" className="k-btn primary" disabled={busy === item.id} onClick={() => void respond(item.id, 'accepted')} data-testid="creator-booking-accept">
                     {busy === item.id ? t('Saving…', '儲存中…') : t('Accept', '接受')}
                   </button>
+                  <div style={{ display: 'flex', gap: '8px' }}>
                   <button type="button" className="k-btn" disabled={busy === item.id} onClick={() => void respond(item.id, 'declined')} data-testid="creator-booking-decline">
                     {t('Decline', '婉拒')}
                   </button>
+                  </div>
                 </div>
               )}
             </li>

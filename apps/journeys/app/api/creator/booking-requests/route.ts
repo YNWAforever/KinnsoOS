@@ -34,14 +34,15 @@ export async function PATCH(request: Request) {
   } catch {
     return failure('INVALID', 400);
   }
-  const body = input as { id?: unknown; status?: unknown } | null;
+  const body = input as { id?: unknown; status?: unknown; note?: unknown } | null;
   if (!body || typeof body !== 'object') return failure('INVALID', 400);
   if (typeof body.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(body.id)) return failure('INVALID', 400);
   if (body.status !== 'accepted' && body.status !== 'declined') return failure('INVALID', 400);
+  if (body.note !== undefined && body.note !== null && (typeof body.note !== 'string' || body.note.length > 500)) return failure('INVALID', 400);
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_respond_booking_request', { p_id: body.id, p_status: body.status });
+    const response = await client.rpc('kinnso_respond_booking_request', { p_id: body.id, p_status: body.status, p_note: typeof body.note === 'string' ? body.note : null });
     if (response.error) throw new Error(response.error.message);
     return reply({ ok: true, data: response.data });
   } catch (error) {
