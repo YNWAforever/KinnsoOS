@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T05:27:14.246Z",
+  "slice": "Creator-wide unavailable dates",
+  "mode": "DATABASE_DEPLOYED_APP_PENDING",
+  "source": {
+    "releaseCommit": "4e5f065d6ecc206efb7f6f7ba4c0feb73d1ff322",
+    "releaseTree": "b9f1c04c69c37b3adca550c3c5fabc07b44ba1a9",
+    "parent": "6ecbd67ee1f5fa71c95f12272dc2bb58d3490e0d",
+    "branch": "release/spaces-mcp-20261108",
+    "mainFastForwarded": true,
+    "ci": {
+      "runId": 42758264351,
+      "conclusion": "success",
+      "jobs": 6
+    }
+  },
+  "database": {
+    "migration": "20261110050000_creator_wide_unavailability.sql",
+    "baseline": {
+      "ledger": 255,
+      "head": "20261110040000"
+    },
+    "post": {
+      "ledger": 256,
+      "head": "20261110050000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_CREATOR_WIDE_20261110",
+    "change": "guide_unavailable_dates.guide_id is nullable; NULL means the block applies to every guide the creator owns. Creator list, public read, request-to-book check and blocked-date notifications all include creator-wide rows."
+  },
+  "verification": {
+    "local": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0
+    },
+    "production": null
+  },
+  "deploymentNote": "The Vercel CLI credentials were absent at deploy time (auth.json empty, no VERCEL_TOKEN). The commit was fast-forwarded to main; the app deployment is tracked separately and the migration is forward-compatible with the previously deployed app (old app only writes guide-specific rows)."
+}
