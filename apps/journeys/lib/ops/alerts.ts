@@ -7,7 +7,7 @@
  */
 export type AlertPayload = {
   text: string;
-  state: 'ok' | 'unavailable' | 'cost-exhausted' | 'booking-queue-stale' | 'content-not-ready' | 'waivers-expiring' | 'test';
+  state: 'ok' | 'unavailable' | 'cost-exhausted' | 'booking-queue-stale' | 'email-delivery-failing' | 'content-not-ready' | 'waivers-expiring' | 'test';
   site?: string;
   checkedAt: string;
   snapshot?: unknown;

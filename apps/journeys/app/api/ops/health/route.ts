@@ -67,6 +67,24 @@ export async function GET(request: Request) {
       ? { status: 'degraded', detail: `${detail}; ${stale} pending older than 72h${slowestText}` }
       : { status: 'ok', detail };
   });
+  await run('email-outbox', async () => {
+    const client = await serverClient();
+    if (!client) throw new Error('unavailable');
+    const response = await client.rpc('kinnso_public_health');
+    if (response.error) throw new Error(response.error.message);
+    const data = (response.data ?? {}) as { emailOutboxEnabled?: boolean; emailOutboxPending?: number; emailOutboxFailed?: number; emailOutboxOldestPendingHours?: number };
+    const provider = process.env.KINNSO_EMAIL_PROVIDER ?? 'none';
+    if (data.emailOutboxEnabled !== true) {
+      return { status: 'ok', detail: `disabled (flag off, provider ${provider})` };
+    }
+    const pending = data.emailOutboxPending ?? 0;
+    const failed = data.emailOutboxFailed ?? 0;
+    const oldest = data.emailOutboxOldestPendingHours ?? 0;
+    const detail = `provider ${provider} · pending ${pending} (oldest ${oldest}h) · failed ${failed}`;
+    return failed > 0 || oldest >= 1
+      ? { status: 'degraded', detail }
+      : { status: 'ok', detail };
+  });
   await run('deployment', async () => ({
     status: 'ok',
     detail: [

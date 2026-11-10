@@ -20,6 +20,7 @@ const EVENT_TEXT: Record<string, { zh: string; en: string }> = {
   'booking.accepted': { zh: '你的預訂申請已接受', en: 'Your booking request was accepted' },
   'booking.declined': { zh: '你的預訂申請已婉拒', en: 'Your booking request was declined' },
   'booking.dates_blocked': { zh: '創作者封鎖了與你申請重疊的日期', en: 'The creator blocked dates that overlap your request' },
+  'email.test': { zh: 'Kinnso 電郵系統測試', en: 'Kinnso email self-test' },
 };
 
 const ROLE_PATH: Record<string, string> = {
@@ -28,6 +29,7 @@ const ROLE_PATH: Record<string, string> = {
   'booking.accepted': '/requests',
   'booking.declined': '/requests',
   'booking.dates_blocked': '/requests',
+  'email.test': '/inbox',
 };
 
 const range = (payload: EmailPayload) => {

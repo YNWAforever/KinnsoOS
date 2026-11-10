@@ -99,5 +99,13 @@ export async function flushEmailOutbox(env: Record<string, string | undefined> =
       }
     }
   }
+
+  // Retention: sent and failed rows are kept for ops review, then removed. Pending
+  // rows are never purged; they are the queue.
+  const retentionDays = Number.parseInt(env.KINNSO_EMAIL_RETENTION_DAYS ?? '30', 10);
+  if (Number.isFinite(retentionDays) && retentionDays > 0) {
+    const cutoff = new Date(Date.now() - retentionDays * 86400000).toISOString();
+    await client.from('email_outbox').delete().in('status', ['sent', 'failed']).lt('updated_at', cutoff);
+  }
   return result;
 }

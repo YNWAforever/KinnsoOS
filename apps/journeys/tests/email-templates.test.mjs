@@ -28,3 +28,10 @@ test('unknown event type still renders a safe generic notice', () => {
   assert.match(body.subject, /預訂通知/);
   assert.match(body.text, /https:\/\/example\.test\/zh-HK\/inbox/);
 });
+
+test('self-test email is labelled as a test', () => {
+  const body = renderBookingEmail('email.test', {}, 'https://example.test');
+  assert.match(body.subject, /電郵系統測試/);
+  assert.match(body.text, /自[動动]通知|automated notice/);
+  assert.match(body.text, /https:\/\/example\.test\/zh-HK\/inbox/);
+});
