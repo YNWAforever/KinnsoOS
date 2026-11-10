@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T14:51:39.698Z",
+  "slice": "Ops booking-queue health check",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "03432549e57bda517a817fc78d7e94852dbfa38e",
+    "releaseTree": "0218b5aedf251b1cde5f951ba155870a1f45c233",
+    "parent": "e635e818c3392780936c146fdf7cb87b8a810004",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog continued into the evening; local tests, typecheck, eslint and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110090000_ops_booking_health.sql",
+    "baseline": {
+      "ledger": 259,
+      "head": "20261110080000"
+    },
+    "post": {
+      "ledger": 260,
+      "head": "20261110090000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_OPS_BOOKING_HEALTH_20261110",
+    "rpc": "public.kinnso_ops_booking_health() — ops-gated (public.is_active_ops()), read-only, revoked from anon"
+  },
+  "deployment": {
+    "previousProduction": "dpl_83mMGXnW5Hw3ZrJw5zSpywmHd3Zu",
+    "staged": "dpl_8TQyW1eohidQ9vLUpMi9snsych8m",
+    "promoted": "dpl_8TQyW1eohidQ9vLUpMi9snsych8m",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T14:50:45.725Z",
+          "step": "booking-queue check present in production health probe",
+          "status": 200,
+          "check": {
+            "id": "booking-queue",
+            "status": "ok",
+            "detail": "pending 0 (oldest 0h) · accepted 7d 2 · declined 7d 0 · blocked ranges 0",
+            "ms": 447
+          }
+        },
+        {
+          "at": "2026-11-10T14:50:54.282Z",
+          "step": "ops readiness page renders the booking-queue detail",
+          "matched": "pending 0 (oldest 0h) · accepted 7d 2 · declined 7d 0 · blocked ranges 0"
+        }
+      ],
+      "cleanup": "read-only E2E: no rows created or deleted; production had 0 pending, 2 accepted in the last 7 days and 0 blocked ranges at check time"
+    }
+  },
+  "honestLimits": [
+    "The check degrades only on requests waiting longer than 72h; it does not alert on its own (the alert destination is still the in-product inbox).",
+    "The detail is a global queue summary, not per creator; per-creator stale queues are visible only by filtering the creator inbox."
+  ]
+}
