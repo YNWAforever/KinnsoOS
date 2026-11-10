@@ -30,6 +30,7 @@ export function CreatorBookingInbox() {
   const [items, setItems] = useState<Item[] | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'hidden' | 'error'>('loading');
   const [hasMore, setHasMore] = useState(false);
+  const [cursor, setCursor] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -60,6 +61,7 @@ export function CreatorBookingInbox() {
       if (!payload?.ok || !Array.isArray(payload.data?.items)) { setState('error'); return; }
       setItems(payload.data.items);
       setHasMore(payload.data.hasMore === true);
+      setCursor(typeof payload.data.nextCursor === 'string' ? payload.data.nextCursor : null);
       setState('ready');
     } catch {
       setState('error');
@@ -71,11 +73,12 @@ export function CreatorBookingInbox() {
   const loadMore = async () => {
     setLoadingMore(true);
     try {
-      const response = await fetch(`/api/creator/booking-requests?offset=${items?.length ?? 0}`, { cache: 'no-store' });
+      const response = await fetch(`/api/creator/booking-requests?cursor=${encodeURIComponent(cursor ?? '')}`, { cache: 'no-store' });
       const payload = response.ok ? await response.json().catch(() => null) : null;
       if (Array.isArray(payload?.data?.items)) {
         setItems((current) => [...(current ?? []), ...payload.data.items]);
         setHasMore(payload.data.hasMore === true);
+        setCursor(typeof payload.data.nextCursor === 'string' ? payload.data.nextCursor : null);
       }
     } finally {
       setLoadingMore(false);

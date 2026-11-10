@@ -3,6 +3,23 @@ import { serverClient } from '../../../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
+type CursorToken = { p?: number; c?: string; i?: string };
+function decodeCursor(raw: string | null): CursorToken | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(Buffer.from(raw, 'base64url').toString('utf8')) as CursorToken;
+    if (!parsed || typeof parsed.c !== 'string' || typeof parsed.i !== 'string') return null;
+    if (!/^[0-9a-f-]{36}$/i.test(parsed.i) || Number.isNaN(new Date(parsed.c).getTime())) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+function encodeCursor(value: CursorToken): string {
+  return Buffer.from(JSON.stringify(value), 'utf8').toString('base64url');
+}
+
+
 function mapError(message: string) {
   if (/creator_required|actor_required|forbidden/.test(message)) return failure('FORBIDDEN', 403);
   if (/request_not_found_or_decided/.test(message)) return failure('CONFLICT', 409);
@@ -17,10 +34,19 @@ export async function GET(request: Request) {
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const offset = Math.max(0, Math.min(100000, Number(new URL(request.url).searchParams.get('offset') ?? '0') || 0));
-    const response = await client.rpc('kinnso_creator_booking_requests', { p_limit: 50, p_offset: offset });
+    const cursor = decodeCursor(new URL(request.url).searchParams.get('cursor'));
+    const response = await client.rpc('kinnso_creator_booking_requests', {
+      p_limit: 50,
+      p_cursor_pending: cursor?.p ?? null,
+      p_cursor_created_at: cursor?.c ?? null,
+      p_cursor_id: cursor?.i ?? null,
+    });
     if (response.error) throw new Error(response.error.message);
-    return reply({ ok: true, data: response.data });
+    const data = (response.data ?? {}) as { items?: Array<{ id: string; status: string; createdAt: string }>; hasMore?: boolean };
+    const items = Array.isArray(data.items) ? data.items : [];
+    const last = items[items.length - 1];
+    const nextCursor = data.hasMore === true && last ? encodeCursor({ p: last.status === 'requested' ? 0 : 1, c: last.createdAt, i: last.id }) : null;
+    return reply({ ok: true, data: { items, hasMore: data.hasMore === true, nextCursor } });
   } catch (error) {
     return mapError(error instanceof Error ? error.message : '');
   }
