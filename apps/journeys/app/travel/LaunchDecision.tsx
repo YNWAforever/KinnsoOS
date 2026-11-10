@@ -28,7 +28,7 @@ const STATUS_COLOR: Record<Gate['status'], string> = {
 /** One decision surface for launch: automatic gates computed from live facts plus
  * explicit operations sign-offs. "Launch ready" is never inferred from absence of
  * work; every human gate needs an accepted or waived record with a note. */
-export function LaunchDecision({ className }: { className?: string } = {}) {
+export function LaunchDecision({ className: _className }: { className?: string } = {}) {
   const { t } = useApp();
   const [data, setData] = useState<LaunchData | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
@@ -76,7 +76,7 @@ export function LaunchDecision({ className }: { className?: string } = {}) {
           expiresAt: form.status === 'waived' || form.status === 'accepted' ? form.expiresAt || null : null,
         }),
       });
-      const payload = await response.json().catch(() => null);
+      await response.json().catch(() => null);
       if (response.status === 201) { setForm((f) => ({ ...f, note: '' })); await load(); }
       else if (response.status === 400) setForm((f) => ({ ...f, error: 'invalid' }));
       else if (response.status === 401 || response.status === 403) setError('access-required');

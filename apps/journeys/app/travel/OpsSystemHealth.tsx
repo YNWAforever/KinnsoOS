@@ -13,7 +13,7 @@ const COLORS: Record<Check['status'], string> = {
 
 /** Ops-only live health panel. Every check is a real authenticated request against
  * this deployment; a failure hides no state and never claims health it did not see. */
-export function OpsSystemHealth({ className }: { className?: string } = {}) {
+export function OpsSystemHealth({ className: _className }: { className?: string } = {}) {
   const { t } = useApp();
   const [data, setData] = useState<Health | null>(null);
   const [state, setState] = useState<'loading' | 'ready' | 'error'>('loading');
