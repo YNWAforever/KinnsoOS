@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "executedAt": "2026-11-10T06:18:24.349Z",
+  "executedAt": "2026-11-10T06:38:39.663Z",
   "slice": "Creator-wide unavailable dates",
   "mode": "PRODUCTION_DEPLOYED_VERIFIED",
   "source": {
@@ -8,23 +8,22 @@
       "4e5f065d6ecc206efb7f6f7ba4c0feb73d1ff322 (feature)",
       "8801a9e120cbc4828e967035126b2f8c9266f417 (receipt draft)",
       "bcc804e63ac12cc2d152f6338e57c3bd217c8ab8 (merge of 3 production hotfixes)",
-      "8bf3630f0984658c1f88f166821d64d6d794873c (lint fix)"
+      "8bf3630f0984658c1f88f166821d64d6d794873c (lint fix)",
+      "0af294f0b38c5fbcde027c7ba079e348fadb84c3 (remaining lint fixes)"
     ],
     "branch": "release/spaces-mcp-20261108",
     "ci": [
       {
         "runId": 42758264351,
         "conclusion": "success",
-        "note": "feature commit before merging the production hotfixes"
+        "note": "feature commit before merging production hotfixes"
       },
       {
-        "runId": 42762907039,
-        "conclusion": "failure",
-        "note": "merged commit failed lint on an unused payload binding in BookingRequestPanel"
-      },
-      {
-        "commit": "8bf3630f0984658c1f88f166821d64d6d794873c",
-        "note": "lint fix pushed; CI re-running"
+        "commits": [
+          "8bf3630f0984658c1f88f166821d64d6d794873c",
+          "0af294f0b38c5fbcde027c7ba079e348fadb84c3"
+        ],
+        "note": "lint fixes; CI re-running after the repo-wide lint exposure"
       }
     ]
   },
@@ -44,7 +43,7 @@
   "deployment": {
     "previousProduction": "dpl_AzzbkrW635g3cuEfrXcDfEFZ1Lnd",
     "firstStaged": "dpl_FacM7ZP3y1z6h7CcwtLvbiDTZ5D6",
-    "final": "dpl_GJ1tayiuPCrHG4oaAWhRPsuWYsX2",
+    "final": "dpl_FGjtia6892LR528VGi5b9azbJy1k",
     "url": "https://kinnso-os.vercel.app",
     "note": "Vercel CLI auth had disappeared (empty auth file, no token, no repo secret); after the owner re-ran vercel login the release was staged, health-checked and promoted."
   },
@@ -57,17 +56,17 @@
     "production": {
       "steps": [
         {
-          "at": "2026-11-10T06:17:39.845Z",
+          "at": "2026-11-10T06:37:58.610Z",
           "step": "editor exposes the All my guides toggle",
           "toggle": 1
         },
         {
-          "at": "2026-11-10T06:17:44.988Z",
+          "at": "2026-11-10T06:38:02.793Z",
           "step": "creator blocks all guides in production",
           "allGuidesRows": 1
         },
         {
-          "at": "2026-11-10T06:17:46.847Z",
+          "at": "2026-11-10T06:38:05.259Z",
           "step": "range is publicly visible on other guides",
           "visibleOnAll": true,
           "statuses": [
@@ -76,19 +75,19 @@
           ]
         },
         {
-          "at": "2026-11-10T06:17:56.568Z",
+          "at": "2026-11-10T06:38:13.919Z",
           "step": "request on another guide inside the range is refused",
           "status": 400,
           "code": "INVALID"
         },
         {
-          "at": "2026-11-10T06:18:06.046Z",
+          "at": "2026-11-10T06:38:21.417Z",
           "step": "removal clears every guide",
           "removed": 200,
           "clean": true
         }
       ],
-      "cleanup": "all verification ranges removed; removal returned 200 and both public reads were empty. No booking request rows were created because the overlapping request was refused with 400."
+      "cleanup": "all verification ranges removed; public reads on Bangkok and Bali were empty afterwards. No booking request rows were created (overlap refused with 400)."
     }
   },
   "honestLimits": [
