@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T15:57:15.322Z",
+  "slice": "Stale booking-queue alerting and waiting-age visibility",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "ae1bc31f1cb7f644f75b54b651a419935d943103",
+    "releaseTree": "f59644efc55978595cdd18bd1c069defd1b0e856",
+    "parent": "f8e2f5d8c0141ceade33e873fa9a3e2a6f0418db",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "GitHub Actions backlog continued; local tests, typecheck, eslint and acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110100000_public_booking_health.sql",
+    "baseline": {
+      "ledger": 260,
+      "head": "20261110090000"
+    },
+    "post": {
+      "ledger": 261,
+      "head": "20261110100000"
+    },
+    "clientResult": "first attempt rolled back because the post-check used pg_get_function_result (which reports the jsonb return type, not field names); the check now evaluates the function output keys, and the retry committed with KINNSO_COMMIT_ACK_BOOKING_ALERTING_20261110",
+    "publicSnapshotFields": [
+      "pendingBookingRequests",
+      "stalePendingBookingRequests",
+      "oldestPendingBookingHours"
+    ]
+  },
+  "deployment": {
+    "previousProduction": "dpl_8TQyW1eohidQ9vLUpMi9snsych8m",
+    "staged": "dpl_6Fq9MNLnSXzug2WpqRGrA28r6sEw",
+    "promoted": "dpl_6Fq9MNLnSXzug2WpqRGrA28r6sEw",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 3,
+      "passed": 3,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T15:56:34.403Z",
+          "step": "traveller created a pending request",
+          "status": 201,
+          "id": "26c5962b-c904-4dc9-892f-87f2e58b66e4"
+        },
+        {
+          "at": "2026-11-10T15:56:51.037Z",
+          "step": "creator inbox shows the new request waiting age, not overdue",
+          "badges": [
+            {
+              "text": "已等待 0h",
+              "overdue": "false"
+            }
+          ]
+        },
+        {
+          "at": "2026-11-10T15:56:54.340Z",
+          "step": "booking-queue health still green after the change",
+          "check": {
+            "id": "booking-queue",
+            "status": "ok",
+            "detail": "pending 1 (oldest 0h) · accepted 7d 2 · declined 7d 0 · blocked ranges 0",
+            "ms": 321
+          }
+        }
+      ],
+      "cleanup": "the E2E request and its inbox events were deleted afterwards; the production public snapshot reads pending 0, stale 0, oldest 0"
+    }
+  },
+  "honestLimits": [
+    "The stale-queue alert fires once a day inside the 08:00 UTC quarter-hour window, so a queue that becomes stale later waits up to a day for a warning.",
+    "The alert carries counts and an age only; it does not name the creator. Per-creator waiting age is visible in that creator inbox but not yet in ops.",
+    "Production delivery was not re-triggered because the production CRON_SECRET is not available to this session; the drill path was proven locally and the earlier alerting receipts validated the configured destination."
+  ]
+}
