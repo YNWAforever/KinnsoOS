@@ -12,6 +12,9 @@ type Snapshot = {
   attestedGuides: number;
   verifiedGuides: number;
   chatTurnsUsedThisHour: number;
+  pendingBookingRequests: number;
+  stalePendingBookingRequests: number;
+  oldestPendingBookingHours: number;
 };
 
 type Digest = {
@@ -23,7 +26,7 @@ type Digest = {
   holdBlocks: number;
 };
 
-type State = 'ok' | 'unavailable' | 'cost-exhausted' | 'content-not-ready' | 'waivers-expiring';
+type State = 'ok' | 'unavailable' | 'cost-exhausted' | 'booking-queue-stale' | 'content-not-ready' | 'waivers-expiring';
 
 /** Scheduled health alerting.
  *
@@ -58,8 +61,8 @@ export async function GET(request: Request) {
   const query = new URL(request.url).searchParams;
   if (query.get('test') === '1') {
     const simulated = query.get('state');
-    const allowed = ['unavailable', 'cost-exhausted', 'content-not-ready', 'waivers-expiring'];
-    const simulatedState = simulated && allowed.includes(simulated) ? (simulated as 'unavailable' | 'cost-exhausted' | 'content-not-ready' | 'waivers-expiring') : null;
+    const allowed = ['unavailable', 'cost-exhausted', 'booking-queue-stale', 'content-not-ready', 'waivers-expiring'];
+    const simulatedState = simulated && allowed.includes(simulated) ? (simulated as 'unavailable' | 'cost-exhausted' | 'booking-queue-stale' | 'content-not-ready' | 'waivers-expiring') : null;
     const text = simulatedState
       ? `KinnsoOS simulated failure drill (${simulatedState}): this is a labelled test of the incident path, not a real incident. Delivery classification and transport are being verified.`
       : 'KinnsoOS alert self-test (scheduler path): delivery works end to end. No incident is implied.';
@@ -118,6 +121,8 @@ export async function GET(request: Request) {
     // Alert on every run: repeated warnings are acceptable, silence is not.
   } else if (snapshot && Number.isFinite(limit) && snapshot.chatTurnsUsedThisHour >= limit && now.getUTCMinutes() < 15) {
     state = 'cost-exhausted';
+  } else if (snapshot && snapshot.stalePendingBookingRequests > 0 && now.getUTCHours() === 8 && now.getUTCMinutes() < 15) {
+    state = 'booking-queue-stale';
   } else if (snapshot && snapshot.verifiedGuides === 0 && now.getUTCHours() === 8 && now.getUTCMinutes() < 15) {
     state = 'content-not-ready';
   } else if (digest && (digest.waiversExpiringSoon > 0 || digest.waiversExpired > 0) && now.getUTCHours() === 8 && now.getUTCMinutes() < 15) {
@@ -136,6 +141,8 @@ export async function GET(request: Request) {
       ? `KinnsoOS alert: operational snapshot unavailable (${reason}). Scheduled health checks cannot confirm the database.`
       : state === 'cost-exhausted'
         ? `KinnsoOS alert: hourly chat budget exhausted (${snapshot?.chatTurnsUsedThisHour ?? '?'}/${limit}). Chat turns are being rejected until the window resets.`
+        : state === 'booking-queue-stale'
+          ? `KinnsoOS alert: ${snapshot?.stalePendingBookingRequests ?? 0} booking request(s) have waited longer than 72 hours (oldest ${snapshot?.oldestPendingBookingHours ?? 0}h, pending ${snapshot?.pendingBookingRequests ?? 0}). A creator has not opened their inbox; review the booking queue.`
         : state === 'waivers-expiring'
           ? `KinnsoOS digest: ${digest?.waiversExpired ?? 0} launch waiver(s) have expired and ${digest?.waiversExpiringSoon ?? 0} expire within 14 days. An expired waiver blocks launch again; review them in the launch panel.`
           : `KinnsoOS digest: content gate still blocked — ${snapshot?.publishedGuides ?? 0} published, ${snapshot?.syntheticGuides ?? 0} synthetic, ${snapshot?.verifiedGuides ?? 0} verified. Launch remains HOLD.`;

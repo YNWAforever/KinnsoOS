@@ -15,6 +15,8 @@ type Item = {
   createdAt: string;
 };
 
+const waitingHours = (createdAt: string) => Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 3600000));
+
 const LABEL: Record<Item['status'], [string, string]> = {
   requested: ['Requested', '待回覆'],
   accepted: ['Accepted', '已接受'],
@@ -138,6 +140,16 @@ export function CreatorBookingInbox() {
           {filtered.map((item) => (
             <li key={item.id} data-testid="creator-booking-row" data-status={item.status} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '10px' }}>
               <strong>{item.guideTitle}</strong> · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')} · {t(LABEL[item.status][0], LABEL[item.status][1])}
+              {item.status === 'requested' && (
+                <span
+                  className="k-meta"
+                  data-testid="creator-booking-waiting"
+                  data-overdue={waitingHours(item.createdAt) > 72 ? 'true' : 'false'}
+                  style={{ marginLeft: '6px', color: waitingHours(item.createdAt) > 72 ? '#8a1c1c' : undefined }}
+                >
+                  {t('waiting', '已等待')} {waitingHours(item.createdAt)}h
+                </span>
+              )}
               {item.message && <span className="k-meta" style={{ display: 'block', overflowWrap: 'anywhere' }}>{item.message}</span>}
               {item.responseNote && <span className="k-meta" style={{ display: 'block' }} data-testid="creator-booking-response-note">{t('Your note', '你的備註')}: {item.responseNote}</span>}
               {item.status === 'requested' && (
