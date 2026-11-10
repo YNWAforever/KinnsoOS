@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-10T13:38:01.416Z",
+  "slice": "Booking request history pagination",
+  "mode": "PRODUCTION_DEPLOYED_VERIFIED",
+  "source": {
+    "releaseCommit": "ec991f515b64595bf9c3f9efdad4c4588e1eb1b0",
+    "releaseTree": "903c261df409842d2bca8cbac2d83abf72c58a9f",
+    "parent": "1cd2fb3a051ef0ef2799686499cf8f0cab1c2f37",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued/backlogged",
+      "note": "GitHub Actions had been postponing runs all evening; local tests, typecheck, eslint and the 60-row acceptance ran before deployment"
+    }
+  },
+  "database": {
+    "migration": "20261110080000_booking_request_pagination.sql",
+    "baseline": {
+      "ledger": 258,
+      "head": "20261110070000"
+    },
+    "post": {
+      "ledger": 259,
+      "head": "20261110080000"
+    },
+    "clientResult": "exit 0 with KINNSO_COMMIT_ACK_BOOKING_PAGINATION_20261110; ledger/head and both 2-argument RPCs verified in production",
+    "leftover": "the previous zero/one-argument overloads still exist in pg_proc; product code only calls the new two-argument forms, so they are unreachable but not dropped to avoid breaking rollback deployments"
+  },
+  "deployment": {
+    "previousProduction": "dpl_EvFv1hMDmAPiUVhRSo3W4hveFCDg",
+    "staged": "dpl_83mMGXnW5Hw3ZrJw5zSpywmHd3Zu",
+    "promoted": "dpl_83mMGXnW5Hw3ZrJw5zSpywmHd3Zu",
+    "url": "https://kinnso-os.vercel.app"
+  },
+  "verification": {
+    "local": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0
+    },
+    "production": {
+      "steps": [
+        {
+          "at": "2026-11-10T13:36:28.608Z",
+          "step": "traveller API returns items plus hasMore and honours offset",
+          "page1Items": 2,
+          "page1HasMore": false,
+          "page2Items": 1,
+          "page2HasMore": false
+        },
+        {
+          "at": "2026-11-10T13:36:35.777Z",
+          "step": "traveller tracker hides load-more when the history fits one page",
+          "rows": 2,
+          "loadMoreButtons": 0
+        },
+        {
+          "at": "2026-11-10T13:36:46.982Z",
+          "step": "creator API returns items plus hasMore and honours offset",
+          "page1Items": 2,
+          "page1HasMore": false,
+          "page2Items": 1,
+          "page2HasMore": false
+        }
+      ],
+      "cleanup": "read-only E2E: no rows created or deleted"
+    }
+  },
+  "honestLimits": [
+    "Offset pagination can shift rows if a request is created while the traveller is paging; cursor pagination would be stricter and remains future work.",
+    "The load-more control fetches 50 rows per click; very long histories need several clicks and there is no jump-to-end."
+  ]
+}
