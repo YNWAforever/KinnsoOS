@@ -57,12 +57,14 @@ export async function GET(request: Request) {
     if (!client) throw new Error('unavailable');
     const response = await client.rpc('kinnso_ops_booking_health');
     if (response.error) throw new Error(response.error.message);
-    const data = (response.data ?? {}) as { pending?: number; stalePending?: number; oldestPendingHours?: number; acceptedLast7d?: number; declinedLast7d?: number; blockedRanges?: number };
+    const data = (response.data ?? {}) as { pending?: number; stalePending?: number; oldestPendingHours?: number; acceptedLast7d?: number; declinedLast7d?: number; blockedRanges?: number; staleCreators?: Array<{ creatorName?: string; pending?: number; oldestPendingHours?: number }> };
     const pending = data.pending ?? 0;
     const stale = data.stalePending ?? 0;
     const detail = `pending ${pending} (oldest ${data.oldestPendingHours ?? 0}h) · accepted 7d ${data.acceptedLast7d ?? 0} · declined 7d ${data.declinedLast7d ?? 0} · blocked ranges ${data.blockedRanges ?? 0}`;
+    const slowest = Array.isArray(data.staleCreators) ? data.staleCreators[0] : null;
+    const slowestText = slowest ? ` (${slowest.creatorName ?? 'creator'}: ${slowest.pending ?? 0} pending, oldest ${slowest.oldestPendingHours ?? 0}h)` : '';
     return stale > 0
-      ? { status: 'degraded', detail: `${detail}; ${stale} pending older than 72h` }
+      ? { status: 'degraded', detail: `${detail}; ${stale} pending older than 72h${slowestText}` }
       : { status: 'ok', detail };
   });
   await run('deployment', async () => ({
