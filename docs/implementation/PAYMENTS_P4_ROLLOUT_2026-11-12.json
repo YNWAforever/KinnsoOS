@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T18:35:00.000Z",
+  "slice": "Phase 6 P4 — operations payments dashboard, audited refunds and provider webhook visibility (inert, flag off)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "4169624ec1dc6758754eb909f89b8f014b9c8ba4",
+    "releaseTree": "b1f85941cd4fab6f3146ee1fe9e983c4cfb290aa",
+    "parent": "5b87a3ef9ac885d089689183def66e7419bb1edc",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "in_progress",
+      "note": "verify and operations-performance passed on the preceding P3 commits; the remaining jobs fail in their first step on the owned-runner image (CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE), unrelated to this change"
+    }
+  },
+  "database": {
+    "migration": "20261111150000_payments_p4_ops_refunds.sql",
+    "migrationSha256": "e7c9563a3de5af9635e0f3a944dbfe8dbfb7d733e3771ab82772a801f00f5856",
+    "applyEnvelopeSha256": "5141619a7501a83a6cd9dd25aa5d6afe6480b3e22a21d90d09b8708e3dbd798f",
+    "baseline": {
+      "ledger": 272,
+      "head": "20261111140000"
+    },
+    "post": {
+      "ledger": 273,
+      "head": "20261111150000"
+    },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P4_20261112",
+    "productionVerification": {
+      "refundedAtColumn": true,
+      "refundFunctionRecordsTimestamp": true,
+      "readModels": [
+        "kinnso_ops_payments_list(integer)",
+        "kinnso_ops_payment_detail(uuid)",
+        "kinnso_ops_webhook_events(integer)"
+      ],
+      "readModelGrants": "authenticated only (3 EXECUTE grants, anon 0)",
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "payableBookingStates": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_9cFVPSqmkXCJ9vBhucnaSTPN5SjG",
+    "staged": "dpl_C4ut3wMUETpAZFWpFi3b7f9UMAtk",
+    "promoted": "dpl_C4ut3wMUETpAZFWpFi3b7f9UMAtk",
+    "url": "https://kinnso-os.vercel.app",
+    "newSurface": "GET /ops?view=payments (operations payments dashboard)",
+    "changed": "payments dashboard route payload, refund timestamp and audit read models, dashboard component and navigation; refund API contract unchanged"
+  },
+  "verification": {
+    "local": {
+      "total": 17,
+      "passed": 17,
+      "failed": 0
+    },
+    "unit": {
+      "total": 2112,
+      "passed": 2110,
+      "failed": 0,
+      "skipped": 2
+    },
+    "sourcePackage": {
+      "pythonTests": 12,
+      "skipped": 1,
+      "result": "OK"
+    },
+    "production": [
+      { "step": "production health is up", "status": "PASS" },
+      { "step": "the payments dashboard needs an operations session", "status": "PASS" },
+      { "step": "an anonymous refund attempt is refused", "status": "PASS" },
+      { "step": "the dashboard returns empty money surfaces while payments are off", "status": "PASS" },
+      { "step": "a payment detail lookup is wired but finds nothing", "status": "PASS" },
+      { "step": "a refund for a missing payment changes nothing", "status": "PASS" },
+      { "step": "the operations dashboard renders the deployed money states", "status": "PASS" },
+      { "step": "no payment rows or provider events exist to act on", "status": "PASS" },
+      { "step": "a traveller is still refused the operations payments surface", "status": "PASS" },
+      { "step": "the read-only probes wrote nothing", "status": "PASS" },
+      { "step": "production serves the promoted deployment", "status": "PASS" }
+    ],
+    "productionState": {
+      "ledger": 273,
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "pricedGuides": 0,
+      "provider": "none",
+      "providerConfigured": false
+    }
+  },
+  "honestLimits": [
+    "Refunds remain fake-provider only until P5 wires a real provider refund; the RPC rejects other providers and the UI offers the action only for fake payments.",
+    "A refund writes the audit trail but does not notify the traveller or creator; messaging depends on the open cancellation policy decision.",
+    "The payment list shows the latest 100 rows (hasMore returned, no cursor UI) and the provider ledger the latest 50; pagination is needed before real volume.",
+    "The dashboard is request/refresh driven with no live subscription, and signature-failure attempts are deliberately not persisted.",
+    "Payout accrual, receipts and invoices remain unimplemented; payout tables are schema-only until the owner's payout decisions."
+  ]
+}
