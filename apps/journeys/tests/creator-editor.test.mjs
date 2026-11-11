@@ -35,12 +35,12 @@ for(const item of ['day','stop'])for(const focusState of ['control','chosen-fiel
   const jsx=(type,props)=>({type,props}),module={exports:{}};
   runInContext(compiled.code,createContext({module,exports:module.exports,crypto,window:{addEventListener(){},removeEventListener(){}},document,CSS:{escape:key=>key},requestAnimationFrame:callback=>frames.push(callback),setTimeout:()=>0,clearTimeout(){},require:name=>{
    if(name==='./UnsavedDraftGuard')return{useUnsavedDraftGuard(){return()=>false;}};if(name==='react')return hooks;if(name==='react/jsx-runtime')return{jsx,jsxs:jsx};if(name==='next/link')return{__esModule:true,default:'a'};
-   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
+   if(name==='./CreatorContentStatus')return{CreatorContentStatus:()=>null};if(name==='./CreatorPerformance')return{CreatorPerformance:()=>null};if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./GuidePricePanel')return{GuidePricePanel:()=>null};if(name==='./CreatorBookingInbox')return{CreatorBookingInbox:()=>null};if(name==='next/navigation')return{useRouter:()=>({replace(){}})};if(name==='./ui')return{useApp:()=>({t:en=>en,href:path=>'/en/'+path})};
    if(name==='../../lib/creators/contracts')return{emptyDraft:blank,creators:{}};
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
    if(name==='./CreatorCollaborationTasks')return{CreatorCollaborationTasks(){throw Error('The editor must not render the overview');}};
    if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts')return{};if(name==='../../lib/creators/editor-operations')return ops;
-   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};
+   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./GuidePricePanel')return{GuidePricePanel:()=>null};
     throw Error('Unexpected dependency '+name);
   }}));
   function render(){cursor=0;tree=module.exports.CreatorEditor({path:'studio/guides/new'});for(const effect of effects)if(effect?.pending){effect.pending=false;effect.work();}}
@@ -71,7 +71,7 @@ for(const locale of [null,'en','zh-HK'])test(locale ? 'pilot publish preserves t
    if(name==='./WorkspaceServiceState')return{WorkspaceServiceState(){throw Error('Editor must not render the entry service state');}};
    if(name==='./CreatorCollaborationTasks')return{CreatorCollaborationTasks(){throw Error('The editor must not render the overview');}};
    if(name==='../../lib/creators/handles')return{PLATFORMS:[]};if(name==='../../lib/trips/local-drafts')return{};if(name==='../../lib/creators/editor-operations')return ops;
-   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};
+   if(name==='./AvailabilityPanel')return{AvailabilityPanel:()=>null};if(name==='./GuidePricePanel')return{GuidePricePanel:()=>null};
     throw Error('Unexpected dependency '+name);
   }}));
  function render(){cursor=0;tree=module.exports.CreatorEditor({path:locale?'studio/guides/example/edit':'studio/guides/new'});for(const e of effects)if(e?.pending){e.pending=false;e.cleanup?.();e.cleanup=e.work();}}

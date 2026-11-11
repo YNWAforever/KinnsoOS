@@ -11,12 +11,12 @@ async function handler(path) {
  } }] });
  const module = { exports: {} }; new Function('require', 'module', 'exports', r.outputFiles[0].text)(require, module, module.exports); return module.exports;
 }
-const guide = await handler('../app/api/creator/guides/[id]/route.ts'), publish = await handler('../app/api/creator/guides/[id]/publish/route.ts'), profile = await handler('../app/api/creator/profile/route.ts');
-function setup(t, { enabled = true, revoked = false, error = null } = {}) {
+const guide = await handler('../app/api/creator/guides/[id]/route.ts'), publish = await handler('../app/api/creator/guides/[id]/publish/route.ts'), profile = await handler('../app/api/creator/profile/route.ts'), price = await handler('../app/api/creator/guides/[id]/price/route.ts');
+function setup(t, { enabled = true, revoked = false, error = null, roles = ['creator'] } = {}) {
  const env = { KINNSO_SUPABASE_URL: 'https://test.supabase.co', KINNSO_APPROVED_SUPABASE_ORIGIN: 'https://test.supabase.co', KINNSO_LEGACY_AUTH_ORIGIN: 'https://test.supabase.co', KINNSO_SUPABASE_PUBLISHABLE_KEY: 'sb_publishable_test', KINNSO_SITE_URL: 'https://journeys.example', KINNSO_ENABLED_CAPABILITIES: enabled ? 'creator' : '' };
  const previous = Object.fromEntries(Object.keys(env).map(k => [k, process.env[k]])); Object.assign(process.env, env);
  const calls = [];
- globalThis.__creatorRouteClient = { auth: { getUser: async () => ({ data: { user: { id: owner } } }) }, rpc: async (name, args) => { calls.push({ name, args }); return name === 'kinnso_actor' ? { data: revoked ? null : { id: owner }, error: revoked ? { message: 'unauthenticated' } : null } : { data: { id, revision: 2 }, error }; } };
+ globalThis.__creatorRouteClient = { auth: { getUser: async () => ({ data: { user: { id: owner } } }) }, rpc: async (name, args) => { calls.push({ name, args }); return name === 'kinnso_actor' ? { data: revoked ? null : { id: owner, roles }, error: revoked ? { message: 'unauthenticated' } : null } : { data: { id, revision: 2 }, error }; } };
  t.after(() => { delete globalThis.__creatorRouteClient; for (const [k, v] of Object.entries(previous)) if (v === undefined) delete process.env[k]; else process.env[k] = v; }); return calls;
 }
 const context = { params: Promise.resolve({ id }) };
@@ -49,4 +49,33 @@ test('manual profile submission requires a request id before the confirm command
  assert.equal((await profile.POST(request({ requestId: 'active', profile: {}, confirmed: true }, undefined, 'POST'))).status, 400);
  assert.equal((await profile.POST(request({ requestId: null, profile: {}, confirmed: true }, undefined, 'POST'))).status, 400);
  assert.equal(calls.filter(c => c.name !== 'kinnso_actor').length, 0);
+});
+test('creator price read returns the guide price plus the payments flag without caching it', async t => {
+ const calls = setup(t); const r = await price.GET(request(undefined, undefined, 'GET'), context);
+ assert.equal(r.status, 200); assert.match(r.headers.get('cache-control'), /private, no-store/);
+ assert.deepEqual(calls.map(c => c.name), ['kinnso_actor', 'kinnso_creator_guide_price']);
+ assert.equal(calls[1].args.p_guide_id, id);
+});
+test('an actor without the creator role can neither read nor write a price', async t => {
+ const calls = setup(t, { roles: [] });
+ assert.equal((await price.GET(request(undefined, undefined, 'GET'), context)).status, 403);
+ assert.equal((await price.PUT(request({ priceMinor: 50000 }), context)).status, 403);
+ assert.deepEqual(calls.map(c => c.name), ['kinnso_actor', 'kinnso_actor']);
+});
+test('creator price writes validate the bounded payload before the RPC', async t => {
+ const calls = setup(t);
+ for (const body of [{}, { priceMinor: 1.5 }, { priceMinor: '50000' }, { priceMinor: 50 }, { priceMinor: 50000, currency: 'HKD' }, { other: 1 }])
+  assert.equal((await price.PUT(request(body), context)).status, 400, JSON.stringify(body));
+ assert.equal(calls.filter(c => c.name !== 'kinnso_actor').length, 0);
+});
+test('creator price writes pass an absolute minor-unit amount and can clear it', async t => {
+ const calls = setup(t);
+ assert.equal((await price.PUT(request({ priceMinor: 50000 }), context)).status, 200);
+ assert.equal((await price.PUT(request({ priceMinor: null }), context)).status, 200);
+ assert.deepEqual(calls.filter(c => c.name === 'kinnso_creator_set_guide_price').map(c => c.args.p_price_minor), [50000, null]);
+});
+test('a disabled payments flag refuses a direct price write and never claims success', async t => {
+ setup(t, { error: { message: 'payments_disabled', code: 'P0001' } });
+ const r = await price.PUT(request({ priceMinor: 50000 }), context); assert.equal(r.status, 403);
+ const text = await r.text(); assert.match(text, /FORBIDDEN/); assert.doesNotMatch(text, /payments_disabled/);
 });

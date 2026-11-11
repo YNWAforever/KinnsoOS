@@ -18,4 +18,6 @@ export const creators = {
  save: (id: string, expectedRevision: number, requestId: string, payload: DraftPayload) => request<GuideDraft>('/api/creator/guides/' + encodeURIComponent(id), 'PUT', { expectedRevision, requestId, payload }),
  publish: (id: string, expectedRevision: number, requestId: string) => request<{ draft: GuideDraft; snapshot: GuideSnapshot }>('/api/creator/guides/' + encodeURIComponent(id) + '/publish', 'POST', { expectedRevision, requestId }),
  withdraw: (id: string) => request<{ withdrawn: true }>('/api/creator/guides/' + encodeURIComponent(id) + '/withdraw', 'POST', {}),
+ price: (id: string) => request<{ guideId: string; priceMinor: number | null; currency: string; paymentsEnabled: boolean; minMinor: number; maxMinor: number }>('/api/creator/guides/' + encodeURIComponent(id) + '/price'),
+ setPrice: (id: string, priceMinor: number | null) => request<{ guideId: string; priceMinor: number | null; currency: string }>('/api/creator/guides/' + encodeURIComponent(id) + '/price', 'PUT', { priceMinor }),
 };
