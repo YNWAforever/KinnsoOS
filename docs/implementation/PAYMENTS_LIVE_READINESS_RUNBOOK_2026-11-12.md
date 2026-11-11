@@ -17,7 +17,19 @@
 - Refunds now call the provider first and record only a provider-accepted refund (`kinnso_ops_record_refund`), storing the provider refund id in `booking_payments.provider_refund_id` and the audit event. A second record for the same payment is refused, so a retried provider call cannot double-refund.
 - The ops payments dashboard shows provider/webhook readiness, money states, the payment list, the audit trail and the ingested provider-event ledger.
 - The webhook endpoint verifies `Stripe-Signature` over the raw body (5-minute tolerance), is replay-safe via `provider_event_id`, and refuses to run without the signing secret.
-- Production verification is read-only and checks the surfaces stay empty while inert.
+- The 7-day payment deadline is now swept automatically: `GET /api/cron/payment-expiry` with `Authorization: Bearer <CRON_SECRET>`, same-origin, expires both `requires_payment` and abandoned `processing` checkouts, writes one `payment.expired` event per payment, and is idempotent. The same sweep is available to an operator from the payments dashboard ("Sweep overdue windows") for immediate runs.
+
+## Scheduled expiry sweep
+
+The production scheduler already calls the other cron routes (email outbox every 15 minutes, health, retention) with the `CRON_SECRET` bearer and the site origin. Add one more entry:
+
+- **URL:** `https://kinnso-os.vercel.app/api/cron/payment-expiry`
+- **Method/headers:** `GET`, `Authorization: Bearer <CRON_SECRET>`; the request must originate from the production site origin (the endpoint refuses foreign origins).
+- **Cadence:** every 15 minutes (or hourly); the sweep is idempotent and cheap (indexed deadline scan).
+- **Without the credential:** the endpoint is a no-op that reports `cron-secret-not-configured`; a wrong credential is `401`, a foreign origin `403`.
+- **Manual fallback:** the payments dashboard "Sweep overdue windows" button calls the ops-only route with the operator's session.
+
+If the scheduler is missing, unpaid accepted trips stay `awaiting_payment`/`processing` past the 7-day deadline; the manual button clears them, but the scheduler is the required posture.
 
 ## Enablement sequence (owner-run, one at a time)
 

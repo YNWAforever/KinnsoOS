@@ -53,6 +53,7 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
   const [reason, setReason] = useState('');
   const [refundError, setRefundError] = useState('');
   const [refundMessage, setRefundMessage] = useState('');
+  const [sweepMessage, setSweepMessage] = useState('');
   const [detail, setDetail] = useState<{ id: string; data: Detail } | null>(null);
   const generation = useRef(0);
   const opener = useRef<HTMLElement | null>(null);
@@ -82,6 +83,23 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
     }
   }
   useEffect(() => { void load(); }, [actorId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function sweep() {
+    if (busy) return;
+    setBusy(true); setError(''); setSweepMessage('');
+    try {
+      const response = await fetch('/api/ops/payments/sweep', { method: 'POST', cache: 'no-store' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.code ?? 'UNAVAILABLE');
+      const expired = Number(payload.data?.expired ?? 0);
+      setSweepMessage(t(`Expired ${expired} payment window(s).`, `已清掃 ${expired} 個到期付款。`));
+      await load();
+    } catch (next) {
+      setError(errorLabel(next instanceof Error ? next.message : '', t));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function toggle() {
     if (!data || busy) return;
@@ -176,6 +194,8 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
         <div><dt>{t('Priced guides','已定價攻略')}</dt><dd>{data.pricedGuides}</dd></div>
       </dl>
       <button className="k-btn" data-testid="ops-payments-toggle" disabled={busy} onClick={() => void toggle()}>{data.enabled ? t('Pause payments','暫停付款') : t('Enable payments','啟用付款')}</button>
+      <button className="k-btn" data-testid="ops-sweep-expired" disabled={busy} onClick={() => void sweep()}>{t('Sweep overdue windows','清掃逾期付款')}</button>
+      {sweepMessage && <p role="status" data-testid="ops-sweep-result">{sweepMessage}</p>}
       {refundMessage && <p role="status" data-testid="ops-refund-success">{refundMessage}</p>}
     </div>}
     {data && <div className="k-card-list" data-testid="ops-payment-list">
