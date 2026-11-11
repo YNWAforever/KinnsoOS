@@ -2,7 +2,7 @@ import { apiContext, boundedBody, failure, reply } from '../../../../lib/api/ser
 
 export const dynamic = 'force-dynamic';
 
-const EVENT_TYPES = ['booking.requested', 'booking.withdrawn', 'booking.accepted', 'booking.declined', 'booking.dates_blocked'] as const;
+const EVENT_TYPES = ['booking.requested', 'booking.withdrawn', 'booking.accepted', 'booking.declined', 'booking.dates_blocked', 'booking.paid', 'booking.payment_received'] as const;
 
 /** Per-event in-app notification mutes for the signed-in account. */
 export async function GET(request: Request) {

@@ -22,6 +22,8 @@ function InboxMutes({busy,onChanged}:{busy:boolean;onChanged:()=>void}){
   'booking.accepted':['Accepted requests','申請已接受'],
   'booking.declined':['Declined requests','申請已拒絕'],
   'booking.dates_blocked':['Blocked dates affecting my requests','影響我申請的封鎖日期'],
+  'booking.paid':['Payment confirmations','付款確認'],
+  'booking.payment_received':['Traveller payments','旅客付款'],
  };
  if(!mutes)return null;
  return <section className="k-card" aria-labelledby="inbox-mutes-title" data-testid="inbox-mutes"><h2 id="inbox-mutes-title" style={{marginTop:0}}>{t('Notification settings','通知設定')}</h2><p className="k-meta">{t('Muted notices are not added to this inbox.','已靜音的通知不會加入此收件匣。')}</p>{error&&<p role="alert" data-testid="inbox-mutes-error">{t('A setting could not be saved. Try again.','未能儲存設定，請重試。')}</p>}<ul style={{listStyle:'none',padding:0,display:'grid',gap:'6px'}}>{mutes.map(item=><li key={item.eventType}><label style={{display:'flex',gap:'8px',alignItems:'center'}}><input type="checkbox" checked={item.muted} disabled={busy||saving} onChange={(event)=>void toggle(item.eventType,event.target.checked)} data-testid={'mute-'+item.eventType}/>{t(labels[item.eventType][0],labels[item.eventType][1])}</label></li>)}</ul></section>;

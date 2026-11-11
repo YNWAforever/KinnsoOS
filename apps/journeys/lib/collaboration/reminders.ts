@@ -23,4 +23,6 @@ export function collaborationNotice(type:string,locale:string){const labels:Reco
  'booking.accepted':['The creator accepted your date request','創作者已接受你的日期申請'],
  'booking.declined':['The creator declined your date request','創作者已婉拒你的日期申請'],
  'booking.withdrawn':['A traveller withdrew a booking request','旅客已撤回預訂申請'],
- 'booking.dates_blocked':['The creator blocked dates that overlap your pending request','創作者封鎖了與你待回覆申請重疊的日期']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}
+ 'booking.dates_blocked':['The creator blocked dates that overlap your pending request','創作者封鎖了與你待回覆申請重疊的日期'],
+ 'booking.paid':['Your payment was received; the trip is confirmed','付款完成，旅程已確認'],
+ 'booking.payment_received':['A traveller paid; the trip is confirmed','旅客已付款，旅程已確認']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}
