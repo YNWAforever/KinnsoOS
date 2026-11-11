@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T20:05:00.000Z",
+  "slice": "Phase 6 P5c — scheduled expiry sweep for payment windows (inert, flag off, scheduler entry owner-gated)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "5e83954504c6761c22a4da2bbd30593b486b7fe8",
+    "parent": "74c53c8c434a6c956af56f68e502cf6a48bb39ea",
+    "tree": "dc68a38fed68be4e5bf5a7f2f80c510cb64eb3c3",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "in_progress",
+      "note": "the preceding receipt commit run 43088446899 passed verify and operations-performance; connected/auth-mailbox/workspace-fixtures/studio-planning fail at their first step on CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE, unrelated"
+    }
+  },
+  "database": {
+    "migration": "20261111170000_payments_p5_expiry_sweeper.sql",
+    "migrationSha256": "ca930d109b67f24a08f3beefaa46cc61ae5ef1d6376c46abcd4d9bf98d8e6d1e",
+    "applyEnvelopeSha256": "dc836ae8490345a291d20425de032ca846daf6b24cc0ccb74449e8505defe667",
+    "baseline": { "ledger": 274, "head": "20261111160000" },
+    "post": { "ledger": 275, "head": "20261111170000" },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P5C_20261112",
+    "productionVerification": {
+      "sweepRpc": "kinnso_payment_sweep_expired()",
+      "sweepGrants": "2 (authenticated, service_role); anon 0",
+      "internalSweepAuthenticatedExec": false,
+      "abandonedProcessingExpired": true,
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "payableBookingStates": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_DMPkx32RPB6odLL2p3drKDbZ2H68",
+    "staged": "dpl_2L9iyjtJ5nmD7Zrixvxk4PHpepnv",
+    "promoted": "dpl_2L9iyjtJ5nmD7Zrixvxk4PHpepnv",
+    "url": "https://kinnso-os.vercel.app",
+    "changed": "public expiry-sweep RPC for scheduler/ops, /api/cron/payment-expiry, manual ops sweep route + dashboard button, abandoned-checkout expiry fix, Host-based cron origin check, scheduler runbook section"
+  },
+  "verification": {
+    "local": { "total": 24, "passed": 24, "failed": 0 },
+    "unit": { "total": 2126, "passed": 2124, "failed": 0, "skipped": 2 },
+    "sourcePackage": { "pythonTests": 12, "skipped": 1, "result": "OK" },
+    "production": [
+      { "step": "production health is up", "status": "PASS" },
+      { "step": "the payments dashboard needs an operations session", "status": "PASS" },
+      { "step": "an anonymous refund attempt is refused", "status": "PASS" },
+      { "step": "the dashboard returns empty money surfaces while payments are off", "status": "PASS" },
+      { "step": "a payment detail lookup is wired but finds nothing", "status": "PASS" },
+      { "step": "a refund for a missing payment changes nothing", "status": "PASS" },
+      { "step": "the scheduler sweep refuses unauthenticated callers", "status": "PASS" },
+      { "step": "the operator can sweep overdue windows in production", "status": "PASS" },
+      { "step": "the operations dashboard renders the deployed money states", "status": "PASS" },
+      { "step": "the live-readiness surface reports the missing webhook secret", "status": "PASS" },
+      { "step": "no payment rows or provider events exist to act on", "status": "PASS" },
+      { "step": "the manual sweep control is deployed on the dashboard", "status": "PASS" },
+      { "step": "a traveller is still refused the operations payments surface", "status": "PASS" },
+      { "step": "the read-only probes wrote nothing", "status": "PASS" },
+      { "step": "production serves the promoted deployment", "status": "PASS" }
+    ],
+    "productionState": {
+      "ledger": 275,
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "provider": "none",
+      "providerConfigured": false,
+      "webhookConfigured": false
+    }
+  },
+  "ownerPrerequisites": [
+    "Add the payment-expiry cron entry (GET /api/cron/payment-expiry, Bearer CRON_SECRET, every 15 minutes) to the production scheduler alongside the other cron routes",
+    "Stripe account/KYC, live secret key, live webhook endpoint + signing secret, cancellation policy, legal/tax, payout owner (P5b)"
+  ],
+  "honestLimits": [
+    "No in-repo scheduler configuration exists; until the owner adds the payment-expiry entry to the production scheduler the sweep runs only from the dashboard button.",
+    "Expiry sends no email or inbox notification yet; the expired state is visible in request lists only (cancellation messaging pending).",
+    "Payments remains inert: flag off, provider none, no live Stripe account, no webhook secret, no real money moved."
+  ]
+}
