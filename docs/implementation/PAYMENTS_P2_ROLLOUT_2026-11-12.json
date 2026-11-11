@@ -1,0 +1,139 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T16:30:00.000Z",
+  "slice": "Phase 6 P2 — fake hosted checkout and traveller pay surface (inert, flag off)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "8a6c827387e75df896cc7ce545d0af4c15d1c678",
+    "releaseTree": "848f8857341dbe2b8b4fefe2a42a1e0442cfd650",
+    "parent": "ec5be0b647bbeb0f5e3c37b4d667dd3703f0ff66",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "running",
+      "note": "Journeys workflow in progress at receipt time; deployment scope (metadata only) succeeded"
+    }
+  },
+  "ownerDecisions": {
+    "recordedIn": "docs/implementation/OWNER_DECISIONS_PAYMENTS_2026-11-11.md",
+    "P1": "pay after accept",
+    "P2": "stripe / kinnso MoR / HKD",
+    "P6": "creator sets a flat price per guide"
+  },
+  "database": {
+    "migration": "20261111130000_payments_p2_checkout.sql",
+    "migrationSha256": "1ab7474630bd993d61e9ecfe1d7e3aed38fa014f8e3293880731bfb96507ac77",
+    "applyEnvelopeSha256": "56c4e115d7edcc1beb4e341bbdc3a2999aa2f03a0b9ccb20a944a80ccca25af4",
+    "baseline": {
+      "ledger": 270,
+      "head": "20261111120000"
+    },
+    "post": {
+      "ledger": 271,
+      "head": "20261111130000"
+    },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P2_20261111",
+    "productionVerification": {
+      "ownerReadRpc": "kinnso_traveller_payment(uuid,uuid)",
+      "startRpc": "kinnso_traveller_start_checkout(uuid)",
+      "recordRpc": "kinnso_traveller_record_checkout(uuid,text,text,text)",
+      "fakeConfirmRpc": "kinnso_traveller_confirm_fake_payment(uuid)",
+      "checkoutColumns": 2,
+      "travellerListCarriesPayment": true,
+      "creatorListCarriesPayment": true,
+      "upcomingIncludesPaid": true,
+      "opsStatusReportsProcessing": true,
+      "paymentsFlag": false,
+      "payments": 0,
+      "payableBookingStates": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_EwdY35kSJNhg7W9bNNiiaQkua6ZG",
+    "staged": "dpl_H488dwTCNjypbXTBobc8HRDdNqrt",
+    "promoted": "dpl_H488dwTCNjypbXTBobc8HRDdNqrt",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": [
+      "GET /api/booking-requests/[id]/payment",
+      "POST /api/booking-requests/[id]/payment",
+      "GET /api/payments/fake/checkout/[paymentId] (test mode, fake provider only)",
+      "POST /api/payments/fake/confirm (JSON or form)"
+    ],
+    "changed": "payment provider seam; traveller pay panel; payment fields in both booking lists and starting-soon; ops payments status provider/processing"
+  },
+  "verification": {
+    "local": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    "unit": {
+      "total": 2083,
+      "passed": 2081,
+      "failed": 0,
+      "skipped": 2
+    },
+    "production": [
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "production health is up",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "the checkout surfaces exist and need a session",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "payments are off with no priced guide and no payment row",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "the traveller list is payment-aware but nothing is owed",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "reading a payment on a free-flow booking reports no obligation",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "starting checkout is refused while payments are off",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "the creator inbox carries no payable amounts",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "production state is unchanged after the refused calls",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T16:26:00.000Z",
+        "step": "production serves the promoted deployment",
+        "status": "PASS"
+      }
+    ],
+    "productionState": {
+      "ledger": 271,
+      "paymentsFlag": false,
+      "payments": 0,
+      "pricedGuides": 0,
+      "provider": "none",
+      "providerConfigured": false
+    }
+  },
+  "honestLimits": [
+    "Only the fake provider runs end to end; the Stripe hosted-checkout request is unit-tested against a stand-in API and has not touched a real Stripe account.",
+    "No webhook exists yet, so a real Stripe redirect is not treated as payment; those rows stay open until P3.",
+    "Enabling payments needs KINNSO_PAYMENTS_PROVIDER and provider credentials in Vercel; with the flag on and no provider the start endpoint refuses with 503.",
+    "The 7-day window is swept only by the ops expiry RPC; no scheduled sweeper exists yet.",
+    "Refunds (fake-only), receipts, traveller-visible prices outside the pay panel and payment-record data rights remain P4/P5 work."
+  ]
+}
