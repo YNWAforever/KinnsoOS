@@ -1,5 +1,6 @@
 import { apiContext, boundedBody, failure, reply } from '../../../../lib/api/server';
 import { paymentsProvider } from '../../../../lib/payments/provider';
+import { webhookSecret } from '../../../../lib/payments/webhook';
 import { serverClient } from '../../../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -7,7 +8,8 @@ export const dynamic = 'force-dynamic';
 function mapError(message: string) {
   if (/forbidden/.test(message)) return failure('FORBIDDEN', 403);
   if (/payment_not_found/.test(message)) return failure('NOT_FOUND', 404);
-  if (/payment_not_refundable|provider_refund_not_implemented/.test(message)) return failure('CONFLICT', 409);
+  if (/payment_not_refundable|provider_refund_not_implemented|invalid_provider_refund|invalid_refund_amount/.test(message)) return failure('CONFLICT', 409);
+  if (/stripe 4\d\d/.test(message)) return failure('CONFLICT', 409);
   if (/invalid_reason/.test(message)) return failure('INVALID', 400);
   return failure('UNAVAILABLE', 503);
 }
@@ -45,6 +47,7 @@ export async function GET(request: Request) {
         ...(status.data ?? {}),
         provider: provider.name,
         providerConfigured: provider.configured,
+        webhookConfigured: Boolean(webhookSecret(process.env)),
         payments: list.data ?? { items: [], hasMore: false },
         webhookEvents: events.data ?? { items: [], counts: {}, total: 0 },
       },
@@ -92,9 +95,32 @@ export async function POST(request: Request) {
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_ops_refund_payment', { p_payment_id: body.paymentId, p_reason: body.reason });
+    const context = await client.rpc('kinnso_ops_refund_context', { p_payment_id: body.paymentId });
+    if (context.error) throw new Error(context.error.message);
+    const entry = context.data as {
+      provider?: unknown; providerPaymentIntentId?: unknown; amountMinor?: unknown; currency?: unknown;
+    } | null;
+    const provider = paymentsProvider();
+    if (!provider.configured) return failure('UNAVAILABLE', 503);
+    if (entry?.provider !== provider.name) throw new Error('provider_refund_not_implemented');
+    if (provider.name === 'stripe' && (typeof entry?.providerPaymentIntentId !== 'string' || !entry.providerPaymentIntentId)) {
+      throw new Error('provider_refund_unavailable');
+    }
+    if (typeof entry?.amountMinor !== 'number' || typeof entry?.currency !== 'string') throw new Error('unavailable');
+    const refunded = await provider.refund({
+      paymentId: body.paymentId,
+      paymentIntentId: typeof entry.providerPaymentIntentId === 'string' ? entry.providerPaymentIntentId : '',
+      amountMinor: entry.amountMinor,
+      currency: entry.currency,
+    });
+    const response = await client.rpc('kinnso_ops_record_refund', {
+      p_payment_id: body.paymentId,
+      p_provider_refund_id: refunded.id,
+      p_reason: body.reason,
+      p_amount_minor: entry.amountMinor,
+    });
     if (response.error) throw new Error(response.error.message);
-    return reply({ ok: true, data: response.data });
+    return reply({ ok: true, data: { ...(response.data ?? {}), providerRefundStatus: refunded.status } });
   } catch (error) {
     return mapError(error instanceof Error ? error.message : '');
   }

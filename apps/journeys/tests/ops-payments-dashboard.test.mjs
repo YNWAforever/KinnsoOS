@@ -24,7 +24,8 @@ const status = { enabled: false, pricedGuides: 2, requiresPayment: 1, processing
 const list = { items: [{ paymentId: payment, bookingRequestId: booking, status: 'paid', amountMinor: 75050, currency: 'HKD', provider: 'fake', guideTitle: 'Harbour walk', startsOn: '2026-11-20', endsOn: '2026-11-21', partySize: 2, travelerUserId: ops, createdAt: '2026-11-12T00:00:00Z', deadlineAt: '2026-11-19T00:00:00Z', processingAt: null, paidAt: '2026-11-12T00:10:00Z', refundedAt: null, providerEventCount: 1, lastEventKind: 'payment.paid', lastIgnoredReason: null, lastEventAt: '2026-11-12T00:10:00Z' }], hasMore: false };
 const webhookEvents = { items: [{ eventId: 'evt_1', kind: 'payment.paid', eventType: 'checkout.session.completed', provider: 'fake', ignored: null, late: null, amountTotal: '75050', currency: 'HKD', paymentId: payment, bookingRequestId: booking, paymentStatus: 'paid', createdAt: '2026-11-12T00:10:00Z' }], counts: { processed: 1, amount_mismatch: 2 }, total: 3 };
 const detail = { payment: { paymentId: payment, status: 'paid', amountMinor: 75050, currency: 'HKD', provider: 'fake' }, booking: { bookingRequestId: booking, guideTitle: 'Harbour walk', status: 'paid' }, events: [{ kind: 'payment.paid', providerEventId: 'evt_1', createdAt: '2026-11-12T00:10:00Z' }] };
-function setup(t, { anonymous = false, roles = ['traveller', 'ops'], enabled = 'trips,ops', errorFor = {} } = {}) {
+const refundContext = { paymentId: payment, bookingRequestId: booking, status: 'paid', provider: 'fake', providerPaymentIntentId: 'pi_fake_1', amountMinor: 75050, currency: 'HKD', paidAt: '2026-11-12T00:10:00Z', refundedAt: null };
+function setup(t, { anonymous = false, roles = ['traveller', 'ops'], enabled = 'trips,ops', errorFor = {}, context = refundContext } = {}) {
   const env = {
     KINNSO_SUPABASE_URL: 'https://test.supabase.co',
     KINNSO_APPROVED_SUPABASE_ORIGIN: 'https://test.supabase.co',
@@ -33,6 +34,7 @@ function setup(t, { anonymous = false, roles = ['traveller', 'ops'], enabled = '
     KINNSO_SITE_URL: 'https://journeys.example',
     KINNSO_ENABLED_CAPABILITIES: enabled,
     KINNSO_PAYMENTS_PROVIDER: 'fake',
+    KINNSO_PAYMENTS_WEBHOOK_SECRET: 'whsec_test',
   };
   const previous = Object.fromEntries(Object.keys(env).map((key) => [key, process.env[key]]));
   Object.assign(process.env, env);
@@ -48,7 +50,9 @@ function setup(t, { anonymous = false, roles = ['traveller', 'ops'], enabled = '
       if (name === 'kinnso_ops_webhook_events') return { data: webhookEvents, error: null };
       if (name === 'kinnso_ops_payment_detail') return { data: detail, error: null };
       if (name === 'kinnso_ops_set_payments_enabled') return { data: { enabled: args?.p_enabled }, error: null };
-      if (name === 'kinnso_ops_refund_payment') return { data: { id: args?.p_payment_id, status: 'refunded', refundedAmountMinor: 75050 }, error: null };
+      if (name === 'kinnso_ops_refund_context') return { data: context, error: null };
+      if (name === 'kinnso_ops_refund_payment') return { data: { id: args?.p_payment_id, status: 'refunded' }, error: null };
+      if (name === 'kinnso_ops_record_refund') return { data: { id: args?.p_payment_id, status: 'refunded', providerRefundId: args?.p_provider_refund_id, refundedAmountMinor: 75050 }, error: null };
       return { data: null, error: { message: 'unexpected_rpc:' + name } };
     },
   };
@@ -75,6 +79,7 @@ test('the dashboard payload carries money states, recent payments and the provid
   assert.equal(payload.data.providerEvents, 3);
   assert.equal(payload.data.provider, 'fake');
   assert.equal(payload.data.providerConfigured, true);
+  assert.equal(payload.data.webhookConfigured, true);
   assert.equal(payload.data.payments.items[0].amountMinor, 75050);
   assert.equal(payload.data.webhookEvents.counts.amount_mismatch, 2);
   assert.deepEqual(calls.map((call) => call.name), ['kinnso_actor', 'kinnso_ops_payments_status', 'kinnso_ops_payments_list', 'kinnso_ops_webhook_events']);
@@ -138,26 +143,56 @@ test('the enable toggle validates input and records the change', async (t) => {
   assert.deepEqual(calls.find((call) => call.name === 'kinnso_ops_set_payments_enabled').args, { p_enabled: true });
 });
 
-test('a refund needs a payment id and reason before the RPC', async (t) => {
+test('a refund needs a payment id and reason before any provider or database work', async (t) => {
   const calls = setup(t);
   for (const body of [{ paymentId: payment }, { reason: 'Missing id' }, {}, null]) {
     const response = await route.POST(new Request('https://journeys.example/api/ops/payments', { method: 'POST', headers: headers(), body: JSON.stringify(body) }));
     assert.equal(response.status, 400);
   }
-  assert.equal(calls.filter((call) => call.name === 'kinnso_ops_refund_payment').length, 0);
+  assert.equal(calls.filter((call) => call.name === 'kinnso_ops_refund_context').length, 0);
+  assert.equal(calls.filter((call) => call.name === 'kinnso_ops_record_refund').length, 0);
 });
 
-test('a refund records the audited RPC result', async (t) => {
+test('a refund asks the provider first and records the provider refund id', async (t) => {
   const calls = setup(t);
+  const expectedRefundId = 're_fake_' + payment.replace(/[^0-9a-f]/gi, '').slice(0, 40);
   const response = await route.POST(post());
   assert.equal(response.status, 200);
-  assert.deepEqual((await response.json()).data, { id: payment, status: 'refunded', refundedAmountMinor: 75050 });
-  assert.deepEqual(calls.find((call) => call.name === 'kinnso_ops_refund_payment').args, { p_payment_id: payment, p_reason: 'Duplicate charge refund' });
+  const payload = await response.json();
+  assert.equal(payload.data.status, 'refunded');
+  assert.equal(payload.data.providerRefundId, expectedRefundId);
+  assert.equal(payload.data.providerRefundStatus, 'succeeded');
+  assert.deepEqual(calls.filter((call) => call.name === 'kinnso_ops_refund_context').map((call) => call.args), [{ p_payment_id: payment }]);
+  assert.deepEqual(calls.find((call) => call.name === 'kinnso_ops_record_refund').args, {
+    p_payment_id: payment,
+    p_provider_refund_id: expectedRefundId,
+    p_reason: 'Duplicate charge refund',
+    p_amount_minor: 75050,
+  });
+});
+
+test('a provider mismatch is refused before any refund is recorded', async (t) => {
+  const calls = setup(t, { context: { ...refundContext, provider: 'stripe' } });
+  const response = await route.POST(post());
+  assert.equal(response.status, 409);
+  assert.equal((await response.json()).code, 'CONFLICT');
+  assert.equal(calls.filter((call) => call.name === 'kinnso_ops_record_refund').length, 0);
+});
+
+test('an unconfigured provider refuses refunds', async (t) => {
+  const calls = setup(t);
+  const previous = process.env.KINNSO_PAYMENTS_PROVIDER;
+  process.env.KINNSO_PAYMENTS_PROVIDER = 'none';
+  t.after(() => { if (previous === undefined) delete process.env.KINNSO_PAYMENTS_PROVIDER; else process.env.KINNSO_PAYMENTS_PROVIDER = previous; });
+  const response = await route.POST(post());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'UNAVAILABLE');
+  assert.equal(calls.filter((call) => call.name === 'kinnso_ops_record_refund').length, 0);
 });
 
 test('refund failures map to actionable status codes', async (t) => {
   for (const [message, expected] of [['invalid_reason', 400], ['payment_not_found', 404], ['payment_not_refundable', 409], ['forbidden', 403], ['weird_failure', 503]]) {
-    setup(t, { errorFor: { kinnso_ops_refund_payment: message } });
+    setup(t, { errorFor: { kinnso_ops_record_refund: message } });
     const response = await route.POST(post());
     assert.equal(response.status, expected, message);
     const payload = await response.json();

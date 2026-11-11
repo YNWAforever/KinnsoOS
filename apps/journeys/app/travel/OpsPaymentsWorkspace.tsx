@@ -7,7 +7,7 @@ import { Modal, useApp } from './ui';
 
 type PaymentRow = {
   paymentId: string; bookingRequestId: string; status: string; amountMinor: number; currency: string;
-  provider: string; guideTitle: string | null; startsOn: string | null; endsOn: string | null; partySize: number | null;
+  provider: string; providerRefundId: string | null; guideTitle: string | null; startsOn: string | null; endsOn: string | null; partySize: number | null;
   createdAt: string; deadlineAt: string; processingAt: string | null; paidAt: string | null; refundedAt: string | null;
   providerEventCount: number; lastEventKind: string | null; lastIgnoredReason: string | null; lastEventAt: string | null;
 };
@@ -17,7 +17,7 @@ type WebhookEvent = {
   bookingRequestId: string | null; paymentStatus: string | null; createdAt: string;
 };
 type Summary = {
-  enabled: boolean; provider: string; providerConfigured: boolean; pricedGuides: number; requiresPayment: number;
+  enabled: boolean; provider: string; providerConfigured: boolean; webhookConfigured: boolean; pricedGuides: number; requiresPayment: number;
   processing: number; paid: number; refunded: number; expired: number; providerEvents: number; overdueCheckouts: number;
   payments: { items: PaymentRow[]; hasMore: boolean };
   webhookEvents: { items: WebhookEvent[]; counts: Record<string, number>; total: number };
@@ -164,6 +164,7 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
     {data && <div className="k-card" data-testid="ops-payments-summary">
       <h2>{t('Money states','金額狀態')}</h2>
       <p className="k-meta">{t('Payments are ','付款功能') + (data.enabled ? t('enabled','已啟用') : t('disabled','已停用')) + ' · ' + t('provider: ','服務商：') + data.provider + (data.providerConfigured ? '' : ' (' + t('not configured','未設定') + ')')}</p>
+      <p className="k-meta" data-testid="ops-webhook-config">{t('Webhook secret: ','Webhook 密鑰：') + (data.webhookConfigured ? t('configured','已設定') : t('missing','未設定'))}</p>
       <dl>
         <div><dt>{t('Paid','已付款')}</dt><dd data-testid="ops-count-paid">{data.paid}</dd></div>
         <div><dt>{t('Payment due','待付款')}</dt><dd data-testid="ops-count-requires">{data.requiresPayment}</dd></div>
@@ -194,7 +195,7 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
           {detail?.id === entry.paymentId && <div data-testid="ops-payment-detail">
             {detail.data.events.length === 0 && <p>{t('No ledger events.','尚無帳本事件。')}</p>}
             <ul>{detail.data.events.map((event, index) => <li key={String(event.providerEventId ?? index)} data-testid="ops-payment-event">
-              {text(event.kind)}{event.ignored ? ' · ' + t('ignored','未套用') + ': ' + text(event.ignored) : ''}{event.reason ? ' · ' + t('reason','原因') + ': ' + text(event.reason) : ''}{event.actorId ? ' · ' + t('actor','操作人') + ': ' + String(text(event.actorId)).slice(0, 8) : ''} · {formatPaymentDeadline(text(event.createdAt))}
+              {text(event.kind)}{event.ignored ? ' · ' + t('ignored','未套用') + ': ' + text(event.ignored) : ''}{event.reason ? ' · ' + t('reason','原因') + ': ' + text(event.reason) : ''}{event.providerRefundId ? ' · ' + t('provider refund','服務商退款') + ': ' + text(event.providerRefundId) : ''}{event.actorId ? ' · ' + t('actor','操作人') + ': ' + String(text(event.actorId)).slice(0, 8) : ''} · {formatPaymentDeadline(text(event.createdAt))}
             </li>)}</ul>
           </div>}
         </article>;
