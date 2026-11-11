@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T02:03:42.027Z",
+  "slice": "Email delivery E2b — Resend adapter (owner-approved default), activation runbook",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "f1a36bef4c3d86f79339cae09eb6dceeb6660632",
+    "releaseTree": "36d137017aed118d0221acd72c4bc9ab41335c6a",
+    "parent": "a88fda8c1cf07e22c630641cd7d8ab62023306b8",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "pending",
+      "note": "GitHub Actions backlog; local module tests, typecheck, eslint, build and acceptance ran before deployment"
+    }
+  },
+  "ownerDecisions": {
+    "source": "owner reply \"§1 email (E1–E3, E5)\"",
+    "recordedIn": "docs/implementation/OWNER_DECISIONS_2026-11-11.md",
+    "provider": "resend",
+    "domain": "mail.kinnso.com",
+    "from": "Kinnso <bookings@mail.kinnso.com>",
+    "muteSemantics": "deferred (v1 reuses in-app mute)",
+    "serviceRoleKey": "accepted; value still to be supplied by the owner"
+  },
+  "code": {
+    "adapter": "apps/journeys/lib/email/provider.ts — POST /emails, Idempotency-Key, 10s timeout, errors reduced to resend <status>: <detail>, never includes the key",
+    "tests": "apps/journeys/tests/email-provider.test.mjs — 4 adapter tests (config, request shape, failure redaction, base URL override)",
+    "runbook": "docs/implementation/EMAIL_ACTIVATION_RUNBOOK_2026-11-11.md"
+  },
+  "deployment": {
+    "previousProduction": "dpl_Hwo3SchetNv5wUa6RTB9fhKeKAG7",
+    "staged": "dpl_Hktc7LqVWhZJJ77c5An7dtUsrCgi",
+    "promoted": "dpl_Hktc7LqVWhZJJ77c5An7dtUsrCgi",
+    "url": "https://kinnso-os.vercel.app",
+    "productionBehavior": "no KINNSO_EMAIL_PROVIDER is set, so the deployed adapter remains selected as none; flag off; queue empty"
+  },
+  "verification": {
+    "unit": {
+      "tests": 4,
+      "passed": 4
+    },
+    "local": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0
+    },
+    "localEvidence": ".local-private/email-resend-20261111/evidence.json",
+    "production": {
+      "ledger": 268,
+      "outboxEnabled": false,
+      "outboxRows": 0,
+      "pendingRequests": 0,
+      "opsHealth": "email-outbox ok — disabled (flag off, provider none)",
+      "selfTest": "delivered:false, provider:none, reason:provider-not-configured"
+    }
+  },
+  "honestLimits": [
+    "No live email exists: the owner has not supplied the Resend API key, DNS records are not added, and the service-role env value is not set. Local verification used a stand-in API on 127.0.0.1.",
+    "Bounce/complaint webhooks are not handled yet; a hard bounce retries then stays failed for manual review.",
+    "Email mute reuses the in-app mute (E4 deferred), so muting an event type also suppresses its email.",
+    "Reminders remain read-time only; no email reminders."
+  ]
+}

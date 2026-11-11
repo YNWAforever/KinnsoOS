@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T02:27:36.280Z",
+  "slice": "Phase 6 P1a — paid-surface schema and state machine (inert)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "78658e5f91211ef99ee72b9c9c995f0773d49da6",
+    "releaseTree": "7d1d0d42546dedb63851855a41bfc538af4f0ac6",
+    "parent": "cfbceac457f9a30f39a74761cd23605120313bb2",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "pending",
+      "note": "GitHub Actions backlog; typecheck, eslint, build and local acceptance ran before deployment"
+    }
+  },
+  "ownerDecisions": {
+    "recordedIn": "docs/implementation/OWNER_DECISIONS_PAYMENTS_2026-11-11.md",
+    "P1": "pay after accept",
+    "P2": "stripe / kinnso MoR / HKD",
+    "P3": "15% commission / Kinnso bears fees / monthly payouts / no minimum",
+    "P4": "full refund before acceptance; policy after; Kinnso owns disputes",
+    "P5": "owner-named entity; no tax engine v1; card data provider-hosted",
+    "P6": "creator flat price per guide, no minimum",
+    "P7": "Kinnso owns the Stripe account and KYC"
+  },
+  "database": {
+    "migration": "20261110180000_payments_p1_schema.sql",
+    "baseline": {
+      "ledger": 268,
+      "head": "20261110170000"
+    },
+    "post": {
+      "ledger": 269,
+      "head": "20261110180000"
+    },
+    "productionVerification": {
+      "paymentTables": 3,
+      "priceColumn": 1,
+      "paymentRpcs": 4,
+      "newBookingStatuses": 1,
+      "paymentsFlag": false,
+      "paymentRows": 0
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_Hktc7LqVWhZJJ77c5An7dtUsrCgi",
+    "staged": "dpl_HgiuTp9ku3ZRG8XvW24nxrn42htS",
+    "promoted": "dpl_HgiuTp9ku3ZRG8XvW24nxrn42htS",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": "PUT /api/creator/guides/[id]/price, GET/PUT/POST /api/ops/payments"
+  },
+  "verification": {
+    "local": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0
+    },
+    "production": [
+      {
+        "0": "P",
+        "1": "A",
+        "2": "S",
+        "3": "S",
+        "at": "2026-11-11T02:27:01.228Z",
+        "step": "production payments control reports disabled with an empty ledger"
+      },
+      {
+        "0": "P",
+        "1": "A",
+        "2": "S",
+        "3": "S",
+        "at": "2026-11-11T02:27:08.105Z",
+        "step": "a traveller still cannot set a guide price"
+      },
+      {
+        "0": "P",
+        "1": "A",
+        "2": "S",
+        "3": "S",
+        "at": "2026-11-11T02:27:13.637Z",
+        "step": "flag off: accepting an unpriced guide still produces a normal accepted booking"
+      },
+      {
+        "at": "2026-11-11T02:27:14.978Z",
+        "step": "verification request cleaned up",
+        "removed": "e64f1a1a-f8e8-47c3-8e01-18ff32a470c0"
+      }
+    ],
+    "productionState": {
+      "ledger": 269,
+      "paymentsFlag": false,
+      "paymentRows": 0,
+      "acceptedRows": 2
+    }
+  },
+  "honestLimits": [
+    "No provider call, no checkout session, no webhook and no pay UI exist yet; P1a is schema + state machine only, and the production flag is off.",
+    "Creator price setting has an API but no studio UI yet (P1b), and no production guide has a price.",
+    "Refunds are recorded only for the fake provider; provider refunds are P4.",
+    "Payouts are a ledger placeholder; no money transfer logic exists.",
+    "P5 live readiness still needs the legal entity name/country, Kinnso Stripe account + KYC, payout bank, final cancellation text and Stripe test keys/webhook secret."
+  ]
+}
