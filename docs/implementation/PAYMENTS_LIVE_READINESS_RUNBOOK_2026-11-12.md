@@ -26,6 +26,7 @@ The production scheduler already calls the other cron routes (email outbox every
 - **URL:** `https://kinnso-os.vercel.app/api/cron/payment-expiry`
 - **Method/headers:** `GET`, `Authorization: Bearer <CRON_SECRET>`; the request must originate from the production site origin (the endpoint refuses foreign origins).
 - **Cadence:** every 15 minutes (or hourly); the sweep is idempotent and cheap (indexed deadline scan).
+- **What it does:** expires both `requires_payment` and abandoned `processing` windows past the 7-day deadline, writes `payment.expired`, and notifies the traveller (`booking.payment_expired`) and creator (`booking.payment_window_expired`) in-app; when the email flag is on it also queues both emails. Mutes are honoured.
 - **Without the credential:** the endpoint is a no-op that reports `cron-secret-not-configured`; a wrong credential is `401`, a foreign origin `403`.
 - **Manual fallback:** the payments dashboard "Sweep overdue windows" button calls the ops-only route with the operator's session.
 
