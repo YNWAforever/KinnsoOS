@@ -1,0 +1,292 @@
+{
+  "schemaVersion": 1,
+  "capturedAt": "2026-11-11T01:54:43.632Z",
+  "origin": "https://kinnso-os.vercel.app",
+  "launch": {
+    "verdict": "launch-ready",
+    "blockers": [],
+    "gates": [
+      {
+        "gate": "content",
+        "status": "accepted",
+        "expiresAt": null
+      },
+      {
+        "gate": "alerting",
+        "status": "accepted",
+        "expiresAt": null
+      },
+      {
+        "gate": "rollback",
+        "status": "accepted",
+        "expiresAt": null
+      },
+      {
+        "gate": "backup",
+        "status": "accepted",
+        "expiresAt": "2026-12-09T00:00:00+00:00"
+      },
+      {
+        "gate": "privacy",
+        "status": "accepted",
+        "expiresAt": "2026-12-09T00:00:00+00:00"
+      },
+      {
+        "gate": "accessibility",
+        "status": "accepted",
+        "expiresAt": null
+      },
+      {
+        "gate": "devices",
+        "status": "accepted",
+        "expiresAt": "2026-12-09T00:00:00+00:00"
+      },
+      {
+        "gate": "payments",
+        "status": "accepted",
+        "expiresAt": "2026-12-09T00:00:00+00:00"
+      }
+    ],
+    "content": {
+      "ready": true,
+      "verified": 8,
+      "published": 8,
+      "synthetic": 0,
+      "unverified": 0
+    },
+    "devices": {
+      "total": 24,
+      "passed": 0,
+      "failed": 0,
+      "complete": false
+    }
+  },
+  "health": {
+    "status": "ok",
+    "checks": [
+      {
+        "id": "database",
+        "status": "ok"
+      },
+      {
+        "id": "content-gate",
+        "status": "ok"
+      },
+      {
+        "id": "cost-guard",
+        "status": "ok"
+      },
+      {
+        "id": "model",
+        "status": "ok"
+      },
+      {
+        "id": "booking-queue",
+        "status": "ok"
+      },
+      {
+        "id": "email-outbox",
+        "status": "ok"
+      },
+      {
+        "id": "deployment",
+        "status": "ok"
+      }
+    ]
+  },
+  "devices": {
+    "cells": [
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "account",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "account",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "account",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "account",
+        "platform": "voiceover",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "guide_reader",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "guide_reader",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "guide_reader",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "guide_reader",
+        "platform": "voiceover",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "ops_pages",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "ops_pages",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "ops_pages",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "ops_pages",
+        "platform": "voiceover",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "public_site",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "public_site",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "public_site",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "public_site",
+        "platform": "voiceover",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "spaces_chat",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "spaces_chat",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "spaces_chat",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "spaces_chat",
+        "platform": "voiceover",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "studio_editor",
+        "platform": "android_chrome",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "studio_editor",
+        "platform": "ios_safari",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "studio_editor",
+        "platform": "nvda",
+        "recordedAt": null
+      },
+      {
+        "note": null,
+        "outcome": "pending",
+        "surface": "studio_editor",
+        "platform": "voiceover",
+        "recordedAt": null
+      }
+    ],
+    "total": 24,
+    "failed": 0,
+    "passed": 0,
+    "complete": false
+  },
+  "emailOutbox": {
+    "enabled": false,
+    "pending": 0,
+    "failed": 0,
+    "oldestPendingAt": null,
+    "provider": "none",
+    "sending": false
+  },
+  "production": {
+    "deployment": "dpl_Hwo3SchetNv5wUa6RTB9fhKeKAG7",
+    "releaseCommit": "d5b784db70f7736901f07050bc307f7a9243ea73",
+    "ledger": 268,
+    "publishedGuides": 8,
+    "verifiedGuides": 8,
+    "pendingRequests": 0,
+    "stalePendingRequests": 0,
+    "acceptedRequests": 2,
+    "outboxRows": 0
+  }
+}
