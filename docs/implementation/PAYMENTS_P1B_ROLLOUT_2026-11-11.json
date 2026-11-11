@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T15:46:00.000Z",
+  "slice": "Phase 6 P1b — creator flat guide price UI (inert, flag off)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "e3bbd68055168530211b0409344e060471db3ca6",
+    "releaseTree": "4d0ebd27c6b0c4b3ceb28da98fd560c74fdd4d7c",
+    "parent": "232598918f35dff587a05bb1849e591e04a9e3d4",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "running",
+      "note": "Journeys workflow in progress at receipt time; deployment scope (metadata only) succeeded"
+    }
+  },
+  "ownerDecisions": {
+    "recordedIn": "docs/implementation/OWNER_DECISIONS_PAYMENTS_2026-11-11.md",
+    "P1": "pay after accept",
+    "P2": "stripe / kinnso MoR / HKD",
+    "P6": "creator sets a flat price per guide, no platform minimum"
+  },
+  "database": {
+    "migration": "20261111120000_payments_p1b_creator_price.sql",
+    "migrationSha256": "418f375b86b8b8e31511d3cca01ba9de763f7ab8a30665222b902786f6851d3d",
+    "applyEnvelopeSha256": "e2c53c0e966cb8a1ba73f19ff4f20be5e394e98dee37b6888a46eda3b8034a82",
+    "baseline": {
+      "ledger": 269,
+      "head": "20261110180000"
+    },
+    "post": {
+      "ledger": 270,
+      "head": "20261111120000"
+    },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P1B_20261111",
+    "productionVerification": {
+      "readRpc": 1,
+      "readRpcGrantedToAuthenticated": true,
+      "studioGuardExemptsPrice": true,
+      "writeGateRequiresPaymentsFlag": true,
+      "opsStatusReportsPricedGuides": true,
+      "paymentsFlag": false,
+      "pricedGuides": 0,
+      "paymentRows": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_HgiuTp9ku3ZRG8XvW24nxrn42htS",
+    "staged": "dpl_EwdY35kSJNhg7W9bNNiiaQkua6ZG",
+    "promoted": "dpl_EwdY35kSJNhg7W9bNNiiaQkua6ZG",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": "GET /api/creator/guides/[id]/price (the existing PUT is now flag-gated server-side)",
+    "changed": "creator studio guide editor price panel; studio write guard price exemption; ops payments status pricedGuides"
+  },
+  "verification": {
+    "local": {
+      "total": 15,
+      "passed": 15,
+      "failed": 0
+    },
+    "unit": {
+      "total": 2056,
+      "passed": 2056,
+      "failed": 0,
+      "skipped": 2
+    },
+    "production": [
+      {
+        "at": "2026-11-11T15:42:35.343Z",
+        "step": "production health is up",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:42:36.100Z",
+        "step": "the creator price route exists and needs a session (401 anonymous; 405 on the previous deployment)",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:42:47.104Z",
+        "step": "payments stay disabled with no priced guide and no payment obligation",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:42:50.932Z",
+        "step": "the owning creator reads the price surface while payments are disabled",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:42:52.767Z",
+        "step": "a direct price write in production is refused while payments are disabled",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:43:04.310Z",
+        "step": "a traveller can neither read nor write the price surface",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:43:06.653Z",
+        "step": "production state is unchanged after the refused writes",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T15:43:07.603Z",
+        "step": "production serves the promoted deployment",
+        "status": "PASS"
+      }
+    ],
+    "productionState": {
+      "ledger": 270,
+      "paymentsFlag": false,
+      "pricedGuides": 0,
+      "paymentRows": 0,
+      "publishedGuides": 8
+    }
+  },
+  "honestLimits": [
+    "No traveller-visible price and no checkout: setting a price has no user-facing effect yet; null means no price, not free.",
+    "The flag is read per panel mount; toggling requires a reload, and a hidden panel hides prices from the creator who set them while the flag is off.",
+    "Price is not versioned; changing it affects future acceptances, while existing booking_payments rows keep their amount snapshot.",
+    "The studio-bound guard exemption is verified by catalog definition and a local bound-guide acceptance case, not against stack-wide production content.",
+    "Live money remains P5: legal entity, Stripe account/KYC, payout bank, cancellation text and provider keys."
+  ]
+}
