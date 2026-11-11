@@ -12,21 +12,45 @@ function mapError(message: string) {
   return failure('UNAVAILABLE', 503);
 }
 
-/** Ops-only payments control: status, the enable toggle, and audited refunds.
- *  Refunds are recorded only for the fake provider in P1; live provider refunds are P4. */
+/** Ops-only payments control: money states, provider ledger, audited refunds and the
+ *  enable toggle. Refunds are recorded only for the fake provider until P5. */
 export async function GET(request: Request) {
   const ctx = await apiContext(request, 'ops');
   if (ctx.response) return ctx.response;
   if (!ctx.actor.roles.includes('ops')) return failure('FORBIDDEN', 403);
+  const paymentId = new URL(request.url).searchParams.get('paymentId');
+  if (paymentId !== null && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paymentId)) {
+    return failure('INVALID', 400);
+  }
   try {
     const client = await serverClient();
     if (!client) throw new Error('unavailable');
-    const response = await client.rpc('kinnso_ops_payments_status');
-    if (response.error) throw new Error(response.error.message);
+    if (paymentId !== null) {
+      const detail = await client.rpc('kinnso_ops_payment_detail', { p_payment_id: paymentId });
+      if (detail.error) throw new Error(detail.error.message);
+      return reply({ ok: true, data: detail.data });
+    }
+    const [status, list, events] = await Promise.all([
+      client.rpc('kinnso_ops_payments_status'),
+      client.rpc('kinnso_ops_payments_list', { p_limit: 100 }),
+      client.rpc('kinnso_ops_webhook_events', { p_limit: 50 }),
+    ]);
+    if (status.error) throw new Error(status.error.message);
+    if (list.error) throw new Error(list.error.message);
+    if (events.error) throw new Error(events.error.message);
     const provider = paymentsProvider();
-    return reply({ ok: true, data: { ...(response.data ?? {}), provider: provider.name, providerConfigured: provider.configured } });
-  } catch {
-    return failure('UNAVAILABLE', 503);
+    return reply({
+      ok: true,
+      data: {
+        ...(status.data ?? {}),
+        provider: provider.name,
+        providerConfigured: provider.configured,
+        payments: list.data ?? { items: [], hasMore: false },
+        webhookEvents: events.data ?? { items: [], counts: {}, total: 0 },
+      },
+    });
+  } catch (error) {
+    return mapError(error instanceof Error ? error.message : '');
   }
 }
 

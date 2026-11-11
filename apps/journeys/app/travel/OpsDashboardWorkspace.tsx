@@ -9,7 +9,7 @@ import {OpsContentAdmin} from './OpsContentAdmin';
 const views=[
  ['overview','Overview','總覽'],['pilot','Pilot control room','試行計劃控制室'],['creators','Creators','創作者'],['merchants','Merchants','商戶'],['missions','Missions','活動'],
  ['sessions','Sessions','活動及分享會'],['team','Team','團隊'],['perks','Perks','禮遇'],['testimonials','Testimonials','見證'],
- ['users','Users','用戶'],['enquiries','Enquiries','查詢'],['analytics','Analytics','分析'],
+ ['users','Users','用戶'],['enquiries','Enquiries','查詢'],['analytics','Analytics','分析'],['payments','Payments','付款'],
 ] as const;
 const contentAdminViews=new Set(['sessions','perks','testimonials','enquiries']);
 type Payload={view:string;status?:string;reason?:string;counts?:Record<string,number>;items?:Record<string,unknown>[];detail?:Record<string,unknown>|null;error?:string};
