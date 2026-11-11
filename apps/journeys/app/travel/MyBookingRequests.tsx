@@ -1,6 +1,18 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { formatMoneyMinor, formatPaymentDeadline } from '../../lib/payments/format';
 import { useApp } from './ui';
+
+type BookingStatus =
+  | 'requested'
+  | 'accepted'
+  | 'declined'
+  | 'withdrawn'
+  | 'completed'
+  | 'awaiting_payment'
+  | 'paid'
+  | 'payment_expired'
+  | 'refunded';
 
 type Item = {
   id: string;
@@ -11,17 +23,27 @@ type Item = {
   endsOn: string | null;
   partySize: number;
   message: string;
-  status: 'requested' | 'accepted' | 'declined' | 'withdrawn' | 'completed';
+  status: BookingStatus;
   responseNote: string | null;
   createdAt: string;
+  paymentId: string | null;
+  paymentStatus: string | null;
+  amountMinor: number | null;
+  currency: string | null;
+  deadlineAt: string | null;
+  paymentsEnabled: boolean;
 };
 
-const LABEL: Record<Item['status'], [string, string]> = {
+const LABEL: Record<BookingStatus, [string, string]> = {
   requested: ['Waiting for the creator', '等待創作者回覆'],
   accepted: ['Accepted — arrange details', '已接受 — 請安排細節'],
   declined: ['Declined', '已婉拒'],
   withdrawn: ['Withdrawn', '已撤回'],
   completed: ['Completed', '已完成'],
+  awaiting_payment: ['Accepted — payment due', '已接受 — 待付款'],
+  paid: ['Paid — confirmed', '已付款 — 已確認'],
+  payment_expired: ['Payment window closed', '付款期限已過'],
+  refunded: ['Refunded', '已退款'],
 };
 
 type Upcoming = {
@@ -35,7 +57,7 @@ type Upcoming = {
 
 /** One place to track every date request a traveller has made. */
 export function MyBookingRequests() {
-  const { t, href } = useApp();
+  const { t, href, locale } = useApp();
   const [items, setItems] = useState<Item[] | null>(null);
   const [upcoming, setUpcoming] = useState<Upcoming[]>([]);
   const [authRequired, setAuthRequired] = useState(false);
@@ -46,12 +68,12 @@ export function MyBookingRequests() {
   const [busy, setBusy] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'active' | 'history'>('all');
-  const active = (items ?? []).filter((item) => item.status === 'requested');
-  const history = (items ?? []).filter((item) => item.status !== 'requested');
+  const active = (items ?? []).filter((item) => item.status === 'requested' || item.status === 'awaiting_payment');
+  const history = (items ?? []).filter((item) => item.status !== 'requested' && item.status !== 'awaiting_payment');
   const filtered = filter === 'all' ? (items ?? []) : filter === 'active' ? active : history;
   const FILTERS: Array<['all' | 'active' | 'history', string, string, number]> = [
     ['all', 'All', '全部', items?.length ?? 0],
-    ['active', 'Waiting', '等待回覆', active.length],
+    ['active', 'Needs attention', '需要處理', active.length],
     ['history', 'Decided', '已有結果', history.length],
   ];
 
@@ -78,6 +100,13 @@ export function MyBookingRequests() {
   }, []);
 
   useEffect(() => { void load(); }, [load]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('paid') === '1') setNotice(locale === 'zh-HK' ? '已收到付款，旅程已確認。' : 'Payment received — your trip is confirmed.');
+    else if (params.get('pay_error')) setNotice(locale === 'zh-HK' ? '付款未能完成，請再試一次。' : 'The payment could not be completed. Try again.');
+  }, [locale]);
 
   const loadMore = async () => {
     setLoadingMore(true);
@@ -107,6 +136,28 @@ export function MyBookingRequests() {
     }
   };
 
+  const pay = async (item: Item) => {
+    setBusy(item.id); setNotice(null);
+    try {
+      const response = await fetch(`/api/booking-requests/${item.id}/payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ locale }),
+      });
+      const payload = response.ok ? await response.json().catch(() => null) : null;
+      const url = payload?.data?.url;
+      if (typeof url === 'string' && /^(https?:\/\/|\/)/.test(url)) { window.location.assign(url); return; }
+      if (response.status === 403) setNotice(t('Payments are not available right now.', '付款功能暫未開放。'));
+      else if (response.status === 409) setNotice(t('This payment can no longer be completed. Check the status below.', '此付款已無法完成，請查看下方狀態。'));
+      else setNotice(t('Checkout could not be started.', '未能開始付款。'));
+      await load();
+    } catch {
+      setNotice(t('Checkout could not be started.', '未能開始付款。'));
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (authRequired) {
     return (
       <section className="k-page" data-testid="my-booking-requests">
@@ -119,7 +170,7 @@ export function MyBookingRequests() {
   return (
     <section className="k-page" data-testid="my-booking-requests">
       <h1>{t('Your booking requests', '你的預訂申請')}</h1>
-      <p>{t('Requests are not bookings: a date is confirmed only when the creator accepts, and no payment happens here.', '申請不是預訂：只有創作者接受後才算確認日期，此處不涉及付款。')}</p>
+      <p>{t('Requests are not bookings: a date is confirmed when the creator accepts, and a priced guide is confirmed once payment completes.', '申請不是預訂：創作者接受後才確認日期；已定價的攻略需完成付款後才正式確認。')}</p>
       {upcoming.length > 0 && (
         <section className="k-card" data-testid="my-upcoming-bookings" aria-labelledby="my-upcoming-title" style={{ marginBottom: '12px' }}>
           <h2 id="my-upcoming-title" style={{ marginTop: 0 }}>{t('Starting soon', '即將出發')}</h2>
@@ -161,6 +212,24 @@ export function MyBookingRequests() {
               <p className="k-meta">{t('By', '作者')} {item.creatorName} · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')}</p>
               <p>{t(LABEL[item.status][0], LABEL[item.status][1])}</p>
               {item.responseNote && <p className="k-meta" data-testid="my-booking-response-note">{t('Creator note', '創作者備註')}: {item.responseNote}</p>}
+              {item.status === 'awaiting_payment' && item.amountMinor != null && (
+                <div className="k-card" data-testid="my-booking-payment" style={{ marginTop: '8px' }}>
+                  <p className="k-meta">
+                    {t('Amount due', '應付金額')}: <strong data-testid="my-booking-payment-amount">{formatMoneyMinor(item.amountMinor, item.currency ?? 'HKD')}</strong>
+                    {item.deadlineAt ? ` · ${t('pay before', '請於此前付款')} ${formatPaymentDeadline(item.deadlineAt)}` : ''}
+                  </p>
+                  {item.paymentsEnabled ? (
+                    <button type="button" className="k-btn primary" disabled={busy === item.id} onClick={() => void pay(item)} data-testid="my-booking-pay">
+                      {busy === item.id ? t('Opening checkout…', '正在開啟付款…') : t(`Pay ${formatMoneyMinor(item.amountMinor, item.currency ?? 'HKD')}`, `付款 ${formatMoneyMinor(item.amountMinor, item.currency ?? 'HKD')}`)}
+                    </button>
+                  ) : (
+                    <p role="status" data-testid="my-booking-payment-paused">{t('Payment is paused. Your request is still accepted.', '付款功能暫停，你的申請仍已接受。')}</p>
+                  )}
+                </div>
+              )}
+              {item.status === 'paid' && item.amountMinor != null && (
+                <p className="k-meta" data-testid="my-booking-paid">{t('Paid', '已付款')}: {formatMoneyMinor(item.amountMinor, item.currency ?? 'HKD')}</p>
+              )}
               {item.status === 'requested' && (
                 <button type="button" className="k-btn" disabled={busy === item.id} onClick={() => void withdraw(item.id)} data-testid="my-booking-withdraw">
                   {busy === item.id ? t('Withdrawing…', '撤回中…') : t('Withdraw', '撤回')}

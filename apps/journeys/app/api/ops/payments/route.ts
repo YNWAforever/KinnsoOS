@@ -1,4 +1,5 @@
 import { apiContext, boundedBody, failure, reply } from '../../../../lib/api/server';
+import { paymentsProvider } from '../../../../lib/payments/provider';
 import { serverClient } from '../../../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,8 @@ export async function GET(request: Request) {
     if (!client) throw new Error('unavailable');
     const response = await client.rpc('kinnso_ops_payments_status');
     if (response.error) throw new Error(response.error.message);
-    return reply({ ok: true, data: { ...(response.data ?? {}), provider: process.env.KINNSO_PAYMENTS_PROVIDER ?? 'fake' } });
+    const provider = paymentsProvider();
+    return reply({ ok: true, data: { ...(response.data ?? {}), provider: provider.name, providerConfigured: provider.configured } });
   } catch {
     return failure('UNAVAILABLE', 503);
   }

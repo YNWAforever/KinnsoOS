@@ -1,6 +1,18 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
+import { formatMoneyMinor } from '../../lib/payments/format';
 import { useApp } from './ui';
+
+type BookingStatus =
+  | 'requested'
+  | 'accepted'
+  | 'declined'
+  | 'withdrawn'
+  | 'completed'
+  | 'awaiting_payment'
+  | 'paid'
+  | 'payment_expired'
+  | 'refunded';
 
 type Item = {
   id: string;
@@ -10,9 +22,14 @@ type Item = {
   endsOn: string | null;
   partySize: number;
   message: string;
-  status: 'requested' | 'accepted' | 'declined' | 'withdrawn' | 'completed';
+  status: BookingStatus;
   responseNote: string | null;
   createdAt: string;
+  paymentId: string | null;
+  paymentStatus: string | null;
+  amountMinor: number | null;
+  currency: string | null;
+  deadlineAt: string | null;
 };
 
 type Upcoming = {
@@ -26,12 +43,25 @@ type Upcoming = {
 
 const waitingHours = (createdAt: string) => Math.max(0, Math.floor((Date.now() - new Date(createdAt).getTime()) / 3600000));
 
-const LABEL: Record<Item['status'], [string, string]> = {
+const LABEL: Record<BookingStatus, [string, string]> = {
   requested: ['Requested', '待回覆'],
   accepted: ['Accepted', '已接受'],
   declined: ['Declined', '已婉拒'],
   withdrawn: ['Withdrawn', '已撤回'],
   completed: ['Completed', '已完成'],
+  awaiting_payment: ['Accepted — awaiting payment', '已接受 — 待旅客付款'],
+  paid: ['Paid — confirmed', '已付款 — 已確認'],
+  payment_expired: ['Payment window closed', '付款期限已過'],
+  refunded: ['Refunded', '已退款'],
+};
+
+const PAYMENT_LABEL: Record<string, [string, string]> = {
+  requires_payment: ['awaiting payment', '待付款'],
+  processing: ['checkout open', '付款進行中'],
+  paid: ['paid', '已付款'],
+  refunded: ['refunded', '已退款'],
+  expired: ['expired', '已過期'],
+  failed: ['failed', '付款失敗'],
 };
 
 const tripFinished = (item: Item) => {
@@ -59,6 +89,10 @@ export function CreatorBookingInbox() {
     declined: items?.filter((item) => item.status === 'declined').length ?? 0,
     withdrawn: items?.filter((item) => item.status === 'withdrawn').length ?? 0,
     completed: items?.filter((item) => item.status === 'completed').length ?? 0,
+    awaiting_payment: items?.filter((item) => item.status === 'awaiting_payment').length ?? 0,
+    paid: items?.filter((item) => item.status === 'paid').length ?? 0,
+    payment_expired: items?.filter((item) => item.status === 'payment_expired').length ?? 0,
+    refunded: items?.filter((item) => item.status === 'refunded').length ?? 0,
   };
   const filtered = (items ?? []).filter((item) => filter === 'all' || item.status === filter);
   const FILTERS: Array<['all' | Item['status'], string, string]> = [
@@ -184,7 +218,7 @@ export function CreatorBookingInbox() {
           </ul>
         </section>
       )}
-      <p className="k-meta">{t('Travelers can request a date with you. The product takes no payment and does not collect contact details; if the traveller left a way to reach them in the message, arrange the details directly.', '旅客可向你提出日期申請。此處不處理付款，也不會收集聯絡資料；若旅客在訊息中留下聯絡方式，請直接安排細節。')}</p>
+      <p className="k-meta">{t('Travelers request a date with you. Contact details are never collected here; when a guide is priced, payment is handled by Kinnso after you accept.', '旅客可向你提出日期申請。此處不會收集聯絡資料；若攻略已定價，支付由 Kinnso 在你接受後處理。')}</p>
       {notice && <p role="status" data-testid="creator-booking-notice">{notice}</p>}
       {items.length > 0 && (
         <div role="group" aria-label={t('Filter requests', '篩選申請')} style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', margin: '8px 0' }}>
@@ -204,6 +238,12 @@ export function CreatorBookingInbox() {
           {filtered.map((item) => (
             <li key={item.id} data-testid="creator-booking-row" data-status={item.status} style={{ borderTop: '1px solid var(--k-border, #e2e8f0)', paddingTop: '10px' }}>
               <strong>{item.guideTitle}</strong> · {item.startsOn}{item.endsOn ? ` – ${item.endsOn}` : ''} · {item.partySize} {t('people', '人')} · {t(LABEL[item.status][0], LABEL[item.status][1])}
+              {item.amountMinor != null && (
+                <span className="k-meta" data-testid="creator-booking-payment" style={{ marginLeft: '6px' }}>
+                  {formatMoneyMinor(item.amountMinor, item.currency ?? 'HKD')}
+                  {item.paymentStatus && PAYMENT_LABEL[item.paymentStatus] ? ` · ${t(PAYMENT_LABEL[item.paymentStatus][0], PAYMENT_LABEL[item.paymentStatus][1])}` : ''}
+                </span>
+              )}
               {item.status === 'requested' && (
                 <span
                   className="k-meta"
