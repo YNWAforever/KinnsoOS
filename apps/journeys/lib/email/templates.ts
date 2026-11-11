@@ -26,6 +26,8 @@ const EVENT_TEXT: Record<string, { zh: string; en: string }> = {
   'booking.dates_blocked': { zh: '創作者封鎖了與你申請重疊的日期', en: 'The creator blocked dates that overlap your request' },
   'booking.paid': { zh: '付款完成，旅程已確認', en: 'Payment received; your trip is confirmed' },
   'booking.payment_received': { zh: '旅客已付款，旅程已確認', en: 'A traveller paid; the trip is confirmed' },
+  'booking.payment_expired': { zh: '付款期限已過，預訂已取消', en: 'Payment window expired; the booking was cancelled' },
+  'booking.payment_window_expired': { zh: '旅客未在期限內付款，預訂已取消', en: 'The traveller did not pay in time; the booking was cancelled' },
   'email.test': { zh: 'Kinnso 電郵系統測試', en: 'Kinnso email self-test' },
 };
 
@@ -37,6 +39,8 @@ const ROLE_PATH: Record<string, string> = {
   'booking.dates_blocked': '/requests',
   'booking.paid': '/requests',
   'booking.payment_received': '/studio',
+  'booking.payment_expired': '/requests',
+  'booking.payment_window_expired': '/studio',
   'email.test': '/inbox',
 };
 

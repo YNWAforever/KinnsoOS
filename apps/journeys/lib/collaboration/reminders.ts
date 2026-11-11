@@ -25,4 +25,6 @@ export function collaborationNotice(type:string,locale:string){const labels:Reco
  'booking.withdrawn':['A traveller withdrew a booking request','旅客已撤回預訂申請'],
  'booking.dates_blocked':['The creator blocked dates that overlap your pending request','創作者封鎖了與你待回覆申請重疊的日期'],
  'booking.paid':['Your payment was received; the trip is confirmed','付款完成，旅程已確認'],
- 'booking.payment_received':['A traveller paid; the trip is confirmed','旅客已付款，旅程已確認']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}
+ 'booking.payment_received':['A traveller paid; the trip is confirmed','旅客已付款，旅程已確認'],
+ 'booking.payment_expired':['Your payment window expired; the booking was cancelled','付款期限已過，預訂已取消'],
+ 'booking.payment_window_expired':['The traveller did not pay in time; the booking was cancelled','旅客未在期限內付款，預訂已取消']};return labels[type]?.[locale==='zh-HK'?1:0]??type;}

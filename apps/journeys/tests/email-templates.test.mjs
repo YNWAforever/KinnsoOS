@@ -29,6 +29,17 @@ test('unknown event type still renders a safe generic notice', () => {
   assert.match(body.text, /https:\/\/example\.test\/zh-HK\/inbox/);
 });
 
+test('expiry notices are bilingual and link each role to its own surface', () => {
+  const traveller = renderBookingEmail('booking.payment_expired', { guideTitle: 'Kyoto walk', startsOn: '2026-12-01', endsOn: '2026-12-02', partySize: 2 }, 'https://example.test');
+  assert.match(traveller.subject, /付款期限已過.*expired/);
+  assert.match(traveller.text, /https:\/\/example\.test\/zh-HK\/requests/);
+  assert.match(traveller.text, /cancelled/);
+  const creator = renderBookingEmail('booking.payment_window_expired', { guideTitle: 'Kyoto walk', startsOn: '2026-12-01' }, 'https://example.test');
+  assert.match(creator.subject, /旅客未在期限內付款.*did not pay/);
+  assert.match(creator.text, /https:\/\/example\.test\/zh-HK\/studio/);
+  assert.match(creator.text, /Kyoto walk/);
+});
+
 test('self-test email is labelled as a test', () => {
   const body = renderBookingEmail('email.test', {}, 'https://example.test');
   assert.match(body.subject, /電郵系統測試/);
