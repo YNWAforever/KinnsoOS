@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "phase": "Phase 6 — paid surfaces",
+  "status": "planning-only",
+  "createdAt": "2026-11-11",
+  "noProductionChange": true,
+  "planningDefaults": {
+    "P1_bookingModel": "B — pay after creator accepts",
+    "P2_provider": "stripe",
+    "P2_merchantOfRecord": "kinnso",
+    "P2_currency": "HKD",
+    "P3_commissionPercent": 15,
+    "P3_payoutCadence": "monthly",
+    "P4_cancellation": "full refund before acceptance; policy-defined after; kinnso owns disputes",
+    "P5_cardData": "provider-hosted only (hosted Checkout, PCI SAQ A)"
+  },
+  "ownerDecisionsRequired": [
+    { "id": "P1", "question": "Confirm pay-after-accept, or choose pay-at-request", "default": "pay-after-accept" },
+    { "id": "P2", "question": "Provider, merchant of record and currency", "default": "Stripe / Kinnso / HKD" },
+    { "id": "P3", "question": "Commission percent, fee bearer, payout cadence and minimum", "default": "15% / Kinnso bears fees / monthly / none" },
+    { "id": "P4", "question": "Cancellation/refund matrix and dispute owner", "default": "full refund before acceptance; Kinnso owns disputes" },
+    { "id": "P5", "question": "Legal entity, Stripe account country, tax handling, card-data posture", "default": "owner-named entity; no tax engine v1; provider-hosted cards" },
+    { "id": "P6", "question": "Who sets prices (creator per guide/per day, platform minimum)?", "default": "creator per guide, no minimum" },
+    { "id": "P7", "question": "Who owns the Stripe account and completes KYC?", "default": "owner" }
+  ],
+  "slices": [
+    { "id": "P0", "scope": "decisions + Stripe test mode keys/webhook secret", "verification": "no user-visible change" },
+    { "id": "P1", "scope": "prices + payment tables + state RPCs + expiry sweep (inert)", "ledger": 269, "verification": "illegal transitions, ownership, amount snapshot, expiry" },
+    { "id": "P2", "scope": "fake provider + hosted checkout redirect + pay UI", "ledger": 270, "verification": "local accept→pay→confirmed, expiry, no double pay" },
+    { "id": "P3", "scope": "webhook + idempotent ledger + confirmation notifications", "ledger": 271, "verification": "replay safe, bad signature 400, fake invoice paid" },
+    { "id": "P4", "scope": "ops payments dashboard + audited refunds", "ledger": 272, "verification": "refund reason required, booking refunded, audit row" },
+    { "id": "P5", "scope": "live readiness: KYC, MoR/tax, manual payouts, runbook, first low-value live transaction", "verification": "owner-run live test + reconciliation" }
+  ],
+  "dependencies": {
+    "pricing": "guides have no price field today; creator-set prices are required before P1 checkout",
+    "email": "not a blocker; P3 confirmations reuse the existing outbox once provider credentials exist",
+    "legal": "P5 requires entity/KYC/tax answers"
+  },
+  "rollback": "KINNSO_PAYMENTS_ENABLED=false hides paid surfaces and rejects checkout creation; existing paid bookings remain readable; no money movement by rollback"
+}
