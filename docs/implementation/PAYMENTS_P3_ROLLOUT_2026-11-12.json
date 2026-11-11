@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-11T17:30:00.000Z",
+  "slice": "Phase 6 P3 — signed provider webhook, idempotent payment ledger and paid notifications (inert, flag off)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "5d3084385663f1baa3f1cc2f024b17c3fa2de74b",
+    "releaseTree": "b159d7151b9a4d01243f3a1f14b607bde33cd8b7",
+    "parent": "473f443971ebc0bbd0ff081e03e6dacbef17d700",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "queued",
+      "note": "verify and operations-performance passed on the parent manifest fix 473f443; the remaining jobs fail in their first step on the owned-runner image (CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE), unrelated to this change"
+    }
+  },
+  "ownerDecisions": {
+    "recordedIn": "docs/implementation/OWNER_DECISIONS_PAYMENTS_2026-11-11.md",
+    "P1": "pay after accept",
+    "P2": "stripe / kinnso MoR / HKD",
+    "P6": "creator sets a flat price per guide"
+  },
+  "database": {
+    "migration": "20261111140000_payments_p3_webhook.sql",
+    "migrationSha256": "7e8d1e02ef5426884fe9a0dd4d6efa4326a6e5c907618ac3c3c7d1c29e030308",
+    "applyEnvelopeSha256": "863dcf737abf1e1111d126ef89d5238448d998ae0df235d2fecf0f3c01bcfd82",
+    "baseline": {
+      "ledger": 271,
+      "head": "20261111130000"
+    },
+    "post": {
+      "ledger": 272,
+      "head": "20261111140000"
+    },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P3_20261112",
+    "productionVerification": {
+      "webhookRpc": "kinnso_payment_webhook_ingest(text,text,text,uuid,jsonb)",
+      "webhookGrant": "service_role only",
+      "markPaymentPaid": "3-arg defaulted provider event id; old 2-arg removed",
+      "eventIndex": "payment_events_provider_idx",
+      "inboxVocabulary": ["booking.paid", "booking.payment_received"],
+      "muteVocabulary": 7,
+      "emailOutboxVocabulary": ["booking.paid", "booking.payment_received"],
+      "opsStatusReportsProviderEvents": true,
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "payableBookingStates": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_H488dwTCNjypbXTBobc8HRDdNqrt",
+    "staged": "dpl_9cFVPSqmkXCJ9vBhucnaSTPN5SjG",
+    "promoted": "dpl_9cFVPSqmkXCJ9vBhucnaSTPN5SjG",
+    "url": "https://kinnso-os.vercel.app",
+    "newRoutes": [
+      "POST /api/payments/webhook (signed provider events; inert without KINNSO_PAYMENTS_WEBHOOK_SECRET)"
+    ],
+    "changed": "webhook verification/reduction and service client; paid transition with inbox/email notices; paid email templates and amount line; inbox/mute labels; mutes API allowlist; env documentation; migration"
+  },
+  "verification": {
+    "local": {
+      "total": 18,
+      "passed": 18,
+      "failed": 0
+    },
+    "unit": {
+      "total": 2101,
+      "passed": 2099,
+      "failed": 0,
+      "skipped": 2
+    },
+    "production": [
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "production health is up",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "the webhook endpoint is deployed but inert without a provider secret",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "an unsigned probe is refused as well",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "the fake checkout page needs a session",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "payments are still off with no priced guide, payment row or provider event",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "traveller bookings remain free-flow and payment-aware without any obligation",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "no payment obligation can be read or started while payments are off",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "the creator inbox carries no payable amounts in production",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "the refused webhook probes wrote nothing",
+        "status": "PASS"
+      },
+      {
+        "at": "2026-11-11T17:28:00.000Z",
+        "step": "production serves the promoted deployment",
+        "status": "PASS"
+      }
+    ],
+    "productionState": {
+      "ledger": 272,
+      "paymentsFlag": false,
+      "payments": 0,
+      "providerEvents": 0,
+      "pricedGuides": 0,
+      "provider": "none",
+      "providerConfigured": false
+    }
+  },
+  "honestLimits": [
+    "Only the fake provider runs end to end; the Stripe signature format and hosted-checkout request are unit-tested and have not touched a real Stripe account (P5 account/KYC/env).",
+    "Expired and failed provider events are audit-only; the 7-day deadline sweep remains the authority and a late successful payment is left for ops reconciliation.",
+    "No refund webhooks, receipts, payout accrual or creator transfers yet; refunds remain fake-only and payout tables are schema-only.",
+    "Email delivery requires a configured provider; P3 only queues outbox rows and the local acceptance enables the outbox flag to prove they are written.",
+    "Live payments require both the stripe provider/secret and the webhook signing secret; without them the checkout and webhook stay inert."
+  ]
+}
