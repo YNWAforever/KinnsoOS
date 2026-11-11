@@ -363,6 +363,7 @@
     "lib/discovery/repository.ts",
     "lib/discovery/server.ts",
     "lib/discovery/store.ts",
+    "lib/email/templates.ts",
     "lib/finance/contracts.ts",
     "lib/finance/money.ts",
     "lib/finance/repository.ts",
