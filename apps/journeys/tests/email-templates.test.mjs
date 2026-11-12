@@ -40,6 +40,13 @@ test('expiry notices are bilingual and link each role to its own surface', () =>
   assert.match(creator.text, /Kyoto walk/);
 });
 
+test('the deadline reminder is bilingual and links the traveller to the requests list', () => {
+  const body = renderBookingEmail('booking.payment_deadline_soon', { guideTitle: 'Kyoto walk', startsOn: '2026-12-01', partySize: 2, amountMinor: 75050, currency: 'HKD' }, 'https://example.test');
+  assert.match(body.subject, /付款期限即將屆滿.*closes soon/);
+  assert.match(body.text, /https:\/\/example\.test\/zh-HK\/requests/);
+  assert.match(body.text, /HK\$750\.50/);
+});
+
 test('self-test email is labelled as a test', () => {
   const body = renderBookingEmail('email.test', {}, 'https://example.test');
   assert.match(body.subject, /電郵系統測試/);

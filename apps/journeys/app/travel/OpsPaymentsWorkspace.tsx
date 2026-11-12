@@ -92,7 +92,8 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
       const payload = await response.json().catch(() => null);
       if (!response.ok || !payload?.ok) throw new Error(payload?.code ?? 'UNAVAILABLE');
       const expired = Number(payload.data?.expired ?? 0);
-      setSweepMessage(t(`Expired ${expired} payment window(s).`, `已清掃 ${expired} 個到期付款。`));
+      const reminded = Number(payload.data?.reminded ?? 0);
+      setSweepMessage(t(`Expired ${expired} window(s), reminded ${reminded} traveller(s).`, `已清掃 ${expired} 個到期付款，提醒 ${reminded} 位旅客。`));
       await load();
     } catch (next) {
       setError(errorLabel(next instanceof Error ? next.message : '', t));

@@ -13,7 +13,7 @@ const cronSecret = 'test-cron-secret-0123456789abcdefghij';
 async function cronHandler() {
   const r = await build({ entryPoints: [fileURLToPath(new URL('../app/api/cron/payment-expiry/route.ts', import.meta.url))], bundle: true, write: false, platform: 'node', format: 'cjs', external: ['next/server', 'next/headers'], plugins: [{ name: 'stub-expiry', setup(b) {
     b.onResolve({ filter: /payments\/expiry$/ }, () => ({ path: 'fixture', namespace: 'test' }));
-    b.onLoad({ filter: /.*/, namespace: 'test' }, () => ({ loader: 'js', contents: 'export async function sweepExpiredPayments(){return globalThis.__sweep()}' }));
+    b.onLoad({ filter: /.*/, namespace: 'test' }, () => ({ loader: 'js', contents: 'export async function sweepExpiredPayments(){return globalThis.__sweep()} export async function sendPaymentReminders(){return globalThis.__remind()}' }));
   } }] });
   const module = { exports: {} };
   new Function('require', 'module', 'exports', r.outputFiles[0].text)(require, module, module.exports);
@@ -45,12 +45,14 @@ test('the scheduler route is a no-op without a scheduler credential', async (t) 
   env(t, { KINNSO_SITE_URL: site, CRON_SECRET: undefined });
   let called = 0;
   globalThis.__sweep = async () => { called += 1; return { configured: true, expired: 1 }; };
-  t.after(() => { delete globalThis.__sweep; });
+  globalThis.__remind = async () => { called += 1; return { configured: true, reminded: 1 }; };
+  t.after(() => { delete globalThis.__sweep; delete globalThis.__remind; });
   const response = await cron.GET(cronRequest());
   assert.equal(response.status, 200);
   const payload = await response.json();
   assert.equal(payload.data.skipped, 'cron-secret-not-configured');
   assert.equal(payload.data.expired, 0);
+  assert.equal(payload.data.reminded, 0);
   assert.equal(called, 0);
 });
 
@@ -58,7 +60,8 @@ test('the scheduler route refuses a wrong credential and a foreign origin', asyn
   env(t, { KINNSO_SITE_URL: site, CRON_SECRET: cronSecret });
   let called = 0;
   globalThis.__sweep = async () => { called += 1; return { configured: true, expired: 1 }; };
-  t.after(() => { delete globalThis.__sweep; });
+  globalThis.__remind = async () => { called += 1; return { configured: true, reminded: 1 }; };
+  t.after(() => { delete globalThis.__sweep; delete globalThis.__remind; });
   const missing = await cron.GET(cronRequest(''));
   assert.equal(missing.status, 401);
   const wrong = await cron.GET(cronRequest('Bearer not-the-secret'));
@@ -68,21 +71,33 @@ test('the scheduler route refuses a wrong credential and a foreign origin', asyn
   assert.equal(called, 0);
 });
 
-test('the scheduler route sweeps with the credential and reports the count', async (t) => {
+test('the scheduler route sweeps and reminds with the credential and reports both counts', async (t) => {
   env(t, { KINNSO_SITE_URL: site, CRON_SECRET: cronSecret });
   const calls = [];
   globalThis.__sweep = async () => { calls.push('sweep'); return { configured: true, expired: 3 }; };
-  t.after(() => { delete globalThis.__sweep; });
+  globalThis.__remind = async () => { calls.push('remind'); return { configured: true, reminded: 2 }; };
+  t.after(() => { delete globalThis.__sweep; delete globalThis.__remind; });
   const response = await cron.GET(cronRequest());
   assert.equal(response.status, 200);
-  assert.deepEqual((await response.json()).data, { configured: true, expired: 3 });
-  assert.deepEqual(calls, ['sweep']);
+  assert.deepEqual((await response.json()).data, { configured: true, expired: 3, reminded: 2 });
+  assert.deepEqual(calls, ['sweep', 'remind']);
 });
 
 test('a failing sweep is reported as unavailable', async (t) => {
   env(t, { KINNSO_SITE_URL: site, CRON_SECRET: cronSecret });
   globalThis.__sweep = async () => { throw new Error('database down'); };
-  t.after(() => { delete globalThis.__sweep; });
+  globalThis.__remind = async () => ({ configured: true, reminded: 0 });
+  t.after(() => { delete globalThis.__sweep; delete globalThis.__remind; });
+  const response = await cron.GET(cronRequest());
+  assert.equal(response.status, 503);
+  assert.equal((await response.json()).code, 'UNAVAILABLE');
+});
+
+test('a failing reminder is reported as unavailable', async (t) => {
+  env(t, { KINNSO_SITE_URL: site, CRON_SECRET: cronSecret });
+  globalThis.__sweep = async () => ({ configured: true, expired: 0 });
+  globalThis.__remind = async () => { throw new Error('database down'); };
+  t.after(() => { delete globalThis.__sweep; delete globalThis.__remind; });
   const response = await cron.GET(cronRequest());
   assert.equal(response.status, 503);
   assert.equal((await response.json()).code, 'UNAVAILABLE');
@@ -98,6 +113,7 @@ function opsSetup(t, { anonymous = false, roles = ['traveller', 'ops'], errorFor
       if (name === 'kinnso_actor') return anonymous ? { data: null, error: { message: 'unauthenticated' } } : { data: { id: ops, roles }, error: null };
       if (errorFor) return { data: null, error: { message: errorFor } };
       if (name === 'kinnso_payment_sweep_expired') return { data: { expired: 2, sweptAt: '2026-11-12T00:00:00Z' }, error: null };
+      if (name === 'kinnso_payment_send_reminders') return { data: { reminded: 1, sentAt: '2026-11-12T00:00:00Z' }, error: null };
       return { data: null, error: { message: 'unexpected_rpc:' + name } };
     },
   };
@@ -106,12 +122,12 @@ function opsSetup(t, { anonymous = false, roles = ['traveller', 'ops'], errorFor
 }
 const opsRequest = (origin = site) => new Request(`${site}/api/ops/payments/sweep`, { method: 'POST', headers: { Host: 'journeys.example', Origin: origin, 'Content-Type': 'application/json' }, body: '{}' });
 
-test('an operator can sweep manually and the RPC result is returned', async (t) => {
+test('an operator can run the lifecycle manually and both counts are returned', async (t) => {
   const calls = opsSetup(t);
   const response = await opsRoute.POST(opsRequest());
   assert.equal(response.status, 200);
-  assert.deepEqual((await response.json()).data, { expired: 2, sweptAt: '2026-11-12T00:00:00Z' });
-  assert.deepEqual(calls.map((call) => call.name), ['kinnso_actor', 'kinnso_payment_sweep_expired']);
+  assert.deepEqual((await response.json()).data, { expired: 2, reminded: 1 });
+  assert.deepEqual(calls.map((call) => call.name), ['kinnso_actor', 'kinnso_payment_sweep_expired', 'kinnso_payment_send_reminders']);
 });
 
 test('the manual sweep is ops-only and same-origin', async (t) => {

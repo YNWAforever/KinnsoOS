@@ -28,6 +28,7 @@ const EVENT_TEXT: Record<string, { zh: string; en: string }> = {
   'booking.payment_received': { zh: '旅客已付款，旅程已確認', en: 'A traveller paid; the trip is confirmed' },
   'booking.payment_expired': { zh: '付款期限已過，預訂已取消', en: 'Payment window expired; the booking was cancelled' },
   'booking.payment_window_expired': { zh: '旅客未在期限內付款，預訂已取消', en: 'The traveller did not pay in time; the booking was cancelled' },
+  'booking.payment_deadline_soon': { zh: '付款期限即將屆滿，請完成付款', en: 'Your payment window closes soon' },
   'email.test': { zh: 'Kinnso 電郵系統測試', en: 'Kinnso email self-test' },
 };
 
@@ -41,6 +42,7 @@ const ROLE_PATH: Record<string, string> = {
   'booking.payment_received': '/studio',
   'booking.payment_expired': '/requests',
   'booking.payment_window_expired': '/studio',
+  'booking.payment_deadline_soon': '/requests',
   'email.test': '/inbox',
 };
 
