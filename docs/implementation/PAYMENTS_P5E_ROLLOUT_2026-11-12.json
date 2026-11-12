@@ -9,16 +9,22 @@
     "parent": "85b4f05a35ab8f2f70d3ed60404f92a8dd6027a4",
     "branch": "release/spaces-mcp-20261108",
     "ci": {
-      "status": "not_reported",
-      "note": "the Journeys run for this commit had not reported at receipt time; previous commits pass verify and operations-performance, with the four runner-image jobs failing on CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE"
+      "status": "infra_failure",
+      "note": "the run for the preceding P5d commit completed failure only on infrastructure: connected/auth-mailbox/workspace-fixtures/studio-planning failed the CI browser mirror preflight (CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE) and verify/operations-performance failed at GitHub artifact upload (Failed to CreateArtifact), not on tests; the P5e run was still queued at receipt time"
     }
   },
   "database": {
     "migration": "20261111190000_payments_p5_provider_refund_ingest.sql",
     "migrationSha256": "d841e796c6fac24ef79b35e41ec1c4cd795dca81f578e4011c9530338cbc4e61",
     "applyEnvelopeSha256": "e562b6919f98c947f204248e5bd78c3544f7022193bc24a79a8bcc42138437ba",
-    "baseline": { "ledger": 276, "head": "20261111180000" },
-    "post": { "ledger": 277, "head": "20261111190000" },
+    "baseline": {
+      "ledger": 276,
+      "head": "20261111180000"
+    },
+    "post": {
+      "ledger": 277,
+      "head": "20261111190000"
+    },
     "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P5E_20261112",
     "productionVerification": {
       "refundIngestRpc": "kinnso_payment_refund_ingest(text,text,text,uuid,jsonb)",
@@ -42,26 +48,87 @@
     "changed": "charge.refunded support, refund-specific service-only ingestion RPC resolving by payment intent, full-refund state flip with provider refund id and audit event, audited partial/unknown/duplicate refunds, payment-intent index, per-payment expiry extraction for the fake-confirm path"
   },
   "verification": {
-    "local": { "total": 14, "passed": 14, "failed": 0 },
-    "unit": { "total": 2130, "passed": 2128, "failed": 0, "skipped": 2 },
-    "sourcePackage": { "pythonTests": 12, "skipped": 1, "result": "OK" },
+    "local": {
+      "total": 14,
+      "passed": 14,
+      "failed": 0
+    },
+    "unit": {
+      "total": 2130,
+      "passed": 2128,
+      "failed": 0,
+      "skipped": 2
+    },
+    "sourcePackage": {
+      "pythonTests": 12,
+      "skipped": 1,
+      "result": "OK"
+    },
     "production": [
-      { "step": "production health is up", "status": "PASS" },
-      { "step": "the provider webhook is inert without a signing secret", "status": "PASS" },
-      { "step": "the payments dashboard needs an operations session", "status": "PASS" },
-      { "step": "an anonymous refund attempt is refused", "status": "PASS" },
-      { "step": "the dashboard returns empty money surfaces while payments are off", "status": "PASS" },
-      { "step": "a payment detail lookup is wired but finds nothing", "status": "PASS" },
-      { "step": "a refund for a missing payment changes nothing", "status": "PASS" },
-      { "step": "the scheduler sweep refuses unauthenticated callers", "status": "PASS" },
-      { "step": "the operator can sweep overdue windows in production", "status": "PASS" },
-      { "step": "the operations dashboard renders the deployed money states", "status": "PASS" },
-      { "step": "the live-readiness surface reports the missing webhook secret", "status": "PASS" },
-      { "step": "no payment rows or provider events exist to act on", "status": "PASS" },
-      { "step": "the manual sweep control is deployed on the dashboard", "status": "PASS" },
-      { "step": "a traveller is still refused the operations payments surface", "status": "PASS" },
-      { "step": "the read-only probes wrote nothing", "status": "PASS" },
-      { "step": "production serves the promoted deployment", "status": "PASS" }
+      {
+        "step": "production health is up",
+        "status": "PASS"
+      },
+      {
+        "step": "the provider webhook is inert without a signing secret",
+        "status": "PASS"
+      },
+      {
+        "step": "the payments dashboard needs an operations session",
+        "status": "PASS"
+      },
+      {
+        "step": "an anonymous refund attempt is refused",
+        "status": "PASS"
+      },
+      {
+        "step": "the dashboard returns empty money surfaces while payments are off",
+        "status": "PASS"
+      },
+      {
+        "step": "a payment detail lookup is wired but finds nothing",
+        "status": "PASS"
+      },
+      {
+        "step": "a refund for a missing payment changes nothing",
+        "status": "PASS"
+      },
+      {
+        "step": "the scheduler sweep refuses unauthenticated callers",
+        "status": "PASS"
+      },
+      {
+        "step": "the operator can sweep overdue windows in production",
+        "status": "PASS"
+      },
+      {
+        "step": "the operations dashboard renders the deployed money states",
+        "status": "PASS"
+      },
+      {
+        "step": "the live-readiness surface reports the missing webhook secret",
+        "status": "PASS"
+      },
+      {
+        "step": "no payment rows or provider events exist to act on",
+        "status": "PASS"
+      },
+      {
+        "step": "the manual sweep control is deployed on the dashboard",
+        "status": "PASS"
+      },
+      {
+        "step": "a traveller is still refused the operations payments surface",
+        "status": "PASS"
+      },
+      {
+        "step": "the read-only probes wrote nothing",
+        "status": "PASS"
+      },
+      {
+        "step": "production serves the promoted deployment",
+        "status": "PASS"
+      }
     ],
     "productionState": {
       "ledger": 277,
