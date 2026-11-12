@@ -195,7 +195,7 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
         <div><dt>{t('Priced guides','已定價攻略')}</dt><dd>{data.pricedGuides}</dd></div>
       </dl>
       <button className="k-btn" data-testid="ops-payments-toggle" disabled={busy} onClick={() => void toggle()}>{data.enabled ? t('Pause payments','暫停付款') : t('Enable payments','啟用付款')}</button>
-      <button className="k-btn" data-testid="ops-sweep-expired" disabled={busy} onClick={() => void sweep()}>{t('Sweep overdue windows','清掃逾期付款')}</button>
+      <button className="k-btn" data-testid="ops-sweep-expired" disabled={busy} onClick={() => void sweep()}>{t('Run payment window checks','檢查付款期限')}</button>
       {sweepMessage && <p role="status" data-testid="ops-sweep-result">{sweepMessage}</p>}
       {refundMessage && <p role="status" data-testid="ops-refund-success">{refundMessage}</p>}
     </div>}
