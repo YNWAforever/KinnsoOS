@@ -6,7 +6,7 @@
 
 1. **Stripe account** in Kinnso's name: complete KYC, name the payout bank account, and confirm the account country. (Decision P7: Kinnso owns the account.)
 2. **Live API keys** stored in Vercel production as `STRIPE_SECRET_KEY` (never in the repo, never in a client bundle) and confirm `KINNSO_PAYMENTS_PROVIDER=stripe`.
-3. **Live webhook endpoint**: Stripe Dashboard → Developers → Webhooks → add `https://kinnso-os.vercel.app/api/payments/webhook` with events `checkout.session.completed`, `checkout.session.expired`, `payment_intent.payment_failed`; copy the signing secret to Vercel as `KINNSO_PAYMENTS_WEBHOOK_SECRET`.
+3. **Live webhook endpoint**: Stripe Dashboard → Developers → Webhooks → add `https://kinnso-os.vercel.app/api/payments/webhook` with events `checkout.session.completed`, `checkout.session.expired`, `payment_intent.payment_failed`, `charge.refunded`; copy the signing secret to Vercel as `KINNSO_PAYMENTS_WEBHOOK_SECRET`.
 4. **Cancellation policy text** for the post-acceptance window (before acceptance is already full refund per decision P4) and who handles disputes.
 5. **Legal entity name/country and tax position** (no tax engine in v1 per decision P5; invoices are Stripe receipts).
 6. **Payout cadence** confirmed (monthly, no minimum per decision P3) and the manual payout owner.
@@ -15,6 +15,7 @@
 
 - Provider adapter `stripe` creates hosted Checkout Sessions server-side and refunds the stored payment intent with an `Idempotency-Key` of `refund_<paymentId>`; the fake adapter is used locally and in the current production (inert).
 - Refunds now call the provider first and record only a provider-accepted refund (`kinnso_ops_record_refund`), storing the provider refund id in `booking_payments.provider_refund_id` and the audit event. A second record for the same payment is refused, so a retried provider call cannot double-refund.
+- Refunds created directly in the Stripe Dashboard are reconciled from the signed `charge.refunded` event: a full refund of the expected amount flips the payment and booking once, stores the provider refund id and writes a `provider_refund` audit event. Partial refunds, unknown payment intents, missing refund ids and duplicates are recorded for manual reconciliation and never change state. Provider refunds still do not notify the traveller (cancellation messaging pending).
 - The ops payments dashboard shows provider/webhook readiness, money states, the payment list, the audit trail and the ingested provider-event ledger.
 - The webhook endpoint verifies `Stripe-Signature` over the raw body (5-minute tolerance), is replay-safe via `provider_event_id`, and refuses to run without the signing secret.
 - The 7-day payment deadline is now swept automatically: `GET /api/cron/payment-expiry` with `Authorization: Bearer <CRON_SECRET>`, same-origin, expires both `requires_payment` and abandoned `processing` checkouts, writes one `payment.expired` event per payment, and is idempotent. The same sweep is available to an operator from the payments dashboard ("Sweep overdue windows") for immediate runs.
