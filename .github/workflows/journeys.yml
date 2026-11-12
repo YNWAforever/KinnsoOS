@@ -137,7 +137,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
-      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13
         with:
           version: 2.107.0
       - name: Isolate ephemeral registry configuration
@@ -202,7 +202,7 @@ jobs:
           cache: npm
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
-      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13
         with:
           version: 2.107.0
       - name: Isolate ephemeral registry configuration
@@ -268,7 +268,7 @@ jobs:
           cache-dependency-path: apps/journeys/package-lock.json
       - run: npm ci
       - run: npm ci --prefix scripts/performance --ignore-scripts
-      - uses: supabase/setup-cli@45a513f8c64c0bc8e0e3dfe572b5c95be85f6359
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13
         with:
           version: 2.107.0
       - name: Isolate ephemeral registry configuration
