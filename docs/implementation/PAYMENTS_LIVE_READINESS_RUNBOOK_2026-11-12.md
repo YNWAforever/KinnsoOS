@@ -18,20 +18,21 @@
 - Refunds created directly in the Stripe Dashboard are reconciled from the signed `charge.refunded` event: a full refund of the expected amount flips the payment and booking once, stores the provider refund id and writes a `provider_refund` audit event. Partial refunds, unknown payment intents, missing refund ids and duplicates are recorded for manual reconciliation and never change state. Provider refunds still do not notify the traveller (cancellation messaging pending).
 - The ops payments dashboard shows provider/webhook readiness, money states, the payment list, the audit trail and the ingested provider-event ledger.
 - The webhook endpoint verifies `Stripe-Signature` over the raw body (5-minute tolerance), is replay-safe via `provider_event_id`, and refuses to run without the signing secret.
-- The 7-day payment deadline is now swept automatically: `GET /api/cron/payment-expiry` with `Authorization: Bearer <CRON_SECRET>`, same-origin, expires both `requires_payment` and abandoned `processing` checkouts, writes one `payment.expired` event per payment, and is idempotent. The same sweep is available to an operator from the payments dashboard ("Sweep overdue windows") for immediate runs.
+- The 7-day payment deadline is now swept automatically: `GET /api/cron/payment-expiry` with `Authorization: Bearer <CRON_SECRET>`, same-origin, expires both `requires_payment` and abandoned `processing` checkouts, writes one `payment.expired` event per payment, and is idempotent. The same sweep is available to an operator from the payments dashboard ("Run payment window checks") for immediate runs.
+- Inside the final 24 hours of an unpaid window the same scheduler call sends one reminder per payment: an in-app `booking.payment_deadline_soon` notice plus a queued email when the email flag is on, and both honour the traveller's mute. `booking_payments.reminder_sent_at` makes it idempotent, and the manual dashboard control ("Run payment window checks") sends any due reminders too.
 
-## Scheduled expiry sweep
+## Scheduled payment-window sweep and reminder
 
 The production scheduler already calls the other cron routes (email outbox every 15 minutes, health, retention) with the `CRON_SECRET` bearer and the site origin. Add one more entry:
 
 - **URL:** `https://kinnso-os.vercel.app/api/cron/payment-expiry`
 - **Method/headers:** `GET`, `Authorization: Bearer <CRON_SECRET>`; the request must originate from the production site origin (the endpoint refuses foreign origins).
-- **Cadence:** every 15 minutes (or hourly); the sweep is idempotent and cheap (indexed deadline scan).
-- **What it does:** expires both `requires_payment` and abandoned `processing` windows past the 7-day deadline, writes `payment.expired`, and notifies the traveller (`booking.payment_expired`) and creator (`booking.payment_window_expired`) in-app; when the email flag is on it also queues both emails. Mutes are honoured.
+- **Cadence:** every 15 minutes (or hourly); both rules are idempotent and cheap (indexed deadline scans).
+- **What it does:** expires both `requires_payment` and abandoned `processing` windows past the 7-day deadline, writes `payment.expired`, and notifies the traveller (`booking.payment_expired`) and creator (`booking.payment_window_expired`) in-app; when the email flag is on it also queues both emails. It also reminds the traveller once inside the final 24 hours (`booking.payment_deadline_soon`, in-app + queued email). Mutes are honoured throughout.
 - **Without the credential:** the endpoint is a no-op that reports `cron-secret-not-configured`; a wrong credential is `401`, a foreign origin `403`.
-- **Manual fallback:** the payments dashboard "Sweep overdue windows" button calls the ops-only route with the operator's session.
+- **Manual fallback:** the payments dashboard "Run payment window checks" button calls the ops-only route with the operator's session and runs both rules.
 
-If the scheduler is missing, unpaid accepted trips stay `awaiting_payment`/`processing` past the 7-day deadline; the manual button clears them, but the scheduler is the required posture.
+If the scheduler is missing, unpaid accepted trips stay `awaiting_payment`/`processing` past the 7-day deadline and no reminder is sent; the manual button clears and reminds immediately, but the scheduler is the required posture.
 
 ## Enablement sequence (owner-run, one at a time)
 
