@@ -232,3 +232,57 @@ test('a missing service key keeps the endpoint unavailable after verification', 
   assert.equal(response.status, 503);
   assert.equal(calls.length, 0);
 });
+
+const refundEvent = (overrides = {}) => JSON.stringify({
+  id: 'evt_test_refund_1',
+  type: 'charge.refunded',
+  data: {
+    object: {
+      id: 'ch_test_1',
+      payment_intent: 'pi_test_1',
+      refund: 're_test_1',
+      amount_refunded: 75050,
+      refunded: true,
+      currency: 'hkd',
+      ...overrides,
+    },
+  },
+});
+
+test('a charge refund event is reduced with its intent, refund id and amount', () => {
+  const parsed = parseWebhookEvent(refundEvent());
+  assert.equal(parsed.id, 'evt_test_refund_1');
+  assert.equal(parsed.type, 'charge.refunded');
+  assert.equal(parsed.paymentId, null);
+  assert.equal(parsed.payload.paymentIntentId, 'pi_test_1');
+  assert.equal(parsed.payload.refundId, 're_test_1');
+  assert.equal(parsed.payload.amountRefunded, 75050);
+  assert.equal(parsed.payload.refunded, true);
+});
+
+test('a charge refund event takes the refund-specific ingestion path', async (t) => {
+  const calls = setup(t, { rpc: async () => ({ data: { received: true, replayed: false, refunded: true, providerRefundId: 're_test_1' }, error: null }) });
+  const response = await webhook.POST(post(refundEvent()));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { received: true, replayed: false, refunded: true, providerRefundId: 're_test_1' });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].name, 'kinnso_payment_refund_ingest');
+  assert.deepEqual(calls[0].args, {
+    p_provider: 'fake',
+    p_event_id: 'evt_test_refund_1',
+    p_event_type: 'charge.refunded',
+    p_payment_id: null,
+    p_payload: {
+      sessionId: 'ch_test_1', paymentIntentId: 'pi_test_1', amountTotal: null,
+      currency: 'hkd', mode: null, paymentStatus: null,
+      refundId: 're_test_1', amountRefunded: 75050, refunded: true,
+    },
+  });
+});
+
+test('a partial or unmatched refund is returned as an audited ignore', async (t) => {
+  setup(t, { rpc: async () => ({ data: { received: true, replayed: false, ignored: 'partial_refund' }, error: null }) });
+  const response = await webhook.POST(post(refundEvent({ amount_refunded: 100, refunded: false })));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), { received: true, replayed: false, ignored: 'partial_refund' });
+});

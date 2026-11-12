@@ -68,7 +68,10 @@ export async function POST(request: Request) {
   const client = paymentsServiceClient();
   if (!client) return failure(503, 'unavailable');
   try {
-    const response = await client.rpc('kinnso_payment_webhook_ingest', {
+    // Charge-level refund events have no client_reference_id, so they take the
+    // refund-specific ingestion path that can resolve the payment from its intent.
+    const refunding = event.type === 'charge.refunded';
+    const response = await client.rpc(refunding ? 'kinnso_payment_refund_ingest' : 'kinnso_payment_webhook_ingest', {
       p_provider: provider.name,
       p_event_id: event.id,
       p_event_type: event.type,
@@ -79,11 +82,13 @@ export async function POST(request: Request) {
       if (/invalid_webhook/.test(response.error.message ?? '')) return failure(400, 'invalid_webhook');
       return failure(503, 'unavailable');
     }
-    const data = (response.data ?? {}) as { replayed?: unknown; ignored?: unknown };
+    const data = (response.data ?? {}) as { replayed?: unknown; ignored?: unknown; refunded?: unknown; providerRefundId?: unknown };
     return reply({
       received: true,
       replayed: data.replayed === true,
       ...(typeof data.ignored === 'string' && data.ignored ? { ignored: data.ignored } : {}),
+      ...(data.refunded === true ? { refunded: true } : {}),
+      ...(typeof data.providerRefundId === 'string' && data.providerRefundId ? { providerRefundId: data.providerRefundId } : {}),
     });
   } catch {
     return failure(503, 'unavailable');

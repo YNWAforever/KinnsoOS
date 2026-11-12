@@ -14,6 +14,7 @@ export const SUPPORTED_WEBHOOK_TYPES = [
   'checkout.session.completed',
   'checkout.session.expired',
   'payment_intent.payment_failed',
+  'charge.refunded',
 ] as const;
 
 export function webhookSecret(env: Record<string, string | undefined> = process.env): string {
@@ -105,5 +106,12 @@ export function parseWebhookEvent(rawBody: string): WebhookEvent | null {
     mode: identifier(record.mode, 20) || null,
     paymentStatus: identifier(record.payment_status ?? record.status, 30) || null,
   };
+  if (type === 'charge.refunded') {
+    // A Charge has no client_reference_id; the payment is resolved later from the
+    // stored payment intent. `refund` is the single full-refund id on the charge.
+    payload.refundId = objectId(record.refund, 200) || null;
+    payload.amountRefunded = typeof record.amount_refunded === 'number' && Number.isSafeInteger(record.amount_refunded) ? record.amount_refunded : null;
+    payload.refunded = typeof record.refunded === 'boolean' ? record.refunded : null;
+  }
   return { id, type, paymentId: UUID.test(rawPayment) ? rawPayment.toLowerCase() : null, payload };
 }
