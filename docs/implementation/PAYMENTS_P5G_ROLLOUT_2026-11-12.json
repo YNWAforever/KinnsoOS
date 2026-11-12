@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "executedAt": "2026-11-12T06:35:00.000Z",
+  "slice": "Phase 6 P5g — monthly creator payout accrual and manual payout records (inert, flag off)",
+  "mode": "PRODUCTION_DEPLOYED_INERT",
+  "source": {
+    "releaseCommit": "d69db874356fa202dba43f6f5628c1c7caf45773",
+    "tree": "91ce6b40681c5b5d7ebd1b4715d6802d1a2130db",
+    "parent": "4391ccd9afd2232a5868c6e0e5a56a199345949e",
+    "branch": "release/spaces-mcp-20261108",
+    "ci": {
+      "status": "not_reported",
+      "note": "the run for this commit had not reported at receipt time; recent runs failed only on infrastructure (browser mirror preflight CI_MIRROR_UNSUPPORTED_UBUNTU_IMAGE and GitHub artifact upload), and local gates pass"
+    }
+  },
+  "database": {
+    "migration": "20261111210000_payments_p5_payout_accrual.sql",
+    "migrationSha256": "3b3605a0845cbba676f552e0427db40121e633053ca12b900afb6a5645fba058",
+    "applyEnvelopeSha256": "e8c4a6567fd7a8daaefd7c26814b495934679f5904fa64587d99ef5c9d053e6e",
+    "baseline": { "ledger": 278, "head": "20261111200000" },
+    "post": { "ledger": 279, "head": "20261111210000" },
+    "commitAck": "KINNSO_COMMIT_ACK_PAYMENTS_P5G_20261112",
+    "applyNote": "the guarded wrapper returned nonzero on PowerShell native-stderr noise after the transaction committed; the postcheck ledger 279 and objects verify the commit",
+    "productionVerification": {
+      "payoutColumns": ["currency", "reference", "note", "paid_at", "created_by"],
+      "accrualRpc": "kinnso_ops_payout_accrual(date)",
+      "recordRpc": "kinnso_ops_record_payout(date,uuid,text,text)",
+      "anonGrants": false,
+      "activeOpsGate": true,
+      "uniquePeriodIndex": "creator_payouts_creator_period_uidx",
+      "payoutRows": 0,
+      "paymentsFlag": false,
+      "payments": 0,
+      "publishedGuides": 8
+    }
+  },
+  "deployment": {
+    "previousProduction": "dpl_F7e5orDkeRiyovAVkMfT4MtFvZ6M",
+    "staged": "dpl_2AR5iGZuSvmjUJyL4prQkVpz8BAF",
+    "promoted": "dpl_2AR5iGZuSvmjUJyL4prQkVpz8BAF",
+    "url": "https://kinnso-os.vercel.app",
+    "changed": "monthly creator accrual from paid bookings using stored commission, refund exclusion, unique one-payout-per-creator-month, audited payout record with bank reference, ops payouts GET/POST API, Creator payouts dashboard card"
+  },
+  "verification": {
+    "local": { "total": 9, "passed": 9, "failed": 0 },
+    "unit": { "total": 2139, "passed": 2137, "failed": 0, "skipped": 2 },
+    "sourcePackage": { "pythonTests": 12, "skipped": 1, "result": "OK" },
+    "production": [
+      { "step": "production health is up", "status": "PASS" },
+      { "step": "the provider webhook is inert without a signing secret", "status": "PASS" },
+      { "step": "the payments dashboard needs an operations session", "status": "PASS" },
+      { "step": "an anonymous refund attempt is refused", "status": "PASS" },
+      { "step": "the dashboard returns empty money surfaces while payments are off", "status": "PASS" },
+      { "step": "a payment detail lookup is wired but finds nothing", "status": "PASS" },
+      { "step": "a refund for a missing payment changes nothing", "status": "PASS" },
+      { "step": "the scheduler sweep refuses unauthenticated callers", "status": "PASS" },
+      { "step": "the payout accrual needs an operations session", "status": "PASS" },
+      { "step": "the operator sees an empty payout accrual in production", "status": "PASS" },
+      { "step": "the operator can run the payment lifecycle in production", "status": "PASS" },
+      { "step": "the operations dashboard renders the deployed money states", "status": "PASS" },
+      { "step": "the live-readiness surface reports the missing webhook secret", "status": "PASS" },
+      { "step": "no payment rows or provider events exist to act on", "status": "PASS" },
+      { "step": "the manual payment-lifecycle control is deployed on the dashboard", "status": "PASS" },
+      { "step": "a traveller is still refused the operations payments surface", "status": "PASS" },
+      { "step": "the read-only probes wrote nothing", "status": "PASS" },
+      { "step": "production serves the promoted deployment", "status": "PASS" }
+    ],
+    "productionState": {
+      "ledger": 279,
+      "paymentsFlag": false,
+      "payments": 0,
+      "creatorPayouts": 0,
+      "provider": "none",
+      "providerConfigured": false,
+      "webhookConfigured": false
+    }
+  },
+  "ownerPrerequisites": [
+    "Scheduler entry GET /api/cron/payment-expiry with Bearer CRON_SECRET",
+    "Email flag + provider key for queued emails to send",
+    "Stripe account/KYC, live keys, webhook signing secret incl. charge.refunded, cancellation policy, legal/tax, payout owner (P5b)",
+    "Decide monthly payout cut-off day and bank-transfer process; record each payout in the ops dashboard after sending"
+  ],
+  "honestLimits": [
+    "Accrual only: no automated transfer, tax withholding or creator-facing earnings statement; the owner transfers manually and records the reference.",
+    "A refund after a payout was recorded needs a manual adjustment; there is no clawback flow.",
+    "Month attribution uses paid_at in UTC, not the trip date; a month mixing currencies is refused and needs manual reconciliation.",
+    "Mission/affiliate earnings are a separate older system and are not merged into this booking payout view.",
+    "Payments remains inert: flag off, provider none, no live Stripe account, no real money moved."
+  ]
+}

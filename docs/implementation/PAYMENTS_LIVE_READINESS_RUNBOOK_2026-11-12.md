@@ -20,6 +20,15 @@
 - The webhook endpoint verifies `Stripe-Signature` over the raw body (5-minute tolerance), is replay-safe via `provider_event_id`, and refuses to run without the signing secret.
 - The 7-day payment deadline is now swept automatically: `GET /api/cron/payment-expiry` with `Authorization: Bearer <CRON_SECRET>`, same-origin, expires both `requires_payment` and abandoned `processing` checkouts, writes one `payment.expired` event per payment, and is idempotent. The same sweep is available to an operator from the payments dashboard ("Run payment window checks") for immediate runs.
 - Inside the final 24 hours of an unpaid window the same scheduler call sends one reminder per payment: an in-app `booking.payment_deadline_soon` notice plus a queued email when the email flag is on, and both honour the traveller's mute. `booking_payments.reminder_sent_at` makes it idempotent, and the manual dashboard control ("Run payment window checks") sends any due reminders too.
+- The ops payments dashboard accrues creator payouts by calendar month from paid bookings (gross, the 15% `commission_minor` stored at booking time, and net), excludes refunded payments, and records the manual bank transfer with its reference. One payout per creator per month is enforced by a unique database index.
+
+## Creator payouts (monthly, manual)
+
+Payouts stay manual bank transfers (decision P3). The operations payments page has a "Creator payouts" card:
+
+- Pick the month; each creator with paid bookings shows gross, 15% commission and net, plus how many bookings.
+- After transferring the money, click "Record payout" and enter the bank reference. The payout is stored as `paid` with the period, amounts, currency, reference, timestamp and the operator id; it appears on the card and refuses a second payout for the same creator and month.
+- Refunded payments are excluded from the month's accrual, so record payouts after the month closes (or accept that a later refund needs a manual adjustment; adjustments are manual in v1).
 
 ## Scheduled payment-window sweep and reminder
 
@@ -54,8 +63,8 @@ If the scheduler is missing, unpaid accepted trips stay `awaiting_payment`/`proc
 
 ## Known limits at enablement
 
-- Refunds are only issued through the ops dashboard (outbound). A refund created directly in the Stripe Dashboard is not yet ingested; reconcile it manually and prefer the dashboard path.
+- Refunded payments are excluded from the payout accrual, but a refund that happens after a payout was recorded needs a manual adjustment (no clawback code yet); partial provider refunds are audited and reconciled manually.
 - The payments list shows the latest 100 rows and the provider ledger the latest 50; this is enough for the first live transactions but needs pagination before real volume.
 - Refund notifications to travellers/creators are not sent yet (cancellation messaging is pending the owner's policy text).
-- Payouts are manual bank transfers per decision P3; no automated transfer code exists.
+- Payouts are manual bank transfers per decision P3; the ops dashboard accrues and records them but no automated transfer code exists, and creators have no self-serve earnings statement yet.
 - Signature-failure attempts are not persisted by design; repeated failures are visible in Stripe's webhook delivery log and server logs, not in our ledger.
