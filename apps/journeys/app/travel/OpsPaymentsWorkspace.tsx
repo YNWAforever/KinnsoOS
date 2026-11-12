@@ -23,6 +23,15 @@ type Summary = {
   webhookEvents: { items: WebhookEvent[]; counts: Record<string, number>; total: number };
 };
 type Detail = { payment: Record<string, unknown>; booking: Record<string, unknown>; events: Record<string, unknown>[] };
+type PayoutRow = {
+  creatorId: string; creatorName: string; currency: string; grossMinor: number; commissionMinor: number;
+  netMinor: number; paymentCount: number;
+  payout: { id: string; status: string; reference: string | null; paidAt: string | null; netMinor: number } | null;
+};
+type Payouts = {
+  month: string; periodStart: string; periodEnd: string; creators: PayoutRow[];
+  totals: { grossMinor: number; commissionMinor: number; netMinor: number; paymentCount: number };
+};
 const STATUS_LABEL: Record<string, [string, string]> = {
   requires_payment: ['Payment due', '待付款'],
   processing: ['Checkout open', '付款處理中'],
@@ -54,6 +63,12 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
   const [refundError, setRefundError] = useState('');
   const [refundMessage, setRefundMessage] = useState('');
   const [sweepMessage, setSweepMessage] = useState('');
+  const [payouts, setPayouts] = useState<Payouts | null>(null);
+  const [payoutMonth, setPayoutMonth] = useState(() => `${new Date().toISOString().slice(0, 7)}`);
+  const [payoutTarget, setPayoutTarget] = useState<PayoutRow | null>(null);
+  const [payoutReference, setPayoutReference] = useState('');
+  const [payoutError, setPayoutError] = useState('');
+  const [payoutMessage, setPayoutMessage] = useState('');
   const [detail, setDetail] = useState<{ id: string; data: Detail } | null>(null);
   const generation = useRef(0);
   const opener = useRef<HTMLElement | null>(null);
@@ -83,6 +98,48 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
     }
   }
   useEffect(() => { void load(); }, [actorId, enabled]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function loadPayouts(month: string) {
+    if (!actorId || !enabled) return;
+    try {
+      const response = await fetch(`/api/ops/payouts?month=${encodeURIComponent(month)}`, { cache: 'no-store' });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.code ?? 'UNAVAILABLE');
+      setPayouts(payload.data as Payouts);
+    } catch (next) {
+      setPayouts(null);
+      setError(errorLabel(next instanceof Error ? next.message : '', t));
+    }
+  }
+  useEffect(() => { void loadPayouts(payoutMonth); }, [actorId, enabled, payoutMonth]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  async function confirmPayout() {
+    if (!payoutTarget || busy || payoutReference.trim().length < 3) return;
+    setBusy(true); setPayoutError('');
+    try {
+      const response = await fetch('/api/ops/payouts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ month: payoutMonth, creatorId: payoutTarget.creatorId, reference: payoutReference.trim() }),
+        cache: 'no-store',
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || !payload?.ok) throw new Error(payload?.code ?? 'UNAVAILABLE');
+      const net = formatMoneyMinor(payoutTarget.netMinor, payoutTarget.currency);
+      setPayoutMessage(t(`Payout of ${net} recorded.`, `已記錄 ${net} 結算。`));
+      setPayoutTarget(null);
+      await loadPayouts(payoutMonth);
+      await load();
+    } catch (next) {
+      const code = next instanceof Error ? next.message : '';
+      setPayoutError(code === 'INVALID'
+        ? t('Enter a bank reference of 3–200 characters.', '請輸入 3 至 200 字的銀行參考編號。')
+        : code === 'CONFLICT'
+          ? t('This creator is already paid for this month, or has no paid bookings.', '此創作者本月已記錄結算，或沒有已付款預訂。')
+          : errorLabel(code, t));
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function sweep() {
     if (busy) return;
@@ -199,6 +256,22 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
       {sweepMessage && <p role="status" data-testid="ops-sweep-result">{sweepMessage}</p>}
       {refundMessage && <p role="status" data-testid="ops-refund-success">{refundMessage}</p>}
     </div>}
+    {data && <div className="k-card-list" data-testid="ops-payouts">
+      <h2>{t('Creator payouts','創作者結算')}</h2>
+      <label>{t('Month','月份')}<input type="month" data-testid="ops-payout-month" value={payoutMonth} disabled={busy} onChange={(event) => { setPayoutMonth(event.target.value); setPayoutMessage(''); }} /></label>
+      {payouts && <p className="k-meta" data-testid="ops-payout-totals">
+        {t('Gross','總收入')} {formatMoneyMinor(payouts.totals.grossMinor, 'HKD')} · {t('Commission','平台佣金')} {formatMoneyMinor(payouts.totals.commissionMinor, 'HKD')} · {t('Net','應付')} {formatMoneyMinor(payouts.totals.netMinor, 'HKD')} · {payouts.totals.paymentCount} {t('booking(s)','筆預訂')}
+      </p>}
+      {payouts?.creators.length === 0 && <p>{t('No paid bookings this month.','本月尚未有已付款預訂。')}</p>}
+      {(payouts?.creators ?? []).map((row) => <article className="k-card" key={`${row.creatorId}-${row.currency}`} data-testid="ops-payout-row">
+        <h3>{row.creatorName || row.creatorId.slice(0, 8)}</h3>
+        <p className="k-meta">{t('Gross','總收入')} {formatMoneyMinor(row.grossMinor, row.currency)} · {t('Commission','平台佣金')} −{formatMoneyMinor(row.commissionMinor, row.currency)} · {t('Net','應付')} {formatMoneyMinor(row.netMinor, row.currency)} · {row.paymentCount} {t('booking(s)','筆預訂')}</p>
+        {row.payout
+          ? <p role="status" data-testid="ops-payout-recorded">{t('Paid','已付款')} · {row.payout.reference ?? '—'} · {formatPaymentDeadline(row.payout.paidAt ?? '') || '—'}</p>
+          : <button className="k-btn primary" data-testid="ops-payout-record" disabled={busy} onClick={(event) => { opener.current = event.currentTarget; setPayoutTarget(row); setPayoutReference(''); setPayoutError(''); }}>{t('Record payout','記錄結算')}</button>}
+      </article>)}
+      {payoutMessage && <p role="status" data-testid="ops-payout-result">{payoutMessage}</p>}
+    </div>}
     {data && <div className="k-card-list" data-testid="ops-payment-list">
       <h2>{t('Recent payments','最近付款')}</h2>
       {items.length === 0 && <p>{t('No payments yet.','尚未有付款。')}</p>}
@@ -238,6 +311,14 @@ export function OpsPaymentsWorkspace({ actorId, enabled }: { actorId: string | n
       {refundError && <p role="alert" data-testid="ops-refund-error">{refundError}</p>}
       <button className="k-btn" disabled={busy} onClick={() => setRefund(null)}>{t('Cancel','取消')}</button>
       <button className="k-btn primary" data-testid="ops-refund-confirm" disabled={busy || reason.trim().length < 5} onClick={() => void confirmRefund()}>{t('Record refund','記錄退款')}</button>
+    </Modal>}
+    {payoutTarget && <Modal title={t('Record payout','記錄結算')} returnFocus={opener.current} onClose={() => setPayoutTarget(null)}>
+      <p>{payoutTarget.creatorName || payoutTarget.creatorId.slice(0, 8)} · {formatMoneyMinor(payoutTarget.netMinor, payoutTarget.currency)}</p>
+      <p className="k-meta">{t('Record the bank transfer after it happened; one payout per creator per month.','請在銀行轉帳完成後記錄；每位創作者每月一筆結算。')}</p>
+      <label>{t('Bank reference','銀行參考編號')}<input data-testid="ops-payout-reference" required minLength={3} maxLength={200} value={payoutReference} disabled={busy} onChange={(event) => setPayoutReference(event.target.value)} /></label>
+      {payoutError && <p role="alert" data-testid="ops-payout-error">{payoutError}</p>}
+      <button className="k-btn" disabled={busy} onClick={() => setPayoutTarget(null)}>{t('Cancel','取消')}</button>
+      <button className="k-btn primary" data-testid="ops-payout-confirm" disabled={busy || payoutReference.trim().length < 3} onClick={() => void confirmPayout()}>{t('Record payout','記錄結算')}</button>
     </Modal>}
   </section>;
 }
